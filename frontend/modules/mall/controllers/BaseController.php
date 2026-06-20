@@ -31,7 +31,7 @@ class BaseController extends \frontend\controllers\BaseController
 
         // 设置当前货币
         if (!Yii::$app->session->get('currentCurrency')) {
-            Yii::$app->session->set('currentCurrency', Yii::$app->settingSystem->getValue('mall_currency_default'));
+            Yii::$app->session->set('currentCurrency', Yii::$app->settingSystem->getValue('mall_currency_default') ?: 'USD');
         }
         return true;
     }
@@ -48,25 +48,30 @@ class BaseController extends \frontend\controllers\BaseController
 
     public function getCurrentCurrency()
     {
-        return Yii::$app->session->get('currentCurrency', Yii::$app->settingSystem->getValue('mall_currency_default'));
+        return Yii::$app->session->get('currentCurrency', Yii::$app->settingSystem->getValue('mall_currency_default') ?: 'USD');
     }
 
     public function getCurrentCurrencySymbol()
     {
-        $currencies = Yii::$app->settingSystem->getValue('mall_currencies');
-//         ob_clean();
-//         var_dump($currencies);exit();
-        $currencies = json_decode($currencies, true);
-//        var_dump($currencies);exit();
+        $currencies = $this->getCurrencyConfig();
         $mapCurrency = ArrayHelper::map($currencies, 'code', 'symbol');
         return $mapCurrency[$this->getCurrentCurrency()] ?? '';
     }
 
     public function getCurrentCurrencyRate()
     {
-        $currencies = json_decode(Yii::$app->settingSystem->getValue('mall_currencies'), true);
+        $currencies = $this->getCurrencyConfig();
         $mapCurrency = ArrayHelper::map($currencies, 'code', 'rate');
         return $mapCurrency[$this->getCurrentCurrency()] ?? 1;
+    }
+
+    private function getCurrencyConfig()
+    {
+        $currencies = Yii::$app->settingSystem->getValue('mall_currencies');
+        $currencies = is_string($currencies) && $currencies !== '' ? json_decode($currencies, true) : null;
+        return is_array($currencies) && $currencies ? $currencies : [
+            ['code' => 'USD', 'symbol' => '$', 'rate' => '1'],
+        ];
     }
 
     public function getCartInfo()

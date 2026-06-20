@@ -2824,3 +2824,23 @@
   - Test strict still needs real payment sandbox credentials.
 - Next stage:
   - Pull this commit on BaoTa, clear runtime cache if needed, reload PHP-FPM, then open the HTTPS frontend and backend in browser.
+
+## 2026-06-20 BaoTa Frontend Currency And Visit Stats Baseline
+
+- Stage name: BaoTa frontend currency and visit stats baseline
+- Completed:
+  - Reviewed browser/server symptoms after HTTPS frontend and backend became reachable.
+  - Added a mall currency fallback so an empty `mall_currencies` or `mall_currency_default` setting no longer turns the frontend homepage into a PHP 8.3 runtime error.
+  - Added a non-destructive `fb_mall_product_visit` baseline migration for fresh BaoTa databases where historical migrations were already marked applied but the stats table was absent.
+- Main files changed/added:
+  - `frontend/modules/mall/controllers/BaseController.php`
+  - `console/migrations/m260620_164000_mongoyia_product_visit_table_baseline.php`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l frontend/modules/mall/controllers/BaseController.php` passed with no syntax errors.
+  - `php -l console/migrations/m260620_164000_mongoyia_product_visit_table_baseline.php` passed with no syntax errors.
+- Remaining issues:
+  - BaoTa still needs to pull this commit and run `yii migrate/up` before `/backend/site/info` and `/backend/mall/merchant-stat/index` can be fully retested.
+  - Full checkout/payment flow still requires active test products and real payment sandbox credentials.
+- Next stage:
+  - Pull this commit on BaoTa, apply the migration, restart PHP-FPM, then rerun deploy/stat checks and browser role-flow testing.

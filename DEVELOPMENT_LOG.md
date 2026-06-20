@@ -2673,3 +2673,26 @@
   - The pushed snapshot is ready for BaoTa deployment preparation, but it is not formal test-server or production go-live approval.
 - Next stage:
   - On BaoTa, clone `https://github.com/bos432/mongoyia2.0.git` into `/www/wwwroot/demo2026.mongoyia.com`, set the running directory to `web/`, generate server-only OAuth keys, fill `.env` from `.env.test.example`, configure HTTPS/WSS/payment sandbox values, then run `php yii deploy-check/run --profile=test --strict=1 --interactive=0` until it reports `0 failure(s), 0 warning(s)`.
+
+## 2026-06-20 BaoTa Composer Install Fix
+
+- Stage name: BaoTa Composer install fix for PHP 8.3
+- Completed:
+  - Reviewed the BaoTa terminal output supplied during deployment.
+  - Identified two separate blockers: PHP 8.3 CLI was loading mismatched PHP-extension builds for `fileinfo`, `redis`, and `igbinary`, and the repository lacked a committed `composer.lock`, causing server-side dependency resolution to update packages and hit Composer security/advisory blocks.
+  - Updated `composer.json` and `composer.lock` so the PHP `json` extension requirement uses `*`, which is compatible with PHP 8.3 extension version reporting.
+  - Stopped ignoring `composer.lock` so BaoTa deployment can install locked dependencies instead of resolving fresh dependency versions on the server.
+- Main files changed/added:
+  - `.gitignore`
+  - `composer.json`
+  - `composer.lock`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - Server output showed `php -v` warnings for ABI-mismatched `fileinfo`, `igbinary`, and `redis` extensions, plus missing `swoole.so` and `security_notice.so` entries.
+  - Server `composer install --no-dev --prefer-dist --optimize-autoloader` failed because `ext-json ^1.5` rejected PHP 8.3's extension version, `ext-redis` was missing due to the mismatched extension load failure, `ext-fileinfo` was missing due to the mismatched extension load failure, and fresh dependency resolution was blocked by Composer security advisories.
+  - Local source update was limited to dependency metadata and deployment logging; no business code was changed in this stage.
+- Remaining issues:
+  - BaoTa PHP 8.3 still needs its `fileinfo`, `redis`, and `igbinary` extensions reinstalled or re-enabled for the PHP 8.3 build. The stale `swoole.so` and `security_notice.so` load entries should be disabled if those extensions are not installed for PHP 8.3.
+  - After pulling the updated repository on BaoTa, rerun Composer with the committed lock file.
+- Next stage:
+  - On BaoTa, run `git pull`, fix PHP 8.3 extensions in the panel or CLI, then rerun `composer install --no-dev --prefer-dist --optimize-autoloader --no-audit`.

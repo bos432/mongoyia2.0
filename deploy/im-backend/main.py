@@ -66,10 +66,11 @@ async def create_db_pool():
 # 数据库连接池
 db_pool = None
 CHAT_CONTEXT_COLUMNS = set()
+CHAT_TIME_DATA_TYPE = ''
 
 async def validate_chat_table():
     """Fail fast when the configured chat table is missing."""
-    global CHAT_CONTEXT_COLUMNS
+    global CHAT_CONTEXT_COLUMNS, CHAT_TIME_DATA_TYPE
     async with db_pool.acquire() as conn:
         async with conn.cursor() as cur:
             await cur.execute(
@@ -86,13 +87,15 @@ async def validate_chat_table():
 
             await cur.execute(
                 """
-                SELECT column_name
+                SELECT column_name, data_type
                 FROM information_schema.columns
                 WHERE table_schema = %s AND table_name = %s
                 """,
                 (DB_CONFIG['db'], CHAT_TABLE)
             )
-            CHAT_CONTEXT_COLUMNS = {row[0] for row in await cur.fetchall()}
+            column_types = {row[0]: row[1] for row in await cur.fetchall()}
+            CHAT_CONTEXT_COLUMNS = set(column_types.keys())
+            CHAT_TIME_DATA_TYPE = column_types.get('time', '')
 
 def normalize_positive_int(value):
     try:
@@ -185,6 +188,9 @@ def has_chat_context_columns():
 def has_chat_read_columns():
     return {'user_read_at', 'merchant_read_at'}.issubset(CHAT_CONTEXT_COLUMNS)
 
+def chat_time_uses_unix_timestamp():
+    return CHAT_TIME_DATA_TYPE in {'tinyint', 'smallint', 'mediumint', 'int', 'integer', 'bigint'}
+
 def chat_context_select(prefix=''):
     if has_chat_context_columns():
         return f", {prefix}product_id, {prefix}store_id"
@@ -243,7 +249,10 @@ async def save_message(from_type, uid, content, msg_type, uuid, product_id=0, st
                 values.extend([product_id, store_id])
 
             columns.extend(['content', '`type`', 'time', 'uuid'])
-            values.extend([content, msg_type, uuid])
+            if chat_time_uses_unix_timestamp():
+                values.extend([content, msg_type, int(time.time()), uuid])
+            else:
+                values.extend([content, msg_type, uuid])
 
             if has_chat_read_columns():
                 now_ts = int(time.time())
@@ -254,7 +263,8 @@ async def save_message(from_type, uid, content, msg_type, uuid, product_id=0, st
                     values.extend([0, now_ts])
 
             placeholders = ['%s'] * len(columns)
-            placeholders[columns.index('time')] = 'NOW()'
+            if not chat_time_uses_unix_timestamp():
+                placeholders[columns.index('time')] = 'NOW()'
             await cur.execute(
                 f"INSERT INTO {CHAT_TABLE_SQL} ({', '.join(columns)}) VALUES ({', '.join(placeholders)})",
                 values

@@ -2937,3 +2937,20 @@
   - BaoTa still needs to pull this fix, copy the updated IM entrypoint into `/www/im后端/im后端/main.py`, and restart `mongoyia-im`.
 - Next stage:
   - Deploy the updated IM entrypoint, restart the IM service, then rerun the WSS token/history/chat smoke test.
+
+## 2026-06-20 BaoTa IM Heartbeat Startup Compatibility
+
+- Stage name: BaoTa IM heartbeat startup compatibility
+- Completed:
+  - Retested WSS after the Python 3.6 background task helper; the connection still closed with code `1011`.
+  - Narrowed the failure to immediately after the initial auth message, before chat history or chat send processing.
+  - Made the IM heartbeat background task opt-in with `IM_HEARTBEAT_ENABLED=1`, defaulting it off so the Python 3.6/websockets deployment can establish normal chat connections first.
+- Main files changed/added:
+  - `deploy/im-backend/main.py`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `python -m py_compile deploy/im-backend/main.py` passed with no syntax errors.
+- Remaining issues:
+  - BaoTa still needs to pull this fix, copy the updated IM entrypoint into `/www/im后端/im后端/main.py`, and restart `mongoyia-im`.
+- Next stage:
+  - Deploy the updated IM entrypoint, restart the IM service, then rerun the WSS token/history/chat smoke test.

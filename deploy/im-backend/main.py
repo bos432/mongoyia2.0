@@ -513,7 +513,9 @@ async def handle_client(websocket, path=None):
     
     clients[client_key] = websocket
     
-    # 心跳检测
+    # 心跳检测。旧版 Python/websockets 组合在后台任务上容易提前断开连接，
+    # 生产可通过 IM_HEARTBEAT_ENABLED=1 打开。
+    heartbeat_enabled = os.getenv('IM_HEARTBEAT_ENABLED', '0') == '1'
     heartbeat_timeout = 60
     last_heartbeat_response = asyncio.get_event_loop().time()
     
@@ -533,7 +535,7 @@ async def handle_client(websocket, path=None):
         except websockets.ConnectionClosed:
             pass
     
-    heartbeat_task = create_background_task(heartbeat_task())
+    heartbeat_handle = create_background_task(heartbeat_task()) if heartbeat_enabled else None
     
     try:
         async for message in websocket:
@@ -686,7 +688,8 @@ async def handle_client(websocket, path=None):
                 }))
     
     finally:
-        heartbeat_task.cancel()
+        if heartbeat_handle:
+            heartbeat_handle.cancel()
         if client_key in clients:
             del clients[client_key]
         print(f"Client {client_key} disconnected")

@@ -533,7 +533,7 @@ async def handle_client(websocket, path=None):
         except websockets.ConnectionClosed:
             pass
     
-    heartbeat_task = asyncio.create_task(heartbeat_task())
+    heartbeat_task = create_background_task(heartbeat_task())
     
     try:
         async for message in websocket:
@@ -721,6 +721,12 @@ def run_async(coro):
         return loop.run_until_complete(coro)
     finally:
         loop.close()
+
+def create_background_task(coro):
+    if hasattr(asyncio, "create_task"):
+        return asyncio.create_task(coro)
+
+    return asyncio.ensure_future(coro)
 
 if __name__ == "__main__":
     run_async(main())

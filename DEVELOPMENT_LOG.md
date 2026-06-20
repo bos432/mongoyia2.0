@@ -2918,3 +2918,22 @@
   - WSS IM still closes with code `1011`; service journal output is needed to identify the current runtime exception.
 - Next stage:
   - Pull this commit on BaoTa, apply migrations, restart PHP-FPM, then resubmit checkout and inspect `mongoyia-im` logs.
+
+## 2026-06-20 BaoTa IM Python 3.6 Background Task Compatibility
+
+- Stage name: BaoTa IM Python 3.6 background task compatibility
+- Completed:
+  - Retested checkout after order logistics columns were added; frontend checkout created order `202606201052043184`, cleared the cart, and showed the payment page.
+  - Verified the order appears in both frontend order history and backend order list.
+  - Retested WSS IM and confirmed it still closes with code `1011`.
+  - Identified another Python 3.6 incompatibility in the IM service: `asyncio.create_task()` is unavailable on Python 3.6.
+  - Added a compatibility helper that uses `asyncio.create_task()` when available and falls back to `asyncio.ensure_future()` on Python 3.6.
+- Main files changed/added:
+  - `deploy/im-backend/main.py`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `python -m py_compile deploy/im-backend/main.py` passed with no syntax errors.
+- Remaining issues:
+  - BaoTa still needs to pull this fix, copy the updated IM entrypoint into `/www/im后端/im后端/main.py`, and restart `mongoyia-im`.
+- Next stage:
+  - Deploy the updated IM entrypoint, restart the IM service, then rerun the WSS token/history/chat smoke test.

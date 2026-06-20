@@ -49,7 +49,10 @@ $this->params['breadcrumbs'][] = $this->title;
                                     <p class="mb-1">订单数：<?= (int)$stat['orders'] ?></p>
                                     <p class="mb-1">销售额：<?= number_format((float)$stat['amount'], 2) ?></p>
                                     <p class="mb-1">销售件数：<?= (int)$stat['items'] ?></p>
-                                    <p class="mb-0">浏览量：<?= (int)$stat['visits'] ?></p>
+                                    <p class="mb-1">浏览量：<?= (int)$stat['visits'] ?></p>
+                                    <p class="mb-1">客单价：<?= number_format((float)$stat['avg_order_amount'], 2) ?></p>
+                                    <p class="mb-1">件均价：<?= number_format((float)$stat['avg_item_amount'], 2) ?></p>
+                                    <p class="mb-0">浏览转化率：<?= number_format((float)$stat['visit_order_rate'] * 100, 2) ?>%</p>
                                 </div>
                             </div>
                         </div>

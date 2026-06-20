@@ -2977,3 +2977,29 @@
   - Future local Yii command runs in this patch checkout still need local ignored config plus a temporary `vendor` junction or a normal dependency install.
 - Next stage:
   - Reread the backlog and development log, then choose the next plan-listed increment that does not require external payment, scheduler, alert, or production signoff inputs.
+
+## 2026-06-20 Merchant Stat Detail KPIs
+
+- Stage name: Merchant stat detail KPI refinement
+- Completed:
+  - Reread the upgrade backlog and development log, then selected the Phase 2 plan-listed merchant-stat detail refinement increment.
+  - Added derived KPI values to the merchant statistics controller: average order amount, average item amount, and visit-to-order conversion rate for each period card.
+  - Displayed the new KPI rows on `/backend/mall/merchant-stat/index` for platform and seller users without changing schema or mutating business data.
+  - Extended the existing merchant statistic test markers and delivery docs so the new detail metrics are covered by automated readiness.
+- Main files changed/added:
+  - `backend/modules/mall/controllers/MerchantStatController.php`
+  - `backend/modules/mall/views/merchant-stat/index.php`
+  - `console/controllers/MerchantStatTestController.php`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `docs/mongoyia-delivery-status.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l backend/modules/mall/controllers/MerchantStatController.php` passed with no syntax errors.
+  - `php -l backend/modules/mall/views/merchant-stat/index.php` passed with no syntax errors.
+  - `php -l console/controllers/MerchantStatTestController.php` passed with no syntax errors.
+  - `php yii merchant-stat-test/run --interactive=0` passed with 0 failure(s), 0 warning(s) after using ignored local config files, a temporary `vendor` junction to the sibling Funboot checkout, and process-local environment values from the sibling `.env`.
+- Remaining issues:
+  - Real business accuracy still depends on production-quality visit/order data volume; this stage only improves dashboard detail and test coverage.
+  - Future local Yii command runs in this patch checkout still need local ignored config plus a temporary `vendor` junction or a normal dependency install.
+- Next stage:
+  - Reread the backlog and development log, then choose the next plan-listed increment that does not require external payment sandbox, scheduler/alert signoff, or production owner evidence.

@@ -214,7 +214,7 @@ class MerchantStatTestController extends Controller
     {
         $this->section('Backend entrances');
         $this->requireFileContains('@app/../backend/modules/mall/controllers/MerchantStatController.php', ['class MerchantStatController', 'actionIndex', 'periodStat', 'topProducts']);
-        $this->requireFileContains('@app/../backend/modules/mall/views/merchant-stat/index.php', ['商家统计', '商品销量排行', '物流状态']);
+        $this->requireFileContains('@app/../backend/modules/mall/views/merchant-stat/index.php', ['商家统计', '商品销量排行', '物流状态', '客单价', '件均价', '浏览转化率']);
         $this->requireFileContains('@app/../backend/views/site/info.php', ['product_visit', 'product_visit_today']);
         $this->requireFileContains('@app/../backend/modules/mall/views/product/index.php', ['sales', 'stock']);
         $this->requireFileContains('@app/../backend/modules/mall/views/order/index.php', ['amount', 'payment_status']);

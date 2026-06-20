@@ -83,12 +83,19 @@ class MerchantStatController extends BaseController
         }
 
         $orders = $orderQuery->one(Yii::$app->db) ?: [];
+        $orderCount = (int)($orders['orders'] ?? 0);
+        $itemCount = (int)($orders['items'] ?? 0);
+        $amount = (float)($orders['amount'] ?? 0);
+        $visits = (int)$visitQuery->count('*', Yii::$app->db);
 
         return [
-            'orders' => (int)($orders['orders'] ?? 0),
-            'items' => (int)($orders['items'] ?? 0),
-            'amount' => (float)($orders['amount'] ?? 0),
-            'visits' => (int)$visitQuery->count('*', Yii::$app->db),
+            'orders' => $orderCount,
+            'items' => $itemCount,
+            'amount' => $amount,
+            'visits' => $visits,
+            'avg_order_amount' => $orderCount > 0 ? $amount / $orderCount : 0,
+            'avg_item_amount' => $itemCount > 0 ? $amount / $itemCount : 0,
+            'visit_order_rate' => $visits > 0 ? $orderCount / $visits : 0,
         ];
     }
 

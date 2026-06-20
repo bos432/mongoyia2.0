@@ -2696,3 +2696,27 @@
   - After pulling the updated repository on BaoTa, rerun Composer with the committed lock file.
 - Next stage:
   - On BaoTa, run `git pull`, fix PHP 8.3 extensions in the panel or CLI, then rerun `composer install --no-dev --prefer-dist --optimize-autoloader --no-audit`.
+
+## 2026-06-20 BaoTa Console Entrypoint Fix
+
+- Stage name: BaoTa console entrypoint fix for migrations
+- Completed:
+  - Reviewed the BaoTa terminal output after Composer installation.
+  - Confirmed Composer dependency installation completed successfully with the PHP 8.3 extension fixes and `--ignore-platform-req=php`.
+  - Confirmed server-side OAuth key generation and writable runtime/upload directory preparation completed successfully.
+  - Identified the migration blocker: `/www/wwwroot/demo2026.mongoyia.com/yii` was missing because the root console entrypoint had been ignored by Git.
+  - Removed `/yii` from `.gitignore` and staged the safe root `yii` console bootstrap script for deployment.
+- Main files changed/added:
+  - `.gitignore`
+  - `yii`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - Server `composer install --no-dev --prefer-dist --optimize-autoloader --ignore-platform-req=php` installed 135 packages and generated optimized autoload files.
+  - Server `openssl genrsa` / `openssl rsa` generated server-local OAuth key files successfully.
+  - Server `mkdir`, `chown`, and `chmod` prepared `runtime`, `frontend/runtime`, `web/assets`, `web/attachment`, and `web/attachment/chat`.
+  - Server `/www/server/php/83/bin/php yii migrate/up --interactive=0` failed with `Could not open input file: yii` because the console entrypoint was absent from the Git deployment snapshot.
+- Remaining issues:
+  - BaoTa server must pull the new commit and rerun migration using `/www/server/php/83/bin/php yii migrate/up --interactive=0`.
+  - Formal strict deploy check still depends on real payment sandbox/WSS/test-server settings after basic migration succeeds.
+- Next stage:
+  - On BaoTa, run `git pull`, confirm `ls -l yii`, then rerun `/www/server/php/83/bin/php yii migrate/up --interactive=0`.

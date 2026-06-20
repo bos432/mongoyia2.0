@@ -480,7 +480,7 @@ async def send_to_platforms(message):
 
     return delivered
 
-async def handle_client(websocket):
+async def handle_client(websocket, path=None):
     """处理客户端连接"""
     init_msg = await websocket.recv()
     

@@ -2862,3 +2862,21 @@
   - `/mall/cart/index` currently redirects to the homepage even after cart Ajax succeeds; `/mall/cart/checkout` is reachable and contains the cart products.
 - Next stage:
   - Pull this commit on BaoTa, restart PHP-FPM, resubmit checkout, then verify the order appears in frontend and backend order lists.
+
+## 2026-06-20 BaoTa IM WebSocket Handler Compatibility
+
+- Stage name: BaoTa IM WebSocket handler compatibility
+- Completed:
+  - Tested `/mall/chat/index?gid=1`; the PHP page and `/mall/chat/token` both respond successfully with a signed token.
+  - A direct WSS connection to `wss://demo2026.mongoyia.com/ws-im` closed with code `1011`, matching a Python IM internal handler failure.
+  - Updated the IM handler signature to accept an optional `path` argument for compatibility with older `websockets` server versions such as the Python 3.6 deployment stack.
+- Main files changed/added:
+  - `deploy/im-backend/main.py`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `python -m py_compile deploy/im-backend/main.py` passed with no syntax errors.
+- Remaining issues:
+  - BaoTa still needs to pull this fix, copy `deploy/im-backend/main.py` to `/www/im后端/im后端/main.py`, and restart `mongoyia-im`.
+  - After restart, WSS chat send/history should be retested.
+- Next stage:
+  - Deploy the updated IM entrypoint, restart the service, then rerun the WSS token/init/chat smoke test.

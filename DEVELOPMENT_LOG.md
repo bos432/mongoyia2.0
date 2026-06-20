@@ -2880,3 +2880,23 @@
   - After restart, WSS chat send/history should be retested.
 - Next stage:
   - Deploy the updated IM entrypoint, restart the service, then rerun the WSS token/init/chat smoke test.
+
+## 2026-06-20 BaoTa Checkout Order Fx Baseline
+
+- Stage name: BaoTa checkout order fx baseline
+- Completed:
+  - Retested frontend checkout after the address scenario fix; address creation succeeded, but checkout still returned to `/mall/cart/checkout`.
+  - Extracted the SweetAlert error from the response: `Setting unknown property: common\models\mall\Order::fx_id`.
+  - Added a non-destructive `fx_id` baseline migration for `{{%mall_order}}` and included `fx_id` in the `Order` integer validation rules.
+- Main files changed/added:
+  - `common/models/mall/Order.php`
+  - `console/migrations/m260620_181000_mongoyia_order_fx_id_baseline.php`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l common/models/mall/Order.php` passed with no syntax errors.
+  - `php -l console/migrations/m260620_181000_mongoyia_order_fx_id_baseline.php` passed with no syntax errors.
+- Remaining issues:
+  - BaoTa still needs to pull this fix and run `yii migrate/up` before checkout can be retested.
+  - WSS IM still closes with code `1011`; service journal output is needed to identify the current runtime exception.
+- Next stage:
+  - Pull this commit on BaoTa, apply migrations, restart PHP-FPM, then resubmit checkout and inspect `mongoyia-im` logs.

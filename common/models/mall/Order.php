@@ -86,7 +86,7 @@ class Order extends OrderBase
     public function rules()
     {
         return array_merge(parent::rules(), [
-            [['store_id', 'parent_id', 'user_id', 'address_id', 'country_id', 'province_id', 'city_id', 'district_id', 'payment_method', 'payment_status', 'paid_at', 'stock_deducted_at', 'stock_refunded_at', 'shipment_id', 'shipment_fee_deducted_at', 'shipment_status', 'logistics_review_status', 'logistics_reviewed_at', 'logistics_reviewed_by', 'shipped_at', 'number', 'type', 'sort', 'status', 'created_at', 'updated_at', 'created_by', 'updated_by'], 'integer'],
+            [['store_id', 'parent_id', 'user_id', 'address_id', 'country_id', 'province_id', 'city_id', 'district_id', 'payment_method', 'payment_status', 'paid_at', 'stock_deducted_at', 'stock_refunded_at', 'shipment_id', 'shipment_fee_deducted_at', 'shipment_status', 'logistics_review_status', 'logistics_reviewed_at', 'logistics_reviewed_by', 'shipped_at', 'number', 'type', 'sort', 'status', 'created_at', 'updated_at', 'created_by', 'updated_by', 'fx_id'], 'integer'],
             [['user_id', 'sn'], 'required'],
             [['distance', 'payment_fee', 'shipment_fee', 'product_amount', 'amount', 'extra_fee', 'discount', 'tax'], 'number'],
             [['name', 'sn', 'first_name', 'last_name', 'country', 'province', 'city', 'district', 'address', 'address2', 'postcode', 'mobile', 'email', 'remark', 'shipment_name', 'logistics_review_remark', 'invoice','wlgs','wldh'], 'string', 'max' => 255],

@@ -2805,3 +2805,22 @@
   - `systemctl enable` previously returned access denied; service can still be started manually, and autostart can be revisited after runtime is green.
 - Next stage:
   - Pull this commit on BaoTa, copy the updated IM code, restart `mongoyia-im`, verify port `8767`, then configure `/ws-im` reverse proxy.
+
+## 2026-06-20 BaoTa FPM Disabled putenv Compatibility
+
+- Stage name: BaoTa FPM disabled putenv compatibility
+- Completed:
+  - Reviewed browser fatal error on `https://demo2026.mongoyia.com/`.
+  - Identified that BaoTa PHP-FPM disables `putenv()`, while `common/helpers/GlobalFunction.php` required it when loading `.env`.
+  - Updated `.env` loading to call `putenv()` only when available and to read values from `$_ENV`/`$_SERVER` as fallback sources.
+- Main files changed/added:
+  - `common/helpers/GlobalFunction.php`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l common/helpers/GlobalFunction.php` passed with no syntax errors.
+  - BaoTa still needs to pull this fix and re-test HTTPS frontend/backend pages.
+- Remaining issues:
+  - Browser validation needs to be rerun after pulling this fix.
+  - Test strict still needs real payment sandbox credentials.
+- Next stage:
+  - Pull this commit on BaoTa, clear runtime cache if needed, reload PHP-FPM, then open the HTTPS frontend and backend in browser.

@@ -1,0 +1,222 @@
+<?php
+
+namespace frontend\modules\mall\controllers;
+
+use common\models\mall\Product;
+use common\services\mall\ImMediaUploadSkeletonService;
+use Yii;
+use yii\helpers\FileHelper;
+use yii\web\NotFoundHttpException;
+use yii\web\Response;
+use yii\web\UploadedFile;
+
+/**
+ * Class AddressController
+ * @package frontend\modules\mall\controllers
+ * @author funson86 <funson86@gmail.com>
+ */
+class ChatController extends BaseController
+{
+    public function beforeAction($action)
+    {
+        if (in_array($action->id, ['upload', 'media-upload', 'token'], true)) {
+            $this->enableCsrfValidation = false;
+        }
+
+        return parent::beforeAction($action);
+    }
+
+    public function actionIndex()
+    {
+        $gid = (int)Yii::$app->request->get('gid', 0);
+        if ($gid <= 0) {
+            throw new NotFoundHttpException(Yii::t('app', 'Invalid id'));
+        }
+
+        $product = Product::find()
+            ->alias('p')
+            ->select(['p.id', 'p.store_id', 's.user_id'])
+            ->leftJoin(['s' => '{{%store}}'], 's.id = p.store_id')
+            ->where(['p.id' => $gid])
+            ->asArray()
+            ->one();
+
+        if (!$product || empty($product['user_id'])) {
+            throw new NotFoundHttpException(Yii::t('app', 'Invalid id'));
+        }
+
+        return $this->render($this->action->id, [
+            'suid' => (int)$product['user_id'],
+            'productId' => $gid,
+            'storeId' => (int)$product['store_id'],
+        ]);
+    }
+
+    public function actionUpload()
+    {
+        Yii::$app->response->format = Response::FORMAT_JSON;
+
+        $file = UploadedFile::getInstanceByName('file');
+        if (!$file) {
+            return ['code' => 400, 'msg' => $this->chatMessage('uploadEmpty')];
+        }
+
+        if ($file->getHasError()) {
+            return ['code' => 400, 'msg' => $this->chatMessage('uploadCheckFailed')];
+        }
+
+        if ($file->size > 5 * 1024 * 1024) {
+            return ['code' => 413, 'msg' => $this->chatMessage('imageTooLarge')];
+        }
+
+        $ext = strtolower($file->getExtension());
+        if (!in_array($ext, ['png', 'jpg', 'jpeg', 'gif', 'bmp', 'webp'], true)) {
+            return ['code' => 415, 'msg' => $this->chatMessage('imageTypeDenied')];
+        }
+
+        $imageInfo = @getimagesize($file->tempName);
+        if ($imageInfo === false) {
+            return ['code' => 415, 'msg' => $this->chatMessage('invalidImageFile')];
+        }
+
+        $relativeDir = 'chat/' . date('Y/m/d');
+        $absoluteDir = Yii::getAlias('@attachment') . '/' . $relativeDir;
+        FileHelper::createDirectory($absoluteDir);
+
+        $prefix = Yii::$app->request->post('smoke') === '1' ? 'chat_smoke_' : 'chat_';
+        $fileName = $prefix . date('ymd_His') . '_' . Yii::$app->security->generateRandomString(12) . '.' . $ext;
+        $absolutePath = $absoluteDir . '/' . $fileName;
+        if (!$file->saveAs($absolutePath)) {
+            return ['code' => 500, 'msg' => $this->chatMessage('fileWriteFailed')];
+        }
+
+        $url = rtrim(Yii::getAlias('@attachmentUrl'), '/') . '/' . $relativeDir . '/' . $fileName;
+        return [
+            'code' => 200,
+            'msg' => 'ok',
+            'url' => $url,
+            'data' => [
+                'url' => $url,
+                'size' => (int)$file->size,
+                'width' => (int)($imageInfo[0] ?? 0),
+                'height' => (int)($imageInfo[1] ?? 0),
+            ],
+        ];
+    }
+
+    public function actionMediaUpload()
+    {
+        Yii::$app->response->format = Response::FORMAT_JSON;
+
+        $media = (string)Yii::$app->request->post('media', Yii::$app->request->get('media', ''));
+        return (new ImMediaUploadSkeletonService())->disabledResponse($media, $this->chatMessage('mediaTransportDisabled'));
+    }
+
+    public function actionToken()
+    {
+        Yii::$app->response->format = Response::FORMAT_JSON;
+
+        $gid = (int)Yii::$app->request->post('gid', Yii::$app->request->get('gid', 0));
+        $uuid = trim((string)Yii::$app->request->post('user_id', Yii::$app->request->get('user_id', '')));
+        if ($gid <= 0 || $uuid === '' || strlen($uuid) > 128) {
+            return ['code' => 400, 'msg' => $this->chatMessage('invalidIdentity')];
+        }
+
+        $product = Product::find()
+            ->alias('p')
+            ->select(['p.id', 'p.store_id', 's.user_id'])
+            ->leftJoin(['s' => '{{%store}}'], 's.id = p.store_id')
+            ->where(['p.id' => $gid])
+            ->asArray()
+            ->one();
+
+        if (!$product || empty($product['user_id'])) {
+            return ['code' => 404, 'msg' => $this->chatMessage('productSupportMissing')];
+        }
+
+        return [
+            'code' => 200,
+            'msg' => 'ok',
+            'data' => [
+                'token' => $this->createImAuthToken([
+                    'type' => 'user',
+                    'user_id' => $uuid,
+                    'uid' => (int)$product['user_id'],
+                    'product_id' => $gid,
+                    'store_id' => (int)$product['store_id'],
+                ]),
+            ],
+        ];
+    }
+
+    private function createImAuthToken(array $payload)
+    {
+        $secret = (string)(Yii::$app->params['imAuthSecret'] ?? '');
+        if ($secret === '') {
+            return '';
+        }
+
+        $payload['exp'] = time() + (int)(Yii::$app->params['imAuthTokenTtl'] ?? 3600);
+        $encodedPayload = rtrim(strtr(base64_encode(json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)), '+/', '-_'), '=');
+        $signature = hash_hmac('sha256', $encodedPayload, $secret);
+
+        return $encodedPayload . '.' . $signature;
+    }
+
+    private function chatMessage(string $key)
+    {
+        $messages = [
+            'zh-CN' => [
+                'uploadEmpty' => '上传文件为空',
+                'uploadCheckFailed' => '上传失败，请检查文件',
+                'imageTooLarge' => '图片大小不能超过5MB',
+                'imageTypeDenied' => '图片类型不允许',
+                'invalidImageFile' => '上传文件不是有效图片',
+                'fileWriteFailed' => '文件写入失败',
+                'mediaTransportDisabled' => '文件、视频、语音上传暂未开放',
+                'invalidIdentity' => '客服身份参数无效',
+                'productSupportMissing' => '商品客服不存在',
+            ],
+            'en' => [
+                'uploadEmpty' => 'No file was uploaded',
+                'uploadCheckFailed' => 'Upload failed. Please check the file.',
+                'imageTooLarge' => 'Image size cannot exceed 5 MB',
+                'imageTypeDenied' => 'This image type is not allowed',
+                'invalidImageFile' => 'The uploaded file is not a valid image',
+                'fileWriteFailed' => 'Could not save the uploaded file',
+                'mediaTransportDisabled' => 'File, video, and voice uploads are not enabled yet',
+                'invalidIdentity' => 'Invalid customer-service identity parameters',
+                'productSupportMissing' => 'Product customer service was not found',
+            ],
+            'mn' => [
+                'uploadEmpty' => 'Байршуулах файл алга',
+                'uploadCheckFailed' => 'Байршуулалт амжилтгүй боллоо. Файлыг шалгана уу.',
+                'imageTooLarge' => 'Зургийн хэмжээ 5 MB-аас хэтрэхгүй байх ёстой',
+                'imageTypeDenied' => 'Энэ зургийн төрөл зөвшөөрөгдөөгүй',
+                'invalidImageFile' => 'Байршуулсан файл хүчинтэй зураг биш байна',
+                'fileWriteFailed' => 'Байршуулсан файлыг хадгалж чадсангүй',
+                'mediaTransportDisabled' => 'Файл, видео, дуу хоолой байршуулах боломж одоогоор нээгдээгүй байна',
+                'invalidIdentity' => 'Хэрэглэгчийн үйлчилгээний таних параметр буруу байна',
+                'productSupportMissing' => 'Бүтээгдэхүүний хэрэглэгчийн үйлчилгээ олдсонгүй',
+            ],
+        ];
+
+        $locale = $this->chatLocale();
+        return $messages[$locale][$key] ?? $messages['zh-CN'][$key] ?? $key;
+    }
+
+    private function chatLocale()
+    {
+        $language = (string)Yii::$app->request->get('lang', Yii::$app->request->post('lang', Yii::$app->language ?: 'zh-CN'));
+        $language = strtolower(str_replace('_', '-', $language));
+        if (str_starts_with($language, 'mn')) {
+            return 'mn';
+        }
+        if (str_starts_with($language, 'en')) {
+            return 'en';
+        }
+
+        return 'zh-CN';
+    }
+
+}

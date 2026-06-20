@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Mongoyia">
+  <rect width="512" height="512" rx="96" fill="#0f766e"/>
+  <path d="M128 348h256l-23-150a44 44 0 0 0-43-37H194a44 44 0 0 0-43 37l-23 150Z" fill="#ffffff"/>
+  <path d="M202 185a54 54 0 0 1 108 0" fill="none" stroke="#f59e0b" stroke-width="28" stroke-linecap="round"/>
+  <path d="M179 254h154" stroke="#0f766e" stroke-width="28" stroke-linecap="round"/>
+  <path d="M202 304h108" stroke="#0f766e" stroke-width="28" stroke-linecap="round"/>
+</svg>

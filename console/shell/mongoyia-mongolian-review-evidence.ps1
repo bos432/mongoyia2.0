@@ -1,0 +1,191 @@
+param(
+    [string]$ReviewDir = "runtime/translation",
+    [string]$EvidenceDir = "runtime/handover",
+    [string]$OutputPath = "",
+    [string]$ExportPath = "",
+    [string]$DryRunReportPath = "",
+    [string]$ImportReportPath = "",
+    [string]$AuditReportPath = "",
+    [string]$Reviewer = "",
+    [string]$ReviewSignoff = "PENDING",
+    [string]$ImageTextSignoff = "PENDING",
+    [string]$RemainingRiskReference = "",
+    [switch]$FailOnPending
+)
+
+$ErrorActionPreference = "Stop"
+$Root = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
+Set-Location -LiteralPath $Root
+
+function Resolve-ProjectPath {
+    param([string]$Path)
+    if ($Path -eq "") { return "" }
+    if ([System.IO.Path]::IsPathRooted($Path)) { return $Path }
+    return (Join-Path $Root $Path)
+}
+
+function Latest-File {
+    param([string]$Dir, [string]$Pattern)
+    $full = Resolve-ProjectPath $Dir
+    if (!(Test-Path -LiteralPath $full -PathType Container)) {
+        return ""
+    }
+    $file = Get-ChildItem -LiteralPath $full -File -Filter $Pattern -ErrorAction SilentlyContinue |
+        Sort-Object LastWriteTime -Descending |
+        Select-Object -First 1
+    if ($null -eq $file) { return "" }
+    return $file.FullName
+}
+
+function Normalize-Status {
+    param([string]$Value)
+    $upper = $Value.Trim().ToUpperInvariant()
+    if ($upper -in @("PASS", "WARN", "FAIL", "PENDING", "BLOCKED")) {
+        return $upper
+    }
+    if ($upper -eq "") { return "PENDING" }
+    return "WARN"
+}
+
+function Read-Result {
+    param([string]$Path)
+    if ($Path -eq "" -or !(Test-Path -LiteralPath $Path -PathType Leaf)) {
+        return "PENDING"
+    }
+    $text = Get-Content -LiteralPath $Path -Raw
+    foreach ($pattern in @('(?m)^-\s+Result:\s*(PASS|WARN|FAIL)\s*$', '(?m)^-\s+Status:\s*(PASS|WARN|FAIL)\s*$')) {
+        $match = [regex]::Match($text, $pattern)
+        if ($match.Success) {
+            return $match.Groups[1].Value
+        }
+    }
+    return "PASS"
+}
+
+function File-Status {
+    param([string]$Path)
+    if ($Path -ne "" -and (Test-Path -LiteralPath $Path -PathType Leaf)) {
+        return "PASS"
+    }
+    return "PENDING"
+}
+
+function Add-Row {
+    param([string]$Area, [string]$Status, [string]$Evidence, [string]$Reference, [string]$Notes)
+    $script:Rows += "| $Area | $Status | $Evidence | $Reference | $Notes |"
+    if ($Status -eq "FAIL" -or $Status -eq "UNKNOWN") { $script:Failures++ }
+    elseif ($Status -eq "WARN" -or $Status -eq "BLOCKED") { $script:Warnings++ }
+    elseif ($Status -eq "PENDING") { $script:Pending++ }
+}
+
+function Csv-Stats {
+    param([string]$Path)
+    $stats = @{
+        Rows = 0
+        NeedsReview = 0
+        FilledReview = 0
+        Approved = 0
+        ImageText = 0
+    }
+    if ($Path -eq "" -or !(Test-Path -LiteralPath $Path -PathType Leaf)) {
+        return $stats
+    }
+    try {
+        $rows = Import-Csv -LiteralPath $Path
+        foreach ($row in $rows) {
+            $stats.Rows++
+            if (([string]$row.needs_review).Trim().ToUpperInvariant() -eq "YES") { $stats.NeedsReview++ }
+            if (([string]$row.review_translation).Trim() -ne "") { $stats.FilledReview++ }
+            $reviewStatus = ([string]$row.review_status).Trim().ToLowerInvariant()
+            if ($reviewStatus -eq "approved") { $stats.Approved++ }
+            if ($reviewStatus -eq "image-text") { $stats.ImageText++ }
+        }
+    } catch {
+        $script:Warnings++
+        $script:Rows += "| Review CSV parse | WARN | Could not parse review CSV stats | $Path | $($_.Exception.Message) |"
+    }
+    return $stats
+}
+
+if ($OutputPath -eq "") {
+    $OutputPath = "runtime/handover/mongoyia-mongolian-review-evidence-$(Get-Date -Format "yyyyMMdd-HHmmss").md"
+}
+$outputFull = Resolve-ProjectPath $OutputPath
+$outputDir = Split-Path -Parent $outputFull
+if (!(Test-Path -LiteralPath $outputDir -PathType Container)) {
+    New-Item -ItemType Directory -Path $outputDir -Force | Out-Null
+}
+
+if ($ExportPath -eq "") { $ExportPath = Latest-File $ReviewDir "mn-review*.csv" } else { $ExportPath = Resolve-ProjectPath $ExportPath }
+if ($DryRunReportPath -eq "") { $DryRunReportPath = Latest-File $ReviewDir "mn-review-*dry*.csv" } else { $DryRunReportPath = Resolve-ProjectPath $DryRunReportPath }
+if ($ImportReportPath -eq "") { $ImportReportPath = Latest-File $ReviewDir "mn-review-import-*.csv" } else { $ImportReportPath = Resolve-ProjectPath $ImportReportPath }
+if ($AuditReportPath -eq "") {
+    $AuditReportPath = Latest-File "runtime/acceptance" "mongoyia-translation-audit-*.md"
+    if ($AuditReportPath -eq "") { $AuditReportPath = Latest-File $EvidenceDir "mongoyia-translation-audit-*.md" }
+} else {
+    $AuditReportPath = Resolve-ProjectPath $AuditReportPath
+}
+
+$script:Rows = @()
+$script:Failures = 0
+$script:Warnings = 0
+$script:Pending = 0
+
+$stats = Csv-Stats $ExportPath
+$auditStatus = Read-Result $AuditReportPath
+
+Add-Row "Review CSV export" (File-Status $ExportPath) "Latest Mongolian product/category review export" $ExportPath "Generated by mongoyia-translation-review/run."
+Add-Row "Review dry-run report" (File-Status $DryRunReportPath) "Review CSV check or dry-run import report" $DryRunReportPath "Generated before any database apply."
+Add-Row "Review apply/import report" (File-Status $ImportReportPath) "Reviewed translation import report" $ImportReportPath "Required before production if human corrections are applied."
+Add-Row "Translation audit" $auditStatus "Latest translation audit report" $AuditReportPath "Run after review/import to confirm remaining language risks."
+Add-Row "Native/business signoff" (Normalize-Status $ReviewSignoff) "Human Mongolian content review signoff" $Reviewer "Set PASS only after reviewer approval."
+Add-Row "Image text review" (Normalize-Status $ImageTextSignoff) "Embedded Chinese text in product/category images reviewed" $RemainingRiskReference "Record ticket/sheet reference only."
+
+$result = if ($Failures -gt 0) { "FAIL" } elseif ($Pending -gt 0 -and $FailOnPending.IsPresent) { "FAIL" } elseif ($Warnings -gt 0 -or $Pending -gt 0) { "WARN" } else { "PASS" }
+
+$lines = @(
+    "# Mongoyia Mongolian Review Evidence",
+    "",
+    "- Result: $result",
+    "- Failures: $Failures",
+    "- Warnings: $Warnings",
+    "- Pending: $Pending",
+    "- Generated at: $(Get-Date -Format "yyyy-MM-dd HH:mm:ss")",
+    "- Reviewer: $Reviewer",
+    "- Review dir: $(Resolve-ProjectPath $ReviewDir)",
+    "- Evidence dir: $(Resolve-ProjectPath $EvidenceDir)",
+    "",
+    "This report is read-only. It does not translate text, import CSV rows, restore databases, or modify content.",
+    "",
+    "| Area | Status | Evidence | Reference | Notes |",
+    "|---|---:|---|---|---|"
+) + $Rows + @(
+    "",
+    "## Review CSV Stats",
+    "",
+    "| Metric | Count |",
+    "|---|---:|",
+    "| Exported rows | $($stats.Rows) |",
+    "| Rows flagged needs_review | $($stats.NeedsReview) |",
+    "| Rows with review_translation | $($stats.FilledReview) |",
+    "| Rows marked approved | $($stats.Approved) |",
+    "| Rows marked image-text | $($stats.ImageText) |",
+    "",
+    "## Required Review Loop",
+    "",
+    "```bash",
+    "php yii mongoyia-translation-review/run --output=@runtime/translation/mn-review.csv --interactive=0",
+    "php yii mongoyia-translation-review/check --input=@runtime/translation/mn-review.csv --report=@runtime/translation/mn-review-check.csv --interactive=0",
+    "php yii mongoyia-translation-review/import --dryRun=1 --input=@runtime/translation/mn-review.csv --report=@runtime/translation/mn-review-import-dry-run.csv --interactive=0",
+    "php yii mongoyia-translation-review/import --dryRun=0 --input=@runtime/translation/mn-review.csv --report=@runtime/translation/mn-review-import-apply.csv --interactive=0",
+    "php yii mongoyia-translation-audit/run --interactive=0",
+    "```",
+    "",
+    "For final production signoff, rerun this script with `-FailOnPending`, `-ReviewSignoff PASS`, and `-ImageTextSignoff PASS` after native/business review and embedded-image text review are complete."
+)
+
+$lines | Set-Content -LiteralPath $outputFull -Encoding UTF8
+
+Write-Output "Mongoyia Mongolian review evidence: $result"
+Write-Output "Report: $outputFull"
+if ($Failures -gt 0 -or ($FailOnPending.IsPresent -and $Pending -gt 0)) { exit 1 }

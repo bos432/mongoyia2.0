@@ -1,0 +1,269 @@
+html,
+body {
+    height: 100%;
+}
+
+.wrap {
+    min-height: 100%;
+    height: auto;
+    margin: 0 auto -60px;
+    padding: 0 0 60px;
+}
+
+.wrap > .container {
+    padding: 70px 15px 20px;
+}
+
+.footer {
+    height: 60px;
+    background-color: #f5f5f5;
+    border-top: 1px solid #ddd;
+    padding-top: 20px;
+}
+
+.jumbotron {
+    text-align: center;
+    background-color: transparent;
+}
+
+.jumbotron .btn {
+    font-size: 21px;
+    padding: 14px 24px;
+}
+
+.not-set {
+    color: #c55;
+    font-style: italic;
+}
+
+/* add sorting icons to gridview sort links */
+a.asc:after, a.desc:after {
+    position: relative;
+    top: 1px;
+    display: inline-block;
+    font-family: 'Glyphicons Halflings';
+    font-style: normal;
+    font-weight: normal;
+    line-height: 1;
+    padding-left: 5px;
+}
+
+a.asc:after {
+    content: "\e151";
+}
+
+a.desc:after {
+    content: "\e152";
+}
+
+.sort-numerical a.asc:after {
+    content: "\e153";
+}
+
+.sort-numerical a.desc:after {
+    content: "\e154";
+}
+
+.sort-ordinal a.asc:after {
+    content: "\e155";
+}
+
+.sort-ordinal a.desc:after {
+    content: "\e156";
+}
+
+.grid-view td {
+    white-space: nowrap;
+}
+
+.grid-view .filters input,
+.grid-view .filters select {
+    min-width: 50px;
+}
+
+.hint-block {
+    display: block;
+    margin-top: 5px;
+    color: #999;
+}
+
+.error-summary {
+    color: #a94442;
+    background: #fdf7f7;
+    border-left: 3px solid #eed3d7;
+    padding: 10px 20px;
+    margin: 0 0 15px 0;
+}
+
+/* align the logout "link" (button in form) of the navbar */
+.nav li > form > button.logout {
+    padding: 15px;
+    border: none;
+}
+
+@media(max-width:767px) {
+    .nav li > form > button.logout {
+        display:block;
+        text-align: left;
+        width: 100%;
+        padding: 10px 15px;
+    }
+}
+
+.nav > li > form > button.logout:focus,
+.nav > li > form > button.logout:hover {
+    text-decoration: none;
+}
+
+.nav > li > form > button.logout:focus {
+    outline: none;
+}
+
+header.masthead {
+    position: relative;
+    width: 100%;
+    padding-top: 150px;
+    padding-bottom: 100px;
+    color: white;
+    background: url("../images/bg-pattern.png"), #7b4397;
+    background: url("../images/bg-pattern.png"), linear-gradient(to left, #57aef6, #045790);
+}
+
+header.masthead .header-content {
+    max-width: 500px;
+    margin-bottom: 100px;
+    text-align: center;
+}
+
+header.masthead .header-content h1 {
+    font-size: 30px;
+}
+
+header.masthead .device-container {
+    max-width: 325px;
+    margin-right: auto;
+    margin-left: auto;
+}
+
+header.masthead .device-container .screen img {
+    border-radius: 3px;
+}
+
+@media (min-width: 992px) {
+    header.masthead {
+        height: 100vh;
+        min-height: 775px;
+        padding-top: 0;
+        padding-bottom: 0;
+    }
+    header.masthead .header-content {
+        margin-bottom: 0;
+        text-align: left;
+    }
+    header.masthead .header-content h1 {
+        font-size: 50px;
+    }
+    header.masthead .device-container {
+        max-width: 325px;
+    }
+}
+
+.page-section {
+    padding: 6em 0;
+}
+
+.img-fluid {
+    max-width: 100%;
+    height: auto;
+}
+
+.img-square {
+    border-radius: 5px;
+}
+
+.img-rounded {
+    border-radius: 50%;
+}
+
+.contact-info .bg-white {
+    min-height: 17rem;
+}
+
+.contact-info .fa {
+    color: #2A68C9;
+    font-size: 4rem;
+    line-height: 6rem;
+}
+
+.contact_description {
+    color: #888;
+    font-size: .9rem;
+    text-align: left;
+}
+
+/* MONGOYIA_MERCHANT_PWA_DENSITY */
+.mongoyia-merchant-content .grid-view {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.mongoyia-merchant-content .grid-view > table {
+    min-width: 760px;
+}
+
+.mongoyia-merchant-content .card-tools {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .35rem;
+    justify-content: flex-end;
+}
+
+.mongoyia-merchant-content .action-column .btn {
+    margin-bottom: .25rem;
+}
+
+@media (max-width: 767.98px) {
+    .mongoyia-merchant-pwa-shell .main-sidebar {
+        max-width: 82vw;
+    }
+
+    .mongoyia-merchant-content .content-header .row {
+        row-gap: .5rem;
+    }
+
+    .mongoyia-merchant-content .content-header .col-6 {
+        flex: 0 0 100%;
+        max-width: 100%;
+    }
+
+    .mongoyia-merchant-content .breadcrumb {
+        float: none !important;
+        margin-bottom: 0;
+        padding-left: 0;
+        white-space: nowrap;
+        overflow-x: auto;
+    }
+
+    .mongoyia-merchant-content .card {
+        margin-bottom: .75rem;
+    }
+
+    .mongoyia-merchant-content .card-header {
+        padding: .65rem .75rem;
+    }
+
+    .mongoyia-merchant-content .card-title {
+        width: 100%;
+        margin-bottom: .5rem;
+        line-height: 1.35;
+    }
+
+    .mongoyia-merchant-content .card-body {
+        padding: .75rem;
+    }
+
+    .mongoyia-merchant-content .grid-view > table {
+        min-width: 680px;
+    }
+}

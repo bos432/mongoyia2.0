@@ -1,0 +1,79 @@
+<?php
+
+use common\helpers\Html;
+use common\models\mall\Category;
+use common\models\mall\MerchantApplication as ActiveModel;
+use yii\grid\GridView;
+use yii\helpers\Inflector;
+
+/* @var $this yii\web\View */
+/* @var $dataProvider yii\data\ActiveDataProvider */
+/* @var $searchModel common\models\ModelSearch */
+
+$this->title = '商家入驻审核';
+$this->params['breadcrumbs'][] = $this->title;
+?>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title"><?= Html::encode($this->title ?: Inflector::camelize($this->context->id)) ?></h2>
+                <div class="card-tools">
+                    <?= Html::filterModal() ?>
+                </div>
+            </div>
+            <div class="card-body">
+                <?= GridView::widget([
+                    'dataProvider' => $dataProvider,
+                    'filterModel' => $searchModel,
+                    'tableOptions' => ['class' => 'table table-hover'],
+                    'columns' => [
+                        'id',
+                        ['attribute' => 'store_id', 'value' => function ($model) { return $model->store->name ?? ($model->store_id ?: '-'); }, 'filter' => Html::activeDropDownList($searchModel, 'store_id', $this->context->getStoresIdName(), ['class' => 'form-control', 'prompt' => Yii::t('app', 'Please Filter')])],
+                        ['attribute' => 'user_id', 'value' => function ($model) { return $model->user->username ?? $model->user_id; }],
+                        'applicant_name',
+                        'mobile',
+                        'company_name',
+                        ['attribute' => 'requested_category_ids', 'format' => 'raw', 'value' => function ($model) {
+                            $names = Category::find()->select('name')->where(['id' => $model->requestedCategoryIds()])->column();
+                            return Html::encode($names ? implode(', ', $names) : '-');
+                        }],
+                        ['attribute' => 'audit_status', 'format' => 'raw', 'value' => function ($model) {
+                            $class = $model->audit_status === ActiveModel::AUDIT_APPROVED ? 'success' : ($model->audit_status === ActiveModel::AUDIT_REJECTED ? 'danger' : 'warning');
+                            return '<span class="badge badge-' . $class . '">' . Html::encode(ActiveModel::getAuditStatusLabels($model->audit_status)) . '</span>';
+                        }, 'filter' => Html::activeDropDownList($searchModel, 'audit_status', ActiveModel::getAuditStatusLabels(), ['class' => 'form-control', 'prompt' => Yii::t('app', 'Please Filter')])],
+                        'audit_remark',
+                        'submitted_at:datetime',
+                        'reviewed_at:datetime',
+                        [
+                            'header' => Yii::t('app', 'Actions'),
+                            'class' => 'yii\grid\ActionColumn',
+                            'template' => '{categories} {approve} {reject}',
+                            'buttons' => [
+                                'categories' => function ($url, $model) {
+                                    return Html::view(['categories', 'id' => $model->id], '类目授权', ['class' => 'btn btn-default btn-sm']);
+                                },
+                                'approve' => function ($url, $model) {
+                                    if ($model->audit_status === ActiveModel::AUDIT_APPROVED) {
+                                        return '';
+                                    }
+                                    return Html::edit(['approve', 'id' => $model->id], '通过', ['class' => 'btn btn-success btn-sm']);
+                                },
+                                'reject' => function ($url, $model) {
+                                    if ($model->audit_status === ActiveModel::AUDIT_REJECTED) {
+                                        return '';
+                                    }
+                                    return Html::edit(['reject', 'id' => $model->id], '驳回', ['class' => 'btn btn-warning btn-sm']);
+                                },
+                            ],
+                            'headerOptions' => ['class' => 'action-column action-column-lg'],
+                        ],
+                    ],
+                ]); ?>
+            </div>
+        </div>
+    </div>
+</div>
+
+<?= $this->render('@backend/views/site/_filter', ['model' => $searchModel, 'dataProvider' => $dataProvider]) ?>

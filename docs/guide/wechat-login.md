@@ -23,7 +23,7 @@ wechat模块主要是演示微信中打开的网页发起登录授权，
 ### 微信公众号授权
 
 
-在微信开发者工具中输入http://www.funboot.com/wechat/default/profile，会跳转到微信授权，类似地址https://open.weixin.qq.com/connect/oauth2/authorize?appid=wx85d219c4aa62dbe4&redirect_uri=http%3A%2F%2Fwww.funboot.com%2Fwechat%2Fdefault%2Fprofile&response_type=code&scope=snsapi_userinfo&state=95584dd8068b90a2b52d90373ad9cd58&connect_redirect=1&uin=MTcwODgwMTYw&key=a7858ea1085282199b1b3c65f2dfd3caf033fd6104b66e4641ac532e9bc74cb4ad087f3bf98bfef3020c51181e37165e&pass_ticket=/ZD01+geexZWAzy1Kv5JkDH5Xb+/T6Ddr/rwQlopANWzmlgyO41NjZhyA+1tZaDnyWPfiq7JMuPRnlxZ69KfYw==，
+在微信开发者工具中输入http://www.funboot.com/wechat/default/profile，会跳转到微信授权，类似地址https://open.weixin.qq.com/connect/oauth2/authorize?appid=WECHAT_APP_ID&redirect_uri=http%3A%2F%2Fwww.funboot.com%2Fwechat%2Fdefault%2Fprofile&response_type=code&scope=snsapi_userinfo&state=STATE_PLACEHOLDER&connect_redirect=1，
 
 ![](images/wechat-login-require.png)
 

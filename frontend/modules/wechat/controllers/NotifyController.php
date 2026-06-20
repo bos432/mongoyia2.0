@@ -65,7 +65,7 @@ class NotifyController extends BaseController
          *
          * wehcat
          * [
-         *     'appid' => 'wx85d219c4f262dbe4',
+         *     'appid' => 'WECHAT_APP_ID',
          *     'bank_type' => 'CMB_CREDIT',
          *     'cash_fee' => '1',
          *     'fee_type' => 'CNY',

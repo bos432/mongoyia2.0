@@ -482,9 +482,25 @@ async def send_to_platforms(message):
 
 async def handle_client(websocket, path=None):
     """处理客户端连接"""
-    init_msg = await websocket.recv()
-    
     try:
+        await handle_client_inner(websocket, path)
+    except websockets.ConnectionClosed:
+        pass
+    except Exception:
+        traceback.print_exc()
+        try:
+            await websocket.send(json.dumps({
+                "type": "error",
+                "error": "Connection handler failed"
+            }))
+            await websocket.close(1011, "Connection handler failed")
+        except Exception:
+            pass
+
+async def handle_client_inner(websocket, path=None):
+    """处理已建立的客户端连接"""
+    try:
+        init_msg = await websocket.recv()
         data = json.loads(init_msg)
         user_type = data.get("type")  # "user"、"merchant" 或 "platform"
         user_id = data.get("user_id")  # 用户的uuid或商家的uid

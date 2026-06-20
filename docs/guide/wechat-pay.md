@@ -41,7 +41,7 @@ Data in NotifyController
 
 ```php
 [
-    'appid' => 'wx85d219c4f262dbe4',
+    'appid' => 'WECHAT_APP_ID',
     'bank_type' => 'CMB_CREDIT',
     'cash_fee' => '1',
     'fee_type' => 'CNY',
@@ -68,7 +68,7 @@ Simulate notification data at debug mode.
 
 ```xml
 <xml>
-    <appid><![CDATA[wx85d21ss4f262dbe4]]></appid>
+    <appid><![CDATA[WECHAT_APP_ID]]></appid>
     <bank_type><![CDATA[CMB_CREDIT]]></bank_type>
     <cash_fee><![CDATA[1]]></cash_fee>
     <fee_type><![CDATA[CNY]]></fee_type>

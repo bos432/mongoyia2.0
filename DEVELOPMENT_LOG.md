@@ -3003,3 +3003,29 @@
   - Future local Yii command runs in this patch checkout still need local ignored config plus a temporary `vendor` junction or a normal dependency install.
 - Next stage:
   - Reread the backlog and development log, then choose the next plan-listed increment that does not require external payment sandbox, scheduler/alert signoff, or production owner evidence.
+
+## 2026-06-20 Merchant Stat Inventory Availability Detail
+
+- Stage name: Merchant stat inventory availability detail
+- Completed:
+  - Reread the upgrade backlog and development log, then continued the Phase 2 plan-listed merchant-stat evidence/detail refinement.
+  - Added objective inventory availability counts to the merchant statistics product overview: in-stock product count and out-of-stock product count.
+  - Extended the existing merchant statistic test output and backend view markers so the inventory detail is covered by automated readiness.
+  - Updated the upgrade backlog and delivery status documents with the new merchant statistic detail.
+- Main files changed/added:
+  - `backend/modules/mall/controllers/MerchantStatController.php`
+  - `backend/modules/mall/views/merchant-stat/index.php`
+  - `console/controllers/MerchantStatTestController.php`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `docs/mongoyia-delivery-status.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l backend/modules/mall/controllers/MerchantStatController.php` passed with no syntax errors.
+  - `php -l backend/modules/mall/views/merchant-stat/index.php` passed with no syntax errors.
+  - `php -l console/controllers/MerchantStatTestController.php` passed with no syntax errors.
+  - `php yii merchant-stat-test/run --interactive=0` passed with 0 failure(s), 0 warning(s) after using ignored local config files, a temporary `vendor` junction to the sibling Funboot checkout, and process-local environment values from the sibling `.env`.
+- Remaining issues:
+  - The inventory detail uses current product stock only; it does not introduce low-stock thresholds or reorder workflow rules.
+  - Future local Yii command runs in this patch checkout still need local ignored config plus a temporary `vendor` junction or a normal dependency install.
+- Next stage:
+  - Reread the backlog and development log, then confirm whether any remaining plan-listed development work can proceed without external payment, scheduler, alert, security, or owner signoff inputs.

@@ -107,6 +107,8 @@ class MerchantStatController extends BaseController
                 'sales' => 'COALESCE(SUM(sales),0)',
                 'clicks' => 'COALESCE(SUM(click),0)',
                 'stock' => 'COALESCE(SUM(stock),0)',
+                'in_stock_products' => 'COALESCE(SUM(CASE WHEN stock > 0 THEN 1 ELSE 0 END),0)',
+                'out_of_stock_products' => 'COALESCE(SUM(CASE WHEN stock <= 0 THEN 1 ELSE 0 END),0)',
             ])
             ->from('{{%mall_product}}')
             ->where(['store_id' => $storeId])
@@ -118,6 +120,8 @@ class MerchantStatController extends BaseController
             'sales' => (int)($row['sales'] ?? 0),
             'clicks' => (int)($row['clicks'] ?? 0),
             'stock' => (int)($row['stock'] ?? 0),
+            'in_stock_products' => (int)($row['in_stock_products'] ?? 0),
+            'out_of_stock_products' => (int)($row['out_of_stock_products'] ?? 0),
         ];
     }
 

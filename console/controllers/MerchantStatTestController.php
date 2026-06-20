@@ -124,13 +124,15 @@ class MerchantStatTestController extends Controller
                 'products' => 'COUNT(*)',
                 'sales' => 'COALESCE(SUM(sales),0)',
                 'clicks' => 'COALESCE(SUM(click),0)',
+                'in_stock_products' => 'COALESCE(SUM(CASE WHEN stock > 0 THEN 1 ELSE 0 END),0)',
+                'out_of_stock_products' => 'COALESCE(SUM(CASE WHEN stock <= 0 THEN 1 ELSE 0 END),0)',
             ])
             ->from('{{%mall_product}}')
             ->where(['store_id' => $storeId])
             ->andWhere(['<>', 'status', BaseModel::STATUS_DELETED])
             ->one(Yii::$app->db);
 
-        $this->ok("Store products={$row['products']}, product sales={$row['sales']}, product clicks={$row['clicks']}.");
+        $this->ok("Store products={$row['products']}, product sales={$row['sales']}, product clicks={$row['clicks']}, in-stock={$row['in_stock_products']}, out-of-stock={$row['out_of_stock_products']}.");
         if ((int)$row['products'] === 0) {
             $this->warn("Store {$storeId} has no product rows for merchant product statistics.");
         }
@@ -214,7 +216,7 @@ class MerchantStatTestController extends Controller
     {
         $this->section('Backend entrances');
         $this->requireFileContains('@app/../backend/modules/mall/controllers/MerchantStatController.php', ['class MerchantStatController', 'actionIndex', 'periodStat', 'topProducts']);
-        $this->requireFileContains('@app/../backend/modules/mall/views/merchant-stat/index.php', ['商家统计', '商品销量排行', '物流状态', '客单价', '件均价', '浏览转化率']);
+        $this->requireFileContains('@app/../backend/modules/mall/views/merchant-stat/index.php', ['商家统计', '商品销量排行', '物流状态', '客单价', '件均价', '浏览转化率', '有库存商品', '缺货商品']);
         $this->requireFileContains('@app/../backend/views/site/info.php', ['product_visit', 'product_visit_today']);
         $this->requireFileContains('@app/../backend/modules/mall/views/product/index.php', ['sales', 'stock']);
         $this->requireFileContains('@app/../backend/modules/mall/views/order/index.php', ['amount', 'payment_status']);

@@ -84,6 +84,14 @@ $this->params['breadcrumbs'][] = $this->title;
                                         <th>库存合计</th>
                                         <td><?= (int)$overallProducts['stock'] ?></td>
                                     </tr>
+                                    <tr>
+                                        <th>有库存商品</th>
+                                        <td><?= (int)$overallProducts['in_stock_products'] ?></td>
+                                    </tr>
+                                    <tr>
+                                        <th>缺货商品</th>
+                                        <td><?= (int)$overallProducts['out_of_stock_products'] ?></td>
+                                    </tr>
                                     </tbody>
                                 </table>
                             </div>

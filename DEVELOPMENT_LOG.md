@@ -2954,3 +2954,26 @@
   - BaoTa still needs to pull this fix, copy the updated IM entrypoint into `/www/im后端/im后端/main.py`, and restart `mongoyia-im`.
 - Next stage:
   - Deploy the updated IM entrypoint, restart the IM service, then rerun the WSS token/history/chat smoke test.
+
+## 2026-06-20 Distribution Analytics Export Signoff Detail
+
+- Stage name: Distribution analytics export signoff detail
+- Completed:
+  - Reread the upgrade backlog and development log, then selected the Phase 4 plan-listed distributor export/signoff increment.
+  - Enhanced the read-only distributor analytics Markdown export with signoff readiness, pending withdrawal amount, open-risk review cues, and a reviewer decision matrix for distribution, finance, risk, and archive owners.
+  - Kept the export evidence-only: it still does not approve commissions, create withdrawals, write fund logs, or trigger payouts.
+  - Updated the upgrade backlog and delivery status documents so handover readers can see the new signoff evidence boundary.
+- Main files changed/added:
+  - `console/controllers/MongoyiaDistributionAnalyticsExportController.php`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `docs/mongoyia-delivery-status.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l console/controllers/MongoyiaDistributionAnalyticsExportController.php` passed with no syntax errors.
+  - `php yii mongoyia-distribution-analytics-export/run --fixture=1 --interactive=0` passed after using ignored local config files, a temporary `vendor` junction to the sibling Funboot checkout, and process-local environment values from the sibling `.env`.
+  - The fixture generated Markdown/CSV evidence, verified the signoff readiness and decision-matrix markers, then rolled back generated rows and files.
+- Remaining issues:
+  - Real distributor payout/signoff remains a manual business review step and still requires owner approval outside this evidence-only export.
+  - Future local Yii command runs in this patch checkout still need local ignored config plus a temporary `vendor` junction or a normal dependency install.
+- Next stage:
+  - Reread the backlog and development log, then choose the next plan-listed increment that does not require external payment, scheduler, alert, or production signoff inputs.

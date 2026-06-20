@@ -5,6 +5,7 @@ use yii\db\Migration;
 class m260608_190000_mongoyia_focused_translations extends Migration
 {
     private $nextIdOffset = 0;
+    private $storeExistsById = [];
 
     public function safeUp()
     {
@@ -28,6 +29,11 @@ class m260608_190000_mongoyia_focused_translations extends Migration
 
     private function upsertLang(array $row)
     {
+        if (!$this->storeExists($row['store_id'])) {
+            echo "Store #{$row['store_id']} not found for focused translation {$row['table_code']}:{$row['target_id']}, skip.\n";
+            return;
+        }
+
         $exists = (new \yii\db\Query())
             ->from('{{%base_lang}}')
             ->where($this->condition($row))
@@ -57,6 +63,24 @@ class m260608_190000_mongoyia_focused_translations extends Migration
         $values['created_at'] = time();
         $values['created_by'] = 5;
         $this->insert('{{%base_lang}}', $values);
+    }
+
+    private function storeExists($storeId)
+    {
+        if ($this->db->schema->getTableSchema('{{%store}}', true) === null) {
+            echo "Table {{%store}} not found, skip focused translation seed.\n";
+            return false;
+        }
+
+        $storeId = (int)$storeId;
+        if (!array_key_exists($storeId, $this->storeExistsById)) {
+            $this->storeExistsById[$storeId] = (new \yii\db\Query())
+                ->from('{{%store}}')
+                ->where(['id' => $storeId])
+                ->exists($this->db);
+        }
+
+        return $this->storeExistsById[$storeId];
     }
 
     private function condition(array $row)

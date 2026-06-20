@@ -2720,3 +2720,22 @@
   - Formal strict deploy check still depends on real payment sandbox/WSS/test-server settings after basic migration succeeds.
 - Next stage:
   - On BaoTa, run `git pull`, confirm `ls -l yii`, then rerun `/www/server/php/83/bin/php yii migrate/up --interactive=0`.
+
+## 2026-06-20 BaoTa Focused Translation Migration Guard
+
+- Stage name: BaoTa focused translation migration guard
+- Completed:
+  - Reviewed the BaoTa migration failure at `m260608_190000_mongoyia_focused_translations`.
+  - Confirmed the failure was caused by the focused translation seed trying to insert rows for seller stores that are not present in the fresh BaoTa database.
+  - Updated the focused translation migration to check whether each target `store_id` exists before inserting/updating `fb_base_lang`; missing demo stores are now logged and skipped so the remaining planned migrations can continue.
+- Main files changed/added:
+  - `console/migrations/m260608_190000_mongoyia_focused_translations.php`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l console/migrations/m260608_190000_mongoyia_focused_translations.php` passed with no syntax errors.
+  - BaoTa `/www/server/php/83/bin/php yii migrate/up --interactive=0` still needs to be rerun after pulling this fix.
+- Remaining issues:
+  - BaoTa migration still needs to be rerun on the server.
+  - If the fresh BaoTa database lacks mall baseline tables, run the existing `migrate-mall` command before continuing strict deployment checks.
+- Next stage:
+  - Pull this commit on BaoTa, rerun the main migration, then run strict deployment checks after HTTPS/WSS/payment sandbox values are configured.

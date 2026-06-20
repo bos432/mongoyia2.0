@@ -2739,3 +2739,25 @@
   - If the fresh BaoTa database lacks mall baseline tables, run the existing `migrate-mall` command before continuing strict deployment checks.
 - Next stage:
   - Pull this commit on BaoTa, rerun the main migration, then run strict deployment checks after HTTPS/WSS/payment sandbox values are configured.
+
+## 2026-06-20 BaoTa Chat Table Baseline Migration
+
+- Stage name: BaoTa chat table baseline migration
+- Completed:
+  - Reviewed BaoTa `deploy-check/run --profile=test --strict=0` output after the main migration passed.
+  - Confirmed the fresh BaoTa database is missing `fb_chat`; earlier chat context/read-state migrations had been marked applied after skipping because the table did not exist.
+  - Added a non-destructive chat baseline migration that creates `fb_chat` only when missing and ensures the product/store context and read-state indexes required by the Python IM service.
+  - Hardened the deploy check index validator so a missing table is reported as a normal failure instead of aborting the command with a SQL exception.
+- Main files changed/added:
+  - `console/migrations/m260620_132000_mongoyia_chat_table_baseline.php`
+  - `console/controllers/DeployCheckController.php`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l console/migrations/m260620_132000_mongoyia_chat_table_baseline.php` passed with no syntax errors.
+  - `php -l console/controllers/DeployCheckController.php` passed with no syntax errors.
+  - BaoTa `/www/server/php/83/bin/php yii migrate/up --interactive=0` still needs to be rerun after pulling this fix.
+- Remaining issues:
+  - BaoTa still needs a Python IM `.env` at the path used by deploy check, with matching DB and `IM_AUTH_SECRET` values.
+  - Real strict test-server readiness still depends on HTTPS/WSS reverse proxy and payment sandbox credentials.
+- Next stage:
+  - Pull this commit on BaoTa, run the new migration, then configure/check the Python IM environment.

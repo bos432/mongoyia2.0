@@ -648,6 +648,11 @@ class DeployCheckController extends Controller
             return;
         }
 
+        if (Yii::$app->db->schema->getTableSchema($table, true) === null) {
+            $this->fail("Table {$table} is missing; indexes cannot be checked.");
+            return;
+        }
+
         $rawTable = Yii::$app->db->schema->getRawTableName($table);
         $rows = Yii::$app->db->createCommand('SHOW INDEX FROM ' . Yii::$app->db->quoteTableName($rawTable))->queryAll();
         $existing = [];

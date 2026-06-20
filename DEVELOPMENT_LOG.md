@@ -2786,3 +2786,22 @@
   - Test strict still needs real payment sandbox credentials.
 - Next stage:
   - Pull this commit on BaoTa, copy `deploy/im-backend` to `/www/im后端/im后端`, install Python dependencies, start the IM service, and configure `/ws-im` reverse proxy.
+
+## 2026-06-20 BaoTa Python 3.6 IM Startup Compatibility
+
+- Stage name: BaoTa Python 3.6 IM startup compatibility
+- Completed:
+  - Reviewed BaoTa IM service logs after dependency installation succeeded.
+  - Identified the runtime failure: the server uses Python 3.6.8, which does not provide `asyncio.run()`.
+  - Updated the Python IM entrypoint to use `asyncio.run()` when available and fall back to an explicit event loop on Python 3.6.
+- Main files changed/added:
+  - `deploy/im-backend/main.py`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `python -m py_compile deploy/im-backend/main.py` passed with no syntax errors.
+  - BaoTa still needs to pull/copy the updated `main.py` and restart `mongoyia-im`.
+- Remaining issues:
+  - BaoTa service needs the updated `main.py` copied to `/www/im后端/im后端`.
+  - `systemctl enable` previously returned access denied; service can still be started manually, and autostart can be revisited after runtime is green.
+- Next stage:
+  - Pull this commit on BaoTa, copy the updated IM code, restart `mongoyia-im`, verify port `8767`, then configure `/ws-im` reverse proxy.

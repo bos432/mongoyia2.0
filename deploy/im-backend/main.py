@@ -711,13 +711,16 @@ async def main():
     
     await server.wait_closed()
 
-if __name__ == "__main__":
+def run_async(coro):
+    if hasattr(asyncio, "run"):
+        return asyncio.run(coro)
+
+    loop = asyncio.new_event_loop()
     try:
-        asyncio.run(main())
-    except RuntimeError as e:
-        if "no running event loop" in str(e):
-            loop = asyncio.new_event_loop()
-            asyncio.set_event_loop(loop)
-            loop.run_until_complete(main())
-        else:
-            raise
+        asyncio.set_event_loop(loop)
+        return loop.run_until_complete(coro)
+    finally:
+        loop.close()
+
+if __name__ == "__main__":
+    run_async(main())

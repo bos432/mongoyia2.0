@@ -2636,3 +2636,40 @@
   - Formal test-server/production online operation standard: NO, pending external environment, payment, WSS, monitoring/backup/load, Mongolian native review, and owner sign-offs.
 - Next stage:
   - Deploy to a test server after real HTTPS domain/TLS, WSS reverse proxy, payment sandbox credentials, callback secrets, test `.env`, and test/prod PHP upload limits are available, then rerun `php yii deploy-check/run --profile=test --strict=1 --interactive=0`.
+
+## 2026-06-20 BaoTa Demo Git Deployment Snapshot
+
+- Stage name: BaoTa demo Git deployment snapshot for `demo2026.mongoyia.com`
+- Completed:
+  - Re-read `docs/mongoyia-upgrade-backlog-20260618.md`, `DEVELOPMENT_LOG.md`, and current deployment docs before work.
+  - Added Git remote `mongoyia` pointing to `https://github.com/bos432/mongoyia2.0.git` while leaving the existing `origin` unchanged.
+  - Updated deployment ignore rules so local `.env`, runtime reports/cache/logs, SQL dumps, local ACME challenge files, host logs, local images, demo attachments, and OAuth key files are excluded from the Git deployment snapshot.
+  - Updated `.env.example` and `.env.test.example` to use `demo2026.mongoyia.com`, HTTPS callback bases, and `wss://demo2026.mongoyia.com/ws-im`.
+  - Added BaoTa deployment guide for `/www/wwwroot/demo2026.mongoyia.com`, including `web/` running directory, Composer install, server-only `.env`, database migration, OAuth key generation, WSS reverse proxy, and strict check commands.
+  - Linked the BaoTa deployment guide from the existing deploy checklist.
+  - Removed `common/config/oauth2_private.key` and `common/config/oauth2_public.key` from the pushed snapshot; the guide now instructs generating them on the server.
+  - Created a sanitized no-parent Git snapshot so the target GitHub repository does not inherit old local/upstream history.
+  - Pushed the first sanitized snapshot to `mongoyia/master`: `7f19d8951fe0eee73bbf45446ae02fe59233ecd3`.
+- Main files changed/added:
+  - `.gitignore`
+  - `.env.example`
+  - `.env.test.example`
+  - `docs/mongoyia-baota-deploy-demo2026.md`
+  - `docs/mongoyia-deploy-checklist.md`
+  - `DEVELOPMENT_LOG.md`
+  - Current Mongoyia PHP source, migrations, console readiness commands, PWA assets, backend/frontend views, and project docs included in the sanitized source snapshot.
+- Run/test result:
+  - `git check-ignore -v .env runtime console/runtime/cache web/log.txt 194.sql petever1.jpg .well-known web/.well-known demo` confirmed local secrets and generated artifacts are ignored.
+  - Staged snapshot audit initially counted 620 files, then 622 changed paths after removing the OAuth key files from the snapshot.
+  - `git ls-files --cached common/config/oauth2_private.key common/config/oauth2_public.key` returned no tracked key files for the deployment snapshot.
+  - `git ls-files --cached '*.key' '*.pem'` returned no key/pem files for the deployment snapshot.
+  - Prohibited path audit found no `.env`, SQL dump, runtime directory, console runtime, host log, ACME challenge, local image, or demo attachment paths in the final snapshot. The OAuth key paths only appear as intentional removals from the snapshot.
+  - Narrow staged secret scan found no local DB password pattern `1qaz2wsx`, GitHub token prefix, Slack token prefix, or Google API key prefix. It did find placeholder payment variable names in `.env.example` and `.env.test.example`, which are expected templates, and known bundled map/source references.
+  - `php yii deploy-check/run --phpEnv=.env.test.example --profile=test --strict=1 --skipConnectivity=1 --interactive=0` exited with expected failures because real BaoTa/test-server inputs are still placeholders and the local PHP upload limit is `2M`. The command reported 13 failures and 11 warnings tied to DB password placeholder, IM secret placeholders/mismatch, missing QPay/LianLian sandbox credentials, missing callback HMAC secrets, and upload size below `6M`.
+  - `git push mongoyia <sanitized-commit>:refs/heads/master` succeeded and created remote branch `master`.
+- Remaining issues:
+  - BaoTa server still needs real `.env` values, real database, Redis, Composer dependencies, writable runtime/upload paths, generated OAuth key files, HTTPS certificate, WSS reverse proxy, payment sandbox credentials, callback HMAC secrets, and PHP upload limits of at least `6M`.
+  - Python IM service appears outside this PHP Git repository and must be deployed/configured separately or provided on the server before WSS validation can pass.
+  - The pushed snapshot is ready for BaoTa deployment preparation, but it is not formal test-server or production go-live approval.
+- Next stage:
+  - On BaoTa, clone `https://github.com/bos432/mongoyia2.0.git` into `/www/wwwroot/demo2026.mongoyia.com`, set the running directory to `web/`, generate server-only OAuth keys, fill `.env` from `.env.test.example`, configure HTTPS/WSS/payment sandbox values, then run `php yii deploy-check/run --profile=test --strict=1 --interactive=0` until it reports `0 failure(s), 0 warning(s)`.

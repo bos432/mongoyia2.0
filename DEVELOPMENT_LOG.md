@@ -2900,3 +2900,21 @@
   - WSS IM still closes with code `1011`; service journal output is needed to identify the current runtime exception.
 - Next stage:
   - Pull this commit on BaoTa, apply migrations, restart PHP-FPM, then resubmit checkout and inspect `mongoyia-im` logs.
+
+## 2026-06-20 BaoTa Checkout Order Logistics Baseline
+
+- Stage name: BaoTa checkout order logistics baseline
+- Completed:
+  - Retested checkout after adding `fx_id`; checkout advanced to the next model/schema mismatch.
+  - Extracted the new SweetAlert error: `Getting unknown property: common\models\mall\Order::wlgs`.
+  - Added a non-destructive migration for the order logistics text fields `wlgs` and `wldh`.
+- Main files changed/added:
+  - `console/migrations/m260620_182000_mongoyia_order_logistics_text_baseline.php`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l console/migrations/m260620_182000_mongoyia_order_logistics_text_baseline.php` passed with no syntax errors.
+- Remaining issues:
+  - BaoTa still needs to pull this fix and run `yii migrate/up` before checkout can be retested.
+  - WSS IM still closes with code `1011`; service journal output is needed to identify the current runtime exception.
+- Next stage:
+  - Pull this commit on BaoTa, apply migrations, restart PHP-FPM, then resubmit checkout and inspect `mongoyia-im` logs.

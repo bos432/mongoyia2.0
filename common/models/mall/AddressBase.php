@@ -22,7 +22,7 @@ class AddressBase extends BaseModel
     {
         return [
             [['id'], 'safe'],
-            [['first_name', 'last_name', 'country', 'province', 'city', 'distinct', 'address', 'mobile'], 'required', 'on' => ['withoutRegion']],
+            [['first_name', 'last_name', 'country', 'province', 'city', 'district', 'address', 'mobile'], 'required', 'on' => ['withoutRegion']],
             [['user_id'], 'exist', 'skipOnError' => true, 'targetClass' => User::className(), 'targetAttribute' => ['user_id' => 'id']],
             [['store_id'], 'exist', 'skipOnError' => true, 'targetClass' => Store::className(), 'targetAttribute' => ['store_id' => 'id']],
         ];
@@ -31,7 +31,7 @@ class AddressBase extends BaseModel
     public function scenarios()
     {
         return array_merge(parent::scenarios(), [
-            'withoutRegion' => ['first_name', 'last_name', 'country', 'province', 'city', 'distinct', 'address', 'mobile'],
+            'withoutRegion' => ['first_name', 'last_name', 'country', 'province', 'city', 'district', 'address', 'mobile'],
         ]);
     }
 

@@ -2844,3 +2844,21 @@
   - Full checkout/payment flow still requires active test products and real payment sandbox credentials.
 - Next stage:
   - Pull this commit on BaoTa, apply the migration, restart PHP-FPM, then rerun deploy/stat checks and browser role-flow testing.
+
+## 2026-06-20 BaoTa Checkout Address Scenario Fix
+
+- Stage name: BaoTa checkout address scenario fix
+- Completed:
+  - Browser-flow testing created a Codex test category and product, opened the frontend product page, and confirmed `/mall/cart/edit-ajax` successfully adds the product to cart.
+  - Found checkout submission stayed on `/mall/cart/checkout` without creating an order because `AddressBase::withoutRegion` required `distinct` instead of the real `district` attribute.
+  - Corrected the address validation rule and scenario so checkout can save the submitted district field.
+- Main files changed/added:
+  - `common/models/mall/AddressBase.php`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l common/models/mall/AddressBase.php` passed with no syntax errors.
+- Remaining issues:
+  - BaoTa still needs to pull this fix and restart PHP-FPM before the checkout submit flow can be retested.
+  - `/mall/cart/index` currently redirects to the homepage even after cart Ajax succeeds; `/mall/cart/checkout` is reachable and contains the cart products.
+- Next stage:
+  - Pull this commit on BaoTa, restart PHP-FPM, resubmit checkout, then verify the order appears in frontend and backend order lists.

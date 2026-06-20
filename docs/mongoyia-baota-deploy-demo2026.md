@@ -144,8 +144,16 @@ The PHP repository expects the IM service to be reachable through:
 wss://demo2026.mongoyia.com/ws-im
 ```
 
-If the Python IM project is deployed separately, start it on the server, for
-example on `127.0.0.1:8767`, and configure BaoTa/Nginx reverse proxy:
+The deploy snapshot includes a server-copy of the Python IM service under
+`deploy/im-backend`. Copy it to the server-only runtime directory, keep its
+`.env` outside Git, then start it on `127.0.0.1:8767` or `0.0.0.0:8767`.
+
+```bash
+mkdir -p /www/im后端/im后端
+rsync -a --delete --exclude='.env' deploy/im-backend/ /www/im后端/im后端/
+```
+
+Configure BaoTa/Nginx reverse proxy:
 
 ```nginx
 location /ws-im {

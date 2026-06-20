@@ -2761,3 +2761,28 @@
   - Real strict test-server readiness still depends on HTTPS/WSS reverse proxy and payment sandbox credentials.
 - Next stage:
   - Pull this commit on BaoTa, run the new migration, then configure/check the Python IM environment.
+
+## 2026-06-20 BaoTa Python IM Deploy Source
+
+- Stage name: BaoTa Python IM deploy source
+- Completed:
+  - Reviewed BaoTa output showing `/www/im后端/im后端/.env` exists but `main.py` and `requirements.txt` are missing.
+  - Added the sanitized Python IM runtime files to the PHP deployment snapshot under `deploy/im-backend` so BaoTa can pull and copy them without manual upload.
+  - Kept local/server `.env`, logs, run files, and `__pycache__` out of the deployment snapshot.
+  - Updated the BaoTa deployment guide with the copy command for the IM service runtime directory.
+- Main files changed/added:
+  - `deploy/im-backend/main.py`
+  - `deploy/im-backend/requirements.txt`
+  - `deploy/im-backend/README.md`
+  - `deploy/im-backend/.env.example`
+  - `deploy/im-backend/.env.test.example`
+  - `docs/mongoyia-baota-deploy-demo2026.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `python -m py_compile deploy/im-backend/main.py` passed with no syntax errors.
+  - BaoTa still needs to pull the deploy source and start `mongoyia-im`.
+- Remaining issues:
+  - BaoTa still needs the IM service files copied to `/www/im后端/im后端`, Python dependencies installed, and a systemd service started.
+  - Test strict still needs real payment sandbox credentials.
+- Next stage:
+  - Pull this commit on BaoTa, copy `deploy/im-backend` to `/www/im后端/im后端`, install Python dependencies, start the IM service, and configure `/ws-im` reverse proxy.

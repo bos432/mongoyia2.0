@@ -146,7 +146,7 @@ class CustomerServiceTicketCreateService
             'operator_type' => $operatorType,
             'content' => $context['content'] !== '' ? $context['content'] : 'Customer-service ticket created.',
             'metadata_json' => json_encode([
-                'source' => 'customer-service-ticket-create',
+                'source' => $context['source'] ?: 'customer-service-ticket-create',
                 'order_id' => $context['order_id'],
                 'product_id' => $context['product_id'],
                 'chat_uuid' => $context['chat_uuid'],
@@ -175,6 +175,7 @@ class CustomerServiceTicketCreateService
             'title' => $this->shortText(trim((string)($context['title'] ?? '')), 255),
             'content' => trim((string)($context['content'] ?? '')),
             'remark' => $this->shortText((string)($context['remark'] ?? ''), 255),
+            'source' => $this->shortText((string)($context['source'] ?? ''), 64),
         ];
     }
 

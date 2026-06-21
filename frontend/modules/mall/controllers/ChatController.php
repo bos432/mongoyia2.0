@@ -4,6 +4,7 @@ namespace frontend\modules\mall\controllers;
 
 use common\models\mall\Product;
 use common\services\mall\ImMediaUploadSkeletonService;
+use common\services\mall\CustomerServiceRatingService;
 use Yii;
 use yii\helpers\FileHelper;
 use yii\web\NotFoundHttpException;
@@ -49,7 +50,35 @@ class ChatController extends BaseController
             'suid' => (int)$product['user_id'],
             'productId' => $gid,
             'storeId' => (int)$product['store_id'],
+            'customerUserId' => Yii::$app->user->isGuest ? 0 : (int)Yii::$app->user->id,
+            'customerUuid' => Yii::$app->user->isGuest ? ('guest-' . substr(md5(Yii::$app->session->id), 0, 16)) : ('user-' . (int)Yii::$app->user->id),
+            'ratingLabels' => (new CustomerServiceRatingService())->labels(),
         ]);
+    }
+
+    public function actionRatingSubmit()
+    {
+        Yii::$app->response->format = Response::FORMAT_JSON;
+
+        try {
+            $result = (new CustomerServiceRatingService())->submit([
+                'store_id' => (int)Yii::$app->request->post('store_id', 0),
+                'product_id' => (int)Yii::$app->request->post('product_id', 0),
+                'order_id' => (int)Yii::$app->request->post('order_id', 0),
+                'ticket_id' => (int)Yii::$app->request->post('ticket_id', 0),
+                'customer_user_id' => Yii::$app->user->isGuest ? 0 : (int)Yii::$app->user->id,
+                'customer_uuid' => (string)Yii::$app->request->post('customer_uuid', ''),
+                'chat_uuid' => (string)Yii::$app->request->post('chat_uuid', ''),
+                'rating' => (string)Yii::$app->request->post('rating', ''),
+                'reason' => (string)Yii::$app->request->post('reason', ''),
+                'remark' => (string)Yii::$app->request->post('remark', ''),
+            ]);
+
+            return ['code' => 200, 'msg' => 'ok', 'data' => $result];
+        } catch (\Throwable $e) {
+            Yii::$app->response->statusCode = 400;
+            return ['code' => 400, 'msg' => $e->getMessage()];
+        }
     }
 
     public function actionUpload()

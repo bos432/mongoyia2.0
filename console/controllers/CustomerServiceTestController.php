@@ -85,6 +85,11 @@ class CustomerServiceTestController extends Controller
             "'type' => \$isPlatformOperator ? 'platform' : 'merchant'",
             'imAuthSecret',
             'hash_hmac',
+            'actionSessionContext',
+            'actionTicketCreateFromSession',
+            'actionComplaintEvidenceUpload',
+            'actionQuickReplies',
+            'CustomerServiceStatWidgetReadinessService',
         ]);
 
         $this->requireFileMarkers('Backend customer-service workbench UI', 'backend/modules/mall/views/kf/index.php', [
@@ -104,6 +109,9 @@ class CustomerServiceTestController extends Controller
             '商品 #',
             '店铺 #',
             'accept="image/*"',
+            'data-mongoyia-customer-service-session-context="panel"',
+            'data-mongoyia-customer-service-chat-ticket="actions"',
+            'quickReplySelect',
         ]);
 
         $this->requireFileMarkers('Frontend customer-service controller', 'frontend/modules/mall/controllers/ChatController.php', [
@@ -117,6 +125,8 @@ class CustomerServiceTestController extends Controller
             "'store_id' => (int)\$product['store_id']",
             'imAuthSecret',
             'getimagesize',
+            'actionRatingSubmit',
+            'CustomerServiceRatingService',
         ]);
 
         $this->requireFileMarkers('Frontend customer-service chat UI', 'web/resources/mall/default/views/chat/index.php', [
@@ -133,6 +143,9 @@ class CustomerServiceTestController extends Controller
             'product_id',
             'store_id',
             'accept="image/*"',
+            'data-mongoyia-customer-service-rating="frontend"',
+            'ratingUrl:',
+            'submitRating',
         ]);
 
         foreach ([

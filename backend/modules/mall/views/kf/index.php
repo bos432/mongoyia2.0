@@ -2,6 +2,7 @@
 
 use yii\grid\GridView;
 use common\helpers\Html;
+use yii\helpers\Url;
 //use common\components\enums\YesNo;
 use common\models\mall\Order as ActiveModel;
 use yii\helpers\Inflector;
@@ -11,6 +12,7 @@ use yii\helpers\Inflector;
 /* @var $dataProvider yii\data\ActiveDataProvider */
 /* @var $searchModel common\models\ModelSearch */
 /* @var $fxbfb common\models\ModelSearch */
+/* @var $quickReplies array */
 
 $this->title = '客服';
 $this->params['breadcrumbs'][] = $this->title;
@@ -40,7 +42,7 @@ function fxamount($amount){
         .container {
             display: flex;
             width: 100%;
-            max-width: 1200px;
+            max-width: 1600px;
             margin: 0 auto;
             background: white;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
@@ -206,6 +208,21 @@ function fxamount($amount){
             font-size: 13px;
         }
 
+        .chat-filter-row {
+            display: flex;
+            gap: 8px;
+            padding: 0 12px 12px;
+        }
+
+        .chat-filter-row select {
+            min-width: 0;
+            flex: 1;
+            padding: 7px 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+
         .chat-empty {
             padding: 24px 15px;
             color: #999;
@@ -220,6 +237,139 @@ function fxamount($amount){
             flex-direction: column;
             height: 90vh;
             max-height: 90vh;
+        }
+
+        .context-panel {
+            width: 340px;
+            border-left: 1px solid #e0e0e0;
+            background: #fbfbfb;
+            height: 90vh;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .context-header {
+            padding: 15px;
+            border-bottom: 1px solid #e0e0e0;
+            font-weight: 600;
+            background: #fafafa;
+        }
+
+        .context-card {
+            margin: 12px;
+            padding: 12px;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            background: #fff;
+        }
+
+        .context-card h3 {
+            margin: 0 0 10px;
+            font-size: 14px;
+            color: #111827;
+        }
+
+        .context-empty,
+        .context-loading,
+        .context-error {
+            padding: 12px;
+            color: #6b7280;
+            font-size: 13px;
+        }
+
+        .context-error {
+            color: #b91c1c;
+        }
+
+        .context-row {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            margin-bottom: 8px;
+            font-size: 12px;
+        }
+
+        .context-label {
+            color: #6b7280;
+            flex: 0 0 82px;
+        }
+
+        .context-value {
+            flex: 1;
+            color: #111827;
+            text-align: right;
+            word-break: break-word;
+        }
+
+        .context-ticket {
+            border-top: 1px solid #f3f4f6;
+            padding-top: 8px;
+            margin-top: 8px;
+            font-size: 12px;
+        }
+
+        .context-ticket:first-of-type {
+            border-top: none;
+            padding-top: 0;
+            margin-top: 0;
+        }
+
+        .context-badge {
+            display: inline-block;
+            padding: 2px 6px;
+            border-radius: 999px;
+            background: #eef2ff;
+            color: #3730a3;
+            font-size: 11px;
+            margin-left: 4px;
+        }
+
+        .context-actions {
+            margin: 12px;
+            padding: 12px;
+            border: 1px solid #dbeafe;
+            border-radius: 6px;
+            background: #eff6ff;
+        }
+
+        .context-actions-title {
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #1e3a8a;
+        }
+
+        .context-actions input,
+        .context-actions textarea {
+            width: 100%;
+            margin-bottom: 8px;
+            padding: 7px 8px;
+            border: 1px solid #bfdbfe;
+            border-radius: 4px;
+            font-size: 12px;
+            background: #fff;
+        }
+
+        .context-actions-row {
+            display: flex;
+            gap: 8px;
+        }
+
+        .context-action-btn {
+            flex: 1;
+            padding: 8px;
+            border: 1px solid #93c5fd;
+            border-radius: 4px;
+            background: #fff;
+            color: #1d4ed8;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .context-action-btn:disabled {
+            color: #9ca3af;
+            border-color: #d1d5db;
+            cursor: not-allowed;
         }
 
         .chat-header {
@@ -321,6 +471,16 @@ function fxamount($amount){
         .tool-btn:hover {
             background: #f5f5f5;
             border-color: #ccc;
+        }
+
+        .quick-reply-select {
+            min-width: 220px;
+            max-width: 320px;
+            padding: 8px 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 13px;
+            background: #fff;
         }
 
         .emoji-picker {
@@ -438,6 +598,7 @@ function fxamount($amount){
     <!-- 配置面板 -->
     <div class="config-panel">
         <h2>客服工作台</h2>
+        <p><a href="<?= Html::encode(Url::to(['quick-replies'])) ?>" target="_blank">管理快捷回复</a></p>
         <button class="btn btn-primary" id="connectBtn">上线</button>
         <button class="btn btn-danger" id="disconnectBtn" style="display:none;">离线</button>
         <div id="connectionStatus" class="status disconnected">未连接</div>
@@ -447,6 +608,23 @@ function fxamount($amount){
     <div class="chat-list">
         <div class="chat-list-header">咨询列表</div>
         <input class="chat-search" id="chatSearch" type="search" placeholder="搜索用户ID">
+        <div class="chat-filter-row">
+            <?php if (!empty($isPlatformOperator)): ?>
+                <select id="storeFilter">
+                    <option value="">全部店铺</option>
+                    <?php foreach (($storeMap ?? []) as $store): ?>
+                        <option value="<?= (int)($store['id'] ?? 0) ?>"><?= Html::encode((string)($store['name'] ?? ('店铺 #' . (int)($store['id'] ?? 0)))) ?></option>
+                    <?php endforeach; ?>
+                </select>
+            <?php else: ?>
+                <select id="storeFilter" style="display:none;"><option value="">全部店铺</option></select>
+            <?php endif; ?>
+            <select id="statusFilter">
+                <option value="">全部会话</option>
+                <option value="unread">仅未读</option>
+                <option value="active">当前会话</option>
+            </select>
+        </div>
         <div id="chatList"></div>
     </div>
 
@@ -467,12 +645,32 @@ function fxamount($amount){
                     </div>
                 </div>
                 <button class="tool-btn" id="imageBtn">📷 图片</button>
+                <select class="quick-reply-select" id="quickReplySelect">
+                    <option value="">快捷回复</option>
+                </select>
                 <input type="file" id="imageInput" accept="image/*">
             </div>
             <div class="input-wrapper">
                 <textarea class="message-input" id="messageInput" placeholder="输入消息..."></textarea>
                 <button class="send-btn" id="sendBtn" disabled>发送</button>
             </div>
+        </div>
+    </div>
+
+    <div class="context-panel" data-mongoyia-customer-service-session-context="panel">
+        <div class="context-header">会话上下文</div>
+        <div class="context-actions" data-mongoyia-customer-service-chat-ticket="actions">
+            <div class="context-actions-title">从当前聊天创建工单</div>
+            <input id="ticketOrderId" type="number" min="0" placeholder="订单ID，可留空">
+            <input id="ticketTitle" type="text" maxlength="255" placeholder="标题，可留空自动生成">
+            <textarea id="ticketContent" rows="2" maxlength="1000" placeholder="处理说明，可留空"></textarea>
+            <div class="context-actions-row">
+                <button class="context-action-btn" id="createOrderAssistBtn" type="button" disabled>订单协助</button>
+                <button class="context-action-btn" id="createComplaintBtn" type="button" disabled>投诉工单</button>
+            </div>
+        </div>
+        <div id="contextPanel">
+            <div class="context-empty">选择咨询会话后显示用户、商品、订单和历史工单。</div>
         </div>
     </div>
 </div>
@@ -490,7 +688,12 @@ function fxamount($amount){
         storeMap: <?= json_encode($storeMap ?? [], JSON_UNESCAPED_UNICODE) ?>,
         authToken: <?= json_encode($imAuthToken ?? '') ?>,
         wsAddress: <?= json_encode(Yii::$app->params['imWebsocketUrl'] ?? 'ws://127.0.0.1:8767') ?>,
-        uploadUrl: <?= json_encode(Yii::$app->params['chatUploadUrl'] ?? '/mall/chat/upload') ?>
+        uploadUrl: <?= json_encode(Yii::$app->params['chatUploadUrl'] ?? '/mall/chat/upload') ?>,
+        sessionContextUrl: <?= json_encode(Url::to(['session-context'])) ?>,
+        ticketCreateUrl: <?= json_encode(Url::to(['ticket-create-from-session'])) ?>,
+        quickReplies: <?= json_encode($quickReplies ?? [], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?>,
+        csrfParam: <?= json_encode(Yii::$app->request->csrfParam) ?>,
+        csrfToken: <?= json_encode(Yii::$app->request->csrfToken) ?>
     };
 
     let ws = null;
@@ -499,6 +702,7 @@ function fxamount($amount){
     let manualDisconnect = false;
     let reconnectTimer = null;
     let chatListCache = [];
+    let currentSessionContext = null;
     const unreadMap = {};
 
     // 常用emoji列表
@@ -517,8 +721,16 @@ function fxamount($amount){
         disconnectBtn: document.getElementById('disconnectBtn'),
         connectionStatus: document.getElementById('connectionStatus'),
         chatSearch: document.getElementById('chatSearch'),
+        storeFilter: document.getElementById('storeFilter'),
+        statusFilter: document.getElementById('statusFilter'),
         chatList: document.getElementById('chatList'),
         chatHeader: document.getElementById('chatHeader'),
+        contextPanel: document.getElementById('contextPanel'),
+        ticketOrderId: document.getElementById('ticketOrderId'),
+        ticketTitle: document.getElementById('ticketTitle'),
+        ticketContent: document.getElementById('ticketContent'),
+        createOrderAssistBtn: document.getElementById('createOrderAssistBtn'),
+        createComplaintBtn: document.getElementById('createComplaintBtn'),
         messagesContainer: document.getElementById('messagesContainer'),
         messageInput: document.getElementById('messageInput'),
         sendBtn: document.getElementById('sendBtn'),
@@ -526,6 +738,7 @@ function fxamount($amount){
         emojiPanel: document.getElementById('emojiPanel'),
         emojiGrid: document.getElementById('emojiGrid'),
         imageBtn: document.getElementById('imageBtn'),
+        quickReplySelect: document.getElementById('quickReplySelect'),
         imageInput: document.getElementById('imageInput'),
         imagePreview: document.getElementById('imagePreview'),
         previewImg: document.getElementById('previewImg')
@@ -546,6 +759,43 @@ function fxamount($amount){
     // 插入emoji
     function insertEmoji(emoji) {
         elements.messageInput.value += emoji;
+        elements.messageInput.focus();
+        updateSendButton();
+    }
+
+    function initQuickReplies() {
+        renderQuickReplies();
+    }
+
+    function renderQuickReplies() {
+        if (!elements.quickReplySelect) {
+            return;
+        }
+        const selectedStoreId = currentChatTarget ? normalizePositiveInt(currentChatTarget.store_id) : 0;
+        elements.quickReplySelect.innerHTML = '<option value="">快捷回复</option>';
+        (CONFIG.quickReplies || []).forEach(reply => {
+            const storeId = normalizePositiveInt(reply.store_id);
+            const isGlobal = normalizePositiveInt(reply.is_global) === 1 || storeId === 0;
+            if (selectedStoreId > 0 && !isGlobal && storeId !== selectedStoreId) {
+                return;
+            }
+            const option = document.createElement('option');
+            option.value = String(reply.id || '');
+            option.textContent = (isGlobal ? '通用' : '店铺') + ' · ' + (reply.title || reply.content || '').slice(0, 28);
+            option.dataset.content = reply.content || '';
+            elements.quickReplySelect.appendChild(option);
+        });
+    }
+
+    function insertQuickReply() {
+        const option = elements.quickReplySelect.options[elements.quickReplySelect.selectedIndex];
+        const content = option && option.dataset ? (option.dataset.content || '') : '';
+        if (!content) {
+            return;
+        }
+        const current = elements.messageInput.value;
+        elements.messageInput.value = current ? current.replace(/\s*$/, '\n') + content : content;
+        elements.quickReplySelect.value = '';
         elements.messageInput.focus();
         updateSendButton();
     }
@@ -572,6 +822,13 @@ function fxamount($amount){
 
     function updateSendButton() {
         elements.sendBtn.disabled = !isConnected || !currentChatTarget || elements.messageInput.value.trim().length === 0;
+        updateContextActionButtons();
+    }
+
+    function updateContextActionButtons() {
+        const disabled = !currentChatTarget;
+        elements.createOrderAssistBtn.disabled = disabled;
+        elements.createComplaintBtn.disabled = disabled;
     }
 
     // 连接WebSocket
@@ -637,6 +894,7 @@ function fxamount($amount){
         updateConnectionStatus(false);
         elements.chatList.innerHTML = '';
         setWelcomeMessage('已离线，点击上线后继续处理咨询');
+        resetContextPanel('已离线，选择咨询会话后显示上下文。');
     }
 
     // 更新连接状态
@@ -682,6 +940,7 @@ function fxamount($amount){
                     displayMessage(data);
                     unreadMap[sessionKey(data)] = 0;
                     markCurrentChatRead();
+                    loadSessionContext();
                 } else if (data.uuid) {
                     const key = sessionKey(data);
                     unreadMap[key] = (unreadMap[key] || 0) + 1;
@@ -713,7 +972,26 @@ function fxamount($amount){
     function displayChatList() {
         elements.chatList.innerHTML = '';
         const keyword = elements.chatSearch.value.trim().toLowerCase();
-        const list = chatListCache.filter(chat => !keyword || String(chat.uuid || '').toLowerCase().includes(keyword));
+        const selectedStoreId = normalizePositiveInt(elements.storeFilter && elements.storeFilter.value);
+        const selectedStatus = elements.statusFilter ? elements.statusFilter.value : '';
+        const list = chatListCache.filter(chat => {
+            if (keyword && !String(chat.uuid || '').toLowerCase().includes(keyword)) {
+                return false;
+            }
+            if (selectedStoreId > 0 && normalizePositiveInt(chat.store_id) !== selectedStoreId) {
+                return false;
+            }
+            const serverUnread = normalizePositiveInt(chat.unread_count);
+            const localUnread = unreadMap[sessionKey(chat)] || 0;
+            const unread = currentChatTarget && sessionKey(chat) === sessionKey(currentChatTarget) ? 0 : Math.max(serverUnread, localUnread);
+            if (selectedStatus === 'unread' && unread <= 0) {
+                return false;
+            }
+            if (selectedStatus === 'active' && (!currentChatTarget || sessionKey(chat) !== sessionKey(currentChatTarget))) {
+                return false;
+            }
+            return true;
+        });
 
         if (list.length === 0) {
             const empty = document.createElement('div');
@@ -780,6 +1058,9 @@ function fxamount($amount){
     function openChat(target, selectedItem) {
         currentChatTarget = target;
         unreadMap[sessionKey(target)] = 0;
+        elements.ticketOrderId.value = '';
+        elements.ticketTitle.value = '';
+        elements.ticketContent.value = '';
 
         renderChatHeader();
 
@@ -791,6 +1072,8 @@ function fxamount($amount){
         }
 
         loadChatHistory(target);
+        loadSessionContext();
+        renderQuickReplies();
         displayChatList();
         updateSendButton();
     }
@@ -871,6 +1154,203 @@ function fxamount($amount){
         return number > 0 ? number : 0;
     }
 
+    function resetContextPanel(text) {
+        currentSessionContext = null;
+        elements.contextPanel.innerHTML = '';
+        const empty = document.createElement('div');
+        empty.className = 'context-empty';
+        empty.textContent = text || '选择咨询会话后显示用户、商品、订单和历史工单。';
+        elements.contextPanel.appendChild(empty);
+        updateContextActionButtons();
+    }
+
+    async function loadSessionContext() {
+        if (!currentChatTarget || !CONFIG.sessionContextUrl) {
+            resetContextPanel();
+            return;
+        }
+
+        elements.contextPanel.innerHTML = '<div class="context-loading">正在加载会话上下文...</div>';
+        const params = new URLSearchParams();
+        params.set('chat_uuid', currentChatTarget.uuid || '');
+        params.set('customer_uuid', currentChatTarget.uuid || '');
+        params.set('product_id', normalizePositiveInt(currentChatTarget.product_id));
+        params.set('store_id', normalizePositiveInt(currentChatTarget.store_id));
+        params.set('customer_user_id', normalizePositiveInt(currentChatTarget.customer_user_id));
+        params.set('order_id', normalizePositiveInt(currentChatTarget.order_id));
+
+        try {
+            const response = await fetch(CONFIG.sessionContextUrl + '?' + params.toString(), {
+                headers: {'Accept': 'application/json'}
+            });
+            const data = await response.json();
+            if (!response.ok || data.error) {
+                throw new Error(data.error || '会话上下文加载失败');
+            }
+            currentSessionContext = data;
+            renderSessionContext(data);
+        } catch (error) {
+            currentSessionContext = null;
+            elements.contextPanel.innerHTML = '';
+            const node = document.createElement('div');
+            node.className = 'context-error';
+            node.textContent = error.message || '会话上下文加载失败';
+            elements.contextPanel.appendChild(node);
+        }
+    }
+
+    function renderSessionContext(data) {
+        if (data.order && data.order.id && !elements.ticketOrderId.value) {
+            elements.ticketOrderId.value = data.order.id;
+        }
+        elements.contextPanel.innerHTML = '';
+        renderContextCard('用户摘要', [
+            ['用户ID', data.user && data.user.id ? '#' + data.user.id : '未识别'],
+            ['账号', data.user && data.user.username ? data.user.username : ''],
+            ['姓名', data.user && data.user.name ? data.user.name : ''],
+            ['手机', data.user && data.user.mobile ? data.user.mobile : ''],
+            ['邮箱', data.user && data.user.email ? data.user.email : ''],
+            ['消费次数', data.user && data.user.consume_count ? data.user.consume_count : 0],
+            ['消费金额', data.user && data.user.consume_amount ? formatMoney(data.user.consume_amount) : '0.00']
+        ]);
+        renderContextCard('商品摘要', [
+            ['商品ID', data.product && data.product.id ? '#' + data.product.id : '未关联'],
+            ['名称', data.product && data.product.name ? data.product.name : ''],
+            ['SKU', data.product && data.product.sku ? data.product.sku : ''],
+            ['价格', data.product && data.product.price ? formatMoney(data.product.price) : ''],
+            ['库存', data.product && data.product.stock !== undefined ? data.product.stock : '']
+        ]);
+        renderContextCard('订单摘要', [
+            ['订单ID', data.order && data.order.id ? '#' + data.order.id : '未关联'],
+            ['订单号', data.order && data.order.sn ? data.order.sn : ''],
+            ['收货人', data.order && data.order.name ? data.order.name : ''],
+            ['金额', data.order && data.order.amount ? formatMoney(data.order.amount) : ''],
+            ['支付状态', data.order && data.order.payment_status !== undefined ? data.order.payment_status : ''],
+            ['物流状态', data.order && data.order.shipment_status !== undefined ? data.order.shipment_status : ''],
+            ['创建时间', data.order && data.order.created_at ? formatTimestamp(data.order.created_at) : '']
+        ]);
+        renderTicketsCard(Array.isArray(data.tickets) ? data.tickets : []);
+        updateContextActionButtons();
+    }
+
+    function renderContextCard(title, rows) {
+        const card = document.createElement('div');
+        card.className = 'context-card';
+        const heading = document.createElement('h3');
+        heading.textContent = title;
+        card.appendChild(heading);
+        rows.forEach(row => {
+            const line = document.createElement('div');
+            line.className = 'context-row';
+            const label = document.createElement('span');
+            label.className = 'context-label';
+            label.textContent = row[0];
+            const value = document.createElement('span');
+            value.className = 'context-value';
+            value.textContent = row[1] === undefined || row[1] === null || row[1] === '' ? '-' : String(row[1]);
+            line.appendChild(label);
+            line.appendChild(value);
+            card.appendChild(line);
+        });
+        elements.contextPanel.appendChild(card);
+    }
+
+    function renderTicketsCard(tickets) {
+        const card = document.createElement('div');
+        card.className = 'context-card';
+        const heading = document.createElement('h3');
+        heading.textContent = '历史工单';
+        card.appendChild(heading);
+        if (tickets.length === 0) {
+            const empty = document.createElement('div');
+            empty.className = 'context-empty';
+            empty.textContent = '暂无关联工单';
+            card.appendChild(empty);
+        }
+        tickets.forEach(ticket => {
+            const item = document.createElement('div');
+            item.className = 'context-ticket';
+            const title = document.createElement('div');
+            title.textContent = '#' + ticket.id + ' ' + (ticket.title || ticket.ticket_sn || '');
+            const meta = document.createElement('div');
+            const status = document.createElement('span');
+            status.className = 'context-badge';
+            status.textContent = ticket.ticket_status || '';
+            const type = document.createElement('span');
+            type.className = 'context-badge';
+            type.textContent = ticket.ticket_type || '';
+            meta.appendChild(status);
+            meta.appendChild(type);
+            item.appendChild(title);
+            item.appendChild(meta);
+            card.appendChild(item);
+        });
+        elements.contextPanel.appendChild(card);
+    }
+
+    function formatMoney(value) {
+        const number = Number(value);
+        return Number.isFinite(number) ? number.toFixed(2) : String(value || '');
+    }
+
+    function formatTimestamp(value) {
+        const number = normalizePositiveInt(value);
+        if (!number) {
+            return '';
+        }
+        const date = new Date(number * 1000);
+        return date.getFullYear() + '-' + String(date.getMonth() + 1).padStart(2, '0') + '-' + String(date.getDate()).padStart(2, '0') + ' ' + String(date.getHours()).padStart(2, '0') + ':' + String(date.getMinutes()).padStart(2, '0');
+    }
+
+    async function createTicketFromSession(ticketType) {
+        if (!currentChatTarget) {
+            addSystemMessage('请先选择咨询会话');
+            return;
+        }
+
+        const context = currentSessionContext && currentSessionContext.context ? currentSessionContext.context : {};
+        const order = currentSessionContext && currentSessionContext.order ? currentSessionContext.order : {};
+        const product = currentSessionContext && currentSessionContext.product ? currentSessionContext.product : {};
+        const user = currentSessionContext && currentSessionContext.user ? currentSessionContext.user : {};
+        const storeFromUid = CONFIG.isPlatformOperator && currentChatTarget.uid ? CONFIG.storeMap[String(currentChatTarget.uid)] : null;
+        const storeId = normalizePositiveInt(context.store_id) || normalizePositiveInt(order.store_id) || normalizePositiveInt(product.store_id) || normalizePositiveInt(currentChatTarget.store_id) || normalizePositiveInt(storeFromUid && storeFromUid.id);
+
+        const formData = new FormData();
+        formData.append(CONFIG.csrfParam, CONFIG.csrfToken);
+        formData.append('ticket_type', ticketType);
+        formData.append('store_id', storeId);
+        formData.append('product_id', normalizePositiveInt(context.product_id) || normalizePositiveInt(product.id) || normalizePositiveInt(currentChatTarget.product_id));
+        formData.append('order_id', normalizePositiveInt(elements.ticketOrderId.value) || normalizePositiveInt(context.order_id) || normalizePositiveInt(order.id));
+        formData.append('order_sn', order.sn || '');
+        formData.append('customer_user_id', normalizePositiveInt(context.customer_user_id) || normalizePositiveInt(user.id));
+        formData.append('customer_uuid', context.customer_uuid || currentChatTarget.uuid || '');
+        formData.append('merchant_user_id', normalizePositiveInt(currentChatTarget.uid));
+        formData.append('chat_uuid', context.chat_uuid || currentChatTarget.uuid || '');
+        formData.append('title', elements.ticketTitle.value || '');
+        formData.append('content', elements.ticketContent.value || '');
+
+        elements.createOrderAssistBtn.disabled = true;
+        elements.createComplaintBtn.disabled = true;
+        try {
+            const response = await fetch(CONFIG.ticketCreateUrl, {
+                method: 'POST',
+                headers: {'Accept': 'application/json'},
+                body: formData
+            });
+            const result = await response.json();
+            if (!response.ok || !result.success) {
+                throw new Error(result.message || '创建工单失败');
+            }
+            addSystemMessage('工单创建成功：#' + result.ticket_id + ' ' + (result.ticket_sn || ''));
+            elements.ticketTitle.value = '';
+            elements.ticketContent.value = '';
+            loadSessionContext();
+        } catch (error) {
+            addSystemMessage(error.message || '创建工单失败');
+            updateContextActionButtons();
+        }
+    }
+
     // 加载聊天历史
     function loadChatHistory(target) {
         const data = {
@@ -901,6 +1381,7 @@ function fxamount($amount){
             currentChatTarget.product_id = normalizePositiveInt(currentChatTarget.product_id) || normalizePositiveInt(contextMessage.product_id);
             currentChatTarget.store_id = normalizePositiveInt(currentChatTarget.store_id) || normalizePositiveInt(contextMessage.store_id);
             renderChatHeader();
+            loadSessionContext();
         }
 
         messages.forEach(msg => {
@@ -1081,7 +1562,15 @@ function fxamount($amount){
     elements.connectBtn.onclick = connect;
     elements.disconnectBtn.onclick = disconnect;
     elements.sendBtn.onclick = sendMessage;
+    elements.createOrderAssistBtn.onclick = () => createTicketFromSession('order_assist');
+    elements.createComplaintBtn.onclick = () => createTicketFromSession('complaint');
     elements.chatSearch.oninput = displayChatList;
+    if (elements.storeFilter) {
+        elements.storeFilter.onchange = displayChatList;
+    }
+    if (elements.statusFilter) {
+        elements.statusFilter.onchange = displayChatList;
+    }
     elements.messageInput.oninput = updateSendButton;
 
     elements.messageInput.onkeypress = (e) => {
@@ -1098,6 +1587,10 @@ function fxamount($amount){
     elements.imageBtn.onclick = () => {
         elements.imageInput.click();
     };
+
+    if (elements.quickReplySelect) {
+        elements.quickReplySelect.onchange = insertQuickReply;
+    }
 
     elements.imageInput.onchange = (e) => {
         const file = e.target.files[0];
@@ -1120,6 +1613,7 @@ function fxamount($amount){
 
     // 初始化
     initEmojiPanel();
+    initQuickReplies();
     setWelcomeMessage('正在连接客服系统...');
     connect();
 

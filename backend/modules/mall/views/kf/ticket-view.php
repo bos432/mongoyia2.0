@@ -7,6 +7,8 @@ use yii\helpers\Url;
 /* @var $isPlatformOperator bool */
 /* @var $ticket array */
 /* @var $events array */
+/* @var $evidenceFiles array */
+/* @var $ratingRows array */
 /* @var $workflowTargets array */
 
 $this->title = '客服工单详情';
@@ -34,6 +36,11 @@ $workflowButtons = [
     'resolved' => ['label' => '标记解决', 'class' => 'btn-outline-success'],
     'closed' => ['label' => '关闭工单', 'class' => 'btn-outline-secondary'],
 ];
+$ratingLabels = [
+    'satisfied' => '满意',
+    'neutral' => '一般',
+    'dissatisfied' => '不满意',
+];
 ?>
 
 <div class="row" data-mongoyia-customer-service-ticket-readonly="view">
@@ -43,7 +50,7 @@ $workflowButtons = [
                 <h2 class="card-title"><?= Html::encode($this->title) ?></h2>
             </div>
             <div class="card-body">
-                <p class="text-muted">MONGOYIA_CUSTOMER_SERVICE_TICKET_ASSIGN_BACKEND_V1：本页可分配客服处理人；MONGOYIA_CUSTOMER_SERVICE_TICKET_NOTE_BACKEND_V1：本页可追加内部处理备注；MONGOYIA_CUSTOMER_SERVICE_TICKET_RESULT_BACKEND_V1：本页可审计化写回处理结果；MONGOYIA_CUSTOMER_SERVICE_TICKET_WORKFLOW_BACKEND_V1：本页展示工单详情和事件流水；MONGOYIA_CUSTOMER_SERVICE_COMPLAINT_EVIDENCE_GATE_V1：投诉证据上传/写处理仅做 gate，占位按钮禁用；MONGOYIA_CUSTOMER_SERVICE_COMPLAINT_EVIDENCE_UPLOAD_POLICY_GATE_V1：投诉证据上传文件策略仅做 gate；MONGOYIA_CUSTOMER_SERVICE_COMPLAINT_EVIDENCE_UPLOAD_IMPLEMENTATION_GATE_V1：投诉证据上传实现契约仅做 gate；MONGOYIA_CUSTOMER_SERVICE_COMPLAINT_EVIDENCE_UPLOAD_CLEANUP_READINESS_V1：投诉证据上传清理范围仅做 readiness；MONGOYIA_CUSTOMER_SERVICE_COMPLAINT_EVIDENCE_UPLOAD_ENABLEMENT_GATE_V1：后台上传控件启用条件仅做 gate；MONGOYIA_CUSTOMER_SERVICE_COMPLAINT_EVIDENCE_APPLY_WORKFLOW_V1：证据写入仅允许 CLI audited apply；当前仅开放分配、备注、结果写回和状态流转；不提供退款、改订单、发消息、上传文件等操作。</p>
+                <p class="text-muted">MONGOYIA_CUSTOMER_SERVICE_TICKET_ASSIGN_BACKEND_V1：本页可分配客服处理人；MONGOYIA_CUSTOMER_SERVICE_TICKET_NOTE_BACKEND_V1：本页可追加内部处理备注；MONGOYIA_CUSTOMER_SERVICE_TICKET_RESULT_BACKEND_V1：本页可审计化写回处理结果；MONGOYIA_CUSTOMER_SERVICE_TICKET_WORKFLOW_BACKEND_V1：本页展示工单详情和事件流水；MONGOYIA_CUSTOMER_SERVICE_COMPLAINT_EVIDENCE_UPLOAD_PHASE8_V1：投诉工单支持图片证据上传、查看和未审核删除；当前不提供退款、改订单、改支付、改库存、发消息等操作。</p>
                 <table class="table table-bordered mb-0">
                     <tbody>
                     <tr>
@@ -160,24 +167,106 @@ $workflowButtons = [
             </div>
         </div>
 
-        <div class="card" data-mongoyia-customer-service-complaint-evidence-gate="reserved">
+        <?php if ((string)$ticket['ticket_type'] === 'complaint'): ?>
+        <div class="card" data-mongoyia-customer-service-complaint-evidence-upload="enabled">
             <div class="card-header">
-                <h3 class="card-title">投诉证据 Gate</h3>
+                <h3 class="card-title">投诉证据</h3>
             </div>
             <div class="card-body">
-                <p class="text-muted mb-2">投诉证据上传和后台 evidence_json 写处理保持禁用；MONGOYIA_CUSTOMER_SERVICE_COMPLAINT_EVIDENCE_UPLOAD_POLICY_GATE_V1 仅保留图片类型/大小策略 gate；MONGOYIA_CUSTOMER_SERVICE_COMPLAINT_EVIDENCE_UPLOAD_IMPLEMENTATION_GATE_V1 仅保留存储、审计契约 gate；MONGOYIA_CUSTOMER_SERVICE_COMPLAINT_EVIDENCE_UPLOAD_CLEANUP_READINESS_V1 仅保留 fixture/tmp 清理范围 readiness；MONGOYIA_CUSTOMER_SERVICE_COMPLAINT_EVIDENCE_UPLOAD_ENABLEMENT_GATE_V1 仅保留权限、UI、审计、回滚和清理启用门禁；MONGOYIA_CUSTOMER_SERVICE_COMPLAINT_EVIDENCE_APPLY_WORKFLOW_V1 仅允许 CLI audited apply 写入 evidence_json 并追加审计事件。</p>
-                <button
-                    type="button"
-                    class="btn btn-outline-secondary btn-sm mr-1"
-                    data-mongoyia-customer-service-complaint-evidence-upload="disabled"
-                    disabled
-                >投诉证据上传待启用</button>
-                <button
-                    type="button"
-                    class="btn btn-outline-secondary btn-sm"
-                    data-mongoyia-customer-service-complaint-evidence-apply="disabled"
-                    disabled
-                >投诉证据写入待启用</button>
+                <p class="text-muted mb-3">仅支持 png/jpg/jpeg/webp 图片，单文件最大 5MB；文件存储在非公开 runtime 目录，上传和删除都会追加客服事件审计，不改变工单状态。</p>
+                <form method="post" action="<?= Html::encode(Url::to(['complaint-evidence-upload'])) ?>" enctype="multipart/form-data" class="mb-3">
+                    <input type="hidden" name="<?= Html::encode(Yii::$app->request->csrfParam) ?>" value="<?= Html::encode(Yii::$app->request->csrfToken) ?>">
+                    <input type="hidden" name="id" value="<?= (int)$ticket['id'] ?>">
+                    <div class="form-row">
+                        <div class="form-group col-md-4">
+                            <label>图片证据</label>
+                            <input type="file" name="evidence_file" class="form-control-file" accept=".png,.jpg,.jpeg,.webp,image/png,image/jpeg,image/webp" required>
+                        </div>
+                        <div class="form-group col-md-6">
+                            <label>说明</label>
+                            <input type="text" name="note" class="form-control form-control-sm" maxlength="255" placeholder="例如：买家上传的破损照片">
+                        </div>
+                        <div class="form-group col-md-2 d-flex align-items-end">
+                            <button type="submit" class="btn btn-outline-primary btn-sm">上传证据</button>
+                        </div>
+                    </div>
+                </form>
+
+                <div class="table-responsive">
+                    <table class="table table-bordered table-sm mb-0">
+                        <thead>
+                        <tr>
+                            <th>文件</th>
+                            <th>大小</th>
+                            <th>上传人</th>
+                            <th>时间</th>
+                            <th>说明</th>
+                            <th>SHA256</th>
+                            <th style="width: 150px;">操作</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <?php if (empty($evidenceFiles)): ?>
+                            <tr><td colspan="7" class="text-muted text-center">暂无投诉证据</td></tr>
+                        <?php endif; ?>
+                        <?php foreach ($evidenceFiles as $file): ?>
+                            <tr>
+                                <td><?= Html::encode($file['original_name']) ?></td>
+                                <td><?= number_format(((int)$file['bytes']) / 1024, 1) ?> KB</td>
+                                <td><?= Html::encode(($file['operator_type'] ?? '') . ' #' . (int)$file['uploaded_by']) ?></td>
+                                <td><?= (int)$file['uploaded_at'] > 0 ? date('Y-m-d H:i', (int)$file['uploaded_at']) : '' ?></td>
+                                <td><?= Html::encode((string)($file['note'] ?? '')) ?></td>
+                                <td><code><?= Html::encode(substr((string)$file['sha256'], 0, 16)) ?></code></td>
+                                <td>
+                                    <a class="btn btn-outline-primary btn-sm mb-1" target="_blank" href="<?= Html::encode(Url::to(['complaint-evidence-view', 'id' => (int)$ticket['id'], 'evidence_id' => (string)$file['id']])) ?>">查看</a>
+                                    <?php if ((int)($file['reviewed_at'] ?? 0) <= 0): ?>
+                                        <form method="post" action="<?= Html::encode(Url::to(['complaint-evidence-delete'])) ?>" class="d-inline-block mb-1" onsubmit="return confirm('确认删除这条未审核证据？');">
+                                            <input type="hidden" name="<?= Html::encode(Yii::$app->request->csrfParam) ?>" value="<?= Html::encode(Yii::$app->request->csrfToken) ?>">
+                                            <input type="hidden" name="id" value="<?= (int)$ticket['id'] ?>">
+                                            <input type="hidden" name="evidence_id" value="<?= Html::encode((string)$file['id']) ?>">
+                                            <button type="submit" class="btn btn-outline-danger btn-sm">删除</button>
+                                        </form>
+                                    <?php endif; ?>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <?php endif; ?>
+
+        <div class="card" data-mongoyia-customer-service-rating="backend">
+            <div class="card-header">
+                <h3 class="card-title">满意度评价</h3>
+            </div>
+            <div class="card-body p-0 table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead>
+                    <tr>
+                        <th>时间</th>
+                        <th>评价</th>
+                        <th>用户</th>
+                        <th>原因</th>
+                        <th>备注</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <?php if (empty($ratingRows)): ?>
+                        <tr><td colspan="5" class="text-muted text-center">暂无满意度评价</td></tr>
+                    <?php endif; ?>
+                    <?php foreach ($ratingRows as $row): ?>
+                        <tr>
+                            <td><?= (int)$row['created_at'] > 0 ? date('Y-m-d H:i', (int)$row['created_at']) : '' ?></td>
+                            <td><?= Html::encode($ratingLabels[$row['rating']] ?? $row['rating']) ?> (<?= (int)$row['rating_score'] ?>)</td>
+                            <td><?= (int)$row['customer_user_id'] ?> <?= Html::encode($row['customer_uuid'] ?? '') ?></td>
+                            <td><?= Html::encode($row['reason'] ?? '') ?></td>
+                            <td><?= nl2br(Html::encode((string)($row['remark'] ?? ''))) ?></td>
+                        </tr>
+                    <?php endforeach; ?>
+                    </tbody>
+                </table>
             </div>
         </div>
 

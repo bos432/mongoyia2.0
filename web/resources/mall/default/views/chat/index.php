@@ -44,6 +44,16 @@ $chatTextMap = [
         'imageUploadFailedRetry' => '图片上传失败，请重试',
         'errorPrefix' => '错误',
         'unknownError' => '未知错误',
+        'ratingTitle' => '服务评价',
+        'ratingSatisfied' => '满意',
+        'ratingNeutral' => '一般',
+        'ratingDissatisfied' => '不满意',
+        'ratingReasonPlaceholder' => '原因，可选',
+        'ratingRemarkPlaceholder' => '补充说明，可选',
+        'ratingSubmit' => '提交评价',
+        'ratingSubmitting' => '提交中...',
+        'ratingSubmitted' => '评价已提交',
+        'ratingSubmitFailed' => '提交失败',
     ],
     'en' => [
         'title' => 'Customer Service',
@@ -73,6 +83,16 @@ $chatTextMap = [
         'imageUploadFailedRetry' => 'Image upload failed. Please try again.',
         'errorPrefix' => 'Error',
         'unknownError' => 'Unknown error',
+        'ratingTitle' => 'Service Rating',
+        'ratingSatisfied' => 'Satisfied',
+        'ratingNeutral' => 'Neutral',
+        'ratingDissatisfied' => 'Dissatisfied',
+        'ratingReasonPlaceholder' => 'Reason, optional',
+        'ratingRemarkPlaceholder' => 'More details, optional',
+        'ratingSubmit' => 'Submit rating',
+        'ratingSubmitting' => 'Submitting...',
+        'ratingSubmitted' => 'Rating submitted',
+        'ratingSubmitFailed' => 'Submit failed',
     ],
     'mn' => [
         'title' => 'Хэрэглэгчийн үйлчилгээ',
@@ -102,6 +122,16 @@ $chatTextMap = [
         'imageUploadFailedRetry' => 'Зураг байршуулж чадсангүй. Дахин оролдоно уу.',
         'errorPrefix' => 'Алдаа',
         'unknownError' => 'Тодорхойгүй алдаа',
+        'ratingTitle' => 'Үйлчилгээний үнэлгээ',
+        'ratingSatisfied' => 'Сэтгэл хангалуун',
+        'ratingNeutral' => 'Дунд зэрэг',
+        'ratingDissatisfied' => 'Сэтгэл хангалуун бус',
+        'ratingReasonPlaceholder' => 'Шалтгаан, сонголтоор',
+        'ratingRemarkPlaceholder' => 'Нэмэлт тайлбар, сонголтоор',
+        'ratingSubmit' => 'Үнэлгээ илгээх',
+        'ratingSubmitting' => 'Илгээж байна...',
+        'ratingSubmitted' => 'Үнэлгээ илгээгдлээ',
+        'ratingSubmitFailed' => 'Илгээж чадсангүй',
     ],
 ];
 $chatTexts = $chatTextMap[$locale];
@@ -295,6 +325,56 @@ $this->params['breadcrumbs'][] = $this->title;
             display: flex;
             gap: 10px;
             padding: 10px 15px;
+        }
+
+        .rating-panel {
+            margin: 0 15px 10px;
+            border: 1px solid #e0e0e0;
+            border-radius: 10px;
+            background: #fff;
+            font-size: 13px;
+        }
+
+        .rating-panel summary {
+            padding: 9px 12px;
+            cursor: pointer;
+            color: #333;
+        }
+
+        .rating-form {
+            padding: 0 12px 12px;
+        }
+
+        .rating-options {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+
+        .rating-form input[type="text"],
+        .rating-form textarea {
+            width: 100%;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 8px 10px;
+            margin-bottom: 8px;
+            font-size: 13px;
+            font-family: inherit;
+        }
+
+        .rating-submit {
+            border: 0;
+            border-radius: 18px;
+            padding: 7px 14px;
+            background: #667eea;
+            color: #fff;
+            cursor: pointer;
+        }
+
+        .rating-status {
+            margin-left: 8px;
+            color: #666;
         }
 
         .message-input {
@@ -516,6 +596,25 @@ $this->params['breadcrumbs'][] = $this->title;
                 <textarea class="message-input" id="messageInput" placeholder="<?= Html::encode($chatText('messagePlaceholder')) ?>" rows="1"></textarea>
                 <button class="send-btn" id="sendBtn" disabled>➤</button>
             </div>
+            <details class="rating-panel" data-mongoyia-customer-service-rating="frontend">
+                <summary><?= Html::encode($chatText('ratingTitle')) ?></summary>
+                <form class="rating-form" id="ratingForm">
+                    <input type="hidden" name="<?= Html::encode(Yii::$app->request->csrfParam) ?>" value="<?= Html::encode(Yii::$app->request->csrfToken) ?>">
+                    <input type="hidden" name="store_id" value="<?= (int)($storeId ?? 0) ?>">
+                    <input type="hidden" name="product_id" value="<?= (int)($productId ?? 0) ?>">
+                    <input type="hidden" name="customer_uuid" id="ratingCustomerUuid" value="">
+                    <input type="hidden" name="chat_uuid" id="ratingChatUuid" value="">
+                    <div class="rating-options">
+                        <label><input type="radio" name="rating" value="satisfied" required> <?= Html::encode($chatText('ratingSatisfied')) ?></label>
+                        <label><input type="radio" name="rating" value="neutral" required> <?= Html::encode($chatText('ratingNeutral')) ?></label>
+                        <label><input type="radio" name="rating" value="dissatisfied" required> <?= Html::encode($chatText('ratingDissatisfied')) ?></label>
+                    </div>
+                    <input type="text" name="reason" maxlength="255" placeholder="<?= Html::encode($chatText('ratingReasonPlaceholder')) ?>">
+                    <textarea name="remark" rows="2" maxlength="1000" placeholder="<?= Html::encode($chatText('ratingRemarkPlaceholder')) ?>"></textarea>
+                    <button class="rating-submit" type="submit"><?= Html::encode($chatText('ratingSubmit')) ?></button>
+                    <span class="rating-status" id="ratingStatus"></span>
+                </form>
+            </details>
         </div>
     </div>
 
@@ -533,6 +632,7 @@ $this->params['breadcrumbs'][] = $this->title;
             wsAddress: <?= json_encode(Yii::$app->params['imWebsocketUrl'] ?? 'ws://127.0.0.1:8767') ?>,
             tokenUrl: <?= json_encode($chatTokenUrl) ?>,
             uploadUrl: <?= json_encode($chatUploadUrl) ?>,
+            ratingUrl: <?= json_encode(Url::to(['/mall/chat/rating-submit', 'lang' => $locale])) ?>,
             lang: <?= json_encode($locale) ?>
         };
         const TEXT = <?= json_encode($chatTexts, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?>;
@@ -567,7 +667,11 @@ $this->params['breadcrumbs'][] = $this->title;
             statusDot: document.getElementById('statusDot'),
             statusText: document.getElementById('statusText'),
             chatContext: document.getElementById('chatContext'),
-            connectingOverlay: document.getElementById('connectingOverlay')
+            connectingOverlay: document.getElementById('connectingOverlay'),
+            ratingForm: document.getElementById('ratingForm'),
+            ratingCustomerUuid: document.getElementById('ratingCustomerUuid'),
+            ratingChatUuid: document.getElementById('ratingChatUuid'),
+            ratingStatus: document.getElementById('ratingStatus')
         };
 
         // 获取或创建uniqueId
@@ -942,6 +1046,29 @@ $this->params['breadcrumbs'][] = $this->title;
             return '';
         }
 
+        async function submitRating(event) {
+            event.preventDefault();
+            uniqueId = uniqueId || getOrCreateUniqueId();
+            elements.ratingCustomerUuid.value = uniqueId;
+            elements.ratingChatUuid.value = uniqueId;
+            elements.ratingStatus.textContent = TEXT.ratingSubmitting;
+
+            try {
+                const response = await fetch(CONFIG.ratingUrl, {
+                    method: 'POST',
+                    body: new FormData(elements.ratingForm),
+                    headers: {'Accept': 'application/json'}
+                });
+                const result = await response.json();
+                if (!response.ok || !result || result.code != 200) {
+                    throw new Error(result && result.msg ? result.msg : TEXT.ratingSubmitFailed);
+                }
+                elements.ratingStatus.textContent = TEXT.ratingSubmitted;
+            } catch (error) {
+                elements.ratingStatus.textContent = error.message || TEXT.ratingSubmitFailed;
+            }
+        }
+
         // 图片预览
         function previewImage(src) {
             const safeSrc = normalizeImageUrl(src);
@@ -995,6 +1122,8 @@ $this->params['breadcrumbs'][] = $this->title;
         elements.imagePreview.onclick = () => {
             elements.imagePreview.classList.remove('show');
         };
+
+        elements.ratingForm.onsubmit = submitRating;
 
         // 点击其他地方关闭emoji面板
         document.onclick = (e) => {

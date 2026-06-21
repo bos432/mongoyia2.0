@@ -3295,3 +3295,275 @@
   - Browser acceptance and full role-flow validation must be run on the BaoTa/test server after pulling these changes.
 - Next stage:
   - Deploy this Phase 7 branch to the DB-enabled test server, run migrations and all `operational-config-* --fixture=1` commands, then complete browser acceptance from the platform admin backend.
+
+## 2026-06-21 Customer Service Center Phase 8.0 Plan Registration
+
+- Stage name: Phase 8.0 customer-service center enhancement plan registration
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting Phase 8.
+  - Added `Phase 8: Customer-service center enhancement` to the backlog phase table.
+  - Locked the Phase 8 boundary: customer-service staff may view user/product/order context and handle tickets, but must not directly mutate orders, payments, funds, stock, refunds, settlement rows, or other business state.
+  - Preserved the existing customer-service foundation tables as the base for the next increments: `mall_customer_service_ticket`, `mall_customer_service_event`, and `mall_customer_service_stat_daily`.
+- Main files changed/added:
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - Documentation-only stage; no runtime commands required.
+- Remaining issues:
+  - Phase 8 runtime workbench, session context API, chat-to-ticket flow, complaint evidence upload, SLA dashboard, quick replies, statistics dashboard, and satisfaction rating remain to be implemented.
+- Next stage:
+  - Reread the backlog and development log, then continue Phase 8.1 with the customer-service workbench context/layout slice.
+
+## 2026-06-21 Customer Service Center Phase 8.1 Workbench Context
+
+- Stage name: Phase 8.1 customer-service workbench session context and layout slice
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting Phase 8.1.
+  - Added `CustomerServiceSessionContextService` for read-only user, product, order, and related-ticket summaries.
+  - Added `/backend/mall/kf/session-context` JSON action with platform/all-store and merchant/store-scoped access.
+  - Added a permission migration for the session context route and grants matching the existing customer-service role pattern.
+  - Upgraded `/backend/mall/kf/index` to a three-column workbench with store/unread filters and a right-side context panel.
+  - Kept the runtime boundary explicit: the context API reads summaries only and does not mutate orders, payments, funds, stock, refunds, settlement rows, chats, or tickets.
+- Main files changed/added:
+  - `common/services/mall/CustomerServiceSessionContextService.php`
+  - `backend/modules/mall/controllers/KfController.php`
+  - `backend/modules/mall/views/kf/index.php`
+  - `console/migrations/m260621_160000_mongoyia_customer_service_session_context_permission.php`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l common/services/mall/CustomerServiceSessionContextService.php` passed.
+  - `php -l backend/modules/mall/controllers/KfController.php` passed.
+  - `php -l backend/modules/mall/views/kf/index.php` passed.
+  - `php -l console/migrations/m260621_160000_mongoyia_customer_service_session_context_permission.php` passed.
+- Remaining issues:
+  - DB-backed endpoint permission and browser checks still need the BaoTa/test-server database environment.
+  - Chat-to-ticket actions, complaint evidence upload, SLA dashboard, quick replies, statistics dashboard, and satisfaction rating remain to be implemented.
+- Next stage:
+  - Reread the backlog and development log, then continue Phase 8.2 with chat-to-ticket creation from the workbench.
+
+## 2026-06-21 Customer Service Center Phase 8.2 Chat To Ticket
+
+- Stage name: Phase 8.2 customer-service chat-to-ticket creation slice
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting Phase 8.2.
+  - Extended `CustomerServiceTicketCreateService` so event metadata can record `source=chat-workbench` while preserving the existing default for the original ticket form.
+  - Added `/backend/mall/kf/ticket-create-from-session` JSON action for creating order-assist or complaint tickets from the selected chat session.
+  - Added a permission migration for the chat workbench ticket-create route and grants matching the existing customer-service role pattern.
+  - Added workbench controls for creating order-assist and complaint tickets from the current chat, carrying chat UUID, customer UUID, product, store, order, and operator context.
+  - Reloaded the session context after successful ticket creation so the right-side history card reflects the new ticket.
+- Main files changed/added:
+  - `common/services/mall/CustomerServiceTicketCreateService.php`
+  - `backend/modules/mall/controllers/KfController.php`
+  - `backend/modules/mall/views/kf/index.php`
+  - `console/migrations/m260621_161000_mongoyia_customer_service_chat_ticket_permission.php`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l common/services/mall/CustomerServiceTicketCreateService.php` passed.
+  - `php -l backend/modules/mall/controllers/KfController.php` passed.
+  - `php -l backend/modules/mall/views/kf/index.php` passed.
+  - `php -l console/migrations/m260621_161000_mongoyia_customer_service_chat_ticket_permission.php` passed.
+- Remaining issues:
+  - DB-backed AJAX ticket creation still needs BaoTa/test-server verification after migrations.
+  - Complaint evidence upload, SLA dashboard, quick replies, statistics dashboard, and satisfaction rating remain to be implemented.
+- Next stage:
+  - Reread the backlog and development log, then continue Phase 8.3 with complaint image evidence upload.
+
+## 2026-06-21 Customer Service Center Phase 8.3 Complaint Evidence Upload
+
+- Stage name: Phase 8.3 customer-service complaint image evidence upload slice
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting Phase 8.3.
+  - Added `CustomerServiceComplaintEvidenceService` for complaint-only image evidence validation, non-public runtime storage, evidence metadata normalization, store-scope guard, protected view resolution, unreviewed delete, and event audit rows.
+  - Added `/backend/mall/kf/complaint-evidence-upload`, `/backend/mall/kf/complaint-evidence-view`, and `/backend/mall/kf/complaint-evidence-delete` actions.
+  - Added a permission migration for the complaint evidence upload/view/delete routes and grants matching the existing customer-service role pattern.
+  - Replaced the disabled complaint evidence gate card on the ticket detail page with an enabled complaint-only upload/list/view/delete UI.
+  - Kept the runtime boundary explicit: evidence upload writes only `mall_customer_service_ticket.evidence_json`, stores image files under non-public runtime storage, appends `mall_customer_service_event`, preserves ticket status, and does not mutate orders, payments, funds, stock, refunds, settlement rows, chats, or statistics.
+- Main files changed/added:
+  - `common/services/mall/CustomerServiceComplaintEvidenceService.php`
+  - `backend/modules/mall/controllers/KfController.php`
+  - `backend/modules/mall/views/kf/ticket-view.php`
+  - `console/migrations/m260621_162000_mongoyia_customer_service_complaint_evidence_permission.php`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l common/services/mall/CustomerServiceComplaintEvidenceService.php` passed.
+  - `php -l backend/modules/mall/controllers/KfController.php` passed.
+  - `php -l backend/modules/mall/views/kf/ticket-view.php` passed.
+  - `php -l console/migrations/m260621_162000_mongoyia_customer_service_complaint_evidence_permission.php` passed.
+- Remaining issues:
+  - DB-backed upload/view/delete browser checks still need the BaoTa/test-server database environment after migrations.
+  - SLA dashboard, quick replies, statistics dashboard, satisfaction rating, and Phase 8 documentation/acceptance remain to be implemented.
+- Next stage:
+  - Reread the backlog and development log, then continue Phase 8.4 with SLA dashboard and reminders.
+
+## 2026-06-21 Customer Service Center Phase 8.4 SLA Dashboard And Reminders
+
+- Stage name: Phase 8.4 customer-service SLA dashboard and reminder slice
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting Phase 8.4.
+  - Reused existing SLA readiness and SLA handling services to compute first-response overdue, resolution overdue, soon-overdue watch buckets, missing result counts, and action-required rows for the backend ticket page.
+  - Added SLA threshold inputs to `/backend/mall/kf/tickets` for first response seconds, resolution seconds, and watch-window seconds.
+  - Added a read-only SLA dashboard with summary cards, action-required ticket rows, CSV export links, and Phase 7 email-alert handoff messaging.
+  - Kept the runtime boundary explicit: the dashboard does not auto-close tickets, auto-compensate, modify orders/payments/funds, or run automatic SLA handling.
+- Main files changed/added:
+  - `backend/modules/mall/controllers/KfController.php`
+  - `backend/modules/mall/views/kf/tickets.php`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l backend/modules/mall/controllers/KfController.php` passed.
+  - `php -l backend/modules/mall/views/kf/tickets.php` passed.
+- Remaining issues:
+  - Real alert sending depends on Phase 7 SMTP/email alert configuration in a DB-enabled environment.
+  - DB-backed dashboard rendering still needs BaoTa/test-server verification after migrations.
+  - Quick replies, statistics dashboard, satisfaction rating, and Phase 8 documentation/acceptance remain to be implemented.
+- Next stage:
+  - Reread the backlog and development log, then continue Phase 8.5 with quick replies and script library.
+
+## 2026-06-21 Customer Service Center Phase 8.5 Quick Replies
+
+- Stage name: Phase 8.5 customer-service quick replies and script library slice
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting Phase 8.5.
+  - Added `mall_customer_service_quick_reply` table migration with platform/global and store-scoped quick reply records.
+  - Added `CustomerServiceQuickReplyService` for category definitions, visible rows, workbench rows, store-scope guards, save, and soft-delete.
+  - Added `/backend/mall/kf/quick-replies`, `/backend/mall/kf/quick-reply-save`, and `/backend/mall/kf/quick-reply-delete` actions and permissions.
+  - Added a backend quick-reply management page for categories: order, logistics, payment, refund, complaint, and presale.
+  - Added workbench quick-reply insertion: selecting a reply inserts content into the chat input and does not send automatically.
+  - Kept the runtime boundary explicit: quick replies only manage text templates and do not send IM messages, mutate tickets, or change orders/payments/funds.
+- Main files changed/added:
+  - `common/services/mall/CustomerServiceQuickReplyService.php`
+  - `console/migrations/m260621_163000_mongoyia_customer_service_quick_reply.php`
+  - `backend/modules/mall/controllers/KfController.php`
+  - `backend/modules/mall/views/kf/index.php`
+  - `backend/modules/mall/views/kf/quick-replies.php`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l common/services/mall/CustomerServiceQuickReplyService.php` passed.
+  - `php -l console/migrations/m260621_163000_mongoyia_customer_service_quick_reply.php` passed.
+  - `php -l backend/modules/mall/controllers/KfController.php` passed.
+  - `php -l backend/modules/mall/views/kf/index.php` passed.
+  - `php -l backend/modules/mall/views/kf/quick-replies.php` passed.
+- Remaining issues:
+  - DB-backed quick-reply create/delete and workbench insertion still need BaoTa/test-server browser verification after migrations.
+  - Statistics dashboard, satisfaction rating, and Phase 8 documentation/acceptance remain to be implemented.
+- Next stage:
+  - Reread the backlog and development log, then continue Phase 8.6 with service statistics and audit dashboard.
+
+## 2026-06-21 Customer Service Center Phase 8.6 Statistics Dashboard
+
+- Stage name: Phase 8.6 customer-service statistics and audit dashboard slice
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting Phase 8.6.
+  - Reused `CustomerServiceStatWidgetReadinessService` to provide read-only totals for backend statistics widgets.
+  - Added a service statistics dashboard to `/backend/mall/kf/tickets` showing sessions, tickets, complaints, resolved/unresolved counts, resolution rate, average first response, average resolution time, scanned stat rows, and dashboard status.
+  - Preserved the existing CSV export and stat apply audit-log entry.
+  - Kept the runtime boundary explicit: the dashboard does not recalculate/write statistics from the page and does not mutate tickets, chats, orders, payments, funds, or statistics rows.
+- Main files changed/added:
+  - `backend/modules/mall/controllers/KfController.php`
+  - `backend/modules/mall/views/kf/tickets.php`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l backend/modules/mall/controllers/KfController.php` passed.
+  - `php -l backend/modules/mall/views/kf/tickets.php` passed.
+- Remaining issues:
+  - DB-backed dashboard values still need BaoTa/test-server verification with real/stat fixture rows.
+  - Satisfaction rating and Phase 8 documentation/acceptance remain to be implemented.
+- Next stage:
+  - Reread the backlog and development log, then continue Phase 8.7 with satisfaction rating.
+
+## 2026-06-21 Customer Service Center Phase 8.7 Satisfaction Rating
+
+- Stage name: Phase 8.7 customer-service satisfaction rating slice
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting Phase 8.7.
+  - Added `mall_customer_service_rating` migration for chat/session ratings with duplicate submission protection by chat UUID and customer UUID.
+  - Added `CustomerServiceRatingService` for rating labels, frontend submit, duplicate checks, and backend ticket-related rating lookup.
+  - Added frontend `/mall/chat/rating-submit` JSON action.
+  - Added a minimal frontend chat page with text/image chat controls and a satisfaction rating form for satisfied/neutral/dissatisfied plus optional reason/remark.
+  - Added backend ticket detail rating display.
+  - Kept the runtime boundary explicit: ratings are recorded only as feedback and do not auto-punish staff, change tickets, mutate orders, or touch payments/funds.
+- Main files changed/added:
+  - `common/services/mall/CustomerServiceRatingService.php`
+  - `console/migrations/m260621_164000_mongoyia_customer_service_rating.php`
+  - `frontend/modules/mall/controllers/ChatController.php`
+  - `frontend/modules/mall/views/chat/index.php`
+  - `backend/modules/mall/controllers/KfController.php`
+  - `backend/modules/mall/views/kf/ticket-view.php`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l common/services/mall/CustomerServiceRatingService.php` passed.
+  - `php -l console/migrations/m260621_164000_mongoyia_customer_service_rating.php` passed.
+  - `php -l frontend/modules/mall/controllers/ChatController.php` passed.
+  - `php -l frontend/modules/mall/views/chat/index.php` passed.
+  - `php -l backend/modules/mall/controllers/KfController.php` passed.
+  - `php -l backend/modules/mall/views/kf/ticket-view.php` passed.
+- Remaining issues:
+  - DB-backed frontend rating submission and backend display still need BaoTa/test-server browser verification after migrations.
+  - Phase 8 documentation and acceptance remain to be implemented.
+- Next stage:
+  - Reread the backlog and development log, then continue Phase 8.8 with documentation and acceptance notes.
+
+## 2026-06-21 Customer Service Center Phase 8.8 Documentation And Static Acceptance
+
+- Stage name: Phase 8.8 customer-service documentation and static acceptance slice
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting Phase 8.8.
+  - Added `docs/mongoyia-customer-service-center-phase8-guide.md` with deployment commands, platform客服流程, 商家客服流程, 买家流程, 投诉证据规则, SLA 看板说明, 统计看板说明, and browser acceptance checklist.
+  - Ran a consolidated static PHP syntax check for Phase 8 services, controllers, views, and migrations.
+  - Updated the Phase 8 backlog row to show code/documentation completion and remaining DB-enabled browser acceptance.
+- Main files changed/added:
+  - `docs/mongoyia-customer-service-center-phase8-guide.md`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l common/services/mall/CustomerServiceComplaintEvidenceService.php` passed.
+  - `php -l common/services/mall/CustomerServiceQuickReplyService.php` passed.
+  - `php -l common/services/mall/CustomerServiceRatingService.php` passed.
+  - `php -l backend/modules/mall/controllers/KfController.php` passed.
+  - `php -l frontend/modules/mall/controllers/ChatController.php` passed.
+  - `php -l backend/modules/mall/views/kf/index.php` passed.
+  - `php -l backend/modules/mall/views/kf/tickets.php` passed.
+  - `php -l backend/modules/mall/views/kf/ticket-view.php` passed.
+  - `php -l backend/modules/mall/views/kf/quick-replies.php` passed.
+  - `php -l frontend/modules/mall/views/chat/index.php` passed.
+  - `php -l console/migrations/m260621_162000_mongoyia_customer_service_complaint_evidence_permission.php` passed.
+  - `php -l console/migrations/m260621_163000_mongoyia_customer_service_quick_reply.php` passed.
+  - `php -l console/migrations/m260621_164000_mongoyia_customer_service_rating.php` passed.
+- Browser validation result:
+  - Not run from this local patch checkout because there is no running DB-backed Yii service for this worktree, and the target BaoTa server has not pulled/applied these Phase 8 migrations yet.
+  - Required DB-enabled/browser follow-up: deploy code, run migrations, restart PHP-FPM, then verify buyer chat, seller workbench, platform workbench, chat-to-ticket, complaint evidence, ticket workflow, SLA dashboard, quick replies, and satisfaction rating using the checklist in `docs/mongoyia-customer-service-center-phase8-guide.md`.
+- Remaining issues:
+  - Phase 8 cannot be marked fully accepted until BaoTa/test-server browser role-flow validation is completed after deployment and migrations.
+- Next stage:
+  - Deploy Phase 8 to the BaoTa/test-server environment, run migrations, complete browser role-flow acceptance, then append the browser validation evidence to this log.
+
+## 2026-06-21 Customer Service Center Phase 8.8 Theme Rating And Readiness Marker Fix
+
+- Stage name: Phase 8.8 customer-service buyer theme rating and readiness marker fix
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before continuing Phase 8.8.
+  - Found that the runtime buyer chat page can be served from the mall theme path `web/resources/mall/default/views/chat/index.php`, while the earlier satisfaction-rating UI was only added to the module fallback view.
+  - Added a compact buyer satisfaction-rating panel to the active mall theme chat view with satisfied/neutral/dissatisfied choices, optional reason/remark fields, CSRF submission, and `chat_uuid/customer_uuid` aligned to the existing IM localStorage session id.
+  - Enhanced `customer-service-test/run` source markers so the existing readiness command now checks Phase 8 workbench/context/chat-ticket/quick-reply/evidence/stat/rating markers.
+  - Updated the Phase 8 operation guide and backlog to mention the readiness command and active theme rating entry.
+- Main files changed/added:
+  - `web/resources/mall/default/views/chat/index.php`
+  - `console/controllers/CustomerServiceTestController.php`
+  - `docs/mongoyia-customer-service-center-phase8-guide.md`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l web/resources/mall/default/views/chat/index.php` passed.
+  - `php -l console/controllers/CustomerServiceTestController.php` passed.
+  - Existing consolidated Phase 8 syntax checks for services, controllers, views, and migrations passed earlier in this turn.
+- Remaining issues:
+  - DB-backed `customer-service-test/run` and browser role-flow validation still need the BaoTa/test-server environment after pulling code and running migrations.
+  - Satisfaction rating duplicate protection still needs browser verification against the real database.
+- Next stage:
+  - Deploy Phase 8 to BaoTa/test server, run migrations, run `customer-service-test/run --baseUrl=https://demo2026.mongoyia.com`, then complete browser validation for buyer, merchant客服, and platform客服 flows.

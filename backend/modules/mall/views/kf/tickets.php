@@ -8,6 +8,10 @@ use yii\helpers\Url;
 /* @var $storeId int */
 /* @var $limit int */
 /* @var $filters array */
+/* @var $slaOptions array */
+/* @var $slaReadiness array */
+/* @var $slaHandling array */
+/* @var $statDashboard array */
 /* @var $stores array */
 /* @var $ticketTypes array */
 /* @var $ticketStatuses array */
@@ -28,6 +32,21 @@ $statusLabels = [
     'resolved' => '已解决',
     'closed' => '已关闭',
 ];
+$slaActionLabels = [
+    'first_response_overdue' => '首响超时',
+    'resolution_overdue' => '解决超时',
+    'result_writeback_required' => '缺处理结果',
+    'first_response_watch' => '首响即将超时',
+    'resolution_watch' => '解决即将超时',
+    'no_action' => '正常',
+];
+$slaReadinessTotals = $slaReadiness['totals'] ?? [];
+$slaHandlingTotals = $slaHandling['totals'] ?? [];
+$statTotals = $statDashboard['totals'] ?? [];
+$avgFirstResponseSeconds = (int)($statTotals['ticket_count'] ?? 0) > 0 ? round((int)($statTotals['first_response_seconds_total'] ?? 0) / max(1, (int)$statTotals['ticket_count'])) : 0;
+$avgResolvedSeconds = (int)($statTotals['resolved_count'] ?? 0) > 0 ? round((int)($statTotals['resolved_seconds_total'] ?? 0) / max(1, (int)$statTotals['resolved_count'])) : 0;
+$resolvedBase = (int)($statTotals['resolved_count'] ?? 0) + (int)($statTotals['unresolved_count'] ?? 0);
+$resolvedRate = $resolvedBase > 0 ? round(((int)($statTotals['resolved_count'] ?? 0) / $resolvedBase) * 100, 1) : 0;
 ?>
 
 <div class="row" data-mongoyia-customer-service-ticket-readonly="index">
@@ -57,6 +76,9 @@ $statusLabels = [
                                 <option value="<?= Html::encode($status) ?>" <?= (string)$filters['ticket_status'] === (string)$status ? 'selected' : '' ?>><?= Html::encode($statusLabels[$status] ?? $status) ?></option>
                             <?php endforeach; ?>
                         </select>
+                        <input name="first_response_seconds" class="form-control form-control-sm mr-2" type="number" min="60" max="86400" title="首响 SLA 秒数" value="<?= (int)($slaOptions['first_response_seconds'] ?? 1800) ?>">
+                        <input name="resolution_seconds" class="form-control form-control-sm mr-2" type="number" min="300" max="2592000" title="解决 SLA 秒数" value="<?= (int)($slaOptions['resolution_seconds'] ?? 86400) ?>">
+                        <input name="watch_window_seconds" class="form-control form-control-sm mr-2" type="number" min="60" max="86400" title="即将超时窗口秒数" value="<?= (int)($slaOptions['watch_window_seconds'] ?? 3600) ?>">
                         <input name="limit" class="form-control form-control-sm mr-2" type="number" min="1" max="500" value="<?= (int)$limit ?>">
                         <button class="btn btn-primary btn-sm" type="submit">查看工单</button>
                     </form>
@@ -137,6 +159,105 @@ $statusLabels = [
                     </div>
                     <button type="submit" class="btn btn-outline-primary btn-sm">创建工单</button>
                 </form>
+            </div>
+        </div>
+
+        <div class="card" data-mongoyia-customer-service-sla-dashboard="phase8">
+            <div class="card-header">
+                <h3 class="card-title">SLA 看板</h3>
+                <div class="card-tools">
+                    <a
+                        class="btn btn-outline-secondary btn-sm"
+                        data-mongoyia-customer-service-export-sla="csv"
+                        href="<?= Html::encode(Url::to(['sla-readiness', 'store_id' => (int)$storeId, 'ticket_type' => (string)$filters['ticket_type'], 'first_response_seconds' => (int)($slaOptions['first_response_seconds'] ?? 1800), 'resolution_seconds' => (int)($slaOptions['resolution_seconds'] ?? 86400), 'limit' => (int)$limit])) ?>"
+                    >导出SLA CSV</a>
+                    <a
+                        class="btn btn-outline-secondary btn-sm"
+                        data-mongoyia-customer-service-export-sla-handling="csv"
+                        href="<?= Html::encode(Url::to(['sla-handling', 'store_id' => (int)$storeId, 'ticket_type' => (string)$filters['ticket_type'], 'first_response_seconds' => (int)($slaOptions['first_response_seconds'] ?? 1800), 'resolution_seconds' => (int)($slaOptions['resolution_seconds'] ?? 86400), 'watch_window_seconds' => (int)($slaOptions['watch_window_seconds'] ?? 3600), 'limit' => (int)$limit])) ?>"
+                    >导出处理建议 CSV</a>
+                </div>
+            </div>
+            <div class="card-body">
+                <p class="text-muted">MONGOYIA_CUSTOMER_SERVICE_SLA_DASHBOARD_PHASE8_V1：本看板只读展示首响超时、解决超时、即将超时和缺处理结果；告警发送依赖 Phase 7 邮件告警配置，页面不自动关闭、不赔付、不升级资金处理。</p>
+                <div class="row text-center">
+                    <div class="col-md-2 col-6 mb-2">
+                        <div class="border rounded p-2">
+                            <div class="h4 mb-0"><?= (int)($slaReadinessTotals['ticket_count'] ?? 0) ?></div>
+                            <small class="text-muted">扫描工单</small>
+                        </div>
+                    </div>
+                    <div class="col-md-2 col-6 mb-2">
+                        <div class="border rounded p-2">
+                            <div class="h4 mb-0 text-danger"><?= (int)($slaHandlingTotals['first_response_overdue_count'] ?? 0) ?></div>
+                            <small class="text-muted">首响超时</small>
+                        </div>
+                    </div>
+                    <div class="col-md-2 col-6 mb-2">
+                        <div class="border rounded p-2">
+                            <div class="h4 mb-0 text-danger"><?= (int)($slaHandlingTotals['resolution_overdue_count'] ?? 0) ?></div>
+                            <small class="text-muted">解决超时</small>
+                        </div>
+                    </div>
+                    <div class="col-md-2 col-6 mb-2">
+                        <div class="border rounded p-2">
+                            <div class="h4 mb-0 text-warning"><?= (int)($slaHandlingTotals['first_response_watch_count'] ?? 0) + (int)($slaHandlingTotals['resolution_watch_count'] ?? 0) ?></div>
+                            <small class="text-muted">即将超时</small>
+                        </div>
+                    </div>
+                    <div class="col-md-2 col-6 mb-2">
+                        <div class="border rounded p-2">
+                            <div class="h4 mb-0 text-info"><?= (int)($slaReadinessTotals['missing_result_count'] ?? 0) ?></div>
+                            <small class="text-muted">缺处理结果</small>
+                        </div>
+                    </div>
+                    <div class="col-md-2 col-6 mb-2">
+                        <div class="border rounded p-2">
+                            <div class="h4 mb-0"><?= (int)($slaHandlingTotals['action_required_count'] ?? 0) ?></div>
+                            <small class="text-muted">需处理</small>
+                        </div>
+                    </div>
+                </div>
+                <?php $alertCount = (int)($slaHandlingTotals['first_response_overdue_count'] ?? 0) + (int)($slaHandlingTotals['resolution_overdue_count'] ?? 0); ?>
+                <div class="alert <?= $alertCount > 0 ? 'alert-warning' : 'alert-light' ?> mb-3">
+                    <?= $alertCount > 0 ? '存在 SLA 超时工单，若 Phase 7 邮件告警已启用，可按阈值发送超时告警。' : '当前筛选范围内没有 SLA 超时工单。' ?>
+                </div>
+            </div>
+            <div class="card-body p-0 table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead>
+                    <tr>
+                        <th>工单</th>
+                        <th>店铺</th>
+                        <th>状态</th>
+                        <th>首响耗时</th>
+                        <th>解决耗时</th>
+                        <th>处理建议</th>
+                        <th>标题</th>
+                        <th>详情</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <?php $visibleSlaRows = 0; ?>
+                    <?php foreach (($slaHandling['rows'] ?? []) as $row): ?>
+                        <?php if ((string)($row['suggested_action'] ?? 'no_action') === 'no_action') { continue; } ?>
+                        <?php $visibleSlaRows++; ?>
+                        <tr>
+                            <td>#<?= (int)$row['id'] ?><br><small class="text-muted"><?= Html::encode($row['ticket_sn'] ?? '') ?></small></td>
+                            <td><?= (int)$row['store_id'] ?></td>
+                            <td><?= Html::encode($statusLabels[$row['ticket_status']] ?? $row['ticket_status']) ?></td>
+                            <td><?= (int)$row['first_response_seconds'] ?>s</td>
+                            <td><?= (int)$row['resolution_seconds'] ?>s</td>
+                            <td><span class="badge badge-warning"><?= Html::encode($slaActionLabels[$row['suggested_action']] ?? $row['suggested_action']) ?></span></td>
+                            <td><?= Html::encode($row['title'] ?? '') ?></td>
+                            <td><a class="btn btn-outline-primary btn-sm" href="<?= Html::encode(Url::to(['ticket-view', 'id' => (int)$row['id'], 'store_id' => (int)$storeId])) ?>">查看</a></td>
+                        </tr>
+                    <?php endforeach; ?>
+                    <?php if ($visibleSlaRows === 0): ?>
+                        <tr><td colspan="8" class="text-muted text-center">暂无需要处理的 SLA 工单</td></tr>
+                    <?php endif; ?>
+                    </tbody>
+                </table>
             </div>
         </div>
 
@@ -226,6 +347,73 @@ $statusLabels = [
                         data-mongoyia-customer-service-stat-apply-log-review="link"
                         href="<?= Html::encode(Url::to(['stat-apply-log', 'store_id' => (int)$storeId, 'limit' => 100])) ?>"
                     >查看写入审计</a>
+                </div>
+            </div>
+            <div class="card-body" data-mongoyia-customer-service-stat-dashboard="phase8">
+                <p class="text-muted">MONGOYIA_CUSTOMER_SERVICE_STAT_DASHBOARD_PHASE8_V1：本看板只读展示客服统计，统计写入和重算仍走审计流程，不在页面直接覆盖。</p>
+                <div class="row text-center">
+                    <div class="col-md-2 col-6 mb-2">
+                        <div class="border rounded p-2">
+                            <div class="h4 mb-0"><?= (int)($statTotals['session_count'] ?? 0) ?></div>
+                            <small class="text-muted">会话数</small>
+                        </div>
+                    </div>
+                    <div class="col-md-2 col-6 mb-2">
+                        <div class="border rounded p-2">
+                            <div class="h4 mb-0"><?= (int)($statTotals['ticket_count'] ?? 0) ?></div>
+                            <small class="text-muted">工单数</small>
+                        </div>
+                    </div>
+                    <div class="col-md-2 col-6 mb-2">
+                        <div class="border rounded p-2">
+                            <div class="h4 mb-0"><?= (int)($statTotals['complaint_count'] ?? 0) ?></div>
+                            <small class="text-muted">投诉数</small>
+                        </div>
+                    </div>
+                    <div class="col-md-2 col-6 mb-2">
+                        <div class="border rounded p-2">
+                            <div class="h4 mb-0 text-success"><?= (int)($statTotals['resolved_count'] ?? 0) ?></div>
+                            <small class="text-muted">已解决</small>
+                        </div>
+                    </div>
+                    <div class="col-md-2 col-6 mb-2">
+                        <div class="border rounded p-2">
+                            <div class="h4 mb-0 text-warning"><?= (int)($statTotals['unresolved_count'] ?? 0) ?></div>
+                            <small class="text-muted">未解决</small>
+                        </div>
+                    </div>
+                    <div class="col-md-2 col-6 mb-2">
+                        <div class="border rounded p-2">
+                            <div class="h4 mb-0"><?= $resolvedRate ?>%</div>
+                            <small class="text-muted">解决率</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="row text-center">
+                    <div class="col-md-3 col-6 mb-2">
+                        <div class="border rounded p-2">
+                            <div class="h5 mb-0"><?= (int)$avgFirstResponseSeconds ?>s</div>
+                            <small class="text-muted">平均首响</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-6 mb-2">
+                        <div class="border rounded p-2">
+                            <div class="h5 mb-0"><?= (int)$avgResolvedSeconds ?>s</div>
+                            <small class="text-muted">平均解决</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-6 mb-2">
+                        <div class="border rounded p-2">
+                            <div class="h5 mb-0"><?= (int)($statDashboard['rowsScanned'] ?? 0) ?></div>
+                            <small class="text-muted">统计行</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-6 mb-2">
+                        <div class="border rounded p-2">
+                            <div class="h5 mb-0"><?= empty($statDashboard['issues']) ? 'OK' : 'WARN' ?></div>
+                            <small class="text-muted">看板状态</small>
+                        </div>
+                    </div>
                 </div>
             </div>
             <div class="card-body border-bottom" data-mongoyia-customer-service-stat-widget-readiness="reserved">

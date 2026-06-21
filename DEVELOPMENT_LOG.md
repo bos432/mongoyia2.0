@@ -3627,3 +3627,28 @@
   - The only unrelated local untracked file remains `docs/mongoyia-operational-config-provider-setup-guide.md`; it was not modified or included.
 - Next stage:
   - Run the BaoTa/test-server command block from the previous handoff, then continue Phase 8 browser validation for buyer, merchant客服, and platform客服.
+
+## 2026-06-21 Customer Service Center Phase 8 Post-Deployment Probe
+
+- Stage name: Phase 8.8 post-deployment HTTP probe after BaoTa execution
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before continuing the Phase 8.8 deployment acceptance stage.
+  - Confirmed GitHub `https://github.com/bos432/mongoyia2.0.git` `master` points to `ca917c2a33dd047d471cf53398cb9765a6768333`.
+  - Probed `https://demo2026.mongoyia.com/mall/chat/index?gid=2`; the live buyer chat page now renders Phase 8 frontend markers, including `data-mongoyia-customer-service-rating="frontend"`, `ratingUrl`, `merchantId=1`, `productId=2`, `storeId=1`, and `wss://demo2026.mongoyia.com/ws-im`.
+  - Submitted a CSRF/cookie-backed test rating to `https://demo2026.mongoyia.com/mall/chat/rating-submit?lang=en`; the live endpoint returned `{"code":200,"msg":"ok","data":{"id":1,"rating":"satisfied","rating_score":3}}`.
+  - Probed backend customer-service entrances without login; `/backend/mall/kf/index`, `/backend/mall/kf/tickets`, and `/backend/mall/kf/quick-replies` all returned HTTP 302 to `/backend/site/login`, confirming access control is active.
+  - Attempted to claim the right-side in-app browser for logged-in role-flow validation; browser automation still failed before interaction with a desktop runtime metadata error.
+  - Attempted HTTP backend login with documented test accounts; the server returned the login page, so this local environment could not verify authenticated backend workbench pages through curl.
+- Main files changed/added:
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - Frontend buyer chat page Phase 8 markers: PASS for product `gid=2`.
+  - Frontend satisfaction-rating POST: PASS, response `code=200`, inserted rating id `1`.
+  - Backend customer-service route protection: PASS for unauthenticated 302 redirects.
+  - Right-side browser role-flow validation: BLOCKED by browser automation runtime metadata error in this desktop environment.
+  - Authenticated backend curl validation: BLOCKED because documented test credentials did not establish a backend session from this environment.
+- Remaining issues:
+  - Phase 8 cannot be marked fully accepted until logged-in browser role-flow validation covers buyer, merchant客服, and platform客服 operations.
+  - Need BaoTa/test-server output for `yii customer-service-test/run --baseUrl=https://demo2026.mongoyia.com --interactive=0`, or a usable logged-in browser session that the automation tool can access.
+- Next stage:
+  - Collect the BaoTa `customer-service-test/run` output and complete browser validation for客服工作台, chat-to-ticket, complaint evidence, SLA/stat dashboard, quick replies, and backend rating display.

@@ -3,6 +3,7 @@
 namespace common\components\mailer;
 
 use common\helpers\ValidHelper;
+use common\services\mall\OperationalMailConfigService;
 use Yii;
 
 /**
@@ -18,6 +19,14 @@ class SmtpMailer
     public function __construct($config = [])
     {
         $this->config = [];
+        if (!$config) {
+            try {
+                $config = (new OperationalMailConfigService())->runtimeConfig();
+            } catch (\Throwable $e) {
+                Yii::warning($e->getMessage(), 'mall.smtp_mailer.operational_config_fallback');
+                $config = [];
+            }
+        }
         $count = count(Yii::$app->params['smtpHosts'] ?? ['a']);
         $i = rand(0, $count - 1);
         $this->setConfig([

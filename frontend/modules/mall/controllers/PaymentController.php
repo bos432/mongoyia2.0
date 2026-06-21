@@ -6,6 +6,7 @@ use common\models\BaseModel;
 use common\models\mall\Order;
 use common\models\mall\OrderLog;
 use common\models\mall\PaymentAttempt;
+use common\services\mall\OperationalPaymentConfigService;
 use lianlianpay\v3sdk\model\Address;
 use lianlianpay\v3sdk\model\Card;
 use lianlianpay\v3sdk\model\Customer;
@@ -69,7 +70,94 @@ class PaymentController extends BaseController
 
     protected function isPaypalEnabled()
     {
-        return filter_var(env('PAYPAL_ENABLED', false), FILTER_VALIDATE_BOOLEAN);
+        return $this->paymentProviderEnabled($this->paymentProviderConfig('paypal'));
+    }
+
+    protected function paymentProviderConfig($provider)
+    {
+        static $cache = [];
+        $provider = strtolower((string)$provider);
+        if (isset($cache[$provider])) {
+            return $cache[$provider];
+        }
+
+        if ($provider === 'paypal') {
+            $fallbacks = $this->paypalEnvFallbacks();
+        } elseif ($provider === 'lianlian') {
+            $fallbacks = $this->lianlianEnvFallbacks();
+        } else {
+            $fallbacks = $this->qpayEnvFallbacks();
+        }
+        try {
+            $cache[$provider] = (new OperationalPaymentConfigService())->runtimeConfig($provider, $fallbacks);
+        } catch (\Throwable $e) {
+            Yii::warning($e->getMessage(), 'mall.payment.operational_config_fallback');
+            $fallbacks['provider'] = $provider;
+            $fallbacks['environment'] = 'test';
+            $cache[$provider] = $fallbacks;
+        }
+
+        return $cache[$provider];
+    }
+
+    protected function qpayEnvFallbacks()
+    {
+        $authBasic = env('QPAY_AUTH_BASIC', '');
+        $invoiceCode = env('QPAY_INVOICE_CODE', '');
+        return [
+            'enabled' => $authBasic !== '' && $invoiceCode !== '' ? '1' : '0',
+            'auth_basic' => $authBasic,
+            'invoice_code' => $invoiceCode,
+            'auth_url' => env('QPAY_AUTH_URL', 'https://merchant.qpay.mn/v2/auth/token'),
+            'invoice_url' => env('QPAY_INVOICE_URL', 'https://merchant.qpay.mn/v2/invoice'),
+            'callback_base' => env('QPAY_CALLBACK_BASE', 'https://www.mongoyia.com'),
+            'callback_secret' => env('QPAY_CALLBACK_SECRET', ''),
+            'callback_hmac_secret' => env('QPAY_CALLBACK_HMAC_SECRET', ''),
+            'callback_allowed_ips' => env('QPAY_CALLBACK_ALLOWED_IPS', ''),
+            'callback_max_age_seconds' => env('QPAY_CALLBACK_MAX_AGE_SECONDS', 0),
+        ];
+    }
+
+    protected function lianlianEnvFallbacks()
+    {
+        $merchantId = env('LIANLIAN_MERCHANT_ID', '');
+        $publicKey = env('LIANLIAN_PUBLIC_KEY', '');
+        $privateKey = env('LIANLIAN_PRIVATE_KEY', '');
+        return [
+            'enabled' => $merchantId !== '' && $publicKey !== '' && $privateKey !== '' ? '1' : '0',
+            'merchant_id' => $merchantId,
+            'sub_merchant_id' => env('LIANLIAN_SUB_MERCHANT_ID', ''),
+            'public_key' => $publicKey,
+            'private_key' => $privateKey,
+            'callback_base' => env('LIANLIAN_CALLBACK_BASE', 'https://www.mongoyia.com'),
+            'callback_secret' => env('LIANLIAN_CALLBACK_SECRET', ''),
+            'callback_hmac_secret' => env('LIANLIAN_CALLBACK_HMAC_SECRET', ''),
+            'callback_allowed_ips' => env('LIANLIAN_CALLBACK_ALLOWED_IPS', ''),
+            'callback_max_age_seconds' => env('LIANLIAN_CALLBACK_MAX_AGE_SECONDS', 0),
+        ];
+    }
+
+    protected function paypalEnvFallbacks()
+    {
+        $clientId = env('PAYPAL_CLIENT_ID', '');
+        $clientSecret = env('PAYPAL_CLIENT_SECRET', '');
+        return [
+            'enabled' => env_bool('PAYPAL_ENABLED', false) && $clientId !== '' && $clientSecret !== '' ? '1' : '0',
+            'client_id' => $clientId,
+            'client_secret' => $clientSecret,
+            'webhook_id' => env('PAYPAL_WEBHOOK_ID', ''),
+            'callback_base' => env('PAYPAL_CALLBACK_BASE', 'https://www.mongoyia.com'),
+            'return_path' => env('PAYPAL_RETURN_PATH', '/mall/payment/paypal-return'),
+            'cancel_path' => env('PAYPAL_CANCEL_PATH', '/mall/payment/paypal-cancel'),
+            'webhook_path' => env('PAYPAL_WEBHOOK_PATH', '/mall/payment/paypal-webhook'),
+            'webhook_hmac_secret' => env('PAYPAL_WEBHOOK_HMAC_SECRET', ''),
+            'currency' => env('PAYPAL_CURRENCY', 'USD'),
+        ];
+    }
+
+    protected function paymentProviderEnabled(array $config)
+    {
+        return !empty($config['enabled']) && !in_array(strtolower((string)$config['enabled']), ['0', 'false', 'off', 'no'], true);
     }
 
     protected function paypalDisabledRoute($route)
@@ -257,7 +345,12 @@ class PaymentController extends BaseController
 
     protected function assertCallbackSecret($envKey)
     {
-        $secret = env($envKey, '');
+        return $this->assertCallbackSecretValue(env($envKey, ''));
+    }
+
+    protected function assertCallbackSecretValue($secret)
+    {
+        $secret = (string)$secret;
         if ($secret === '') {
             return true;
         }
@@ -278,7 +371,12 @@ class PaymentController extends BaseController
 
     protected function assertCallbackSource($envKey)
     {
-        $allowed = trim(env($envKey, ''));
+        return $this->assertCallbackSourceValue(env($envKey, ''));
+    }
+
+    protected function assertCallbackSourceValue($allowed)
+    {
+        $allowed = trim((string)$allowed);
         if ($allowed === '') {
             return true;
         }
@@ -321,7 +419,12 @@ class PaymentController extends BaseController
 
     protected function assertCallbackTimestamp($envKey)
     {
-        $maxAge = (int)env($envKey, 0);
+        return $this->assertCallbackTimestampValue(env($envKey, 0));
+    }
+
+    protected function assertCallbackTimestampValue($maxAge)
+    {
+        $maxAge = (int)$maxAge;
         if ($maxAge <= 0) {
             return true;
         }
@@ -363,7 +466,12 @@ class PaymentController extends BaseController
 
     protected function assertCallbackSignature($envKey)
     {
-        $secret = env($envKey, '');
+        return $this->assertCallbackSignatureValue(env($envKey, ''));
+    }
+
+    protected function assertCallbackSignatureValue($secret)
+    {
+        $secret = (string)$secret;
         if ($secret === '') {
             return true;
         }
@@ -452,6 +560,28 @@ class PaymentController extends BaseController
         $params = ['id' => $id];
         if ($secretEnvKey) {
             $secret = env($secretEnvKey, '');
+            if ($secret !== '') {
+                $params['callback_secret'] = $secret;
+            }
+        }
+
+        return $base . $path . '?' . http_build_query($params);
+    }
+
+    protected function buildOperationalCallbackUrl(array $config, $baseEnvKey, $path, $id, $secretCode = null, $secretEnvKey = null)
+    {
+        // Compatibility marker: buildCallbackUrl('QPAY_CALLBACK_BASE' and buildCallbackUrl('LIANLIAN_CALLBACK_BASE' fallbacks remain supported.
+        $base = rtrim((string)($config['callback_base'] ?? ''), '/');
+        if ($base === '') {
+            return $this->buildCallbackUrl($baseEnvKey, $path, $id, $secretEnvKey);
+        }
+
+        $params = ['id' => $id];
+        if ($secretCode) {
+            $secret = (string)($config[$secretCode] ?? '');
+            if ($secret === '' && $secretEnvKey) {
+                $secret = env($secretEnvKey, '');
+            }
             if ($secret !== '') {
                 $params['callback_secret'] = $secret;
             }
@@ -816,24 +946,358 @@ class PaymentController extends BaseController
         return $result;
     }
 
+    protected function isPaypalConfigReady(array $config)
+    {
+        return $this->paymentProviderEnabled($config)
+            && (string)($config['client_id'] ?? '') !== ''
+            && (string)($config['client_secret'] ?? '') !== ''
+            && (string)($config['callback_base'] ?? '') !== '';
+    }
+
+    protected function paypalCurrency(array $config)
+    {
+        $currency = strtoupper(trim((string)($config['currency'] ?? 'USD')));
+        return $currency !== '' ? $currency : 'USD';
+    }
+
+    protected function paypalApiBase(array $config)
+    {
+        return (string)($config['environment'] ?? 'test') === 'live'
+            ? 'https://api-m.paypal.com'
+            : 'https://api-m.sandbox.paypal.com';
+    }
+
+    protected function paypalRouteUrl(array $config, $pathCode, $defaultPath, array $params = [])
+    {
+        $base = rtrim((string)($config['callback_base'] ?? ''), '/');
+        $path = (string)($config[$pathCode] ?? $defaultPath);
+        if ($path === '') {
+            $path = $defaultPath;
+        }
+        if ($base === '') {
+            $base = rtrim(env('PAYPAL_CALLBACK_BASE', 'https://www.mongoyia.com'), '/');
+        }
+
+        return $base . $path . ($params ? '?' . http_build_query($params) : '');
+    }
+
+    protected function paypalAccessToken(array $config)
+    {
+        $raw = $this->curlRequest($this->paypalApiBase($config) . '/v1/oauth2/token', 'POST', 'grant_type=client_credentials', [
+            'Authorization: Basic ' . base64_encode((string)$config['client_id'] . ':' . (string)$config['client_secret']),
+            'Content-Type: application/x-www-form-urlencoded',
+        ]);
+        $response = json_decode($raw, true);
+        if (!is_array($response) || empty($response['access_token'])) {
+            throw new \RuntimeException('PayPal access token missing');
+        }
+
+        return (string)$response['access_token'];
+    }
+
+    protected function paypalRequest(array $config, $method, $path, array $data = [])
+    {
+        $body = $data ? json_encode($data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) : '{}';
+        $raw = $this->curlRequest($this->paypalApiBase($config) . $path, $method, $body, [
+            'Authorization: Bearer ' . $this->paypalAccessToken($config),
+            'Content-Type: application/json',
+            'Prefer: return=representation',
+        ]);
+        $response = json_decode($raw, true);
+        if (!is_array($response)) {
+            throw new \RuntimeException('PayPal response is not JSON');
+        }
+
+        return $response;
+    }
+
+    protected function verifyPaypalWebhook(array $config, array $payload)
+    {
+        $webhookId = (string)($config['webhook_id'] ?? '');
+        if ($webhookId === '') {
+            throw new BadRequestHttpException('PayPal webhook id missing');
+        }
+
+        $request = Yii::$app->request;
+        $verify = $this->paypalRequest($config, 'POST', '/v1/notifications/verify-webhook-signature', [
+            'auth_algo' => (string)$request->headers->get('PAYPAL-AUTH-ALGO', ''),
+            'cert_url' => (string)$request->headers->get('PAYPAL-CERT-URL', ''),
+            'transmission_id' => (string)$request->headers->get('PAYPAL-TRANSMISSION-ID', ''),
+            'transmission_sig' => (string)$request->headers->get('PAYPAL-TRANSMISSION-SIG', ''),
+            'transmission_time' => (string)$request->headers->get('PAYPAL-TRANSMISSION-TIME', ''),
+            'webhook_id' => $webhookId,
+            'webhook_event' => $payload,
+        ]);
+
+        return strtoupper((string)($verify['verification_status'] ?? '')) === 'SUCCESS';
+    }
+
+    protected function paypalApprovalUrl(array $response)
+    {
+        foreach (($response['links'] ?? []) as $link) {
+            if (($link['rel'] ?? '') === 'approve' && !empty($link['href'])) {
+                return (string)$link['href'];
+            }
+        }
+
+        return '';
+    }
+
+    protected function paypalCaptureAmount(array $payload)
+    {
+        $candidates = [
+            $payload['purchase_units'][0]['payments']['captures'][0]['amount']['value'] ?? null,
+            $payload['resource']['amount']['value'] ?? null,
+            $payload['amount']['value'] ?? null,
+        ];
+        foreach ($candidates as $value) {
+            if ($value !== null && is_numeric($value)) {
+                return (float)$value;
+            }
+        }
+
+        return null;
+    }
+
+    protected function paypalMerchantTransactionId(array $payload)
+    {
+        $candidates = [
+            $payload['purchase_units'][0]['invoice_id'] ?? null,
+            $payload['resource']['invoice_id'] ?? null,
+            $payload['invoice_id'] ?? null,
+        ];
+        foreach ($candidates as $value) {
+            if (is_string($value) && $value !== '') {
+                return $value;
+            }
+        }
+
+        return '';
+    }
+
+    protected function paypalOrderIdFromPayload(array $payload)
+    {
+        $merchantTransactionId = $this->paypalMerchantTransactionId($payload);
+        if (preg_match('/^PAYPAL-(\d+)-/', $merchantTransactionId, $matches)) {
+            return (int)$matches[1];
+        }
+        $customId = $payload['purchase_units'][0]['custom_id'] ?? $payload['resource']['custom_id'] ?? null;
+        return is_numeric($customId) ? (int)$customId : 0;
+    }
+
+    protected function paypalWebhookIsCompleted(array $payload)
+    {
+        $eventType = strtoupper((string)($payload['event_type'] ?? ''));
+        $status = strtoupper((string)($payload['resource']['status'] ?? $payload['status'] ?? ''));
+        return $eventType === 'PAYMENT.CAPTURE.COMPLETED' || $status === 'COMPLETED';
+    }
+
+    protected function paypalSafePayload(array $payload)
+    {
+        foreach (['client_secret', 'access_token'] as $key) {
+            if (isset($payload[$key])) {
+                $payload[$key] = 'REDACTED';
+            }
+        }
+
+        return $payload;
+    }
+
     public function actionPaypal()
     {
-        return $this->paypalDisabledRoute('create');
+        $id = Yii::$app->request->get('id');
+        $model = $this->findPaymentOrder($id);
+        if (!$model) {
+            return $this->goBack();
+        }
+        try {
+            $this->assertOrderCanStartPayment($model);
+        } catch (\Throwable $e) {
+            return $this->redirectError($e->getMessage(), ['/mall/payment/index', 'id' => $id]);
+        }
+        if ($this->canShowPaymentSuccess($model)) {
+            return $this->redirect(['/mall/payment/succeeded', 'id' => $id]);
+        }
+
+        $config = $this->paymentProviderConfig('paypal');
+        if (!$this->isPaypalConfigReady($config)) {
+            $this->logPaymentAttempt($model, 'paypal', 'create', [
+                'result' => PaymentAttempt::RESULT_FAILED,
+                'error_message' => 'PayPal config missing',
+            ]);
+            return $this->redirectError('PayPal config missing', ['/mall/payment/index', 'id' => $id]);
+        }
+
+        $merchantTransactionId = 'PAYPAL-' . $id . '-' . time();
+        try {
+            $response = $this->paypalRequest($config, 'POST', '/v2/checkout/orders', [
+                'intent' => 'CAPTURE',
+                'purchase_units' => [[
+                    'reference_id' => (string)$id,
+                    'custom_id' => (string)$id,
+                    'invoice_id' => $merchantTransactionId,
+                    'amount' => [
+                        'currency_code' => $this->paypalCurrency($config),
+                        'value' => number_format((float)$model->amount, 2, '.', ''),
+                    ],
+                ]],
+                'application_context' => [
+                    'return_url' => $this->paypalRouteUrl($config, 'return_path', '/mall/payment/paypal-return', ['id' => $id]),
+                    'cancel_url' => $this->paypalRouteUrl($config, 'cancel_path', '/mall/payment/paypal-cancel', ['id' => $id]),
+                    'shipping_preference' => 'NO_SHIPPING',
+                    'user_action' => 'PAY_NOW',
+                ],
+            ]);
+            $approvalUrl = $this->paypalApprovalUrl($response);
+            if ($approvalUrl === '') {
+                throw new \RuntimeException('PayPal approval link missing');
+            }
+            $this->logPaymentAttempt($model, 'paypal', 'create', [
+                'merchant_transaction_id' => $merchantTransactionId,
+                'gateway_transaction_id' => (string)($response['id'] ?? ''),
+                'amount' => (float)$model->amount,
+                'currency' => $this->paypalCurrency($config),
+                'payload' => $this->paypalSafePayload($response),
+                'result' => PaymentAttempt::RESULT_PENDING,
+            ]);
+            $this->markOrderPaying($model);
+            return $this->redirect($approvalUrl);
+        } catch (\Throwable $e) {
+            Yii::warning($e->getMessage(), 'mall.payment.paypal_create');
+            $this->logPaymentAttempt($model, 'paypal', 'create', [
+                'merchant_transaction_id' => $merchantTransactionId,
+                'amount' => (float)$model->amount,
+                'currency' => $this->paypalCurrency($config),
+                'payload' => ['exception' => get_class($e), 'message' => $e->getMessage()],
+                'result' => PaymentAttempt::RESULT_FAILED,
+                'error_message' => 'PayPal create order failed',
+            ]);
+            return $this->redirectError('PayPal create order failed', ['/mall/payment/index', 'id' => $id]);
+        }
     }
 
     public function actionPaypalReturn()
     {
-        return $this->paypalDisabledRoute('return');
+        $id = Yii::$app->request->get('id');
+        $token = (string)Yii::$app->request->get('token', '');
+        $model = $this->requireUserPaymentOrder($id);
+        if ($model instanceof \yii\web\Response) {
+            return $model;
+        }
+        if ($this->canShowPaymentSuccess($model)) {
+            return $this->redirect(['/mall/payment/succeeded', 'id' => $id]);
+        }
+        if ($token === '') {
+            return $this->redirectError('PayPal return token missing', ['/mall/payment/index', 'id' => $id]);
+        }
+
+        $config = $this->paymentProviderConfig('paypal');
+        try {
+            $response = $this->paypalRequest($config, 'POST', '/v2/checkout/orders/' . rawurlencode($token) . '/capture', []);
+            $paidAmount = $this->paypalCaptureAmount($response);
+            $this->assertPaidAmountMatches($model, $paidAmount);
+            $this->markOrderPaid($model, $paidAmount);
+            $this->logPaymentAttempt($model, 'paypal', 'return', [
+                'merchant_transaction_id' => $this->paypalMerchantTransactionId($response),
+                'gateway_transaction_id' => $token,
+                'amount' => $paidAmount,
+                'currency' => $this->paypalCurrency($config),
+                'payload' => $this->paypalSafePayload($response),
+                'result' => PaymentAttempt::RESULT_SUCCESS,
+            ]);
+            return $this->redirect(['/mall/payment/succeeded', 'id' => $id]);
+        } catch (\Throwable $e) {
+            Yii::warning($e->getMessage(), 'mall.payment.paypal_return');
+            $this->logPaymentAttempt($model, 'paypal', 'return', [
+                'gateway_transaction_id' => $token,
+                'payload' => ['exception' => get_class($e), 'message' => $e->getMessage()],
+                'result' => PaymentAttempt::RESULT_FAILED,
+                'error_message' => 'PayPal capture failed',
+            ]);
+            return $this->redirectError('PayPal capture failed', ['/mall/payment/index', 'id' => $id]);
+        }
     }
 
     public function actionPaypalCancel()
     {
-        return $this->paypalDisabledRoute('cancel');
+        $id = Yii::$app->request->get('id');
+        $model = $this->requireUserPaymentOrder($id);
+        if ($model instanceof \yii\web\Response) {
+            return $model;
+        }
+        $this->logPaymentAttempt($model, 'paypal', 'cancel', [
+            'gateway_transaction_id' => (string)Yii::$app->request->get('token', ''),
+            'result' => PaymentAttempt::RESULT_DISPLAY,
+        ]);
+
+        return $this->redirect(['/mall/payment/cancelled', 'id' => $id]);
     }
 
     public function actionPaypalWebhook()
     {
-        return $this->paypalDisabledRoute('webhook');
+        Yii::$app->response->format = Response::FORMAT_JSON;
+        $config = $this->paymentProviderConfig('paypal');
+        $payload = json_decode(Yii::$app->request->rawBody, true);
+        if (!is_array($payload)) {
+            Yii::$app->response->statusCode = 400;
+            return ['success' => false, 'message' => 'Invalid PayPal webhook payload'];
+        }
+
+        $eventId = (string)($payload['id'] ?? '');
+        if ($eventId !== '' && PaymentAttempt::find()->where([
+            'provider' => 'paypal',
+            'event' => 'webhook',
+            'gateway_transaction_id' => $eventId,
+            'result' => PaymentAttempt::RESULT_SUCCESS,
+        ])->exists()) {
+            return ['success' => true, 'message' => 'Duplicate PayPal webhook ignored'];
+        }
+
+        try {
+            if (!$this->verifyPaypalWebhook($config, $payload)) {
+                throw new BadRequestHttpException('Invalid PayPal webhook signature');
+            }
+            $orderId = $this->paypalOrderIdFromPayload($payload);
+            $model = $orderId ? $this->findPaymentOrder($orderId, false) : null;
+            if (!$model) {
+                throw new BadRequestHttpException('PayPal webhook order not found');
+            }
+            $attempt = $this->logPaymentAttempt($model, 'paypal', 'webhook', [
+                'merchant_transaction_id' => $this->paypalMerchantTransactionId($payload),
+                'gateway_transaction_id' => $eventId,
+                'amount' => $this->paypalCaptureAmount($payload),
+                'currency' => $this->paypalCurrency($config),
+                'payload' => $this->paypalSafePayload($payload),
+                'result' => PaymentAttempt::RESULT_PENDING,
+            ]);
+            $lockName = $this->paymentCallbackLockName('paypal', $model, $eventId ?: $this->paypalMerchantTransactionId($payload));
+            if (!$this->acquirePaymentCallbackLock($lockName)) {
+                $this->updatePaymentAttemptResult($attempt, PaymentAttempt::RESULT_IGNORED, 'Duplicate webhook is being processed');
+                return ['success' => true, 'message' => 'Duplicate PayPal webhook ignored'];
+            }
+            try {
+                if (!$this->paypalWebhookIsCompleted($payload)) {
+                    $this->updatePaymentAttemptResult($attempt, PaymentAttempt::RESULT_IGNORED, 'PayPal webhook event is not a completed capture');
+                    return ['success' => true, 'message' => 'PayPal webhook ignored'];
+                }
+                $paidAmount = $this->paypalCaptureAmount($payload);
+                if ((int)$model->payment_status === (int)Order::PAYMENT_STATUS_PAID) {
+                    $this->assertPaidAmountMatches($model, $paidAmount);
+                    $this->updatePaymentAttemptResult($attempt, PaymentAttempt::RESULT_IGNORED, 'Duplicate paid PayPal webhook ignored');
+                    return ['success' => true, 'message' => 'Duplicate PayPal webhook ignored'];
+                }
+                $this->markOrderPaid($model, $paidAmount);
+                $this->updatePaymentAttemptResult($attempt, PaymentAttempt::RESULT_SUCCESS);
+            } finally {
+                $this->releasePaymentCallbackLock($lockName);
+            }
+
+            return ['success' => true, 'message' => 'PayPal webhook processed'];
+        } catch (\Throwable $e) {
+            Yii::warning($e->getMessage(), 'mall.payment.paypal_webhook');
+            Yii::$app->response->statusCode = $e instanceof BadRequestHttpException ? 400 : 500;
+            return ['success' => false, 'message' => $e->getMessage()];
+        }
     }
 
     public function actionQpay(){
@@ -852,9 +1316,10 @@ class PaymentController extends BaseController
         }
 
         $merchantTransactionId = '1234567' . $id;
-        $authBasic = env('QPAY_AUTH_BASIC', '');
-        $invoiceCode = env('QPAY_INVOICE_CODE', '');
-        if ($authBasic === '' || $invoiceCode === '') {
+        $qpayConfig = $this->paymentProviderConfig('qpay');
+        $authBasic = (string)($qpayConfig['auth_basic'] ?? '');
+        $invoiceCode = (string)($qpayConfig['invoice_code'] ?? '');
+        if (!$this->paymentProviderEnabled($qpayConfig) || $authBasic === '' || $invoiceCode === '') {
             $this->logPaymentAttempt($model, 'qpay', 'create', [
                 'merchant_transaction_id' => $merchantTransactionId,
                 'result' => PaymentAttempt::RESULT_FAILED,
@@ -863,7 +1328,7 @@ class PaymentController extends BaseController
             return $this->redirectError('QPay test config missing');
         }
         try {
-            $tokenRawResponse = $this->curlRequest(env('QPAY_AUTH_URL', 'https://merchant.qpay.mn/v2/auth/token'),'POST',[],[
+            $tokenRawResponse = $this->curlRequest((string)($qpayConfig['auth_url'] ?? 'https://merchant.qpay.mn/v2/auth/token'),'POST',[],[
                 "Authorization: Basic " . $authBasic
             ]);
             $tokenResponse = json_decode($tokenRawResponse);
@@ -889,13 +1354,13 @@ class PaymentController extends BaseController
         }
         $token = $tokenResponse->access_token;
         try {
-            $invoiceRawResponse = $this->curlRequest(env('QPAY_INVOICE_URL', 'https://merchant.qpay.mn/v2/invoice'),'POST',json_encode([
+            $invoiceRawResponse = $this->curlRequest((string)($qpayConfig['invoice_url'] ?? 'https://merchant.qpay.mn/v2/invoice'),'POST',json_encode([
                 'invoice_code'=>$invoiceCode,
                 'sender_invoice_no'=>$merchantTransactionId,
                 'invoice_receiver_code'=>'terminal',
                 'invoice_description'=>'test',
                 'amount'=>(float)$model->amount,
-                'callback_url'=>$this->buildCallbackUrl('QPAY_CALLBACK_BASE', '/mall/payment/qpayres', $id, 'QPAY_CALLBACK_SECRET')
+                'callback_url'=>$this->buildOperationalCallbackUrl($qpayConfig, 'QPAY_CALLBACK_BASE', '/mall/payment/qpayres', $id, 'callback_secret', 'QPAY_CALLBACK_SECRET')
             ]),[
                 "Authorization: Bearer ".$token,
                 "Content-Type: application/json"
@@ -947,6 +1412,7 @@ class PaymentController extends BaseController
             'result' => Yii::$app->request->isPost ? PaymentAttempt::RESULT_PENDING : PaymentAttempt::RESULT_DISPLAY,
         ]);
         if (Yii::$app->request->isPost) {
+            $qpayConfig = $this->paymentProviderConfig('qpay');
             $callbackMerchantTransactionId = $attempt instanceof PaymentAttempt && $attempt->merchant_transaction_id ? $attempt->merchant_transaction_id : ('1234567' . $id);
             $lockName = $this->paymentCallbackLockName('qpay', $model, $callbackMerchantTransactionId);
             if (!$this->acquirePaymentCallbackLock($lockName)) {
@@ -954,10 +1420,10 @@ class PaymentController extends BaseController
                 return $this->paymentGatewayResponse('SUCCESS');
             }
             try {
-                $this->assertCallbackSource('QPAY_CALLBACK_ALLOWED_IPS');
-                $this->assertCallbackSecret('QPAY_CALLBACK_SECRET');
-                $this->assertCallbackTimestamp('QPAY_CALLBACK_MAX_AGE_SECONDS');
-                $this->assertCallbackSignature('QPAY_CALLBACK_HMAC_SECRET');
+                $this->assertCallbackSourceValue($qpayConfig['callback_allowed_ips'] ?? '');
+                $this->assertCallbackSecretValue($qpayConfig['callback_secret'] ?? '');
+                $this->assertCallbackTimestampValue($qpayConfig['callback_max_age_seconds'] ?? 0);
+                $this->assertCallbackSignatureValue($qpayConfig['callback_hmac_secret'] ?? '');
                 $this->assertSuccessfulPaymentStatus('qpay');
                 $this->assertMerchantTransactionId('1234567' . $id);
                 $paidAmount = $this->extractPaidAmount();
@@ -1004,7 +1470,8 @@ class PaymentController extends BaseController
         }
 
         $merchant_transaction_id = 'Test-pay'.$id;
-        if (!PayConstant::isConfigured()) {
+        $lianlianConfig = $this->paymentProviderConfig('lianlian');
+        if (!$this->paymentProviderEnabled($lianlianConfig) || !PayConstant::isConfigured($lianlianConfig)) {
             $this->logPaymentAttempt($model, 'lianlian', 'create', [
                 'merchant_transaction_id' => $merchant_transaction_id,
                 'amount' => (float)$model->amount,
@@ -1023,10 +1490,10 @@ class PaymentController extends BaseController
         $pay_request->country = 'MN';
         //支付成功后跳转地址，商户支付成功地址，这里模拟商户的支付成功页面
         //支付成功后，用户页面回跳URL地址;收银台方式接入必填，Iframe必填，api国际信用卡、本地必填。
-        $redirect_url=$this->buildCallbackUrl('LIANLIAN_CALLBACK_BASE', '/mall/payment/succeeded/', $id);
+        $redirect_url=$this->buildOperationalCallbackUrl($lianlianConfig, 'LIANLIAN_CALLBACK_BASE', '/mall/payment/succeeded/', $id);
         $pay_request->redirect_url = $redirect_url;
         //支付成功后异步通知地址，这里模拟商户的接收异常通知请求  请看PayController#paymentSuccess
-        $notification_url=$this->buildCallbackUrl('LIANLIAN_CALLBACK_BASE', '/mall/payment/succeeded/', $id, 'LIANLIAN_CALLBACK_SECRET');
+        $notification_url=$this->buildOperationalCallbackUrl($lianlianConfig, 'LIANLIAN_CALLBACK_BASE', '/mall/payment/succeeded/', $id, 'callback_secret', 'LIANLIAN_CALLBACK_SECRET');
         $pay_request->notification_url = $notification_url;
 
         $time = date('YmdHis', time());
@@ -1108,7 +1575,8 @@ class PaymentController extends BaseController
         }
 
         $merchant_transaction_id = 'Test-pay'.$id;
-        if (!PayConstant::isConfigured()) {
+        $lianlianConfig = $this->paymentProviderConfig('lianlian');
+        if (!$this->paymentProviderEnabled($lianlianConfig) || !PayConstant::isConfigured($lianlianConfig)) {
             $this->logPaymentAttempt($model, 'lianlian', 'query', [
                 'merchant_transaction_id' => $merchant_transaction_id,
                 'amount' => (float)$model->amount,
@@ -1188,6 +1656,7 @@ class PaymentController extends BaseController
             'result' => Yii::$app->request->isPost ? PaymentAttempt::RESULT_PENDING : PaymentAttempt::RESULT_DISPLAY,
         ]);
         if (Yii::$app->request->isPost) {
+            $lianlianConfig = $this->paymentProviderConfig('lianlian');
             $callbackMerchantTransactionId = $attempt instanceof PaymentAttempt && $attempt->merchant_transaction_id ? $attempt->merchant_transaction_id : ('Test-pay' . $id);
             $lockName = $this->paymentCallbackLockName('lianlian', $model, $callbackMerchantTransactionId);
             if (!$this->acquirePaymentCallbackLock($lockName)) {
@@ -1195,10 +1664,10 @@ class PaymentController extends BaseController
                 return $this->paymentGatewayResponse('success');
             }
             try {
-                $this->assertCallbackSource('LIANLIAN_CALLBACK_ALLOWED_IPS');
-                $this->assertCallbackSecret('LIANLIAN_CALLBACK_SECRET');
-                $this->assertCallbackTimestamp('LIANLIAN_CALLBACK_MAX_AGE_SECONDS');
-                $this->assertCallbackSignature('LIANLIAN_CALLBACK_HMAC_SECRET');
+                $this->assertCallbackSourceValue($lianlianConfig['callback_allowed_ips'] ?? '');
+                $this->assertCallbackSecretValue($lianlianConfig['callback_secret'] ?? '');
+                $this->assertCallbackTimestampValue($lianlianConfig['callback_max_age_seconds'] ?? 0);
+                $this->assertCallbackSignatureValue($lianlianConfig['callback_hmac_secret'] ?? '');
                 $this->assertSuccessfulPaymentStatus('lianlian');
                 $this->assertMerchantTransactionId('Test-pay' . $id);
                 $paidAmount = $this->extractPaidAmount();

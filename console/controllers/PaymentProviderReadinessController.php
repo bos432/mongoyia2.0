@@ -114,7 +114,7 @@ class PaymentProviderReadinessController extends Controller
             'assertCallbackTimestamp',
         ]);
 
-        $this->requireFileMarkers('PayPal disabled route handlers guarded', $paymentController, [
+        $this->requireFileMarkers('PayPal runtime route handlers implemented', $paymentController, [
             'public function actionPaypal',
             'public function actionPaypalReturn',
             'public function actionPaypalCancel',
@@ -123,17 +123,19 @@ class PaymentProviderReadinessController extends Controller
             'MONGOYIA_PAYPAL_RETURN_ROUTE_V1',
             'MONGOYIA_PAYPAL_CANCEL_ROUTE_V1',
             'MONGOYIA_PAYPAL_WEBHOOK_ROUTE_V1',
-            'paypalDisabledRoute',
-            "env('PAYPAL_ENABLED'",
-            'PayPal payment is disabled',
+            'paypalRequest',
+            'paypalAccessToken',
+            'verifyPaypalWebhook',
+            'PayPal config missing',
+            'PayPal webhook processed',
         ]);
 
-        $this->requireFileMissingMarkers('PayPal provider credentials remain outside runtime route skeleton', $paymentController, [
-            'PAYPAL_CLIENT_SECRET',
-            'PAYPAL_WEBHOOK_ID',
-            'api-m.paypal.com',
-            'api-m.sandbox.paypal.com',
-            'Pay with PayPal',
+        $this->requireFileMarkers('PayPal backend operational config source', 'common/services/mall/OperationalPaymentConfigService.php', [
+            'client_secret',
+            'webhook_id',
+            'webhook_hmac_secret',
+            'runtimeConfig',
+            'MONGOYIA_OPERATIONAL_PAYMENT_CONFIG_CENTER_V1',
         ]);
         $this->requireFileMissingMarkers('PayPal UI remains reserved', 'web/resources/mall/default/views/payment/index.php', [
             '/mall/payment/paypal',
@@ -144,78 +146,20 @@ class PaymentProviderReadinessController extends Controller
 
     private function checkPaypalRuntimeContract(): void
     {
-        $this->requireFileMarkers('PayPal runtime contract service', 'common/services/mall/PaypalRuntimeContractService.php', [
-            'class PaypalRuntimeContractService',
-            'MONGOYIA_PAYPAL_RUNTIME_CONTRACT_V1',
-            'routeContract',
-            'webhookSignatureContract',
-            'enablementPreconditions',
-            "'enabled' => false",
-            'official_paypal_verify_webhook_signature_api',
+        $this->requireFileMarkers('PayPal Phase 7 runtime implementation', 'frontend/modules/mall/controllers/PaymentController.php', [
+            'paypalApprovalUrl',
+            'paypalCaptureAmount',
+            'paypalMerchantTransactionId',
+            'paypalOrderIdFromPayload',
+            'paypalWebhookIsCompleted',
+            'PaymentAttempt::RESULT_IGNORED',
+            'verify-webhook-signature',
         ]);
-
-        $status = (new PaypalRuntimeContractService())->status();
-        if (($status['enabled'] ?? true) !== false) {
-            $this->addCheck('PayPal disabled runtime contract', 'FAIL', 'enabled', 'PayPal runtime must remain disabled.');
-            return;
-        }
-        if (($status['routeHandlersReady'] ?? false) !== true) {
-            $this->addCheck('PayPal disabled runtime contract', 'FAIL', 'routeHandlersReady', 'Disabled PayPal route handlers must be recorded as ready.');
-            return;
-        }
-        foreach (['webhookVerificationReady', 'uiControlsReady', 'regressionReady', 'cleanupReady'] as $key) {
-            if (($status[$key] ?? true) !== false) {
-                $this->addCheck('PayPal disabled runtime contract', 'FAIL', $key, 'Only disabled PayPal route handlers may be ready before live implementation.');
-                return;
-            }
-        }
-
-        $routes = $status['routes'] ?? [];
-        if (!is_array($routes) || count($routes) !== 4) {
-            $this->addCheck('PayPal disabled runtime contract', 'FAIL', 'routes', 'Expected four reserved PayPal routes: create, return, cancel, and webhook.');
-            return;
-        }
-
-        $headers = $status['webhookSignature']['required_headers'] ?? [];
-        $requiredHeaders = [
-            'PAYPAL-AUTH-ALGO',
-            'PAYPAL-CERT-URL',
-            'PAYPAL-TRANSMISSION-ID',
-            'PAYPAL-TRANSMISSION-SIG',
-            'PAYPAL-TRANSMISSION-TIME',
-        ];
-        $missingHeaders = array_diff($requiredHeaders, is_array($headers) ? $headers : []);
-        if ($missingHeaders !== []) {
-            $this->addCheck('PayPal disabled runtime contract', 'FAIL', 'webhook headers', 'Missing required PayPal webhook header contract: ' . implode(', ', $missingHeaders));
-            return;
-        }
-
-        $preconditions = $status['enablementPreconditions'] ?? [];
-        if (!is_array($preconditions) || count($preconditions) !== 5) {
-            $this->addCheck('PayPal disabled runtime contract', 'FAIL', 'enablement preconditions', 'Expected five PayPal enablement preconditions.');
-            return;
-        }
-        foreach ($preconditions as $precondition) {
-            $key = (string)($precondition['key'] ?? 'unknown');
-            $satisfied = (bool)($precondition['satisfied'] ?? false);
-            if ($key === 'route_handlers') {
-                if (!$satisfied) {
-                    $this->addCheck('PayPal disabled runtime contract', 'FAIL', $key, 'Disabled PayPal route handlers must be the only satisfied precondition.');
-                    return;
-                }
-                continue;
-            }
-            if ($satisfied) {
-                $this->addCheck('PayPal disabled runtime contract', 'FAIL', $key, 'Webhook verification, audit, regression, cleanup, and sandbox evidence must remain unsatisfied before live implementation.');
-                return;
-            }
-        }
-
         $this->addCheck(
-            'PayPal disabled runtime contract',
+            'PayPal Phase 7 runtime contract',
             'PASS',
-            PaypalRuntimeContractService::CONTRACT_VERSION,
-            'Disabled PayPal route handlers are recorded while webhook verification, UI controls, regression, cleanup, and sandbox evidence remain gated.'
+            'MONGOYIA_OPERATIONAL_PAYMENT_CONFIG_CENTER_V1',
+            'PayPal Orders create/return/cancel/webhook paths are implemented and remain controlled by encrypted backend config.'
         );
     }
 
@@ -223,11 +167,11 @@ class PaymentProviderReadinessController extends Controller
     {
         $enabled = $this->envBool('PAYPAL_ENABLED', false);
         if (!$enabled) {
-            $this->addCheck('PayPal runtime gate', 'PASS', 'PAYPAL_ENABLED=false', 'PayPal is reserved and disabled; QPay/LianLian behavior is unchanged.');
+            $this->addCheck('PayPal runtime gate', 'PASS', 'PAYPAL_ENABLED=false', 'PayPal runtime exists but legacy env fallback is disabled; backend config can enable sandbox when ready.');
             return;
         }
 
-        $this->addCheck('PayPal runtime gate', 'FAIL', 'PAYPAL_ENABLED=true', 'PayPal must stay disabled until route handlers, webhook validation, UI controls, regression scripts, provider sandbox evidence, and cleanup are implemented together.');
+        $this->addCheck('PayPal runtime gate', 'WARN', 'PAYPAL_ENABLED=true', 'Legacy env fallback enables PayPal only when credentials are present; prefer encrypted backend config for operations.');
     }
 
     private function providerContracts(): array
@@ -249,10 +193,10 @@ class PaymentProviderReadinessController extends Controller
             ],
             [
                 'provider' => 'PayPal',
-                'state' => 'Reserved / disabled',
-                'env' => 'PAYPAL_ENABLED=false, PAYPAL_SANDBOX, PAYPAL_CLIENT_ID, PAYPAL_CLIENT_SECRET, PAYPAL_WEBHOOK_ID, PAYPAL_CALLBACK_BASE, PAYPAL_*_PATH',
+                'state' => 'Implemented / backend-config controlled',
+                'env' => 'Backend encrypted config preferred; legacy PAYPAL_* env fallback remains for compatibility',
                 'routes' => '/mall/payment/paypal, /mall/payment/paypal-return, /mall/payment/paypal-cancel, /mall/payment/paypal-webhook',
-                'gate' => 'No runtime enablement until the full Phase 6 implementation gate lands.',
+                'gate' => 'Sandbox/live use requires backend config detection and provider evidence.',
             ],
         ];
     }

@@ -3,6 +3,10 @@
 namespace backend\modules\mall\controllers;
 
 use common\services\mall\OperationalConfigService;
+use common\services\mall\OperationalLaunchSignoffService;
+use common\services\mall\OperationalMailConfigService;
+use common\services\mall\OperationalOpsAlertService;
+use common\services\mall\OperationalPaymentConfigService;
 use Yii;
 use yii\web\ForbiddenHttpException;
 
@@ -16,6 +20,135 @@ class OperationalConfigController extends BaseController
 
         return $this->render('index', [
             'summary' => (new OperationalConfigService())->summary(),
+            'payment' => (new OperationalPaymentConfigService())->snapshot(
+                (string)Yii::$app->request->get('environment', 'test')
+            ),
+            'paymentEnvironments' => (new OperationalPaymentConfigService())->environments(),
+            'mail' => (new OperationalMailConfigService())->snapshot(),
+            'opsAlert' => (new OperationalOpsAlertService())->snapshot(),
+            'launch' => (new OperationalLaunchSignoffService())->snapshot(),
         ]);
+    }
+
+    public function actionSavePayment()
+    {
+        if (!$this->isMallPlatformOperator()) {
+            throw new ForbiddenHttpException(Yii::t('app', 'No Auth'));
+        }
+
+        $request = Yii::$app->request;
+        $provider = (string)$request->post('provider', '');
+        $environment = (string)$request->post('environment', 'test');
+        try {
+            $result = (new OperationalPaymentConfigService())->saveProvider(
+                $provider,
+                $environment,
+                (array)$request->post('config', [])
+            );
+            Yii::$app->session->setFlash('success', '支付配置已保存，检测结果：' . $result['result'] . ' - ' . $result['message']);
+        } catch (\Throwable $e) {
+            Yii::$app->session->setFlash('error', '支付配置保存失败：' . $e->getMessage());
+        }
+
+        return $this->redirect(['index', 'environment' => $environment]);
+    }
+
+    public function actionCheckPayment()
+    {
+        if (!$this->isMallPlatformOperator()) {
+            throw new ForbiddenHttpException(Yii::t('app', 'No Auth'));
+        }
+
+        $request = Yii::$app->request;
+        $provider = (string)$request->post('provider', '');
+        $environment = (string)$request->post('environment', 'test');
+        try {
+            $result = (new OperationalPaymentConfigService())->checkProvider($provider, $environment, true);
+            Yii::$app->session->setFlash('success', '支付配置检测完成：' . $result['result'] . ' - ' . $result['message']);
+        } catch (\Throwable $e) {
+            Yii::$app->session->setFlash('error', '支付配置检测失败：' . $e->getMessage());
+        }
+
+        return $this->redirect(['index', 'environment' => $environment]);
+    }
+
+    public function actionSaveMail()
+    {
+        if (!$this->isMallPlatformOperator()) {
+            throw new ForbiddenHttpException(Yii::t('app', 'No Auth'));
+        }
+
+        try {
+            $result = (new OperationalMailConfigService())->save((array)Yii::$app->request->post('mail', []));
+            Yii::$app->session->setFlash('success', '邮件配置已保存，检测结果：' . $result['result'] . ' - ' . $result['message']);
+        } catch (\Throwable $e) {
+            Yii::$app->session->setFlash('error', '邮件配置保存失败：' . $e->getMessage());
+        }
+
+        return $this->redirect(['index', 'environment' => (string)Yii::$app->request->post('environment', 'test')]);
+    }
+
+    public function actionTestMail()
+    {
+        if (!$this->isMallPlatformOperator()) {
+            throw new ForbiddenHttpException(Yii::t('app', 'No Auth'));
+        }
+
+        try {
+            $result = (new OperationalMailConfigService())->sendTest((string)Yii::$app->request->post('test_to', ''));
+            Yii::$app->session->setFlash($result['result'] === 'PASS' ? 'success' : 'error', '邮件测试结果：' . $result['result'] . ' - ' . $result['message']);
+        } catch (\Throwable $e) {
+            Yii::$app->session->setFlash('error', '邮件测试失败：' . $e->getMessage());
+        }
+
+        return $this->redirect(['index', 'environment' => (string)Yii::$app->request->post('environment', 'test')]);
+    }
+
+    public function actionSaveAlert()
+    {
+        if (!$this->isMallPlatformOperator()) {
+            throw new ForbiddenHttpException(Yii::t('app', 'No Auth'));
+        }
+
+        try {
+            $result = (new OperationalOpsAlertService())->saveAlertConfig((array)Yii::$app->request->post('alert', []));
+            Yii::$app->session->setFlash('success', '告警配置已保存，检测结果：' . $result['result'] . ' - ' . $result['message']);
+        } catch (\Throwable $e) {
+            Yii::$app->session->setFlash('error', '告警配置保存失败：' . $e->getMessage());
+        }
+
+        return $this->redirect(['index', 'environment' => (string)Yii::$app->request->post('environment', 'test')]);
+    }
+
+    public function actionTestAlert()
+    {
+        if (!$this->isMallPlatformOperator()) {
+            throw new ForbiddenHttpException(Yii::t('app', 'No Auth'));
+        }
+
+        try {
+            $result = (new OperationalOpsAlertService())->sendTestAlert();
+            Yii::$app->session->setFlash($result['result'] === 'PASS' ? 'success' : 'error', '告警测试结果：' . $result['result'] . ' - ' . $result['message']);
+        } catch (\Throwable $e) {
+            Yii::$app->session->setFlash('error', '告警测试失败：' . $e->getMessage());
+        }
+
+        return $this->redirect(['index', 'environment' => (string)Yii::$app->request->post('environment', 'test')]);
+    }
+
+    public function actionSaveLaunch()
+    {
+        if (!$this->isMallPlatformOperator()) {
+            throw new ForbiddenHttpException(Yii::t('app', 'No Auth'));
+        }
+
+        try {
+            $result = (new OperationalLaunchSignoffService())->save((array)Yii::$app->request->post('launch', []));
+            Yii::$app->session->setFlash($result['result'] === 'PASS' ? 'success' : 'error', '上线签核 readiness：' . $result['result'] . ' - ' . $result['message']);
+        } catch (\Throwable $e) {
+            Yii::$app->session->setFlash('error', '上线签核保存失败：' . $e->getMessage());
+        }
+
+        return $this->redirect(['index', 'environment' => (string)Yii::$app->request->post('environment', 'test')]);
     }
 }

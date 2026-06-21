@@ -19,9 +19,18 @@ class PayConstant
         self::$private_key = env('LIANLIAN_PRIVATE_KEY', '');
     }
 
-    public static function isConfigured()
+    public static function loadFromArray(array $config)
     {
-        self::loadFromEnv();
+        self::$sub_merchant_id = (string)($config['sub_merchant_id'] ?? '');
+        self::$sandbox = (string)($config['environment'] ?? 'test') !== 'live';
+        self::$merchant_id = (string)($config['merchant_id'] ?? '');
+        self::$public_key = (string)($config['public_key'] ?? '');
+        self::$private_key = (string)($config['private_key'] ?? '');
+    }
+
+    public static function isConfigured(array $config = null)
+    {
+        $config === null ? self::loadFromEnv() : self::loadFromArray($config);
         return self::$merchant_id !== '' && self::$public_key !== '' && self::$private_key !== '';
     }
 }

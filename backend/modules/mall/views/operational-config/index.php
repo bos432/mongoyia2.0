@@ -1,9 +1,15 @@
 <?php
 
 use common\helpers\Html;
+use yii\helpers\Url;
 
 /* @var $this yii\web\View */
 /* @var $summary array */
+/* @var $payment array */
+/* @var $paymentEnvironments array */
+/* @var $mail array */
+/* @var $opsAlert array */
+/* @var $launch array */
 
 $this->title = '运营配置中心';
 $this->params['breadcrumbs'][] = $this->title;
@@ -84,6 +90,319 @@ $statusClass = [
                     <?php endforeach; ?>
                     </tbody>
                 </table>
+            </div>
+        </div>
+
+        <div class="mb-3" data-mongoyia-operational-payment-config="<?= Html::encode($payment['version'] ?? '') ?>">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <h3 class="mb-0">支付配置中心</h3>
+                <div>
+                    <?php foreach ($paymentEnvironments as $env => $label): ?>
+                        <?php $active = ($payment['environment'] ?? 'test') === $env; ?>
+                        <?= Html::a(Html::encode($label), ['index', 'environment' => $env], [
+                            'class' => 'btn btn-sm ' . ($active ? 'btn-primary' : 'btn-default'),
+                        ]) ?>
+                    <?php endforeach; ?>
+                </div>
+            </div>
+            <p class="text-muted">
+                当前环境：<?= Html::encode($paymentEnvironments[$payment['environment']] ?? $payment['environment']) ?>。
+                支付私钥、Basic Auth、Secret、HMAC 等敏感值加密保存，留空表示保持原值；正式模式启用前必须先补齐必填项。
+            </p>
+
+            <div class="row">
+                <?php foreach (($payment['providers'] ?? []) as $provider): ?>
+                    <?php $latest = $provider['latest_check'] ?? []; ?>
+                    <?php $badge = $statusClass[$latest['result'] ?? 'PENDING'] ?? 'secondary'; ?>
+                    <div class="col-lg-4 col-md-12">
+                        <?php $formAction = Url::to(['save-payment']); ?>
+                        <?= Html::beginForm($formAction, 'post') ?>
+                        <?= Html::hiddenInput('provider', $provider['provider']) ?>
+                        <?= Html::hiddenInput('environment', $payment['environment']) ?>
+                        <div class="card">
+                                <div class="card-header">
+                                    <h4 class="card-title"><?= Html::encode($provider['label']) ?></h4>
+                                    <div class="card-tools">
+                                        <span class="badge badge-<?= $badge ?>"><?= Html::encode($latest['result'] ?? 'PENDING') ?></span>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <p class="text-muted small"><?= Html::encode($provider['description']) ?></p>
+
+                                    <?php foreach ($provider['fields'] as $field): ?>
+                                        <?php if (($field['type'] ?? '') === 'mode'): ?>
+                                            <?= Html::hiddenInput('config[' . $field['code'] . ']', $payment['environment']) ?>
+                                            <?php continue; ?>
+                                        <?php endif; ?>
+                                        <div class="form-group">
+                                            <label>
+                                                <?= Html::encode($field['label']) ?>
+                                                <?php if (!empty($field['required_for_enable'])): ?>
+                                                    <span class="text-danger">*</span>
+                                                <?php endif; ?>
+                                            </label>
+                                            <?php if (($field['type'] ?? '') === 'switch'): ?>
+                                                <?= Html::hiddenInput('config[' . $field['code'] . ']', '0') ?>
+                                                <div>
+                                                    <label class="mb-0">
+                                                        <?= Html::checkbox('config[' . $field['code'] . ']', (string)$field['value'] === '1', ['value' => '1']) ?>
+                                                        启用
+                                                    </label>
+                                                </div>
+                                            <?php elseif (($field['type'] ?? '') === 'textarea'): ?>
+                                                <?= Html::textarea('config[' . $field['code'] . ']', $field['value'], [
+                                                    'class' => 'form-control',
+                                                    'rows' => 3,
+                                                    'placeholder' => !empty($field['sensitive']) && $field['configured'] ? '已配置，留空保持原值' : (string)($field['default'] ?? ''),
+                                                ]) ?>
+                                            <?php else: ?>
+                                                <?= Html::textInput('config[' . $field['code'] . ']', $field['value'], [
+                                                    'class' => 'form-control',
+                                                    'type' => ($field['type'] ?? '') === 'number' ? 'number' : 'text',
+                                                    'placeholder' => !empty($field['sensitive']) && $field['configured'] ? '已配置，留空保持原值' : (string)($field['default'] ?? ''),
+                                                ]) ?>
+                                            <?php endif; ?>
+                                            <small class="text-muted">
+                                                <?= !empty($field['sensitive']) ? Html::encode($field['redacted_value']) : '当前值可明文显示' ?>
+                                            </small>
+                                        </div>
+                                    <?php endforeach; ?>
+
+                                    <div class="border-top pt-2">
+                                        <strong>回调/返回地址</strong>
+                                        <?php foreach ($provider['callback_urls'] as $name => $url): ?>
+                                            <div class="small text-muted"><?= Html::encode($name) ?>: <code><?= Html::encode($url) ?></code></div>
+                                        <?php endforeach; ?>
+                                    </div>
+                                </div>
+                                <div class="card-footer">
+                                    <?= Html::submitButton('保存并检测', ['class' => 'btn btn-primary btn-sm']) ?>
+                                    <?= Html::submitButton('仅检测', [
+                                        'class' => 'btn btn-default btn-sm',
+                                        'formaction' => Url::to(['check-payment']),
+                                    ]) ?>
+                                    <?php if (!empty($latest['message'])): ?>
+                                        <div class="text-muted small mt-2"><?= Html::encode($latest['message']) ?></div>
+                                    <?php endif; ?>
+                                </div>
+                        </div>
+                        <?= Html::endForm() ?>
+                    </div>
+                <?php endforeach; ?>
+            </div>
+        </div>
+
+        <div class="mb-3" data-mongoyia-operational-mail-config="<?= Html::encode($mail['version'] ?? '') ?>">
+            <?php $latestMail = $mail['latest_check'] ?? []; ?>
+            <?php $mailBadge = $statusClass[$latestMail['result'] ?? 'PENDING'] ?? 'secondary'; ?>
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <h3 class="mb-0">邮件配置中心</h3>
+                <span class="badge badge-<?= $mailBadge ?>"><?= Html::encode($latestMail['result'] ?? 'PENDING') ?></span>
+            </div>
+            <p class="text-muted">
+                SMTP 密码加密保存，留空表示保持原值。测试发送会记录成功/失败、错误摘要和测试时间。
+            </p>
+
+            <div class="card">
+                <?= Html::beginForm(['save-mail'], 'post') ?>
+                <?= Html::hiddenInput('environment', $payment['environment']) ?>
+                <div class="card-body">
+                    <div class="row">
+                        <?php foreach (($mail['fields'] ?? []) as $field): ?>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>
+                                        <?= Html::encode($field['label']) ?>
+                                        <?php if (!empty($field['required_for_enable'])): ?>
+                                            <span class="text-danger">*</span>
+                                        <?php endif; ?>
+                                    </label>
+                                    <?php if (($field['type'] ?? '') === 'switch'): ?>
+                                        <?= Html::hiddenInput('mail[' . $field['code'] . ']', '0') ?>
+                                        <div>
+                                            <label class="mb-0">
+                                                <?= Html::checkbox('mail[' . $field['code'] . ']', (string)$field['value'] === '1', ['value' => '1']) ?>
+                                                启用
+                                            </label>
+                                        </div>
+                                    <?php elseif (($field['type'] ?? '') === 'select'): ?>
+                                        <?= Html::dropDownList('mail[' . $field['code'] . ']', $field['value'], $mail['encryption_options'] ?? [], ['class' => 'form-control']) ?>
+                                    <?php else: ?>
+                                        <?= Html::textInput('mail[' . $field['code'] . ']', $field['value'], [
+                                            'class' => 'form-control',
+                                            'type' => ($field['type'] ?? '') === 'number' ? 'number' : 'text',
+                                            'placeholder' => !empty($field['sensitive']) && $field['configured'] ? '已配置，留空保持原值' : (string)($field['default'] ?? ''),
+                                        ]) ?>
+                                    <?php endif; ?>
+                                    <small class="text-muted">
+                                        <?= !empty($field['sensitive']) ? Html::encode($field['redacted_value']) : '当前值可明文显示' ?>
+                                    </small>
+                                </div>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <?= Html::submitButton('保存邮件配置', ['class' => 'btn btn-primary btn-sm']) ?>
+                    <?php if (!empty($latestMail['message'])): ?>
+                        <span class="text-muted small ml-2"><?= Html::encode($latestMail['message']) ?></span>
+                    <?php endif; ?>
+                </div>
+                <?= Html::endForm() ?>
+            </div>
+
+            <div class="card">
+                <div class="card-body">
+                    <?= Html::beginForm(['test-mail'], 'post', ['class' => 'form-inline']) ?>
+                    <?= Html::hiddenInput('environment', $payment['environment']) ?>
+                    <?= Html::textInput('test_to', $mail['fields']['test_to']['value'] ?? '', [
+                        'class' => 'form-control mr-2',
+                        'placeholder' => '测试收件人',
+                    ]) ?>
+                    <?= Html::submitButton('发送测试邮件', ['class' => 'btn btn-default btn-sm']) ?>
+                    <?= Html::endForm() ?>
+                </div>
+            </div>
+        </div>
+
+        <div class="mb-3" data-mongoyia-operational-ops-alert="<?= Html::encode($opsAlert['version'] ?? '') ?>">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <h3 class="mb-0">运维检查和告警中心</h3>
+                <?= Html::beginForm(['test-alert'], 'post') ?>
+                <?= Html::hiddenInput('environment', $payment['environment']) ?>
+                <?= Html::submitButton('发送测试告警', ['class' => 'btn btn-default btn-sm']) ?>
+                <?= Html::endForm() ?>
+            </div>
+            <p class="text-muted">
+                本页只展示任务命令、推荐频率、最近运行证据和告警配置，不直接修改服务器 crontab 或 systemd。
+            </p>
+
+            <div class="card">
+                <div class="card-header"><h4 class="card-title">任务检查</h4></div>
+                <div class="card-body p-0">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                        <tr>
+                            <th>任务</th>
+                            <th>命令</th>
+                            <th>推荐频率</th>
+                            <th>最近结果</th>
+                            <th>建议</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <?php foreach (($opsAlert['tasks'] ?? []) as $task): ?>
+                            <?php $badge = $statusClass[$task['last_result'] ?? 'PENDING'] ?? 'secondary'; ?>
+                            <tr>
+                                <td><?= Html::encode($task['name']) ?></td>
+                                <td><code><?= Html::encode($task['command']) ?></code></td>
+                                <td><?= Html::encode($task['frequency']) ?></td>
+                                <td>
+                                    <span class="badge badge-<?= $badge ?>"><?= Html::encode($task['last_result']) ?></span><br>
+                                    <small class="text-muted">
+                                        <?= (int)$task['last_run_at'] > 0 ? date('Y-m-d H:i:s', (int)$task['last_run_at']) : '-' ?>
+                                        <?= Html::encode($task['last_message']) ?>
+                                    </small>
+                                </td>
+                                <td><?= Html::encode($task['advice']) ?></td>
+                            </tr>
+                        <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="card">
+                <?= Html::beginForm(['save-alert'], 'post') ?>
+                <?= Html::hiddenInput('environment', $payment['environment']) ?>
+                <div class="card-header"><h4 class="card-title">告警配置</h4></div>
+                <div class="card-body">
+                    <div class="row">
+                        <?php foreach (($opsAlert['fields'] ?? []) as $field): ?>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label><?= Html::encode($field['label']) ?></label>
+                                    <?php if (($field['type'] ?? '') === 'switch'): ?>
+                                        <?= Html::hiddenInput('alert[' . $field['code'] . ']', '0') ?>
+                                        <div>
+                                            <label class="mb-0">
+                                                <?= Html::checkbox('alert[' . $field['code'] . ']', (string)$field['value'] === '1', ['value' => '1']) ?>
+                                                启用
+                                            </label>
+                                        </div>
+                                    <?php elseif (($field['type'] ?? '') === 'textarea'): ?>
+                                        <?= Html::textarea('alert[' . $field['code'] . ']', $field['value'], [
+                                            'class' => 'form-control',
+                                            'rows' => 3,
+                                        ]) ?>
+                                    <?php else: ?>
+                                        <?= Html::textInput('alert[' . $field['code'] . ']', $field['value'], [
+                                            'class' => 'form-control',
+                                            'type' => ($field['type'] ?? '') === 'number' ? 'number' : 'text',
+                                            'placeholder' => !empty($field['sensitive']) && $field['configured'] ? '已配置，留空保持原值' : (string)($field['default'] ?? ''),
+                                        ]) ?>
+                                    <?php endif; ?>
+                                    <small class="text-muted">
+                                        <?= !empty($field['sensitive']) ? Html::encode($field['redacted_value']) : '当前值可明文显示' ?>
+                                    </small>
+                                </div>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <?= Html::submitButton('保存告警配置', ['class' => 'btn btn-primary btn-sm']) ?>
+                </div>
+                <?= Html::endForm() ?>
+            </div>
+        </div>
+
+        <div class="mb-3" data-mongoyia-operational-launch-signoff="<?= Html::encode($launch['version'] ?? '') ?>">
+            <?php $readiness = $launch['readiness'] ?? []; ?>
+            <?php $launchBadge = $statusClass[$readiness['result'] ?? 'PENDING'] ?? 'secondary'; ?>
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <h3 class="mb-0">上线签核和证据管理</h3>
+                <span class="badge badge-<?= $launchBadge ?>"><?= Html::encode($readiness['result'] ?? 'PENDING') ?></span>
+            </div>
+            <p class="text-muted">
+                这里记录非敏感证据引用和签核状态，不保存支付密钥、原始回调报文或私钥内容。
+                <?= Html::encode($readiness['message'] ?? '') ?>
+            </p>
+
+            <div class="card">
+                <?= Html::beginForm(['save-launch'], 'post') ?>
+                <?= Html::hiddenInput('environment', $payment['environment']) ?>
+                <div class="card-body">
+                    <div class="row">
+                        <?php foreach (($launch['fields'] ?? []) as $field): ?>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>
+                                        <?= Html::encode($field['label']) ?>
+                                        <?php if (!empty($field['required'])): ?><span class="text-danger">*</span><?php endif; ?>
+                                    </label>
+                                    <?php if (($field['type'] ?? '') === 'switch'): ?>
+                                        <?= Html::hiddenInput('launch[' . $field['code'] . ']', '0') ?>
+                                        <div>
+                                            <label class="mb-0">
+                                                <?= Html::checkbox('launch[' . $field['code'] . ']', (string)$field['value'] === '1', ['value' => '1']) ?>
+                                                已确认
+                                            </label>
+                                        </div>
+                                    <?php elseif (($field['type'] ?? '') === 'textarea'): ?>
+                                        <?= Html::textarea('launch[' . $field['code'] . ']', $field['value'], ['class' => 'form-control', 'rows' => 3]) ?>
+                                    <?php else: ?>
+                                        <?= Html::textInput('launch[' . $field['code'] . ']', $field['value'], ['class' => 'form-control']) ?>
+                                    <?php endif; ?>
+                                </div>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <?= Html::submitButton('保存签核记录', ['class' => 'btn btn-primary btn-sm']) ?>
+                </div>
+                <?= Html::endForm() ?>
             </div>
         </div>
 

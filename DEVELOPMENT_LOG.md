@@ -3078,3 +3078,220 @@
   - Phase 7.2 still needs the concrete payment configuration forms and runtime payment-provider reads.
 - Next stage:
   - Reread the backlog and development log, then implement Phase 7.2 payment config center increment.
+
+## 2026-06-21 Operational Payment Config Backend Skeleton
+
+- Stage name: Phase 7.2 payment config center backend form/check skeleton
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting the Phase 7.2 increment.
+  - Added `OperationalPaymentConfigService` with QPay, LianLian, and PayPal payment field definitions, test/live environment handling, encrypted sensitive-field saves through `OperationalConfigService`, redacted snapshots, callback/return/cancel URL helpers, provider readiness validation, and a live-enable guard for missing required fields.
+  - Extended `/backend/mall/operational-config/index` with a platform-only payment config section for QPay, LianLian, and PayPal. Sensitive values are never prefilled; leaving them blank keeps an already configured secret.
+  - Added backend save and check actions that record readiness results in `mall_operational_config_check`.
+  - Added `operational-config-payment-test/run` for static backend/service coverage and DB-backed fixture redaction checks.
+  - Updated the Phase 7 backlog status and command documentation.
+- Main files changed/added:
+  - `common/services/mall/OperationalPaymentConfigService.php`
+  - `backend/modules/mall/controllers/OperationalConfigController.php`
+  - `backend/modules/mall/views/operational-config/index.php`
+  - `console/controllers/OperationalConfigPaymentTestController.php`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l common/services/mall/OperationalPaymentConfigService.php` passed.
+  - `php -l backend/modules/mall/controllers/OperationalConfigController.php` passed.
+  - `php -l backend/modules/mall/views/operational-config/index.php` passed.
+  - `php -l console/controllers/OperationalConfigPaymentTestController.php` passed.
+  - `php yii help operational-config-payment-test` passed after using a temporary local `vendor` junction to the sibling checkout.
+  - `php yii operational-config-payment-test/run --interactive=0` passed with 0 failure(s), 0 warning(s) after using the temporary local `vendor` junction.
+  - `php yii operational-config-payment-test/run --fixture=1 --interactive=0` could not complete the DB-backed fixture locally because the local MySQL/MariaDB service is not listening on 3306 (`SQLSTATE[HY000] [2002]`).
+- Remaining issues:
+  - Run `yii migrate/up`, `operational-config-check/run --fixture=1`, and `operational-config-payment-test/run --fixture=1` on a DB-enabled environment before using the payment config forms in production-like testing.
+  - Payment runtime still reads QPay/LianLian from `.env`, and PayPal remains disabled/reserved in runtime code.
+  - PayPal API connectivity, order creation, return/cancel handling, webhook verification, and payment-attempt writes remain for the next Phase 7.2 substage.
+- Next stage:
+  - Reread the backlog and development log, then continue Phase 7.2 by adding runtime payment config reads for QPay/LianLian and the next PayPal implementation slice.
+
+## 2026-06-21 Operational Payment Runtime Reads
+
+- Stage name: Phase 7.2 QPay/LianLian backend-config runtime reads
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting the runtime-read increment.
+  - Extended `OperationalPaymentConfigService` with a runtime config snapshot that chooses enabled live/test backend config first and falls back to legacy `.env` values when operational config is missing or unavailable.
+  - Updated QPay create-order, callback URL, callback secret, timestamp, HMAC, and IP allowlist reads to prefer backend encrypted config.
+  - Updated LianLian create-order, query, callback URL, callback secret, timestamp, HMAC, and IP allowlist reads to prefer backend encrypted config.
+  - Added array-based `PayConstant` loading so LianLian SDK constants can be sourced from decrypted backend config without removing `.env` fallback behavior.
+  - Extended `operational-config-payment-test/run` to guard the runtime-read markers.
+- Main files changed/added:
+  - `common/services/mall/OperationalPaymentConfigService.php`
+  - `frontend/modules/mall/controllers/PaymentController.php`
+  - `frontend/modules/mall/controllers/PayConstant.php`
+  - `console/controllers/OperationalConfigPaymentTestController.php`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l common/services/mall/OperationalPaymentConfigService.php` passed.
+  - `php -l frontend/modules/mall/controllers/PaymentController.php` passed.
+  - `php -l frontend/modules/mall/controllers/PayConstant.php` passed.
+  - `php -l console/controllers/OperationalConfigPaymentTestController.php` passed.
+  - `php yii operational-config-payment-test/run --interactive=0` passed with 0 failure(s), 0 warning(s) after using a temporary local `vendor` junction.
+  - `php yii payment-provider-readiness/run --baseUrl=http://127.0.0.1:8089 --profile=local --outputPath=runtime/handover/codex-payment-provider-readiness-smoke.md --interactive=0` passed with 0 failure(s), 0 warning(s), 0 pending; the temporary smoke report was removed after verification.
+- Remaining issues:
+  - DB-backed payment config fixture still needs a DB-enabled environment.
+  - PayPal remains disabled/reserved in runtime code; full PayPal Orders/Webhook integration is still planned.
+  - QPay/LianLian real provider flow still requires valid backend or `.env` credentials and provider sandbox/live testing.
+- Next stage:
+  - Reread the backlog and development log, then continue Phase 7.2 with the PayPal runtime implementation slice.
+
+## 2026-06-21 Operational PayPal Runtime Paths
+
+- Stage name: Phase 7.2 PayPal Orders/Webhook runtime implementation slice
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting the PayPal runtime slice.
+  - Added PayPal runtime config fallback values to `PaymentController`, still preferring backend encrypted operational config.
+  - Replaced the disabled PayPal route placeholders with runtime paths for create order, return capture, cancel return, and webhook processing.
+  - Implemented PayPal access-token, Orders API, approval URL extraction, capture amount extraction, official webhook signature verification, merchant transaction extraction, completed-capture detection, and safe payload helpers using cURL through the existing controller helper.
+  - Added payment-attempt audit writes for PayPal create, return, cancel, webhook success/failure/ignored cases and duplicate webhook protection.
+  - Updated `payment-provider-readiness/run` from the old disabled PayPal boundary to the new Phase 7 backend-config-controlled runtime boundary while keeping the frontend PayPal button reserved.
+  - Added `operational-config-paypal-test/run` for static PayPal runtime/config/UI-boundary checks.
+- Main files changed/added:
+  - `frontend/modules/mall/controllers/PaymentController.php`
+  - `console/controllers/PaymentProviderReadinessController.php`
+  - `console/controllers/OperationalConfigPaypalTestController.php`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l frontend/modules/mall/controllers/PaymentController.php` passed.
+  - `php -l console/controllers/PaymentProviderReadinessController.php` passed.
+  - `php -l console/controllers/OperationalConfigPaypalTestController.php` passed.
+  - `php yii operational-config-paypal-test/run --interactive=0` passed with 0 failure(s), 0 warning(s) after using a temporary local `vendor` junction.
+  - `php yii operational-config-payment-test/run --interactive=0` passed with 0 failure(s), 0 warning(s) after using a temporary local `vendor` junction.
+  - `php yii payment-provider-readiness/run --baseUrl=http://127.0.0.1:8089 --profile=local --outputPath=runtime/handover/codex-payment-provider-readiness-smoke.md --interactive=0` passed with 0 failure(s), 0 warning(s), 0 pending; the temporary smoke report was removed after verification.
+- Remaining issues:
+  - Real PayPal sandbox validation still requires backend PayPal client ID/secret/webhook ID/callback base and provider-side webhook setup.
+  - Frontend PayPal payment button remains reserved until sandbox browser acceptance is ready.
+  - DB-backed fixtures and real payment-attempt writes could not be exercised locally because the local database service is unavailable.
+- Next stage:
+  - Reread the backlog and development log, then continue Phase 7.3 SMTP mail config center.
+
+## 2026-06-21 Operational SMTP Mail Config Center
+
+- Stage name: Phase 7.3 SMTP mail config backend/runtime skeleton
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting the mail config increment.
+  - Added `OperationalMailConfigService` with SMTP field definitions, encrypted password save, redacted snapshot, readiness check, runtime config with legacy params/env fallback, and test-send action recording.
+  - Extended `SmtpMailer` so default construction reads backend SMTP config first and falls back to existing Yii params/env configuration.
+  - Added mail save and test-send actions to the backend operational config controller.
+  - Added a backend mail config section with encrypted password handling and a separate test-send form.
+  - Added `operational-config-mail-test/run` for static service/controller/view/runtime-source coverage and DB-backed password-encryption fixture checks.
+- Main files changed/added:
+  - `common/services/mall/OperationalMailConfigService.php`
+  - `common/components/mailer/SmtpMailer.php`
+  - `backend/modules/mall/controllers/OperationalConfigController.php`
+  - `backend/modules/mall/views/operational-config/index.php`
+  - `console/controllers/OperationalConfigMailTestController.php`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l common/services/mall/OperationalMailConfigService.php` passed.
+  - `php -l common/components/mailer/SmtpMailer.php` passed.
+  - `php -l backend/modules/mall/controllers/OperationalConfigController.php` passed.
+  - `php -l backend/modules/mall/views/operational-config/index.php` passed.
+  - `php -l console/controllers/OperationalConfigMailTestController.php` passed.
+  - `php yii operational-config-mail-test/run --interactive=0` passed with 0 failure(s), 0 warning(s) after using a temporary local `vendor` junction.
+  - `php yii operational-config-mail-test/run --fixture=1 --interactive=0` could not complete the DB-backed fixture locally because the local MySQL/MariaDB service is not listening on 3306 (`SQLSTATE[HY000] [2002]`).
+- Remaining issues:
+  - Real SMTP test-send requires valid backend SMTP credentials and a DB-enabled environment.
+  - The first alert channel can now reuse backend SMTP config, but alert rules/contacts are still pending.
+- Next stage:
+  - Reread the backlog and development log, then continue Phase 7.4 operations check and alert center.
+
+## 2026-06-21 Operational Ops Alert Center
+
+- Stage name: Phase 7.4 operations check and alert center skeleton
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting the ops/alert increment.
+  - Added `OperationalOpsAlertService` with scheduled/health/backup/load task definitions, latest evidence lookup from operational check rows, email alert fields, reserved webhook fields, alert readiness checks, and test-alert dispatch through the SMTP mail config service.
+  - Added backend save/test alert actions.
+  - Added an operations/alert section to `/backend/mall/operational-config/index` that shows task command, recommended frequency, latest result/time/message, next-action advice, alert recipients/triggers/thresholds, and test-alert button.
+  - Kept the boundary explicit: backend displays/checks evidence and alert config but does not edit crontab or systemd.
+  - Added `operational-config-ops-alert-test/run` for static task/alert/backend marker coverage.
+- Main files changed/added:
+  - `common/services/mall/OperationalOpsAlertService.php`
+  - `backend/modules/mall/controllers/OperationalConfigController.php`
+  - `backend/modules/mall/views/operational-config/index.php`
+  - `console/controllers/OperationalConfigOpsAlertTestController.php`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l common/services/mall/OperationalOpsAlertService.php` passed.
+  - `php -l backend/modules/mall/controllers/OperationalConfigController.php` passed.
+  - `php -l backend/modules/mall/views/operational-config/index.php` passed.
+  - `php -l console/controllers/OperationalConfigOpsAlertTestController.php` passed.
+  - `php yii operational-config-ops-alert-test/run --interactive=0` passed with 0 failure(s), 0 warning(s) after using a temporary local `vendor` junction.
+  - `php yii operational-config-ops-alert-test/run --fixture=1 --interactive=0` passed with 0 failure(s), 1 warning(s); fixture mode is static locally and DB-backed alert config save should be rerun on a database-enabled environment.
+- Remaining issues:
+  - Real task latest-run rows depend on scheduled commands recording operational check evidence in the DB.
+  - Real alert delivery depends on valid backend SMTP config and recipient setup.
+- Next stage:
+  - Reread the backlog and development log, then continue Phase 7.5 launch signoff and evidence management.
+
+## 2026-06-21 Operational Launch Signoff Center
+
+- Stage name: Phase 7.5 launch signoff and evidence-reference management skeleton
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting the launch signoff increment.
+  - Added `OperationalLaunchSignoffService` with non-sensitive evidence-reference fields and GO/NO-GO readiness logic.
+  - Added backend save action for launch signoff records.
+  - Added a backend launch signoff section for load-test report reference, security confirmation, business signoff, payment signoff, backup restore confirmation, launch window, rollback owner, rollback plan reference, and notes.
+  - Kept the boundary explicit: signoff records store non-sensitive references/status only and do not store payment keys, raw callback payloads, or private key contents.
+  - Added `operational-config-launch-test/run` for static signoff definition/backend marker coverage.
+- Main files changed/added:
+  - `common/services/mall/OperationalLaunchSignoffService.php`
+  - `backend/modules/mall/controllers/OperationalConfigController.php`
+  - `backend/modules/mall/views/operational-config/index.php`
+  - `console/controllers/OperationalConfigLaunchTestController.php`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l common/services/mall/OperationalLaunchSignoffService.php` passed.
+  - `php -l backend/modules/mall/controllers/OperationalConfigController.php` passed.
+  - `php -l backend/modules/mall/views/operational-config/index.php` passed.
+  - `php -l console/controllers/OperationalConfigLaunchTestController.php` passed.
+  - `php yii operational-config-launch-test/run --interactive=0` passed with 0 failure(s), 0 warning(s) after using a temporary local `vendor` junction.
+  - `php yii operational-config-launch-test/run --fixture=1 --interactive=0` passed with 0 failure(s), 1 warning(s); fixture mode is static locally and DB-backed launch signoff save should be rerun on a database-enabled environment.
+- Remaining issues:
+  - File upload to non-public storage is not implemented in this slice; evidence references are supported first per the plan's upload-or-reference option.
+  - Real GO readiness requires actual load/security/business/payment/backup/window/rollback owner inputs.
+- Next stage:
+  - Reread the backlog and development log, then continue Phase 7.6 full-flow acceptance and delivery documentation.
+
+## 2026-06-21 Operational Config Phase 7.6 Static Acceptance
+
+- Stage name: Phase 7.6 static acceptance and redacted export
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting Phase 7.6.
+  - Added `operational-config-export/run` for redacted Markdown handover export of operational config rows and latest check summaries.
+  - Confirmed callback URL helper coverage in the backend payment cards and key rotation workflow through re-entering secrets with redacted audit summaries.
+  - Ran the Phase 7 static command suite for payment config, PayPal runtime, SMTP mail config, ops/alert, launch signoff, payment provider readiness, and redacted export command registration/execution.
+- Main files changed/added:
+  - `console/controllers/OperationalConfigExportController.php`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l console/controllers/OperationalConfigExportController.php` passed.
+  - `php yii operational-config-payment-test/run --interactive=0` passed with 0 failure(s), 0 warning(s) after using a temporary local `vendor` junction.
+  - `php yii operational-config-paypal-test/run --interactive=0` passed with 0 failure(s), 0 warning(s) after using a temporary local `vendor` junction.
+  - `php yii operational-config-mail-test/run --interactive=0` passed with 0 failure(s), 0 warning(s) after using a temporary local `vendor` junction.
+  - `php yii operational-config-ops-alert-test/run --interactive=0` passed with 0 failure(s), 0 warning(s) after using a temporary local `vendor` junction.
+  - `php yii operational-config-launch-test/run --interactive=0` passed with 0 failure(s), 0 warning(s) after using a temporary local `vendor` junction.
+  - `php yii payment-provider-readiness/run --baseUrl=http://127.0.0.1:8089 --profile=local --outputPath=runtime/handover/codex-payment-provider-readiness-smoke.md --interactive=0` passed with 0 failure(s), 0 warning(s), 0 pending; temporary smoke report removed.
+  - `php yii operational-config-export/run --outputPath=runtime/handover/codex-operational-config-export-smoke.md --interactive=0` executed; temporary smoke report removed.
+- Browser validation result:
+  - Not run in this local checkout because there is no running local DB-backed Yii service, the patch checkout has no native `vendor/`, and previous DB-backed fixture attempts consistently report `SQLSTATE[HY000] [2002]` because MySQL/MariaDB is not listening on local port 3306.
+  - Required DB-enabled/browser follow-up: run migrations, configure `OP_CONFIG_MASTER_KEY`, open `/backend/mall/operational-config/index`, save payment/mail/alert/signoff samples, run test mail/test alert, and rerun DB-backed fixture commands.
+- Remaining issues:
+  - DB-backed fixtures for operational config, payment, mail, alert, and launch signoff still need a database-enabled environment.
+  - Real QPay/LianLian/PayPal provider flows still require real sandbox/live credentials and provider-side callback/webhook setup.
+  - Browser acceptance and full role-flow validation must be run on the BaoTa/test server after pulling these changes.
+- Next stage:
+  - Deploy this Phase 7 branch to the DB-enabled test server, run migrations and all `operational-config-* --fixture=1` commands, then complete browser acceptance from the platform admin backend.

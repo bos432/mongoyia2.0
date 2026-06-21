@@ -3861,3 +3861,34 @@
     /www/server/php/83/bin/php yii customer-service-acceptance-fixture/run --apply=1 --interactive=0
     /www/server/php/83/bin/php yii customer-service-test/run --baseUrl=https://demo2026.mongoyia.com --productId=2 --interactive=0
     ```
+
+## 2026-06-21 Customer Service Center Phase 8 Post-Server-Run Recheck
+
+- Stage name: Phase 8.8 post-server execution validation attempt
+- Validation time:
+  - `2026-06-21 19:55:02 +08:00`
+- Validation environment:
+  - Test server: `https://demo2026.mongoyia.com`
+  - Browser target claimed by user: `https://demo2026.mongoyia.com/backend/`
+  - Local verifier: Codex desktop browser connection retry plus public HTTPS probes
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before continuing Phase 8.8 validation after the user reported the server commands had been executed.
+  - Retried the right-side browser connection; it still failed before page inspection, so no real browser clicks or DOM validation could be performed from this desktop session.
+  - Checked the desktop thread terminal bridge; no attached server terminal output is available to read from this thread.
+  - Confirmed GitHub `mongoyia/master` is at `d819053dd845e10f7e49dc92f13388fc5d518c73`.
+  - Rechecked public HTTPS endpoints:
+    - `/` returned HTTP 200.
+    - `/mall/chat/index?gid=2` returned HTTP 200 and contains product/store/WSS/token/upload markers.
+    - `/mall/chat/token?gid=2&user_id=customer_service_probe_<timestamp>&lang=en` returned HTTP 200 and token-shaped response content.
+  - External `/backend/` access from the local probe path returned HTTP 444, so backend role-flow state cannot be concluded from this probe.
+- Main files changed/added:
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - Public frontend/customer-service HTTP probe: PASS.
+  - Right-side browser automation: BLOCKED by local browser-control runtime issue.
+  - Backend external HTTP probe: BLOCKED by server HTTP 444 on this probe path.
+- Remaining issues:
+  - Phase 8.8 still needs the actual BaoTa command output for `customer-service-test/run --baseUrl=https://demo2026.mongoyia.com --productId=2 --interactive=0` after applying the latest fixture.
+  - If the command reports `Summary: 0 failure(s)`, the backend platform/seller客服 readiness portion can be recorded as passed; otherwise the next fix should target the remaining failed check.
+- Next stage:
+  - Review the pasted BaoTa readiness output or a controllable browser session, then complete the Phase 8 role-flow validation record.

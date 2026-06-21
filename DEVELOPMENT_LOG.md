@@ -3735,6 +3735,38 @@
     /www/server/php/83/bin/php yii customer-service-test/run --baseUrl=https://demo2026.mongoyia.com --productId=2 --interactive=0
     ```
 
+## 2026-06-21 Customer Service Center Phase 8 External Backend Probe
+
+- Stage name: Phase 8.8 external backend login probe after seller fixture handoff
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before continuing Phase 8.8 validation.
+  - Confirmed GitHub `mongoyia/master` points to `5750cebe046ee2c7b84740295c0c0379174f7dce`.
+  - Retried right-side browser automation; it still fails before any page interaction with the desktop runtime metadata error.
+  - Verified the platform acceptance backend account externally:
+    - `codex_platform_backend_test_5 / CodexTest123` can log in.
+    - `/backend/site/info` is authenticated.
+    - `/backend/mall/kf/index` is authenticated and contains the Phase 8 workbench markers for session context, chat-to-ticket, `userType`, and quick-reply insertion.
+  - Probed the default seller acceptance backend account:
+    - `zhishichanquan / 123456` still returns the backend login page from this external probe.
+- Main files changed/added:
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - Platform backend login and customer-service workbench probe: PASS.
+  - Seller backend login probe with default acceptance credentials: FAIL from external HTTP probe.
+  - Right-side browser automation: BLOCKED by tool/runtime metadata issue.
+- Remaining issues:
+  - Need BaoTa output from the enhanced `customer-service-acceptance-fixture/run --apply=1` command to see whether the seller user/store fixture was created successfully.
+  - If the enhanced fixture has not been pulled/applied yet, rerun it from `5750ceb` and then rerun `customer-service-test/run --productId=2`.
+  - Final browser role-flow validation remains pending after seller login readiness passes.
+- Next stage:
+  - Ask for the latest BaoTa output of:
+    ```bash
+    git rev-parse --short HEAD
+    /www/server/php/83/bin/php yii customer-service-acceptance-fixture/run --interactive=0
+    /www/server/php/83/bin/php yii customer-service-acceptance-fixture/run --apply=1 --interactive=0
+    /www/server/php/83/bin/php yii customer-service-test/run --baseUrl=https://demo2026.mongoyia.com --productId=2 --interactive=0
+    ```
+
 ## 2026-06-21 Customer Service Center Phase 8 Seller Fixture Completion
 
 - Stage name: Phase 8.8 customer-service seller acceptance fixture completion

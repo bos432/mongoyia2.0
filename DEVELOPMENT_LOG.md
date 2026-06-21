@@ -3682,3 +3682,22 @@
   - Full browser role-flow validation remains pending after the command reaches PASS.
 - Next stage:
   - Use BaoTa/server-side valid credentials and `--productId=2` to re-run `customer-service-test/run`, then continue browser validation.
+
+## 2026-06-21 Customer Service Center Phase 8 Browser Retry
+
+- Stage name: Phase 8.8 right-side browser validation retry
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before retrying Phase 8.8 browser validation.
+  - Retried connecting to the right-side in-app browser while the user had `https://demo2026.mongoyia.com/backend/` open; the browser automation layer still failed before page interaction with the desktop runtime metadata error.
+  - Re-probed the public buyer chat page `https://demo2026.mongoyia.com/mall/chat/index?gid=2` from HTTP and confirmed the live page still contains the Phase 8 markers for chat UI, frontend rating, token URL, upload URL, WSS URL, `productId=2`, and `storeId=1`.
+- Main files changed/added:
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - Right-side browser automation: BLOCKED by the same runtime metadata issue before any DOM or click interaction.
+  - Frontend buyer chat HTTP probe for product `2`: PASS.
+  - App terminal readback: no app terminal session is attached to this desktop thread, so the latest BaoTa command output is only available from the user's pasted terminal text.
+- Remaining issues:
+  - Need the BaoTa output from `customer-service-test/run --baseUrl=https://demo2026.mongoyia.com --productId=2 --interactive=0`.
+  - Logged-in backend role-flow validation still requires either a working right-side browser automation session or valid backend credentials usable by the readiness command.
+- Next stage:
+  - Review the `--productId=2` readiness output. If only login failures remain, rerun with valid platform/seller credentials or repair the acceptance test accounts, then complete browser/manual backend validation.

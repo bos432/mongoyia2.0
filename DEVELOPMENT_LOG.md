@@ -3825,3 +3825,39 @@
     /www/server/php/83/bin/php yii customer-service-acceptance-fixture/run --apply=1 --interactive=0
     /www/server/php/83/bin/php yii customer-service-test/run --baseUrl=https://demo2026.mongoyia.com --productId=2 --interactive=0
     ```
+
+## 2026-06-21 Customer Service Center Phase 8 Browser/HTTP Recheck
+
+- Stage name: Phase 8.8 right-side browser and public HTTP validation recheck
+- Validation time:
+  - `2026-06-21 19:22:51 +08:00`
+- Validation environment:
+  - Test server: `https://demo2026.mongoyia.com`
+  - Browser target claimed by user: `https://demo2026.mongoyia.com/backend/`
+  - Local verifier: Codex desktop external HTTP probes from Windows PowerShell
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before continuing Phase 8.8 validation.
+  - Confirmed GitHub `mongoyia/master` points to `976de615ea8d38d723eeba8a045a33a5c6847428`, which contains the seller fixture foreign-key fix.
+  - Retried connecting to the right-side in-app browser; browser automation still fails before DOM/click interaction with the desktop runtime metadata issue.
+  - Rechecked public buyer-side pages over HTTPS:
+    - `/` returned HTTP 200.
+    - `/mall/chat/index?gid=2` returned HTTP 200 and still contains the Phase 8 chat markers for product/store context, WSS/token/upload config.
+    - `/mall/chat/token?gid=2&user_id=customer_service_probe_<timestamp>&lang=en` returned HTTP 200 and token-shaped response content.
+  - Retried external backend login probes for platform and seller acceptance accounts with browser-like headers; both POST submissions were blocked by the server with HTTP 444 from this external probe path.
+- Main files changed/added:
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `git ls-remote mongoyia refs/heads/master` returned `976de615ea8d38d723eeba8a045a33a5c6847428`.
+  - Browser automation: BLOCKED by local Codex desktop browser runtime issue before page interaction.
+  - Public frontend/customer-service HTTP probe: PASS.
+  - External backend POST login probe: BLOCKED by server-side HTTP 444 response from this probe path; this is not enough to prove the real browser login failed.
+- Remaining issues:
+  - Need BaoTa output after running the latest `976de61` fixture apply and readiness commands to determine whether the seller backend account is now repaired.
+  - Final Phase 8 role-flow browser validation cannot be marked complete until a controllable browser session or pasted server readiness PASS confirms platform and seller客服 flows.
+- Next stage:
+  - Review the user's latest BaoTa output for:
+    ```bash
+    git rev-parse --short HEAD
+    /www/server/php/83/bin/php yii customer-service-acceptance-fixture/run --apply=1 --interactive=0
+    /www/server/php/83/bin/php yii customer-service-test/run --baseUrl=https://demo2026.mongoyia.com --productId=2 --interactive=0
+    ```

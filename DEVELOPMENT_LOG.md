@@ -3567,3 +3567,31 @@
   - Satisfaction rating duplicate protection still needs browser verification against the real database.
 - Next stage:
   - Deploy Phase 8 to BaoTa/test server, run migrations, run `customer-service-test/run --baseUrl=https://demo2026.mongoyia.com`, then complete browser validation for buyer, merchant客服, and platform客服 flows.
+
+## 2026-06-21 Customer Service Center Phase 8 Deployment Handoff
+
+- Stage name: Phase 8 deployment handoff to BaoTa/test server
+- Completed:
+  - Committed the Phase 8 customer-service center enhancement changes locally as `fd88852 Add Phase 8 customer service center enhancements`.
+  - Pushed `fd88852` to `https://github.com/bos432/mongoyia2.0.git` `master`, matching the BaoTa server deployment flow that uses `git pull`.
+  - Confirmed the unrelated untracked operational-config provider guide was not included in the Phase 8 commit.
+- Main files changed/added:
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `git push mongoyia HEAD:master` succeeded.
+  - In-app browser automation could not be started in this local desktop environment during this turn, so browser role-flow acceptance was not executed yet.
+- Remaining issues:
+  - BaoTa/test server still needs to pull `fd88852`, run migrations, restart PHP-FPM, and run DB-backed readiness checks.
+  - Browser acceptance for buyer, merchant客服, and platform客服 still remains required before Phase 8 can be marked fully accepted.
+- Next stage:
+  - On BaoTa/test server run:
+    ```bash
+    cd /www/wwwroot/demo2026.mongoyia.com
+    git pull
+    git rev-parse --short HEAD
+    /www/server/php/83/bin/php yii migrate/up --interactive=0
+    /www/server/php/83/bin/php yii customer-service-test/run --baseUrl=https://demo2026.mongoyia.com --interactive=0
+    /etc/init.d/php-fpm-83 restart
+    systemctl status mongoyia-im --no-pager
+    ```
+  - After that, complete the Phase 8 browser role-flow acceptance checklist from `docs/mongoyia-customer-service-center-phase8-guide.md`.

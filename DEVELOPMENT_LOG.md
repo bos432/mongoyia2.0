@@ -3735,6 +3735,32 @@
     /www/server/php/83/bin/php yii customer-service-test/run --baseUrl=https://demo2026.mongoyia.com --productId=2 --interactive=0
     ```
 
+## 2026-06-21 Customer Service Center Phase 8 Seller Fixture FK Fix
+
+- Stage name: Phase 8.8 customer-service seller fixture foreign-key fix
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before fixing the seller fixture error.
+  - Reviewed BaoTa output showing seller acceptance user creation failed because `fb_user.store_id=0` violates the `base_user_fk0` foreign-key constraint.
+  - Fixed `customer-service-acceptance-fixture/run` so a missing seller acceptance user is created first with the existing platform store id as a temporary valid `store_id`, then the command creates the dedicated seller acceptance store and updates the seller user's `store_id` to that new store.
+  - Kept the fixture scoped to acceptance data only; no order/payment/fund/inventory/refund/settlement/chat/ticket/evidence/stat/rating rows are modified.
+- Main files changed/added:
+  - `console/controllers/CustomerServiceAcceptanceFixtureController.php`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l console/controllers/CustomerServiceAcceptanceFixtureController.php` passed.
+  - The code diff is limited to the seller user bootstrap `store_id` used during creation.
+- Remaining issues:
+  - BaoTa/test server must pull this FK fix and rerun the fixture apply command, then rerun `customer-service-test/run --productId=2`.
+  - Final browser role-flow validation remains pending after readiness passes.
+- Next stage:
+  - On BaoTa/test server run:
+    ```bash
+    cd /www/wwwroot/demo2026.mongoyia.com
+    git pull
+    /www/server/php/83/bin/php yii customer-service-acceptance-fixture/run --apply=1 --interactive=0
+    /www/server/php/83/bin/php yii customer-service-test/run --baseUrl=https://demo2026.mongoyia.com --productId=2 --interactive=0
+    ```
+
 ## 2026-06-21 Customer Service Center Phase 8 External Backend Probe
 
 - Stage name: Phase 8.8 external backend login probe after seller fixture handoff

@@ -87,7 +87,7 @@ class CustomerServiceAcceptanceFixtureController extends Controller
         if (!$user) {
             $this->pending("Create seller customer-service acceptance user '{$this->sellerUsername}'.");
             if ($this->apply) {
-                $id = $this->createUser((string)$this->sellerUsername, (string)$this->sellerPassword, 0, 'seller');
+                $id = $this->createUser((string)$this->sellerUsername, (string)$this->sellerPassword, (int)$this->platformStoreId, 'seller');
                 if ($id <= 0) {
                     return;
                 }

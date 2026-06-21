@@ -3652,3 +3652,33 @@
   - Need BaoTa/test-server output for `yii customer-service-test/run --baseUrl=https://demo2026.mongoyia.com --interactive=0`, or a usable logged-in browser session that the automation tool can access.
 - Next stage:
   - Collect the BaoTa `customer-service-test/run` output and complete browser validation for客服工作台, chat-to-ticket, complaint evidence, SLA/stat dashboard, quick replies, and backend rating display.
+
+## 2026-06-21 Customer Service Center Phase 8 BaoTa Readiness Result
+
+- Stage name: Phase 8.8 BaoTa customer-service readiness command result
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before reviewing the BaoTa readiness result.
+  - Reviewed the server-side command output after `git pull` to `53649b7`.
+  - Confirmed `customer-service-test/run --baseUrl=https://demo2026.mongoyia.com` passes the source/controller/UI checks for the customer-service contract, backend controller, backend workbench UI, frontend controller, frontend chat UI, and reserved-widget hiding.
+  - Identified the remaining failures as deployment acceptance data issues rather than missing Phase 8 source files:
+    - Default readiness `productId=102` does not match the live server product used in the public chat probe; the live public chat product is `gid=2`.
+    - Documented backend test credentials did not authenticate on the BaoTa server for platform or seller accounts.
+- Main files changed/added:
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - BaoTa command: `/www/server/php/83/bin/php yii customer-service-test/run --baseUrl=https://demo2026.mongoyia.com --interactive=0`
+  - PASS: Customer-service contract.
+  - PASS: Backend customer-service controller.
+  - PASS: Backend customer-service workbench UI.
+  - PASS: Frontend customer-service controller.
+  - PASS: Frontend customer-service chat UI.
+  - PASS: Reserved backend/frontend customer-service widgets stay hidden.
+  - FAIL: Customer-service product context for default product `102`.
+  - FAIL: Platform backend login authenticated.
+  - FAIL: Seller backend login authenticated.
+- Remaining issues:
+  - Re-run readiness with the live product id `--productId=2`.
+  - Re-run readiness with backend usernames/passwords that are valid on the BaoTa server, or repair the documented test accounts before re-running.
+  - Full browser role-flow validation remains pending after the command reaches PASS.
+- Next stage:
+  - Use BaoTa/server-side valid credentials and `--productId=2` to re-run `customer-service-test/run`, then continue browser validation.

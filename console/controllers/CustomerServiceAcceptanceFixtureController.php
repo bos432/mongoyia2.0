@@ -17,6 +17,9 @@ class CustomerServiceAcceptanceFixtureController extends Controller
     public $sellerUsername = 'zhishichanquan';
     public $sellerPassword = '123456';
     public $sellerRoleId = 50;
+    public $sellerStoreId = 0;
+    public $createSellerStore = true;
+    public $sellerStoreName = 'Codex Customer Service Acceptance Store';
 
     private $failures = 0;
     private $pending = 0;
@@ -32,6 +35,9 @@ class CustomerServiceAcceptanceFixtureController extends Controller
             'sellerUsername',
             'sellerPassword',
             'sellerRoleId',
+            'sellerStoreId',
+            'createSellerStore',
+            'sellerStoreName',
         ]);
     }
 
@@ -79,13 +85,40 @@ class CustomerServiceAcceptanceFixtureController extends Controller
     {
         $user = $this->userByUsername((string)$this->sellerUsername);
         if (!$user) {
-            $this->fail("Seller customer-service acceptance user '{$this->sellerUsername}' is missing. Create or choose a real seller account with an owned store, then pass --sellerUsername/--sellerPassword.");
+            $this->pending("Create seller customer-service acceptance user '{$this->sellerUsername}'.");
+            if ($this->apply) {
+                $id = $this->createUser((string)$this->sellerUsername, (string)$this->sellerPassword, 0, 'seller');
+                if ($id <= 0) {
+                    return;
+                }
+                $user = $this->userById($id);
+                $this->ok("Created seller customer-service acceptance user '{$this->sellerUsername}' with id {$id}.");
+            }
+        }
+
+        if (!$user) {
+            $this->pending('Create seller acceptance store after the seller user exists.');
             return;
         }
 
         $storeId = $this->sellerStoreId((int)$user['id'], (int)($user['store_id'] ?? 0));
         if ($storeId <= 0) {
-            $this->fail("Seller customer-service acceptance user '{$this->sellerUsername}' has no usable store.");
+            if (!$this->createSellerStore) {
+                $this->fail("Seller customer-service acceptance user '{$this->sellerUsername}' has no non-platform store. Pass --sellerStoreId=<id> or allow --createSellerStore=1.");
+                return;
+            }
+
+            $this->pending("Create seller customer-service acceptance store for user {$user['id']}.");
+            if ($this->apply) {
+                $storeId = $this->createSellerStore((int)$user['id']);
+                if ($storeId <= 0) {
+                    return;
+                }
+                $this->ok("Created seller customer-service acceptance store {$storeId} for user {$user['id']}.");
+            }
+        }
+
+        if ($storeId <= 0) {
             return;
         }
 
@@ -205,10 +238,15 @@ class CustomerServiceAcceptanceFixtureController extends Controller
 
     private function sellerStoreId(int $userId, int $fallbackStoreId): int
     {
+        if ((int)$this->sellerStoreId > 0 && !$this->isPlatformStoreId((int)$this->sellerStoreId)) {
+            return (int)$this->sellerStoreId;
+        }
+
         $storeId = (new \yii\db\Query())
             ->select('id')
             ->from('{{%store}}')
             ->where(['user_id' => $userId])
+            ->andWhere(['not in', 'id', $this->platformStoreIds()])
             ->andWhere(['>', 'id', 0])
             ->orderBy(['id' => SORT_ASC])
             ->scalar(Yii::$app->db);
@@ -217,7 +255,98 @@ class CustomerServiceAcceptanceFixtureController extends Controller
             return (int)$storeId;
         }
 
-        return $fallbackStoreId > 0 ? $fallbackStoreId : 0;
+        return ($fallbackStoreId > 0 && !$this->isPlatformStoreId($fallbackStoreId)) ? $fallbackStoreId : 0;
+    }
+
+    private function createSellerStore(int $userId): int
+    {
+        $now = time();
+        $row = [
+            'parent_id' => 0,
+            'user_id' => $userId,
+            'name' => (string)$this->sellerStoreName,
+            'brief' => 'Phase 8 customer-service acceptance store',
+            'host_name' => '',
+            'code' => 'cs_accept_' . $userId,
+            'qrcode' => '',
+            'logo' => '',
+            'route' => 'mall',
+            'expired_at' => strtotime('+10 years'),
+            'remark' => 'Created by customer-service-acceptance-fixture/run',
+            'language' => 32767,
+            'lang_source' => 'zh-CN',
+            'lang_frontend' => 32767,
+            'lang_frontend_default' => '',
+            'lang_backend' => 32767,
+            'lang_backend_default' => '',
+            'lang_api' => 32767,
+            'lang_api_default' => '',
+            'fund' => 0,
+            'fund_amount' => 0,
+            'billable_fund' => 0,
+            'income' => 0,
+            'income_amount' => 0,
+            'income_count' => 0,
+            'consume_count' => 0,
+            'consume_amount' => 0,
+            'history_amount' => 0,
+            'param1' => '',
+            'param2' => '',
+            'param3' => '',
+            'param4' => 0,
+            'param5' => 0,
+            'param6' => 0,
+            'chain' => '',
+            'grade' => 0,
+            'type' => BaseModel::TYPE_DEFAULT,
+            'sort' => BaseModel::SORT_DEFAULT,
+            'status' => BaseModel::STATUS_ACTIVE,
+            'created_at' => $now,
+            'updated_at' => $now,
+            'created_by' => 1,
+            'updated_by' => 1,
+        ];
+
+        $row = $this->filterTableColumns('{{%store}}', $row);
+
+        try {
+            Yii::$app->db->createCommand()->insert('{{%store}}', $row)->execute();
+        } catch (\Throwable $e) {
+            $this->fail("Failed to create seller acceptance store: {$e->getMessage()}");
+            return 0;
+        }
+
+        return (int)Yii::$app->db->getLastInsertID();
+    }
+
+    private function filterTableColumns(string $table, array $row): array
+    {
+        $schema = Yii::$app->db->schema->getTableSchema($table, true);
+        if (!$schema) {
+            return $row;
+        }
+
+        return array_intersect_key($row, $schema->columns);
+    }
+
+    private function isPlatformStoreId(int $storeId): bool
+    {
+        return in_array($storeId, $this->platformStoreIds(), true);
+    }
+
+    private function platformStoreIds(): array
+    {
+        $configured = trim((string)(Yii::$app->params['mallPlatformOperatorStoreIds'] ?? ''));
+        if ($configured === '') {
+            $configured = trim((string)(Yii::$app->params['mallPlatformStoreIds'] ?? ''));
+        }
+
+        $storeIds = $configured === '' ? [] : array_values(array_filter(array_map('intval', explode(',', $configured))));
+        if (!$storeIds) {
+            $storeIds[] = (int)(Yii::$app->params['defaultStoreId'] ?? 0);
+        }
+
+        return array_values(array_unique(array_filter($storeIds)));
     }
 
     private function userByUsername(string $username): ?array

@@ -3734,3 +3734,36 @@
     /www/server/php/83/bin/php yii customer-service-acceptance-fixture/run --apply=1 --interactive=0
     /www/server/php/83/bin/php yii customer-service-test/run --baseUrl=https://demo2026.mongoyia.com --productId=2 --interactive=0
     ```
+
+## 2026-06-21 Customer Service Center Phase 8 Seller Fixture Completion
+
+- Stage name: Phase 8.8 customer-service seller acceptance fixture completion
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before continuing the remaining BaoTa readiness failures.
+  - Reviewed BaoTa output after `customer-service-acceptance-fixture/run`: platform acceptance user was created and platform backend login now passes, but the default seller user `zhishichanquan` is missing.
+  - Enhanced `customer-service-acceptance-fixture/run` so a missing seller acceptance user can be created automatically.
+  - Enhanced the fixture to create a dedicated non-platform seller acceptance store for that seller when no usable seller store exists.
+  - Kept the fixture scoped to acceptance data: user, store, role, status, and password hash only. It does not modify order/payment/fund/inventory/refund/settlement/chat/ticket/evidence/stat/rating rows.
+  - Updated the Phase 8 operation guide to mention that the fixture prepares a seller acceptance store as needed.
+- Main files changed/added:
+  - `console/controllers/CustomerServiceAcceptanceFixtureController.php`
+  - `docs/mongoyia-customer-service-center-phase8-guide.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l console/controllers/CustomerServiceAcceptanceFixtureController.php` passed.
+  - BaoTa readiness before this enhancement:
+    - PASS `platform backend login authenticated`
+    - FAIL `Backend user lookup` for missing seller user
+    - FAIL `seller backend login authenticated`
+- Remaining issues:
+  - BaoTa/test server must pull the enhanced fixture, run dry-run/apply again, then re-run `customer-service-test/run --productId=2`.
+  - Final browser role-flow validation remains pending because the right-side browser automation still cannot be controlled from this desktop environment.
+- Next stage:
+  - On BaoTa/test server run:
+    ```bash
+    cd /www/wwwroot/demo2026.mongoyia.com
+    git pull
+    /www/server/php/83/bin/php yii customer-service-acceptance-fixture/run --interactive=0
+    /www/server/php/83/bin/php yii customer-service-acceptance-fixture/run --apply=1 --interactive=0
+    /www/server/php/83/bin/php yii customer-service-test/run --baseUrl=https://demo2026.mongoyia.com --productId=2 --interactive=0
+    ```

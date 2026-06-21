@@ -27,7 +27,7 @@ git pull
   --interactive=0
 ```
 
-说明：`customer-service-acceptance-fixture/run` 只修复客服验收账号的登录状态、密码哈希和角色授权，不修改订单、支付、资金、库存、退款、结算或客服业务数据。默认不带 `--apply=1` 时只是 dry-run。
+说明：`customer-service-acceptance-fixture/run` 只准备客服验收用的平台账号、商家账号、商家验收店铺和角色授权，不修改订单、支付、资金、库存、退款、结算或客服业务数据。默认不带 `--apply=1` 时只是 dry-run。
 
 确认 IM 服务在线：
 

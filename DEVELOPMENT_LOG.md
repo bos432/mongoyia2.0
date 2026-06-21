@@ -3047,3 +3047,34 @@
   - Phase 7.1 still needs schema, service, audit, detection result storage, permission, backend page, and readiness command.
 - Next stage:
   - Reread the backlog and development log, then implement Phase 7.1 encrypted operational config foundation.
+
+## 2026-06-21 Operational Config Foundation
+
+- Stage name: Phase 7.1 encrypted operational config foundation
+- Completed:
+  - Reread the upgrade backlog and development log, then implemented the Phase 7.1 plan-listed encrypted config foundation.
+  - Added non-destructive migration `m260621_010000_mongoyia_operational_config_foundation` for `mall_operational_config`, `mall_operational_config_audit`, and `mall_operational_config_check`.
+  - Added platform permission `/mall/operational-config/index` and a platform-only backend landing page showing config counts, `OP_CONFIG_MASTER_KEY` presence, redacted values, and latest checks.
+  - Added operational config models and `OperationalConfigService` for encrypted sensitive values, decrypted runtime reads, redacted summaries, audit rows, and check-result rows.
+  - Added `operational-config-check/run --fixture=1` readiness command with schema, permission, file-marker, master-key-boundary, encryption round-trip, audit, redaction, and check-result assertions.
+  - Updated the Phase 7 backlog status and command documentation.
+- Main files changed/added:
+  - `console/migrations/m260621_010000_mongoyia_operational_config_foundation.php`
+  - `common/models/mall/OperationalConfig.php`
+  - `common/models/mall/OperationalConfigAudit.php`
+  - `common/models/mall/OperationalConfigCheck.php`
+  - `common/services/mall/OperationalConfigService.php`
+  - `backend/modules/mall/controllers/OperationalConfigController.php`
+  - `backend/modules/mall/views/operational-config/index.php`
+  - `console/controllers/OperationalConfigCheckController.php`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l` passed for the migration, service, models, backend controller/view, and readiness command.
+  - `php yii help operational-config-check` passed and listed `operational-config-check/run`.
+  - `php yii migrate/up --interactive=0` and `php yii operational-config-check/run --fixture=1 --interactive=0` could not complete locally because the local MySQL/MariaDB service was not running and port 3306 was not listening (`SQLSTATE[HY000] [2002]`).
+- Remaining issues:
+  - Run the migration and `operational-config-check/run --fixture=1` on a DB-enabled environment before using the backend page.
+  - Phase 7.2 still needs the concrete payment configuration forms and runtime payment-provider reads.
+- Next stage:
+  - Reread the backlog and development log, then implement Phase 7.2 payment config center increment.

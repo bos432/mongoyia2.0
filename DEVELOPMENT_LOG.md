@@ -3029,3 +3029,21 @@
   - Future local Yii command runs in this patch checkout still need local ignored config plus a temporary `vendor` junction or a normal dependency install.
 - Next stage:
   - Reread the backlog and development log, then confirm whether any remaining plan-listed development work can proceed without external payment, scheduler, alert, security, or owner signoff inputs.
+
+## 2026-06-21 Phase 7 Backend Operations Config Plan
+
+- Stage name: Phase 7 backend operations configuration center plan
+- Completed:
+  - Reread the upgrade backlog and development log before starting the new user-approved plan.
+  - Added Phase 7 to the phase status table for encrypted backend operations configuration.
+  - Added the Phase 7 backlog covering encrypted config foundation, QPay/LianLian/PayPal backend configuration, PayPal full integration, SMTP config, scheduled-check/alert center, launch evidence management, redacted export, callback URL helper, and key rotation workflow.
+  - Recorded the runtime configuration rule: backend encrypted records are the operational source of truth; `.env` remains only for database/Redis/Python IM base connectivity and `OP_CONFIG_MASTER_KEY`.
+- Main files changed/added:
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - Documentation-only stage; no PHP runtime changes were made.
+- Remaining issues:
+  - Phase 7.1 still needs schema, service, audit, detection result storage, permission, backend page, and readiness command.
+- Next stage:
+  - Reread the backlog and development log, then implement Phase 7.1 encrypted operational config foundation.

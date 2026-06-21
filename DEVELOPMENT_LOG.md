@@ -3595,3 +3595,35 @@
     systemctl status mongoyia-im --no-pager
     ```
   - After that, complete the Phase 8 browser role-flow acceptance checklist from `docs/mongoyia-customer-service-center-phase8-guide.md`.
+
+## 2026-06-21 Customer Service Center Phase 8 Deployment Acceptance Attempt
+
+- Stage name: Phase 8 deployment/readiness acceptance attempt
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before continuing the Phase 8 deployment acceptance stage.
+  - Confirmed GitHub `https://github.com/bos432/mongoyia2.0.git` `master` points to `71d2f83`, which includes the Phase 8 implementation commit `fd88852`.
+  - Re-ran static PHP syntax checks for Phase 8 services, controllers, backend views, frontend/theme chat views, and the customer-service readiness controller.
+  - Tried to probe `https://demo2026.mongoyia.com/mall/chat/index?gid=102` and `/backend/mall/kf/index` from the local environment; nginx returned HTTP `444`, so local direct HTTP probing cannot determine whether BaoTa has pulled the latest code.
+  - Tried to connect to the right-side in-app browser for real role-flow validation; browser automation failed in this desktop environment with a runtime metadata error before any page interaction could start.
+- Main files changed/added:
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l common/services/mall/CustomerServiceComplaintEvidenceService.php` passed.
+  - `php -l common/services/mall/CustomerServiceQuickReplyService.php` passed.
+  - `php -l common/services/mall/CustomerServiceRatingService.php` passed.
+  - `php -l common/services/mall/CustomerServiceSessionContextService.php` passed.
+  - `php -l backend/modules/mall/controllers/KfController.php` passed.
+  - `php -l frontend/modules/mall/controllers/ChatController.php` passed.
+  - `php -l console/controllers/CustomerServiceTestController.php` passed.
+  - `php -l web/resources/mall/default/views/chat/index.php` passed.
+  - `php -l backend/modules/mall/views/kf/index.php` passed.
+  - `php -l backend/modules/mall/views/kf/tickets.php` passed.
+  - `php -l backend/modules/mall/views/kf/ticket-view.php` passed.
+  - `php -l backend/modules/mall/views/kf/quick-replies.php` passed.
+  - `git ls-remote mongoyia refs/heads/master` returned `71d2f830f4a2d7f102a96a60ce55666e557fe7f3`.
+- Remaining issues:
+  - BaoTa/test server deployment state is still unverified from this environment; it must run `git pull`, migrations, and `customer-service-test/run`.
+  - Browser role-flow acceptance remains incomplete because the right-side browser automation could not be used in this turn.
+  - The only unrelated local untracked file remains `docs/mongoyia-operational-config-provider-setup-guide.md`; it was not modified or included.
+- Next stage:
+  - Run the BaoTa/test-server command block from the previous handoff, then continue Phase 8 browser validation for buyer, merchant客服, and platform客服.

@@ -3701,3 +3701,36 @@
   - Logged-in backend role-flow validation still requires either a working right-side browser automation session or valid backend credentials usable by the readiness command.
 - Next stage:
   - Review the `--productId=2` readiness output. If only login failures remain, rerun with valid platform/seller credentials or repair the acceptance test accounts, then complete browser/manual backend validation.
+
+## 2026-06-21 Customer Service Center Phase 8 Acceptance Fixture
+
+- Stage name: Phase 8.8 customer-service acceptance account fixture
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before handling the remaining BaoTa readiness failures.
+  - Reviewed BaoTa readiness output for `customer-service-test/run --baseUrl=https://demo2026.mongoyia.com --productId=2`.
+  - Confirmed product context, frontend chat page, and frontend token endpoint now pass; the remaining failures are platform and seller backend test-account authentication.
+  - Added `customer-service-acceptance-fixture/run` as a dry-run/apply console command for Phase 8 acceptance account repair.
+  - The command can create/repair the platform acceptance user, repair an existing seller acceptance user, reset only the configured test password hashes, activate the accounts, grant configured roles, and clear role cache.
+  - The command does not modify orders, payments, funds, inventory, refunds, settlements, chat messages, tickets, evidence, statistics, or ratings.
+  - Updated the Phase 8 operation guide with dry-run/apply fixture commands and the `--productId=<商品ID>` readiness command.
+- Main files changed/added:
+  - `console/controllers/CustomerServiceAcceptanceFixtureController.php`
+  - `docs/mongoyia-customer-service-center-phase8-guide.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l console/controllers/CustomerServiceAcceptanceFixtureController.php` passed.
+  - BaoTa readiness before this fixture still has 2 authentication failures:
+    - `platform backend login authenticated`
+    - `seller backend login authenticated`
+- Remaining issues:
+  - BaoTa/test server must pull this fixture command, run it first as dry-run, then with `--apply=1`, and re-run `customer-service-test/run --productId=2`.
+  - Right-side browser automation is still unavailable in this desktop environment, so final role-flow browser validation still needs manual/user-visible confirmation after readiness passes.
+- Next stage:
+  - On BaoTa/test server run:
+    ```bash
+    cd /www/wwwroot/demo2026.mongoyia.com
+    git pull
+    /www/server/php/83/bin/php yii customer-service-acceptance-fixture/run --interactive=0
+    /www/server/php/83/bin/php yii customer-service-acceptance-fixture/run --apply=1 --interactive=0
+    /www/server/php/83/bin/php yii customer-service-test/run --baseUrl=https://demo2026.mongoyia.com --productId=2 --interactive=0
+    ```

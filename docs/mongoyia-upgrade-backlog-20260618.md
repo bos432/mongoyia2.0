@@ -437,6 +437,8 @@ Phase 13.25 backend store-profile POST store-id hardening: platform operators ca
 
 Phase 13.26 buyer cart Ajax POST guard: PC/H5 cart add/update write endpoints `/mall/cart/edit-ajax` and `/mall/cart/update-ajax` now use `MONGOYIA_CART_AJAX_POST_GUARD_V1` and explicit `VerbFilter` POST-only rules. Product/cart pages already submit these operations with `$.post`; PWA smoke, Phase 13 buyer readiness, Phase 13 aggregate acceptance, and the total requirements closure marker list cover the guard.
 
+Phase 13.27 buyer coupon claim POST guard: PC/H5 buyer coupon claim now uses `MONGOYIA_USER_COUPON_CLAIM_POST_GUARD_V1`, restricts `/mall/user/getcode` to POST, reads `cid` only from POST body data, and uses an `exists()` check against `{{%mall_user_coupon}}` so the old GET-triggered claim path and stale `$count($count)` call cannot return a fatal error. Coupon closure, PWA smoke, Phase 13 buyer readiness, and Phase 13 aggregate acceptance cover the guard.
+
 Phase 14 acceptance command:
 
 ```bash

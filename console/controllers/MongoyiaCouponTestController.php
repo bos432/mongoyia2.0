@@ -78,7 +78,19 @@ class MongoyiaCouponTestController extends Controller
         $this->section('Frontend entrances');
         $this->requireFileContains('@app/../web/resources/mall/default/views/cart/checkout.php', ['coupon-code', 'coupon-btn']);
         $this->requireFileContains('@app/../web/resources/mall/default/views/layouts/nav.php', ['/mall/user/coupon']);
-        $this->requireFileContains('@app/../frontend/modules/mall/controllers/UserController.php', ['actionCoupon', 'fb_mall_user_coupon']);
+        $this->requireFileContains('@app/../frontend/modules/mall/controllers/UserController.php', [
+            'MONGOYIA_USER_COUPON_CLAIM_POST_GUARD_V1',
+            "'getcode' => ['POST']",
+            "post('cid', 0)",
+            'exists(Yii::$app->db)',
+            '{{%mall_user_coupon}}',
+            'actionCoupon',
+        ]);
+        $this->requireFileNotContains('@app/../frontend/modules/mall/controllers/UserController.php', [
+            '$count($count)',
+            "request->get('cid')",
+            'fb_mall_user_coupon',
+        ]);
     }
 
     private function checkBackendEntrances()
@@ -283,6 +295,23 @@ class MongoyiaCouponTestController extends Controller
             }
         }
         $this->ok("File contains required markers: {$path}");
+    }
+
+    private function requireFileNotContains(string $alias, array $needles)
+    {
+        $path = Yii::getAlias($alias);
+        if (!is_file($path)) {
+            $this->fail("Missing file {$path}.");
+            return;
+        }
+        $content = file_get_contents($path);
+        foreach ($needles as $needle) {
+            if (strpos($content, $needle) !== false) {
+                $this->fail("File {$path} still contains stale marker '{$needle}'.");
+                return;
+            }
+        }
+        $this->ok("File has no stale markers: {$path}");
     }
 
     private function section(string $name)

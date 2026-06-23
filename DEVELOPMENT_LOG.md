@@ -1,5 +1,41 @@
 # Development Log
 
+## 2026-06-24 Phase 13 Buyer Coupon Claim POST Guard
+
+- Stage name: Phase 13.27 buyer coupon claim POST guard
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting the stage.
+  - Added `MONGOYIA_USER_COUPON_CLAIM_POST_GUARD_V1` to the frontend mall user controller.
+  - Restricted `/mall/user/getcode` to POST through the existing frontend `VerbFilter`.
+  - Changed coupon claim writes to read `cid` only from POST body data.
+  - Replaced the stale direct `fb_mall_user_coupon` lookup and broken `$count($count)` call with a Yii query `exists()` check against `{{%mall_user_coupon}}`.
+  - Added coverage to coupon closure, PWA smoke, Phase 13 buyer readiness, and Phase 13 aggregate acceptance.
+  - Updated the Phase 13 backlog notes as Phase 13.27.
+- Main files changed/added:
+  - `frontend/modules/mall/controllers/UserController.php`
+  - `console/controllers/MongoyiaCouponTestController.php`
+  - `console/controllers/PwaSmokeTestController.php`
+  - `console/controllers/AppBuyerPhase13ReadinessController.php`
+  - `console/controllers/AppPhase13AcceptanceController.php`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l frontend/modules/mall/controllers/UserController.php` passed.
+  - `php -l console/controllers/MongoyiaCouponTestController.php` passed.
+  - `php -l console/controllers/PwaSmokeTestController.php` passed.
+  - `php -l console/controllers/AppBuyerPhase13ReadinessController.php` passed.
+  - `php -l console/controllers/AppPhase13AcceptanceController.php` passed.
+  - Static marker checks confirmed `MONGOYIA_USER_COUPON_CLAIM_POST_GUARD_V1`, POST-only `getcode`, POST body `cid`, `exists(Yii::$app->db)`, `{{%mall_user_coupon}}`, and Phase 13.27 backlog/log coverage.
+  - Static stale-code check found no remaining `$count($count)`, `request->get('cid')`, or `fb_mall_user_coupon` in the frontend mall user controller.
+  - `git diff --check` reported no whitespace errors, only existing Windows line-ending conversion warnings.
+  - Full Yii console execution remains BaoTa-only because this local checkout lacks `vendor/autoload.php`.
+- Remaining issues:
+  - BaoTa/test server must rerun coupon closure, PWA smoke, Phase 13 buyer/aggregate readiness, and total requirements closure acceptance after deployment.
+  - Authenticated buyer browser evidence should recheck coupon claim behavior together with cart/checkout.
+  - Phase 10/11/12/13/14/15 external/provider/browser evidence gates remain pending; production remains `NO-GO`.
+- Next stage:
+  - Run syntax/static verification, commit and push this Phase 13 buyer coupon claim POST guard patch, then reread the plan/log and continue with the next plan-listed readiness item.
+
 ## 2026-06-24 Phase 13 Local H5 Browser Smoke Verification
 
 - Stage name: Phase 13 local H5 browser smoke verification

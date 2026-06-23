@@ -158,6 +158,8 @@ class PwaSmokeTestController extends Controller
             "hiddenInput('id'",
         ]);
         $this->requireFileContains('frontend/modules/mall/controllers/UserController.php', [
+            'MONGOYIA_USER_COUPON_CLAIM_POST_GUARD_V1',
+            "'getcode' => ['POST']",
             'MONGOYIA_DISTRIBUTION_FRONTEND_POST_VERB_GUARD_V1',
             "'distribution-profile' => ['POST']",
             "'distribution-withdraw' => ['POST']",

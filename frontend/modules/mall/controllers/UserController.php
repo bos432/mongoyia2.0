@@ -49,6 +49,7 @@ class UserController extends BaseController
             'verbs' => [
                 'class' => VerbFilter::className(),
                 'actions' => [
+                    'getcode' => ['POST'],
                     'distribution-profile' => ['POST'],
                     'distribution-withdraw' => ['POST'],
                 ],
@@ -63,15 +64,27 @@ class UserController extends BaseController
 
     public function actionGetcode()
     {
-        $cid = yii::$app->request->get('cid');
-        if(yii::$app->user->isGuest){
+        // MONGOYIA_USER_COUPON_CLAIM_POST_GUARD_V1: coupon claims must not be triggered by GET links.
+        $cid = (int)Yii::$app->request->post('cid', 0);
+        if (Yii::$app->user->isGuest) {
             return $this->redirect('/mall/default/login');
         }
-        $count = (new \yii\db\Query())->from('fb_mall_user_coupon')->where(['uid'=>yii::$app->user->id,'cid'=>$cid])->all();
-        if($count($count) > 0){
-            yii::$app->db->createCommand()->insert('fb_mall_user_coupon',['uid'=>yii::$app->user->id,'cid'=>$cid])->execute();
+        if ($cid <= 0) {
+            return $this->redirectError(Yii::t('app', 'Invalid Param'), ['/mall/user/coupon']);
         }
-        return $this->goHome();
+
+        $exists = (new Query())
+            ->from('{{%mall_user_coupon}}')
+            ->where(['uid' => Yii::$app->user->id, 'cid' => $cid])
+            ->exists(Yii::$app->db);
+        if (!$exists) {
+            Yii::$app->db->createCommand()->insert('{{%mall_user_coupon}}', [
+                'uid' => Yii::$app->user->id,
+                'cid' => $cid,
+            ])->execute();
+        }
+
+        return $this->redirect(['/mall/user/coupon']);
     }
 
     public function actionOrder()

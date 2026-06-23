@@ -238,6 +238,18 @@ class AppPhase13AcceptanceController extends Controller
         $this->requireFileNotContains('Buyer web address delete has no URL id write link', 'web/resources/mall/default/views/user/address_.php', [
             "Html::a(Yii::t('app', 'Delete'), ['/mall/address/delete', 'id' =>",
         ]);
+        $this->requireFileContains('Buyer web coupon claim POST guard', 'frontend/modules/mall/controllers/UserController.php', [
+            'MONGOYIA_USER_COUPON_CLAIM_POST_GUARD_V1',
+            "'getcode' => ['POST']",
+            "post('cid', 0)",
+            'exists(Yii::$app->db)',
+            '{{%mall_user_coupon}}',
+        ]);
+        $this->requireFileNotContains('Buyer web coupon claim has no GET cid or stale count call', 'frontend/modules/mall/controllers/UserController.php', [
+            '$count($count)',
+            "request->get('cid')",
+            'fb_mall_user_coupon',
+        ]);
         $this->requireFileContains('Buyer web cart link normalizer', 'web/resources/mall/default/js/main.js', [
             'MONGOYIA_CART_LINK_NORMALIZER_V1',
             '/mall/cart/index',

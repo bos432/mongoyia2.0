@@ -4825,3 +4825,28 @@
 - Next stage:
   - Commit and push Phase 11.3, then on BaoTa run `payment-callback-regression-readiness/run --fixture=1 --strict=1` and rerun `payment-phase11-acceptance/run --runChildChecks=1 --fixture=1`.
   - After server-side automated checks pass, continue with the next plan-listed Phase 11 evidence stage or move to Phase 12 only if the remaining Phase 11 items are blocked by external provider/browser evidence.
+
+## 2026-06-23 Phase 12.0 Account/Notification/Language Acceptance Gate
+
+- Stage name: Phase 12.0 account, notification, and language acceptance scaffold
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting the stage.
+  - Added `account-notification-phase12-acceptance/run` as the Phase 12 aggregate acceptance command.
+  - The command inventories existing password-reset, OAuth2, site-message, SMTP, and en/mn i18n foundations.
+  - Added explicit evidence gates for Facebook/Google login, password recovery/security-code login policy, site/app notifications, language review import/export, and browser role-flow acceptance.
+  - The command can optionally run the existing operational mail config readiness child check.
+  - Updated the Phase 12 backlog row from `Planned` to `In progress` and recorded Phase 12.0 as the current foundation.
+- Main files changed/added:
+  - `console/controllers/AccountNotificationPhase12AcceptanceController.php`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l console/controllers/AccountNotificationPhase12AcceptanceController.php` passed.
+  - Static inspection confirmed existing source markers for password reset, OAuth2 foundation, site messages, SMTP runtime, and `common/messages/en` plus `common/messages/mn`.
+  - Full Yii command execution is still expected on BaoTa/full-vendor environment because this patch checkout does not have Composer `vendor/autoload.php`.
+- Remaining issues:
+  - Phase 12 implementation remains pending for Facebook/Google provider config and callbacks, security-code policy, notification hooks/logs, language review import/export, and browser role-flow evidence.
+  - No Facebook, Google, SMTP, SMS, APP push, or language-review secrets were added.
+  - Phase 10/11 external evidence remains incomplete, and production remains `NO-GO`.
+- Next stage:
+  - Commit and push Phase 12.0, then continue Phase 12.1 by adding Facebook/Google login configuration foundation with encrypted provider settings, callback route skeletons, bind/unbind boundaries, and provider-secret redaction.

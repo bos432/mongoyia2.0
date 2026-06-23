@@ -52,7 +52,7 @@ $statusClass = [
                     <div class="col-md-2"><strong>预计金额：</strong><?= number_format((float)$result['plannedAmount'], 2) ?></div>
                 </div>
                 <hr>
-                <form method="post" action="<?= Url::to(['apply']) ?>">
+                <form method="post" action="<?= Url::to(['apply']) ?>" data-mongoyia-logistics-fee-review-post-guard="1">
                     <input type="hidden" name="<?= Yii::$app->request->csrfParam ?>" value="<?= Yii::$app->request->csrfToken ?>">
                     <input type="hidden" name="store_id" value="<?= (int)$storeId ?>">
                     <input type="hidden" name="limit" value="<?= (int)$limit ?>">

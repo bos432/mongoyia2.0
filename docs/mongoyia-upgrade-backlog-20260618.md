@@ -561,6 +561,8 @@ php yii mongoyia-acceptance/run --baseUrl=http://127.0.0.1:8089 --profile=local 
 
 Phase 3.1 settlement draft backend POST guard: settlement draft workflow, payout evidence, and close actions now use `MONGOYIA_SETTLEMENT_DRAFT_BACKEND_POST_GUARD_V1`, POST-only verb filters, POST-only workflow parameter reads, and CSRF POST form markers on the backend draft page. `mongoyia-settlement-draft-backend-test/run` checks the guard so settlement draft status changes, payout evidence entry, and close actions cannot be triggered by plain GET links.
 
+Phase 3.2 logistics fee review apply POST guard: backend logistics-fee finance review now uses `MONGOYIA_LOGISTICS_FEE_REVIEW_APPLY_POST_GUARD_V1`, explicitly restricts `/backend/mall/logistics-fee-review/apply` to POST, keeps preview filters as GET on the index page, and marks the execute-adjustment form with `data-mongoyia-logistics-fee-review-post-guard`. `mongoyia-logistics-fee-review-test/run` checks the guard so fee adjustment application cannot be triggered by plain GET.
+
 ## Open Risks
 
 - Real test server credentials, domain, TLS, WSS reverse proxy, payment sandbox secrets, and mail service are external inputs.

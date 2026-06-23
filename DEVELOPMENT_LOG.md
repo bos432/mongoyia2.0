@@ -7963,3 +7963,32 @@
   - Phase 10/11/12/13/15 external/provider/browser evidence gates remain pending; production remains `NO-GO`.
 - Next stage:
   - Commit and push this Phase 14 review moderation hardening patch, then reread the plan/log and continue with the next plan-listed readiness item.
+
+## 2026-06-24 Phase 3 Logistics Fee Review Apply POST Guard
+
+- Stage name: Phase 3 logistics fee review apply POST guard
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting the stage.
+  - Added `MONGOYIA_LOGISTICS_FEE_REVIEW_APPLY_POST_GUARD_V1` to the backend logistics fee review controller.
+  - Restricted `/backend/mall/logistics-fee-review/apply` to POST while keeping read-only preview filters on the index page as GET.
+  - Added `data-mongoyia-logistics-fee-review-post-guard` to the execute-adjustment form.
+  - Added source coverage to `mongoyia-logistics-fee-review-test/run` for the POST verb guard, POST parameters, CSRF form, and UI marker.
+  - Updated the Phase 3 backlog notes to record this small stage as Phase 3.2.
+- Main files changed/added:
+  - `backend/modules/mall/controllers/LogisticsFeeReviewController.php`
+  - `backend/modules/mall/views/logistics-fee-review/index.php`
+  - `console/controllers/MongoyiaLogisticsFeeReviewTestController.php`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l backend/modules/mall/controllers/LogisticsFeeReviewController.php` passed.
+  - `php -l backend/modules/mall/views/logistics-fee-review/index.php` passed.
+  - `php -l console/controllers/MongoyiaLogisticsFeeReviewTestController.php` passed.
+  - Static marker checks confirmed `MONGOYIA_LOGISTICS_FEE_REVIEW_APPLY_POST_GUARD_V1`, `apply` POST verb guard, `data-mongoyia-logistics-fee-review-post-guard`, and `Phase 3.2`.
+  - `git diff --check` reported no whitespace errors, only existing Windows line-ending conversion warnings.
+  - Full Yii console execution remains BaoTa-only because this local checkout lacks `vendor/autoload.php`.
+- Remaining issues:
+  - Phase 3 finance/logistics browser role-flow evidence should be rechecked on BaoTa after deployment for logistics fee review and deposit/settlement pages.
+  - Phase 10/11/12/13/14/15 external/provider/browser evidence gates remain pending; production remains `NO-GO`.
+- Next stage:
+  - Commit and push this Phase 3 logistics fee review POST guard patch, then reread the plan/log and continue with the next plan-listed readiness item.

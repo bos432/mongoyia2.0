@@ -8,6 +8,16 @@ use yii\web\ForbiddenHttpException;
 
 class LogisticsFeeReviewController extends BaseController
 {
+    public const APPLY_POST_GUARD_VERSION = 'MONGOYIA_LOGISTICS_FEE_REVIEW_APPLY_POST_GUARD_V1';
+
+    public function behaviors()
+    {
+        $behaviors = parent::behaviors();
+        $behaviors['verbs']['actions']['apply'] = ['post'];
+
+        return $behaviors;
+    }
+
     public function actionIndex()
     {
         if (!$this->isMallPlatformOperator()) {

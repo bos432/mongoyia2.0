@@ -41,8 +41,22 @@ class MongoyiaLogisticsFeeReviewTestController extends Controller
     {
         $this->section('Backend files');
         $this->requireFileContains('common/services/mall/LogisticsFeeAdjustmentService.php', ['class LogisticsFeeAdjustmentService', 'shipment_fee_adjustment']);
-        $this->requireFileContains('backend/modules/mall/controllers/LogisticsFeeReviewController.php', ['actionIndex', 'actionApply', 'isMallPlatformOperator']);
-        $this->requireFileContains('backend/modules/mall/views/logistics-fee-review/index.php', ['物流费财务复核', '执行调账', '查看预存金流水']);
+        $this->requireFileContains('backend/modules/mall/controllers/LogisticsFeeReviewController.php', [
+            'MONGOYIA_LOGISTICS_FEE_REVIEW_APPLY_POST_GUARD_V1',
+            'actionIndex',
+            'actionApply',
+            'isMallPlatformOperator',
+            "'apply'] = ['post']",
+            "post('store_id', 0)",
+            "post('limit', 100)",
+        ]);
+        $this->requireFileContains('backend/modules/mall/views/logistics-fee-review/index.php', [
+            '物流费财务复核',
+            '执行调账',
+            '查看预存金流水',
+            'data-mongoyia-logistics-fee-review-post-guard',
+            'csrfToken',
+        ]);
         $this->requireFileContains('console/migrations/m260618_171000_mongoyia_logistics_fee_review_permission.php', ['/mall/logistics-fee-review/index', '/mall/logistics-fee-review/*']);
     }
 

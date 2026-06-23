@@ -172,6 +172,15 @@ class PaymentPhase11AcceptanceController extends Controller
             'PaymentStatisticsService',
             'payment-stat-readiness',
         ]);
+        $this->requireFileContains('Payment callback regression readiness command', 'console/controllers/PaymentCallbackRegressionReadinessController.php', [
+            'MONGOYIA_PAYMENT_CALLBACK_REGRESSION_READINESS_V1',
+            'Disabled provider/channel guard',
+            'Failure status callback guard',
+            'Duplicate callback/idempotency guard',
+            'Amount mismatch guard',
+            'Signature/HMAC guard',
+            'Audit row coverage',
+        ]);
         $this->requireFileContains('Phase 10 production readiness boundary', 'console/controllers/OperationalConfigPhase10AcceptanceController.php', [
             'Production launch remains `NO-GO`',
             'providerEvidenceAccepted',
@@ -250,6 +259,7 @@ class PaymentPhase11AcceptanceController extends Controller
             'Base mall payment regression' => ['route' => 'mall-payment-test/run', 'fixture' => false],
             'Payment callback readiness' => ['route' => 'mongoyia-payment-callback-readiness/run', 'fixture' => false],
             'Payment statistics readiness' => ['route' => 'payment-stat-readiness/run', 'fixture' => true],
+            'Payment callback regression readiness' => ['route' => 'payment-callback-regression-readiness/run', 'fixture' => true],
             'PayPal final read-only go/no-go gate' => ['route' => 'payment-provider-paypal-final-go-no-go-gate/run', 'fixture' => true],
         ];
     }
@@ -297,6 +307,7 @@ class PaymentPhase11AcceptanceController extends Controller
             'cd /www/wwwroot/demo2026.mongoyia.com',
             'git pull',
             '/www/server/php/83/bin/php yii migrate/up --interactive=0',
+            '/www/server/php/83/bin/php yii payment-callback-regression-readiness/run --fixture=1 --strict=1 --interactive=0',
             '/www/server/php/83/bin/php yii payment-phase11-acceptance/run \\',
             '  --baseUrl=https://demo2026.mongoyia.com \\',
             '  --runChildChecks=1 \\',

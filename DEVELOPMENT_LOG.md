@@ -4798,3 +4798,30 @@
   - Statistics are read-only and derived from existing audit rows; no scheduled persistent aggregate table is added in this substage.
 - Next stage:
   - Reread the development plan and this log, then continue Phase 11.3 by adding sandbox/callback regression readiness for disabled-channel, failure callback, duplicate callback, amount mismatch, and signature-error cases without calling live providers.
+
+## 2026-06-23 Phase 11.3 Payment Callback Regression Readiness
+
+- Stage name: Phase 11.3 sandbox/callback regression readiness
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting the stage.
+  - Added `payment-callback-regression-readiness/run` as a non-provider-calling readiness command for disabled provider/channel guards, failed callback status, duplicate callback/idempotency, amount mismatch, signature/HMAC errors, and audit-row coverage.
+  - The new command writes a non-sensitive Markdown report under `runtime/handover` and explicitly states that it does not call QPay, LianLian, PayPal, mutate orders/funds, enable live payment, or store secrets.
+  - Wired the callback regression readiness command into `payment-phase11-acceptance/run --runChildChecks=1`.
+  - Updated the Phase 11 backlog rows and command list to include the new callback regression readiness gate.
+- Main files changed/added:
+  - `console/controllers/PaymentCallbackRegressionReadinessController.php`
+  - `console/controllers/PaymentPhase11AcceptanceController.php`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l console/controllers/PaymentCallbackRegressionReadinessController.php` passed.
+  - `php -l console/controllers/PaymentPhase11AcceptanceController.php` passed.
+  - Static marker checks confirmed the Phase 11 aggregate command references `PaymentCallbackRegressionReadinessController.php` and `payment-callback-regression-readiness/run`.
+  - Full Yii command execution is still expected on BaoTa/full-vendor environment because this patch checkout does not have Composer `vendor/autoload.php`.
+- Remaining issues:
+  - Phase 10 manual evidence remains incomplete, and production remains `NO-GO`.
+  - Phase 11 still needs real or sandbox provider evidence, callback/audit browser evidence, and browser role-flow acceptance before the manual flags can be honestly accepted.
+  - No real provider secrets, SMTP secrets, private keys, Basic Auth, HMAC secrets, or live payment credentials were added.
+- Next stage:
+  - Commit and push Phase 11.3, then on BaoTa run `payment-callback-regression-readiness/run --fixture=1 --strict=1` and rerun `payment-phase11-acceptance/run --runChildChecks=1 --fixture=1`.
+  - After server-side automated checks pass, continue with the next plan-listed Phase 11 evidence stage or move to Phase 12 only if the remaining Phase 11 items are blocked by external provider/browser evidence.

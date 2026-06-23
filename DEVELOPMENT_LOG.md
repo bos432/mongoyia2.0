@@ -6371,3 +6371,27 @@
 - Next stage:
   - Commit and push this cart-flow hardening fix.
   - After BaoTa pulls it, rerun migrations and `mongoyia-requirements-closure-acceptance/run --baseUrl=https://demo2026.mongoyia.com --fixture=1 --runChildChecks=1 --strict=1 --interactive=0`, then resume buyer cart/checkout browser validation.
+
+## 2026-06-23 Phase 13 Buyer Cart Guard Coverage
+
+- Stage name: Phase 13 buyer cart stale-row guard acceptance coverage
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting the stage.
+  - Added a stable `MONGOYIA_CART_STALE_ROW_GUARD_V1` marker to the frontend cart controller.
+  - Extended existing `pwa-smoke-test/run` file checks so future readiness runs verify the stale-cart guard, unavailable-product fallback text, and normalized `/mall/cart/index` route usage in the cart/product flow.
+  - Kept this stage within Phase 13 buyer cart/checkout readiness and did not add new business behavior.
+- Main files changed/added:
+  - `frontend/modules/mall/controllers/CartController.php`
+  - `console/controllers/PwaSmokeTestController.php`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l frontend/modules/mall/controllers/CartController.php` passed.
+  - `php -l console/controllers/PwaSmokeTestController.php` passed.
+  - `git diff --check` reported no whitespace errors, only existing Windows line-ending conversion warnings.
+  - Full Yii smoke execution remains BaoTa-only because this local checkout lacks `vendor/autoload.php`.
+- Remaining issues:
+  - BaoTa must pull the latest commits before the cart/checkout browser revalidation can confirm the runtime fix.
+  - Production remains `NO-GO` until external provider, logistics, social-login, notification, and operations signoff evidence is accepted.
+- Next stage:
+  - Commit and push this acceptance-coverage patch.
+  - Resume browser role-flow validation once BaoTa pulls `a94a11d` or newer plus this coverage commit.

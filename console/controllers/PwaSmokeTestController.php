@@ -141,6 +141,18 @@ class PwaSmokeTestController extends Controller
         ] as $path => $marker) {
             $this->requireFileContains($path, [$marker]);
         }
+        $this->requireFileContains('frontend/modules/mall/controllers/CartController.php', [
+            'MONGOYIA_CART_STALE_ROW_GUARD_V1',
+            'Unavailable product',
+            '/mall/cart/index',
+        ]);
+        $this->requireFileContains('web/resources/mall/default/views/cart/index.php', [
+            'Unavailable product',
+            '/mall/cart/index',
+        ]);
+        $this->requireFileContains('web/resources/mall/default/views/product/view.php', [
+            '/mall/cart/index',
+        ]);
         $this->requireFileContains('backend/views/layouts/main-store.php', [
             'mongoyia-merchant-pwa-shell',
         ]);

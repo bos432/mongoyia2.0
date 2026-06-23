@@ -35,14 +35,15 @@ class CustomerServiceUniappTestController extends Controller
     {
         $this->section('Source markers');
         $base = '@app/../apps/mongoyia-customer-chat-uniapp/';
-        $this->requireFileContains($base . 'manifest.json', [
+        $src = $base . 'src/';
+        $this->requireFileContains($src . 'manifest.json', [
             '__UNI__MONGOYIA_CS',
             'Mongoyia客服',
         ]);
-        $this->requireFileContains($base . 'pages.json', [
+        $this->requireFileContains($src . 'pages.json', [
             'pages/chat/index',
         ]);
-        $this->requireFileContains($base . 'pages/chat/index.vue', [
+        $this->requireFileContains($src . 'pages/chat/index.vue', [
             'MONGOYIA_CUSTOMER_SERVICE_UNIAPP_CHAT_V1',
             'uni.connectSocket',
             'chat_history',
@@ -54,11 +55,13 @@ class CustomerServiceUniappTestController extends Controller
             'data-mongoyia-customer-service-uniapp-rating',
             '/mall/chat/rating-submit',
         ]);
-        $this->requireFileContains($base . 'utils/api.js', [
+        $this->requireFileContains($src . 'utils/api.js', [
             '/mall/chat/media-upload',
             'uni.uploadFile',
         ]);
         $this->requireFileContains('@app/../frontend/modules/mall/controllers/ChatController.php', [
+            "'translate'",
+            "'rating-submit'",
             "'uid' => (int)\$product['user_id']",
             "'product_id' => \$gid",
             "'store_id' => (int)\$product['store_id']",
@@ -76,7 +79,7 @@ class CustomerServiceUniappTestController extends Controller
     {
         $this->section('Fixture dry-run');
         $base = Yii::getAlias('@app/../apps/mongoyia-customer-chat-uniapp');
-        foreach (['package.json', 'manifest.json', 'pages.json'] as $file) {
+        foreach (['package.json', 'src/manifest.json', 'src/pages.json'] as $file) {
             $json = json_decode((string)file_get_contents($base . '/' . $file), true);
             if (!is_array($json)) {
                 $this->fail("Invalid JSON: {$file}");
@@ -92,7 +95,7 @@ class CustomerServiceUniappTestController extends Controller
         }
         $this->ok('uni-app package includes H5 dev script and uni dependency.');
 
-        $page = (string)file_get_contents($base . '/pages/chat/index.vue');
+        $page = (string)file_get_contents($base . '/src/pages/chat/index.vue');
         foreach (['messageType(message) === 2', 'messageType(message) === 3', 'messageType(message) === 4', 'messageType(message) === 5'] as $needle) {
             if (strpos($page, $needle) === false) {
                 $this->fail("Chat page missing media render branch {$needle}.");

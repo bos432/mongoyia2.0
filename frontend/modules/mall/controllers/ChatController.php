@@ -21,7 +21,7 @@ class ChatController extends BaseController
 {
     public function beforeAction($action)
     {
-        if (in_array($action->id, ['upload', 'media-upload', 'token'], true)) {
+        if (in_array($action->id, ['upload', 'media-upload', 'token', 'translate', 'rating-submit'], true)) {
             $this->enableCsrfValidation = false;
         }
 

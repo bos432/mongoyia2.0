@@ -202,7 +202,7 @@ class CustomerServicePhase9AcceptanceController extends Controller
             'dev:h5',
             '@dcloudio/uni-app',
         ]);
-        $this->requireFileContains('Phase 9.6 uni-app chat page', 'apps/mongoyia-customer-chat-uniapp/pages/chat/index.vue', [
+        $this->requireFileContains('Phase 9.6 uni-app chat page', 'apps/mongoyia-customer-chat-uniapp/src/pages/chat/index.vue', [
             'MONGOYIA_CUSTOMER_SERVICE_UNIAPP_CHAT_V1',
             'uni.connectSocket',
             'uploadAndSend',

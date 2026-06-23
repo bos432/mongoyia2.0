@@ -45,12 +45,10 @@
             :src="mediaUrl(message.content)"
             controls
           />
-          <audio
-            v-else-if="messageType(message) === 5"
-            class="message-audio"
-            :src="mediaUrl(message.content)"
-            controls
-          />
+          <view v-else-if="messageType(message) === 5" class="voice-message" @tap="playAudio(message.content)">
+            <text class="file-icon">VOICE</text>
+            <text>点击播放语音</text>
+          </view>
           <text v-else>{{ displayText(message) }}</text>
           <view v-if="translatedHint(message)" class="translated-hint">{{ translatedHint(message) }}</view>
           <view class="time">{{ message.timestamp || '' }}</view>
@@ -115,6 +113,7 @@ export default {
       messages: [],
       recording: false,
       recorder: null,
+      audioPlayer: null,
       languageOptions: [
         { value: 'zh-CN', label: '中文' },
         { value: 'en', label: 'English' },
@@ -155,6 +154,7 @@ export default {
     this.initRecorder()
   },
   onUnload() {
+    this.stopAudio()
     this.closeSocket()
   },
   methods: {
@@ -362,10 +362,25 @@ export default {
       })
     },
     initRecorder() {
+      // #ifdef H5
+      this.recorder = null
+      return
+      // #endif
       if (!uni.getRecorderManager) {
         return
       }
-      this.recorder = uni.getRecorderManager()
+      let recorder = null
+      try {
+        recorder = uni.getRecorderManager()
+      } catch (error) {
+        this.recorder = null
+        return
+      }
+      if (!recorder || !recorder.onStop || !recorder.onError) {
+        this.recorder = null
+        return
+      }
+      this.recorder = recorder
       this.recorder.onStop((result) => {
         this.recording = false
         if (result.tempFilePath) {
@@ -487,6 +502,32 @@ export default {
           }
         }
       })
+    },
+    playAudio(value) {
+      this.stopAudio()
+      if (!uni.createInnerAudioContext) {
+        this.statusText = '当前端不支持语音播放'
+        return
+      }
+      const audio = uni.createInnerAudioContext()
+      this.audioPlayer = audio
+      audio.src = this.mediaUrl(value)
+      audio.onError(() => {
+        this.statusText = '语音播放失败'
+        this.stopAudio()
+      })
+      audio.onEnded(() => this.stopAudio())
+      audio.play()
+    },
+    stopAudio() {
+      if (!this.audioPlayer) {
+        return
+      }
+      try {
+        this.audioPlayer.stop()
+        this.audioPlayer.destroy()
+      } catch (error) {}
+      this.audioPlayer = null
     }
   }
 }
@@ -576,11 +617,8 @@ export default {
   height: 150px;
 }
 
-.message-audio {
-  width: 220px;
-}
-
-.file-message {
+.file-message,
+.voice-message {
   display: flex;
   align-items: center;
   gap: 8px;

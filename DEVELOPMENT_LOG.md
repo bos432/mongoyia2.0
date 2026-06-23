@@ -4326,3 +4326,60 @@
 - Next stage:
   - Push this fix, then on BaoTa run `git pull`, `yii migrate/up`, and `customer-service-phase9-acceptance/run --runChildChecks=1 --fixture=1`.
   - If child checks pass with only manual acceptance pending, continue Phase 9.7 browser role-flow and uni-app/H5 validation, then rerun strict with accepted evidence flags.
+
+## 2026-06-23 Phase 9.7 Browser Role-Flow And uni-app H5 Validation Fix
+
+- Stage name: Phase 9.7 browser role-flow evidence plus uni-app H5 runnable-client fix
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before continuing Phase 9.7.
+  - Reviewed the latest BaoTa acceptance output from `customer-service-phase9-acceptance/run --runChildChecks=1 --fixture=1 --interactive=0`: automated Phase 9.1-9.6 child checks pass with 0 failures and only the manual browser/APP evidence gates pending.
+  - Verified the test-server browser客服 flow in the in-app browser:
+    - Buyer PC/H5 chat opened for product `gid=2`, sent `Codex Phase9 buyer text test 2026-06-23T04:43:34.056Z`, and received backend reply `Codex Phase9 backend reply test 2026-06-23T04:45:50.813Z`.
+    - Backend客服工作台 loaded Phase 9 controls, opened the buyer session, and displayed user/product context for product `#2` with the no order/payment/fund/stock mutation boundary.
+    - Created order assistance ticket `#2 CSO-20260623054614-2282`, complaint ticket `#3 CSC-20260623054617-1877`, and complaint-linked refund-suggestion assistance `#4 CSO-20260623055217-1763`.
+    - Complaint detail persisted category `商品质量`, status `处理中`, seller proof notes, preliminary conclusion, user feedback, linked assistance, and the browser-submitted satisfied rating after refresh.
+    - Analytics page `/backend/mall/kf/analytics?store_id=0&ticket_type=&limit=1000` displayed Phase 9 KPI/distribution/export markers with the test complaint and satisfaction data.
+  - Fixed the uni-app project to match standard Vite/uni-app `src/` layout so `npm run dev:h5` no longer fails looking for `src/manifest.json`.
+  - Pinned the uni-app Vue3 package versions already resolved by `npm install` and kept `package-lock.json` for reproducible installs.
+  - Replaced unsupported H5 `<audio>` component usage with `uni.createInnerAudioContext()` playback and added H5-safe recorder initialization so the page loads without console errors.
+  - Added a Vite dev proxy for `/demo-api` and `/ws-im` so local H5 validation can call the remote test server without CORS blocking.
+  - Added CSRF exemptions for the APP-required客服 chat API POST actions `translate` and `rating-submit`, matching the existing `token` and `media-upload` API behavior.
+  - Validated local uni-app H5 at `http://127.0.0.1:5173/#/pages/chat/index` with proxy parameters: page loads, default controls show, no console errors, WSS connects, token fills merchant UID/store ID as `1/1`, sends `Codex Phase9 uni-app H5 text test 2026-06-23T05:11:13.059Z`, and refresh/reconnect restores that message from history.
+  - Confirmed APP/H5 rating submission currently fails against the already-deployed server because BaoTa has not yet pulled the new CSRF exemption; this is expected until this fix is deployed.
+- Main files changed/added:
+  - `apps/mongoyia-customer-chat-uniapp/.gitignore`
+  - `apps/mongoyia-customer-chat-uniapp/package.json`
+  - `apps/mongoyia-customer-chat-uniapp/package-lock.json`
+  - `apps/mongoyia-customer-chat-uniapp/index.html`
+  - `apps/mongoyia-customer-chat-uniapp/vite.config.js`
+  - `apps/mongoyia-customer-chat-uniapp/README.md`
+  - `apps/mongoyia-customer-chat-uniapp/src/App.vue`
+  - `apps/mongoyia-customer-chat-uniapp/src/main.js`
+  - `apps/mongoyia-customer-chat-uniapp/src/manifest.json`
+  - `apps/mongoyia-customer-chat-uniapp/src/pages.json`
+  - `apps/mongoyia-customer-chat-uniapp/src/pages/chat/index.vue`
+  - `apps/mongoyia-customer-chat-uniapp/src/utils/api.js`
+  - `apps/mongoyia-customer-chat-uniapp/src/utils/config.js`
+  - `console/controllers/CustomerServicePhase9AcceptanceController.php`
+  - `console/controllers/CustomerServiceUniappTestController.php`
+  - `frontend/modules/mall/controllers/ChatController.php`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l frontend/modules/mall/controllers/ChatController.php` passed.
+  - `php -l console/controllers/CustomerServiceUniappTestController.php` passed.
+  - `php -l console/controllers/CustomerServicePhase9AcceptanceController.php` passed.
+  - `node --check apps/mongoyia-customer-chat-uniapp/src/utils/config.js` passed.
+  - `node --check apps/mongoyia-customer-chat-uniapp/src/utils/api.js` passed.
+  - `node --check apps/mongoyia-customer-chat-uniapp/vite.config.js` passed.
+  - `npm install` completed after pinning actual uni-app Vue3 package versions and generated `package-lock.json`; npm reported 27 dependency audit vulnerabilities.
+  - `npm run build:h5` passed; Vite/uni-app prints a CJS API deprecation warning and a `NODE_ENV=production` notice, but exits successfully.
+  - `npm run dev:h5 -- --port 5173` started and local browser validation passed for H5 page load, token/WSS connect, text send, and refresh history restore.
+- Remaining issues:
+  - BaoTa must pull this H5/API fix before APP/H5 rating submission and final `--appAccepted=1` can be honestly marked.
+  - The local checkout still cannot run Yii DB commands because Composer `vendor/autoload.php` is absent; server-side readiness commands must continue on BaoTa/full-vendor environment.
+  - Browser automation cannot select real local media files without an explicit file artifact flow; media upload policy is covered by server readiness and UI controls are visible in browser.
+  - Global production go-live is still separate from Phase 9客服 acceptance and remains subject to payment/mail/scheduler/alert/load/security/business signoff evidence.
+- Next stage:
+  - Commit and push this Phase 9.7 H5/API fix.
+  - On BaoTa, run `git pull`, `yii migrate/up`, and `customer-service-phase9-acceptance/run --runChildChecks=1 --fixture=1`; then re-run APP/H5 rating validation and final strict acceptance with `--browserAccepted=1 --appAccepted=1` plus evidence paths.

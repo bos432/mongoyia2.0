@@ -12,6 +12,14 @@ npm install
 npm run dev:h5
 ```
 
+Source files follow the standard uni-app/Vite layout under `src/`.
+
+For local H5 validation when the remote server does not expose CORS headers, use the built-in Vite proxy:
+
+```text
+http://127.0.0.1:5173/#/pages/chat/index?gid=2&lang=en&baseUrl=http%3A%2F%2F127.0.0.1%3A5173%2Fdemo-api&wsUrl=ws%3A%2F%2F127.0.0.1%3A5173%2Fws-im
+```
+
 ## Entry Parameters
 
 `pages/chat/index` accepts:

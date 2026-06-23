@@ -89,6 +89,24 @@ class AppBuyerPhase13ReadinessController extends Controller
             'MONGOYIA_CART_LINK_NORMALIZER_V1',
             '/mall/cart/index',
         ]);
+        $this->requireFileContains('Buyer product add-cart redirects to cart index', 'web/resources/mall/default/views/product/view.php', [
+            "Url::to(['/mall/cart/edit-ajax'])",
+            'window.location.href',
+            "Url::to(['/mall/cart/index'])",
+        ]);
+        $this->requireFileNotContains('Buyer product has no stale cart short redirect', 'web/resources/mall/default/views/product/view.php', [
+            "Url::to(['/mall/cart'])",
+            'window.location.href = "/mall/cart"',
+        ]);
+        $this->requireFileContains('Buyer mall nav cart links use cart index', 'web/resources/mall/default/views/layouts/nav.php', [
+            "Url::to(['/mall/cart/index'])",
+            'header-cart-price',
+        ]);
+        $this->requireFileNotContains('Buyer mall nav has no stale cart short links', 'web/resources/mall/default/views/layouts/nav.php', [
+            "Url::to(['/mall/cart'])",
+            'href="/mall/cart"',
+            "href='/mall/cart'",
+        ]);
         $this->requireFileContains('Buyer web asset cache-bust version', 'common/config/params.php', [
             'MONGOYIA_PHASE13_ASSET_CACHE_BUST_V1',
             "'system_version' => '1.1.4'",
@@ -241,6 +259,25 @@ class AppBuyerPhase13ReadinessController extends Controller
         }
 
         $this->addCheck($label, 'PASS', $path, 'Required buyer APP API markers are present.');
+    }
+
+    private function requireFileNotContains(string $label, string $path, array $needles): void
+    {
+        $full = $this->resolvePath($path);
+        if (!is_file($full)) {
+            $this->addCheck($label, 'FAIL', $path, 'Required file is missing.');
+            return;
+        }
+
+        $content = (string)file_get_contents($full);
+        foreach ($needles as $needle) {
+            if (strpos($content, $needle) !== false) {
+                $this->addCheck($label, 'FAIL', $path, "Unexpected stale marker {$needle}.");
+                return;
+            }
+        }
+
+        $this->addCheck($label, 'PASS', $path, 'Stale cart short-route markers are absent.');
     }
 
     private function section(string $name): void

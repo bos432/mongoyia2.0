@@ -1,5 +1,33 @@
 # Development Log
 
+## 2026-06-24 Phase 13 Product/Nav Cart Index Source Guards
+
+- Stage name: Phase 13 product/nav cart index source guards
+- Completed:
+  - Reread the Phase 13 rows in `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting the stage.
+  - Confirmed the deployed test server still serves stale product HTML with `/mall/cart` short links and `main.js?v=1.1.3`, while local source already uses `/mall/cart/index`.
+  - Added Phase 13 buyer readiness checks for the product add-cart AJAX success redirect and mall navigation cart links.
+  - Added negative source guards that fail readiness if `Url::to(['/mall/cart'])`, `href="/mall/cart"`, or direct `/mall/cart` success redirects return in the product or nav views.
+  - Mirrored the same checks in the Phase 13 aggregate APP acceptance command.
+  - Updated the Phase 13 backlog rows to record product/nav cart-index source-guard coverage.
+- Main files changed/added:
+  - `console/controllers/AppBuyerPhase13ReadinessController.php`
+  - `console/controllers/AppPhase13AcceptanceController.php`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l console/controllers/AppBuyerPhase13ReadinessController.php` passed.
+  - `php -l console/controllers/AppPhase13AcceptanceController.php` passed.
+  - Static marker scan confirmed product add-cart redirect, nav cart-index guard, `requireFileNotContains`, and Phase 13 backlog coverage.
+  - Negative source scan found no `Url::to(['/mall/cart'])` stale short-route usage in the product view or mall navigation view.
+  - `git diff --check` reported no whitespace errors, only existing Windows line-ending conversion warnings.
+  - Full Yii console execution remains BaoTa-only because this local checkout lacks `vendor/autoload.php`.
+- Remaining issues:
+  - BaoTa/test server must pull the latest commit and clear caches before the stale deployed `/mall/cart` product HTML can disappear.
+  - Phase 10/11/12/13/14/15 external and browser evidence remain incomplete; production remains `NO-GO`.
+- Next stage:
+  - Run syntax/static checks, commit and push this source-guard update, then continue with deployment/browser validation or another plan-listed local readiness item.
+
 ## 2026-06-24 Phase 10-15 Aggregate Phase 13 Asset Freshness Coverage
 
 - Stage name: Phase 10-15 aggregate Phase 13 asset freshness coverage

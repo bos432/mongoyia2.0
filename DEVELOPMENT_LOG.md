@@ -4725,3 +4725,40 @@
   - No real provider secrets, SMTP secrets, private keys, Basic Auth, HMAC secrets, or live payment credentials were added.
 - Next stage:
   - Reread the development plan and this log, then continue Phase 11.1 by adding merchant-owned encrypted payment configuration foundation with platform-controlled enablement, redacted display, and store isolation while keeping live provider enablement blocked until required evidence exists.
+
+## 2026-06-23 Phase 11.1 Merchant-Owned Payment Config Foundation
+
+- Stage name: Phase 11.1 merchant-owned encrypted payment configuration foundation
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting the stage.
+  - Extended `OperationalPaymentConfigService` to support store-scoped snapshots, saves, readiness checks, latest checks, and optional runtime lookups while preserving existing platform `store_id=0` behavior.
+  - Added `MerchantPaymentConfigService` for platform-controlled merchant payment enablement, store-scoped encrypted payment saves, readiness checks, and explicit live-enable blocking until Phase 10/11 evidence gates are complete.
+  - Added backend route `/backend/mall/operational-config/merchant-payment` where platform users can select a store and allow/deny merchant independent payment configuration.
+  - Added seller-safe save/check actions so non-platform users can only operate their own `store_id`; cross-store requests throw `No Auth`.
+  - Added backend merchant payment page with redacted sensitive values, callback URL helpers, environment switch, platform permission controls, and visible live-enable evidence-gate warning.
+  - Added permission migration for `/mall/operational-config/merchant-payment*` and linked the operations center to the merchant payment page.
+  - Updated `payment-phase11-acceptance/run` to check the new merchant payment service, controller actions, UI markers, and permission migration.
+- Main files changed/added:
+  - `common/services/mall/OperationalPaymentConfigService.php`
+  - `common/services/mall/MerchantPaymentConfigService.php`
+  - `backend/modules/mall/controllers/OperationalConfigController.php`
+  - `backend/modules/mall/views/operational-config/index.php`
+  - `backend/modules/mall/views/operational-config/merchant-payment.php`
+  - `console/migrations/m260623_160000_mongoyia_merchant_payment_config_permission.php`
+  - `console/controllers/PaymentPhase11AcceptanceController.php`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l common/services/mall/OperationalPaymentConfigService.php` passed.
+  - `php -l common/services/mall/MerchantPaymentConfigService.php` passed.
+  - `php -l backend/modules/mall/controllers/OperationalConfigController.php` passed.
+  - `php -l backend/modules/mall/views/operational-config/merchant-payment.php` passed.
+  - `php -l console/migrations/m260623_160000_mongoyia_merchant_payment_config_permission.php` passed.
+  - `php -l console/controllers/PaymentPhase11AcceptanceController.php` passed.
+  - Full Yii command execution was not attempted locally because this patch checkout does not have Composer `vendor/autoload.php`; run migrations and `payment-phase11-acceptance/run` on BaoTa/full-vendor environment after pull.
+- Remaining issues:
+  - Phase 10 manual evidence remains incomplete, and production remains `NO-GO`.
+  - Merchant payment runtime selection is not switched on for live traffic in this stage; the foundation stores and checks merchant config only.
+  - Phase 11 still needs payment statistics, full sandbox evidence, callback/audit regression evidence, and browser role-flow acceptance.
+- Next stage:
+  - Reread the development plan and this log, then continue Phase 11.2 by adding payment statistics foundation for daily amount, payment method distribution, failure reasons, callback anomalies, and reconciliation-difference readiness without calling real providers.

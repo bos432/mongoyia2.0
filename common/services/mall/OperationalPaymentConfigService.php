@@ -96,10 +96,12 @@ class OperationalPaymentConfigService
         ];
     }
 
-    public function snapshot(string $environment = 'test', string $baseUrl = ''): array
+    public function snapshot(string $environment = 'test', string $baseUrl = '', int $storeId = 0): array
     {
+        $storeId = max(0, $storeId);
         $providers = [];
         $rows = $this->configService->redactedRows([
+            'store_id' => $storeId,
             'category' => 'payment',
             'environment' => $environment,
         ]);
@@ -116,7 +118,7 @@ class OperationalPaymentConfigService
                     'code' => $code,
                     'configured' => $row ? (int)$row['configured'] === 1 : false,
                     'redacted_value' => $row['redacted_value'] ?? 'NOT CONFIGURED',
-                    'value' => $this->formValue($provider, $code, $field, $environment),
+                    'value' => $this->formValue($provider, $code, $field, $environment, $storeId),
                     'last_check_status' => $row['last_check_status'] ?? 'PENDING',
                     'last_check_message' => $row['last_check_message'] ?? '',
                 ]);
@@ -126,19 +128,21 @@ class OperationalPaymentConfigService
                 'provider' => $provider,
                 'fields' => $fields,
                 'callback_urls' => $this->callbackUrls($provider, $environment, $baseUrl),
-                'latest_check' => $this->latestProviderCheck($provider),
+                'latest_check' => $this->latestProviderCheck($provider, $storeId),
             ]);
         }
 
         return [
             'version' => self::VERSION,
+            'store_id' => $storeId,
             'environment' => $environment,
             'providers' => $providers,
         ];
     }
 
-    public function saveProvider(string $provider, string $environment, array $input): array
+    public function saveProvider(string $provider, string $environment, array $input, int $storeId = 0): array
     {
+        $storeId = max(0, $storeId);
         $definition = $this->requireProvider($provider);
         $environment = $this->normalizeEnvironment($environment);
         $enabled = !empty($input['enabled']) ? 1 : 0;
@@ -146,7 +150,7 @@ class OperationalPaymentConfigService
         $input['mode'] = $environment;
 
         if ($enabled === 1 && $environment === 'live') {
-            $preview = $this->validateValues($provider, $environment, $this->candidateValues($provider, $environment, $definition, $input));
+            $preview = $this->validateValues($provider, $environment, $this->candidateValues($provider, $environment, $definition, $input, $storeId));
             if ($preview['result'] !== 'PASS') {
                 throw new \InvalidArgumentException('正式支付启用前必须通过必填配置检测：' . $preview['message']);
             }
@@ -162,7 +166,7 @@ class OperationalPaymentConfigService
             }
 
             $this->configService->save([
-                'store_id' => 0,
+                'store_id' => $storeId,
                 'category' => 'payment',
                 'provider' => $provider,
                 'code' => $code,
@@ -179,10 +183,10 @@ class OperationalPaymentConfigService
             ]);
         }
 
-        return $this->checkProvider($provider, $environment, true);
+        return $this->checkProvider($provider, $environment, true, $storeId);
     }
 
-    private function candidateValues(string $provider, string $environment, array $definition, array $input): array
+    private function candidateValues(string $provider, string $environment, array $definition, array $input, int $storeId = 0): array
     {
         $candidate = $input;
         foreach ($definition['fields'] as $code => $field) {
@@ -191,26 +195,28 @@ class OperationalPaymentConfigService
                 continue;
             }
             $value = array_key_exists($code, $candidate) ? trim((string)$candidate[$code]) : '';
-            if (!empty($field['sensitive']) && $value === '' && $this->isConfigured($provider, $code, $environment)) {
-                $candidate[$code] = $this->storedValue($provider, $code, $field, $environment);
+            if (!empty($field['sensitive']) && $value === '' && $this->isConfigured($provider, $code, $environment, $storeId)) {
+                $candidate[$code] = $this->storedValue($provider, $code, $field, $environment, $storeId);
             }
         }
 
         return $candidate;
     }
 
-    public function checkProvider(string $provider, string $environment = 'test', bool $persist = true): array
+    public function checkProvider(string $provider, string $environment = 'test', bool $persist = true, int $storeId = 0): array
     {
+        $storeId = max(0, $storeId);
         $environment = $this->normalizeEnvironment($environment);
         $definition = $this->requireProvider($provider);
         $values = [];
         foreach ($definition['fields'] as $code => $field) {
-            $values[$code] = $this->storedValue($provider, $code, $field, $environment);
+            $values[$code] = $this->storedValue($provider, $code, $field, $environment, $storeId);
         }
 
         $result = $this->validateValues($provider, $environment, $values);
         if ($persist) {
             $this->configService->recordCheck([
+                'store_id' => $storeId,
                 'category' => 'payment',
                 'provider' => $provider,
                 'check_key' => 'readiness',
@@ -223,17 +229,22 @@ class OperationalPaymentConfigService
         return $result;
     }
 
-    public function runtimeConfig(string $provider, array $fallbacks = [], string $preferredEnvironment = ''): array
+    public function runtimeConfig(string $provider, array $fallbacks = [], string $preferredEnvironment = '', int $storeId = 0): array
     {
+        $storeId = max(0, $storeId);
         $definition = $this->requireProvider($provider);
-        $environment = $this->runtimeEnvironment($provider, $preferredEnvironment);
+        $environment = $this->runtimeEnvironment($provider, $preferredEnvironment, $storeId);
         $config = [
             'provider' => $provider,
+            'store_id' => $storeId,
             'environment' => $environment,
         ];
 
         foreach ($definition['fields'] as $code => $field) {
-            $value = $this->storedValue($provider, $code, $field, $environment);
+            $value = $this->storedValue($provider, $code, $field, $environment, $storeId);
+            if ($value === '' && $storeId > 0) {
+                $value = $this->storedValue($provider, $code, $field, $environment, 0);
+            }
             if ($value === '' && array_key_exists($code, $fallbacks)) {
                 $value = (string)$fallbacks[$code];
             }
@@ -315,29 +326,29 @@ class OperationalPaymentConfigService
         ];
     }
 
-    private function storedValue(string $provider, string $code, array $field, string $environment): string
+    private function storedValue(string $provider, string $code, array $field, string $environment, int $storeId = 0): string
     {
         try {
-            return (string)$this->configService->getValue('payment', $provider, $code, $environment, 0, (string)($field['default'] ?? ''));
+            return (string)$this->configService->getValue('payment', $provider, $code, $environment, max(0, $storeId), (string)($field['default'] ?? ''));
         } catch (\Throwable $e) {
             Yii::warning($e->getMessage(), 'mall.operational_payment_config.read_failed');
             return '';
         }
     }
 
-    private function formValue(string $provider, string $code, array $field, string $environment): string
+    private function formValue(string $provider, string $code, array $field, string $environment, int $storeId = 0): string
     {
         if (!empty($field['sensitive'])) {
             return '';
         }
 
-        return $this->storedValue($provider, $code, $field, $environment);
+        return $this->storedValue($provider, $code, $field, $environment, $storeId);
     }
 
-    private function isConfigured(string $provider, string $code, string $environment): bool
+    private function isConfigured(string $provider, string $code, string $environment, int $storeId = 0): bool
     {
         $model = OperationalConfig::find()->where([
-            'store_id' => 0,
+            'store_id' => max(0, $storeId),
             'category' => 'payment',
             'provider' => $provider,
             'code' => $code,
@@ -354,11 +365,14 @@ class OperationalPaymentConfigService
             : (string)$model->value_plain !== '';
     }
 
-    private function latestProviderCheck(string $provider): array
+    private function latestProviderCheck(string $provider, int $storeId = 0): array
     {
         $checks = $this->configService->latestChecks(50);
         foreach ($checks as $check) {
-            if (($check['category'] ?? '') === 'payment' && ($check['provider'] ?? '') === $provider) {
+            if (($check['category'] ?? '') === 'payment'
+                && ($check['provider'] ?? '') === $provider
+                && (int)($check['store_id'] ?? 0) === max(0, $storeId)
+            ) {
                 return $check;
             }
         }
@@ -402,7 +416,7 @@ class OperationalPaymentConfigService
         return '';
     }
 
-    private function runtimeEnvironment(string $provider, string $preferredEnvironment): string
+    private function runtimeEnvironment(string $provider, string $preferredEnvironment, int $storeId = 0): string
     {
         if ($preferredEnvironment !== '') {
             return $this->normalizeEnvironment($preferredEnvironment);
@@ -410,7 +424,10 @@ class OperationalPaymentConfigService
 
         foreach (['live', 'test'] as $environment) {
             try {
-                $enabled = $this->configService->getValue('payment', $provider, 'enabled', $environment, 0, '');
+                $enabled = $this->configService->getValue('payment', $provider, 'enabled', $environment, max(0, $storeId), '');
+                if ((string)$enabled === '' && $storeId > 0) {
+                    $enabled = $this->configService->getValue('payment', $provider, 'enabled', $environment, 0, '');
+                }
             } catch (\Throwable $e) {
                 Yii::warning($e->getMessage(), 'mall.operational_payment_config.environment_failed');
                 return 'test';

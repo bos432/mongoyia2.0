@@ -4,6 +4,7 @@ namespace backend\modules\mall\controllers;
 
 use common\services\mall\OperationalConfigService;
 use common\services\mall\CustomerServiceTranslationService;
+use common\services\mall\MerchantPaymentConfigService;
 use common\services\mall\OperationalLaunchSignoffService;
 use common\services\mall\OperationalMailConfigService;
 use common\services\mall\OperationalOpsAlertService;
@@ -80,6 +81,74 @@ class OperationalConfigController extends BaseController
         }
 
         return $this->redirect(['index', 'environment' => $environment]);
+    }
+
+    public function actionMerchantPayment()
+    {
+        $environment = (string)Yii::$app->request->get('environment', 'test');
+        $storeId = $this->merchantPaymentStoreId();
+
+        return $this->render('merchant-payment', [
+            'snapshot' => (new MerchantPaymentConfigService())->snapshot($environment, $storeId),
+            'paymentEnvironments' => (new OperationalPaymentConfigService())->environments(),
+            'isPlatformOperator' => $this->isMallPlatformOperator(),
+        ]);
+    }
+
+    public function actionSaveMerchantPaymentPermission()
+    {
+        if (!$this->isMallPlatformOperator()) {
+            throw new ForbiddenHttpException(Yii::t('app', 'No Auth'));
+        }
+
+        $request = Yii::$app->request;
+        $storeId = (int)$request->post('store_id', 0);
+        $environment = (string)$request->post('environment', 'test');
+        try {
+            $result = (new MerchantPaymentConfigService())->savePermission($storeId, (array)$request->post('permission', []));
+            Yii::$app->session->setFlash('success', '商家支付权限已保存：' . $result['result'] . ' - ' . $result['message']);
+        } catch (\Throwable $e) {
+            Yii::$app->session->setFlash('error', '商家支付权限保存失败：' . $e->getMessage());
+        }
+
+        return $this->redirect(['merchant-payment', 'store_id' => $storeId, 'environment' => $environment]);
+    }
+
+    public function actionSaveMerchantPayment()
+    {
+        $request = Yii::$app->request;
+        $storeId = $this->merchantPaymentStoreId((int)$request->post('store_id', 0));
+        $provider = (string)$request->post('provider', '');
+        $environment = (string)$request->post('environment', 'test');
+        try {
+            $result = (new MerchantPaymentConfigService())->saveProvider(
+                $storeId,
+                $provider,
+                $environment,
+                (array)$request->post('config', [])
+            );
+            Yii::$app->session->setFlash('success', '商家支付配置已保存，检测结果：' . $result['result'] . ' - ' . $result['message']);
+        } catch (\Throwable $e) {
+            Yii::$app->session->setFlash('error', '商家支付配置保存失败：' . $e->getMessage());
+        }
+
+        return $this->redirect(['merchant-payment', 'store_id' => $storeId, 'environment' => $environment]);
+    }
+
+    public function actionCheckMerchantPayment()
+    {
+        $request = Yii::$app->request;
+        $storeId = $this->merchantPaymentStoreId((int)$request->post('store_id', 0));
+        $provider = (string)$request->post('provider', '');
+        $environment = (string)$request->post('environment', 'test');
+        try {
+            $result = (new MerchantPaymentConfigService())->checkProvider($storeId, $provider, $environment, true);
+            Yii::$app->session->setFlash('success', '商家支付配置检测完成：' . $result['result'] . ' - ' . $result['message']);
+        } catch (\Throwable $e) {
+            Yii::$app->session->setFlash('error', '商家支付配置检测失败：' . $e->getMessage());
+        }
+
+        return $this->redirect(['merchant-payment', 'store_id' => $storeId, 'environment' => $environment]);
     }
 
     public function actionSaveTranslation()
@@ -264,5 +333,20 @@ class OperationalConfigController extends BaseController
         }
 
         return $this->redirect(['index', 'environment' => $environment]);
+    }
+
+    private function merchantPaymentStoreId(int $requestedStoreId = 0): int
+    {
+        if ($this->isMallPlatformOperator()) {
+            return $requestedStoreId > 0 ? $requestedStoreId : (int)Yii::$app->request->get('store_id', 0);
+        }
+
+        $ownStoreId = (int)$this->getStoreId();
+        $targetStoreId = $requestedStoreId > 0 ? $requestedStoreId : (int)Yii::$app->request->get('store_id', $ownStoreId);
+        if ($targetStoreId > 0 && $targetStoreId !== $ownStoreId) {
+            throw new ForbiddenHttpException(Yii::t('app', 'No Auth'));
+        }
+
+        return $ownStoreId;
     }
 }

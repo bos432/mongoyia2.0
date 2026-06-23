@@ -51,6 +51,12 @@ $statusClass = [
                 <p class="text-muted mb-0">
                     运营配置中心用于支付、邮件、定时任务、告警和上线证据。敏感配置只显示脱敏状态，真实值由加密服务读取；数据库中不应出现私钥、Basic Auth、HMAC Secret、SMTP 密码或告警 Token 明文。
                 </p>
+                <p class="mt-2 mb-0">
+                    <?= Html::a('商家独立支付配置', ['merchant-payment'], [
+                        'class' => 'btn btn-sm btn-outline-primary',
+                        'data-mongoyia-merchant-payment-entry' => '1',
+                    ]) ?>
+                </p>
             </div>
             <div class="card-body p-0">
                 <table class="table table-hover mb-0">

@@ -128,6 +128,31 @@ class PaymentPhase11AcceptanceController extends Controller
             'getStoreId',
             'getAgentStoreIds',
         ]);
+        $this->requireFileContains('Merchant payment config service', 'common/services/mall/MerchantPaymentConfigService.php', [
+            'MONGOYIA_MERCHANT_PAYMENT_CONFIG_V1',
+            'savePermission',
+            'saveProvider',
+            '商家正式支付启用需要 Phase 10',
+            'merchant_live_enablement_requires_phase10_provider_and_production_evidence',
+        ]);
+        $this->requireFileContains('Merchant payment backend actions', 'backend/modules/mall/controllers/OperationalConfigController.php', [
+            'actionMerchantPayment',
+            'actionSaveMerchantPaymentPermission',
+            'actionSaveMerchantPayment',
+            'actionCheckMerchantPayment',
+            'merchantPaymentStoreId',
+        ]);
+        $this->requireFileContains('Merchant payment backend UI', 'backend/modules/mall/views/operational-config/merchant-payment.php', [
+            'data-mongoyia-merchant-payment-config',
+            'data-mongoyia-merchant-payment-permission',
+            'data-mongoyia-merchant-payment-provider-cards',
+            '正式启用被证据门阻断',
+        ]);
+        $this->requireFileContains('Merchant payment permission migration', 'console/migrations/m260623_160000_mongoyia_merchant_payment_config_permission.php', [
+            '/mall/operational-config/merchant-payment*',
+            'grantToRoles',
+            'clearAllPermission',
+        ]);
         $this->requireFileContains('Phase 10 production readiness boundary', 'console/controllers/OperationalConfigPhase10AcceptanceController.php', [
             'Production launch remains `NO-GO`',
             'providerEvidenceAccepted',

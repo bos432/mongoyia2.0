@@ -46,8 +46,10 @@ class DistributionMaterialPhase15ReadinessController extends Controller
         $this->section('Files');
         $this->requireFileContains('common/services/mall/DistributionMaterialPhase15Service.php', [
             'MONGOYIA_DISTRIBUTION_MATERIAL_PHASE15_V1',
+            'MONGOYIA_DISTRIBUTION_MATERIAL_SAFE_URL_V1',
             'visibleMaterials',
             'saveMaterial',
+            'cleanUrl',
             'recordAction',
             'disableMaterial',
         ]);
@@ -125,6 +127,18 @@ class DistributionMaterialPhase15ReadinessController extends Controller
                 'download_enabled' => 1,
             ], false, 1);
             $this->assertSameInt(0, (int)$dryRun['created'] + (int)$dryRun['updated'], 'Material dry-run does not persist.');
+            $unsafeDryRun = $service->saveMaterial([
+                'language' => DistributionSupportContentService::LANG_EN,
+                'title' => 'Phase 15 unsafe material dry-run',
+                'content' => 'Unsafe URL material',
+                'target_url' => 'javascript:alert(1)',
+                'asset_url' => '//evil.example/material.png',
+                'qr_code_url' => 'data:image/png;base64,AAAA',
+                'download_enabled' => 1,
+            ], false, 1);
+            $this->assertSameString('', (string)($unsafeDryRun['material']['target_url'] ?? ''), 'Unsafe target URL is stripped.');
+            $this->assertSameString('', (string)($unsafeDryRun['material']['asset_url'] ?? ''), 'Protocol-relative asset URL is stripped.');
+            $this->assertSameString('', (string)($unsafeDryRun['material']['qr_code_url'] ?? ''), 'Data URI QR code URL is stripped.');
 
             $create = $service->saveMaterial([
                 'language' => DistributionSupportContentService::LANG_EN,
@@ -251,6 +265,15 @@ class DistributionMaterialPhase15ReadinessController extends Controller
     }
 
     private function assertSameInt(int $expected, int $actual, string $message): void
+    {
+        if ($expected !== $actual) {
+            $this->fail("{$message} Expected {$expected}, got {$actual}.");
+            return;
+        }
+        $this->ok($message);
+    }
+
+    private function assertSameString(string $expected, string $actual, string $message): void
     {
         if ($expected !== $actual) {
             $this->fail("{$message} Expected {$expected}, got {$actual}.");

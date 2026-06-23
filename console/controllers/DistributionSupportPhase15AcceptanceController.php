@@ -140,8 +140,10 @@ class DistributionSupportPhase15AcceptanceController extends Controller
         ]);
         $this->requireFileContains('Distributor material phase 15 service', 'common/services/mall/DistributionMaterialPhase15Service.php', [
             'MONGOYIA_DISTRIBUTION_MATERIAL_PHASE15_V1',
+            'MONGOYIA_DISTRIBUTION_MATERIAL_SAFE_URL_V1',
             'visibleMaterials',
             'saveMaterial',
+            'cleanUrl',
             'recordAction',
         ]);
         $this->requireFileContains('Distributor material phase 15 readiness', 'console/controllers/DistributionMaterialPhase15ReadinessController.php', [

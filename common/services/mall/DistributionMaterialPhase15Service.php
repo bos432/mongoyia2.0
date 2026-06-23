@@ -8,6 +8,7 @@ use yii\db\Query;
 class DistributionMaterialPhase15Service
 {
     public const VERSION = 'MONGOYIA_DISTRIBUTION_MATERIAL_PHASE15_V1';
+    public const SAFE_URL_VERSION = 'MONGOYIA_DISTRIBUTION_MATERIAL_SAFE_URL_V1';
 
     public const ACTION_COPY = 'copy';
     public const ACTION_DOWNLOAD = 'download';
@@ -56,7 +57,7 @@ class DistributionMaterialPhase15Service
         $payload = [
             'title' => $this->clean((string)($data['title'] ?? ''), 128),
             'content' => $this->cleanText((string)($data['content'] ?? '')),
-            'target_url' => $this->clean((string)($data['target_url'] ?? ''), 255),
+            'target_url' => $this->cleanUrl((string)($data['target_url'] ?? '')),
             'material_type' => $this->clean((string)($data['material_type'] ?? 'text'), 32),
             'material_status' => $this->validStatus((string)($data['material_status'] ?? DistributionProfileService::MATERIAL_STATUS_ACTIVE)),
             'remark' => $this->clean((string)($data['remark'] ?? ''), 255),
@@ -166,6 +167,11 @@ class DistributionMaterialPhase15Service
 
         $result['eligible'] = 1;
         $result['redirectUrl'] = $this->actionUrl($material, $actionType);
+        if ($result['redirectUrl'] === '') {
+            $result['eligible'] = 0;
+            $result['skippedReason'] = 'material url unavailable';
+            return $result;
+        }
         if (!$apply) {
             return $result;
         }
@@ -218,8 +224,8 @@ class DistributionMaterialPhase15Service
     {
         return [
             'language' => $this->normalizeLanguage((string)($data['language'] ?? DistributionSupportContentService::LANG_ZH)),
-            'asset_url' => $this->clean((string)($data['asset_url'] ?? ''), 255),
-            'qr_code_url' => $this->clean((string)($data['qr_code_url'] ?? ''), 255),
+            'asset_url' => $this->cleanUrl((string)($data['asset_url'] ?? '')),
+            'qr_code_url' => $this->cleanUrl((string)($data['qr_code_url'] ?? '')),
             'download_enabled' => !empty($data['download_enabled']) ? 1 : 0,
         ];
     }
@@ -234,13 +240,13 @@ class DistributionMaterialPhase15Service
     private function actionUrl(array $material, string $actionType): string
     {
         if ($actionType === self::ACTION_DOWNLOAD && (string)($material['asset_url'] ?? '') !== '') {
-            return (string)$material['asset_url'];
+            return $this->cleanUrl((string)$material['asset_url']);
         }
         if ((string)($material['target_url'] ?? '') !== '') {
-            return (string)$material['target_url'];
+            return $this->cleanUrl((string)$material['target_url']);
         }
 
-        return (string)($material['asset_url'] ?? '');
+        return $this->cleanUrl((string)($material['asset_url'] ?? ''));
     }
 
     private function hasMaterialColumn(string $column): bool
@@ -253,6 +259,30 @@ class DistributionMaterialPhase15Service
     {
         $value = trim($value);
         return function_exists('mb_substr') ? mb_substr($value, 0, $length, 'UTF-8') : substr($value, 0, $length);
+    }
+
+    private function cleanUrl(string $value): string
+    {
+        $value = $this->clean($value, 255);
+        if ($value === '') {
+            return '';
+        }
+
+        $lower = strtolower($value);
+        if (strpos($lower, 'http://') === 0 || strpos($lower, 'https://') === 0) {
+            return $value;
+        }
+        if (strpos($value, '//') === 0) {
+            return '';
+        }
+        if (strpos($value, '/') === 0) {
+            return $value;
+        }
+        if (preg_match('/^[a-z][a-z0-9+.-]*:/i', $value)) {
+            return '';
+        }
+
+        return '';
     }
 
     private function cleanText(string $value): string

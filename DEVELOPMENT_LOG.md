@@ -7518,3 +7518,34 @@
   - Phase 10/11/12/14/15 external/provider/browser evidence gates remain pending; production remains `NO-GO`.
 - Next stage:
   - Commit and push this Phase 13 cart/favorite store-scope patch, then reread the plan/log and continue with the next plan-listed readiness item.
+
+## 2026-06-24 Phase 15 Distributor Material Safe URL Guard
+
+- Stage name: Phase 15 distributor material safe URL guard
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting the stage.
+  - Added `MONGOYIA_DISTRIBUTION_MATERIAL_SAFE_URL_V1` to the Phase 15 distributor material service.
+  - Normalized promotion material `target_url`, `asset_url`, and `qr_code_url` to safe `http://`, `https://`, or single-slash site paths.
+  - Stripped dangerous URL schemes such as `javascript:` and `data:`, plus protocol-relative `//...` URLs.
+  - Updated material click/download tracking so rows without a safe redirect URL are skipped and not counted.
+  - Added readiness fixture/source coverage and Phase 15 aggregate acceptance marker coverage for the safe URL guard.
+  - Updated the Phase 15 backlog notes to record this small stage as Phase 15.4.
+- Main files changed/added:
+  - `common/services/mall/DistributionMaterialPhase15Service.php`
+  - `console/controllers/DistributionMaterialPhase15ReadinessController.php`
+  - `console/controllers/DistributionSupportPhase15AcceptanceController.php`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l common/services/mall/DistributionMaterialPhase15Service.php` passed.
+  - `php -l console/controllers/DistributionMaterialPhase15ReadinessController.php` passed.
+  - `php -l console/controllers/DistributionSupportPhase15AcceptanceController.php` passed.
+  - Static marker checks confirmed `MONGOYIA_DISTRIBUTION_MATERIAL_SAFE_URL_V1`, `cleanUrl`, unsafe fixture inputs, and `Phase 15.4`.
+  - Direct `php -r` reflection check confirmed `cleanUrl()` allows HTTP/HTTPS and single-slash site paths, and rejects `javascript:`, `data:`, protocol-relative, and relative-path inputs.
+  - `git diff --check` reported no whitespace errors, only existing Windows line-ending conversion warnings.
+  - Full Yii acceptance remains BaoTa-only because this local checkout lacks `vendor/autoload.php`.
+- Remaining issues:
+  - Phase 15 browser role-flow evidence still requires the BaoTa/test server to pull the latest code, run migrations/readiness, and verify distributor materials/training/signoff flows.
+  - Phase 10/11/12/13/14 external/provider/browser evidence gates remain pending; production remains `NO-GO`.
+- Next stage:
+  - Commit and push this Phase 15 safe URL guard patch, then reread the plan/log and continue with the next plan-listed readiness item.

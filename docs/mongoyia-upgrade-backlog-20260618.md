@@ -430,6 +430,8 @@ php yii distribution-support-phase15-acceptance/run --fixture=1 --interactive=0
 
 Phase 15.0 adds the aggregate distributor support acceptance gate. Phase 15.1 is implemented through `DistributionSupportContentService`, migration `m260623_200000_mongoyia_distribution_support_content`, backend support content management on `/backend/mall/distribution-distributor/index`, and distributor-facing Training & FAQ display on `/mall/user/distribution`. Phase 15.2 is implemented through `DistributionMaterialPhase15Service`, migration `m260623_210000_mongoyia_distribution_material_phase15`, backend material management on `/backend/mall/distribution-distributor/index`, distributor-facing tracked material links on `/mall/user/distribution`, and the material download/copy log table. Phase 15.3 is implemented through `DistributionSignoffPhase15Service`, migration `m260623_220000_mongoyia_distribution_signoff_evidence`, backend signoff evidence entry/review on `/backend/mall/distribution-distributor/index`, and readiness coverage for pending/approve/reject transitions. Strict Phase 15 acceptance remains pending until browser role-flow evidence is complete. The acceptance commands are evidence gates and do not approve commissions, create withdrawals, write fund logs, change payment state, or trigger real payouts.
 
+Phase 15.4 distributor material safe URL guard: promotion material target, asset, and QR-code URLs are normalized to safe HTTP/HTTPS or single-slash site paths, dangerous schemes and protocol-relative URLs are stripped, and material click/download tracking skips rows without a safe redirect URL. Readiness checks cover `MONGOYIA_DISTRIBUTION_MATERIAL_SAFE_URL_V1`.
+
 ## Phase 1 Backlog
 
 | Priority | Work | Status | Verification |

@@ -68,6 +68,7 @@ class DistributionMaterialPhase15ReadinessController extends Controller
             'actionMaterialDisable',
             "'material-save'",
             "'material-disable'",
+            "post('id', 0)",
         ]);
         $this->requireFileContains('backend/modules/mall/views/distribution-distributor/index.php', [
             'data-mongoyia-phase15-material-management',

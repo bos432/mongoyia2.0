@@ -62,6 +62,7 @@ class DistributionSupportContentPhase15ReadinessController extends Controller
             'actionSupportContentDisable',
             "'support-content-save'",
             "'support-content-disable'",
+            "post('id', 0)",
         ]);
         $this->requireFileContains('backend/modules/mall/views/distribution-distributor/index.php', [
             'data-mongoyia-phase15-support-content',

@@ -133,6 +133,8 @@ class DistributionSupportPhase15AcceptanceController extends Controller
             "'material-save'",
             "'signoff-evidence-review'",
             "['post']",
+            "post('id', 0)",
+            "post('workflow_action', '')",
         ]);
         $this->requireFileContains('Distributor support content service', 'common/services/mall/DistributionSupportContentService.php', [
             'MONGOYIA_DISTRIBUTION_SUPPORT_CONTENT_PHASE15_V1',

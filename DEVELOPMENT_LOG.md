@@ -7866,3 +7866,37 @@
   - Phase 10/11/12/13/14/15 external/provider/browser evidence gates remain pending; production remains `NO-GO`.
 - Next stage:
   - Commit and push this Phase 3 settlement draft guard patch, then reread the plan/log and continue with the next plan-listed readiness item.
+
+## 2026-06-24 Phase 15 Distributor Operations POST Parameter Hardening
+
+- Stage name: Phase 15 distributor operations POST parameter hardening
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting the stage.
+  - Removed GET fallback parameter reads from the Phase 15 distributor operations controller after the existing POST-only verb guard.
+  - Hardened profile workflow, risk workflow, invite reward workflow, support content disable, material disable, and signoff evidence review to read `id` and `workflow_action` only from POST.
+  - Kept read-only index filters on GET unchanged.
+  - Added source coverage to Phase 15 support content, material, signoff, and aggregate acceptance readiness checks.
+  - Updated the Phase 15 backlog notes to record this small stage as Phase 15.7.
+- Main files changed/added:
+  - `backend/modules/mall/controllers/DistributionDistributorController.php`
+  - `console/controllers/DistributionSupportContentPhase15ReadinessController.php`
+  - `console/controllers/DistributionMaterialPhase15ReadinessController.php`
+  - `console/controllers/DistributionSignoffPhase15ReadinessController.php`
+  - `console/controllers/DistributionSupportPhase15AcceptanceController.php`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l backend/modules/mall/controllers/DistributionDistributorController.php` passed.
+  - `php -l console/controllers/DistributionSupportPhase15AcceptanceController.php` passed.
+  - `php -l console/controllers/DistributionSupportContentPhase15ReadinessController.php` passed.
+  - `php -l console/controllers/DistributionMaterialPhase15ReadinessController.php` passed.
+  - `php -l console/controllers/DistributionSignoffPhase15ReadinessController.php` passed.
+  - Static stale-parameter check found no remaining `post(..., get(...))` fallback in `DistributionDistributorController.php`.
+  - Static marker checks confirmed POST-only parameter reads and `Phase 15.7`.
+  - `git diff --check` reported no whitespace errors, only existing Windows line-ending conversion warnings.
+  - Full Yii console execution remains BaoTa-only because this local checkout lacks `vendor/autoload.php`.
+- Remaining issues:
+  - Phase 15 browser role-flow evidence still requires BaoTa/test server deployment and verification of distributor training, materials, signoff, withdrawal, and invite reward flows.
+  - Phase 10/11/12/13/14 external/provider/browser evidence gates remain pending; production remains `NO-GO`.
+- Next stage:
+  - Commit and push this Phase 15 distributor POST parameter hardening patch, then reread the plan/log and continue with the next plan-listed readiness item.

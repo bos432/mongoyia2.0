@@ -62,6 +62,9 @@ class DistributionSignoffPhase15ReadinessController extends Controller
             'actionSignoffEvidenceReview',
             "'signoff-evidence-save'",
             "'signoff-evidence-review'",
+            "post('id', 0)",
+            "post('workflow_action', '')",
+            "post('review_remark', 'backend signoff review')",
         ]);
         $this->requireFileContains('backend/modules/mall/views/distribution-distributor/index.php', [
             'data-mongoyia-phase15-signoff-evidence',

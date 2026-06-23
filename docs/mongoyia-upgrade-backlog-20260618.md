@@ -448,6 +448,8 @@ Phase 15.5 distributor backend POST verb guard: distributor profile/risk/invite-
 
 Phase 15.6 distributor commission/withdraw workflow POST guard: platform commission approval/rejection and offline withdrawal approval/rejection now use `MONGOYIA_DISTRIBUTION_COMMISSION_WITHDRAW_POST_VERB_GUARD_V1`, explicit POST-only verb filters, and POST-only parameter reads. Phase 4 distribution backend/withdraw tests and Phase 15 aggregate acceptance check this guard so fund-adjacent distribution workflow changes cannot be triggered by plain GET links.
 
+Phase 15.7 distributor operations POST parameter hardening: distributor profile/risk/invite-reward workflows, support content disable, material disable, and signoff review now read `id` and `workflow_action` only from POST after the Phase 15.5 verb guard. Phase 15 support content, material, signoff, and aggregate acceptance checks cover the POST-only parameter reads so distributor operation writes cannot be smuggled through query strings.
+
 ## Phase 1 Backlog
 
 | Priority | Work | Status | Verification |

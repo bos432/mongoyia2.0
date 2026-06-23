@@ -81,8 +81,8 @@ class DistributionDistributorController extends BaseController
             throw new ForbiddenHttpException(Yii::t('app', 'No Auth'));
         }
 
-        $id = (int)Yii::$app->request->post('id', Yii::$app->request->get('id', 0));
-        $action = (string)Yii::$app->request->post('workflow_action', Yii::$app->request->get('workflow_action', ''));
+        $id = (int)Yii::$app->request->post('id', 0);
+        $action = (string)Yii::$app->request->post('workflow_action', '');
         $result = (new DistributionProfileService())->auditProfile($id, $action, true, (int)Yii::$app->user->id, 'backend distribution profile action');
         if ((int)$result['updated'] <= 0) {
             return $this->redirectError($result['skippedReason'] ?: Yii::t('app', 'No eligible records'));
@@ -97,7 +97,7 @@ class DistributionDistributorController extends BaseController
             throw new ForbiddenHttpException(Yii::t('app', 'No Auth'));
         }
 
-        $id = (int)Yii::$app->request->post('id', Yii::$app->request->get('id', 0));
+        $id = (int)Yii::$app->request->post('id', 0);
         $result = (new DistributionProfileService())->closeRisk($id, true, (int)Yii::$app->user->id);
         if ((int)$result['updated'] <= 0) {
             return $this->redirectError($result['skippedReason'] ?: Yii::t('app', 'No eligible records'));
@@ -112,8 +112,8 @@ class DistributionDistributorController extends BaseController
             throw new ForbiddenHttpException(Yii::t('app', 'No Auth'));
         }
 
-        $id = (int)Yii::$app->request->post('id', Yii::$app->request->get('id', 0));
-        $action = (string)Yii::$app->request->post('workflow_action', Yii::$app->request->get('workflow_action', ''));
+        $id = (int)Yii::$app->request->post('id', 0);
+        $action = (string)Yii::$app->request->post('workflow_action', '');
         $result = (new DistributionInviteRewardWorkflowService())->run([$id], $action, true, (int)Yii::$app->user->id, 'backend invite reward action');
         if ((int)$result['updated'] <= 0) {
             $reason = (string)($result['skipped'][0]['reason'] ?? '');
@@ -143,7 +143,7 @@ class DistributionDistributorController extends BaseController
             throw new ForbiddenHttpException(Yii::t('app', 'No Auth'));
         }
 
-        $id = (int)Yii::$app->request->post('id', Yii::$app->request->get('id', 0));
+        $id = (int)Yii::$app->request->post('id', 0);
         $result = (new DistributionSupportContentService())->disableContent($id, true, (int)Yii::$app->user->id);
         if ((int)$result['updated'] <= 0) {
             return $this->redirectError($result['skippedReason'] ?: Yii::t('app', 'No eligible records'), ['index']);
@@ -172,7 +172,7 @@ class DistributionDistributorController extends BaseController
             throw new ForbiddenHttpException(Yii::t('app', 'No Auth'));
         }
 
-        $id = (int)Yii::$app->request->post('id', Yii::$app->request->get('id', 0));
+        $id = (int)Yii::$app->request->post('id', 0);
         $result = (new DistributionMaterialPhase15Service())->disableMaterial($id, true, (int)Yii::$app->user->id);
         if ((int)$result['updated'] <= 0) {
             return $this->redirectError($result['skippedReason'] ?: Yii::t('app', 'No eligible records'), ['index']);
@@ -201,8 +201,8 @@ class DistributionDistributorController extends BaseController
             throw new ForbiddenHttpException(Yii::t('app', 'No Auth'));
         }
 
-        $id = (int)Yii::$app->request->post('id', Yii::$app->request->get('id', 0));
-        $action = (string)Yii::$app->request->post('workflow_action', Yii::$app->request->get('workflow_action', ''));
+        $id = (int)Yii::$app->request->post('id', 0);
+        $action = (string)Yii::$app->request->post('workflow_action', '');
         $remark = (string)Yii::$app->request->post('review_remark', 'backend signoff review');
         $result = (new DistributionSignoffPhase15Service())->reviewEvidence($id, $action, true, (int)Yii::$app->user->id, $remark);
         if ((int)$result['updated'] <= 0) {

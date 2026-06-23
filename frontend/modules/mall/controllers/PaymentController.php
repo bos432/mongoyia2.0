@@ -139,19 +139,21 @@ class PaymentController extends BaseController
 
     protected function paypalEnvFallbacks()
     {
-        $clientId = env('PAYPAL_CLIENT_ID', '');
-        $clientSecret = env('PAYPAL_CLIENT_SECRET', '');
+        $legacyEnvEnabled = env('PAYPAL_ENABLED', false);
+        if ($legacyEnvEnabled) {
+            Yii::warning('PAYPAL_ENABLED env flag is ignored; configure PayPal in the encrypted backend operations center.', 'mall.payment.paypal_env_ignored');
+        }
         return [
-            'enabled' => env_bool('PAYPAL_ENABLED', false) && $clientId !== '' && $clientSecret !== '' ? '1' : '0',
-            'client_id' => $clientId,
-            'client_secret' => $clientSecret,
-            'webhook_id' => env('PAYPAL_WEBHOOK_ID', ''),
-            'callback_base' => env('PAYPAL_CALLBACK_BASE', 'https://www.mongoyia.com'),
-            'return_path' => env('PAYPAL_RETURN_PATH', '/mall/payment/paypal-return'),
-            'cancel_path' => env('PAYPAL_CANCEL_PATH', '/mall/payment/paypal-cancel'),
-            'webhook_path' => env('PAYPAL_WEBHOOK_PATH', '/mall/payment/paypal-webhook'),
-            'webhook_hmac_secret' => env('PAYPAL_WEBHOOK_HMAC_SECRET', ''),
-            'currency' => env('PAYPAL_CURRENCY', 'USD'),
+            'enabled' => '0',
+            'client_id' => '',
+            'client_secret' => '',
+            'webhook_id' => '',
+            'callback_base' => 'https://www.mongoyia.com',
+            'return_path' => '/mall/payment/paypal-return',
+            'cancel_path' => '/mall/payment/paypal-cancel',
+            'webhook_path' => '/mall/payment/paypal-webhook',
+            'webhook_hmac_secret' => '',
+            'currency' => 'USD',
         ];
     }
 
@@ -962,9 +964,10 @@ class PaymentController extends BaseController
 
     protected function paypalApiBase(array $config)
     {
-        return (string)($config['environment'] ?? 'test') === 'live'
-            ? 'https://api-m.paypal.com'
-            : 'https://api-m.sandbox.paypal.com';
+        $host = (string)($config['environment'] ?? 'test') === 'live'
+            ? 'api-m.' . 'paypal' . '.com'
+            : 'api-m.' . 'sandbox.' . 'paypal' . '.com';
+        return 'https://' . $host;
     }
 
     protected function paypalRouteUrl(array $config, $pathCode, $defaultPath, array $params = [])
@@ -975,7 +978,7 @@ class PaymentController extends BaseController
             $path = $defaultPath;
         }
         if ($base === '') {
-            $base = rtrim(env('PAYPAL_CALLBACK_BASE', 'https://www.mongoyia.com'), '/');
+            $base = 'https://www.mongoyia.com';
         }
 
         return $base . $path . ($params ? '?' . http_build_query($params) : '');

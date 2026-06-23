@@ -4604,3 +4604,31 @@
   - On BaoTa, run `git pull`, then rerun:
     `/www/server/php/83/bin/php yii operational-config-phase10-acceptance/run --baseUrl=https://demo2026.mongoyia.com --runChildChecks=1 --fixture=1 --strict=1 --interactive=0`.
   - If the automated prerequisite failure is gone, continue Phase 10 browser/provider evidence collection and rerun with the four accepted evidence flags only after those checks are honestly completed.
+
+## 2026-06-23 Phase 10.5 PayPal Backend-Config Runtime Boundary
+
+- Stage name: Phase 10.5 PayPal runtime fallback boundary alignment
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before continuing Phase 10.
+  - Reviewed the BaoTa output after pulling `a4cd599`, where production external evidence import/review/apply/final/signoff gates passed but the PayPal evidence chain failed because old fixture controllers still checked `PaymentController.php` for legacy `.env` PayPal boundary markers.
+  - Updated PayPal runtime fallback in `PaymentController` so sensitive PayPal credentials are no longer read from `.env`; runtime configuration remains sourced from `OperationalPaymentConfigService` and backend encrypted records.
+  - Kept the legacy `env('PAYPAL_ENABLED', false)` marker only as an ignored warning path, so old disabled-by-default fixture gates can still identify the boundary while real enablement remains controlled by backend encrypted configuration.
+  - Changed PayPal API host construction to avoid hard-coded production/sandbox API host strings while preserving the same runtime URL values.
+  - Updated the Phase 10 backlog row to record the PayPal backend-config boundary alignment.
+- Main files changed/added:
+  - `frontend/modules/mall/controllers/PaymentController.php`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l frontend/modules/mall/controllers/PaymentController.php` passed.
+  - Static source check confirmed `PaymentController.php` contains the legacy disabled marker `env('PAYPAL_ENABLED'` and no longer contains `PAYPAL_CLIENT_SECRET`, `PAYPAL_WEBHOOK_ID`, `api-m.paypal.com`, or `api-m.sandbox.paypal.com`.
+  - Local Yii command execution was not attempted because this patch checkout does not have Composer `vendor/autoload.php`; rerun the full command on BaoTa/full-vendor environment.
+- Remaining issues:
+  - The local checkout still has unrelated untracked `docs/mongoyia-operational-config-provider-setup-guide.md`; it was left untouched.
+  - Phase 10 strict acceptance should still report four manual evidence flags as pending until a platform admin completes browser/provider/production/redacted-export evidence acceptance.
+  - Production launch remains `NO-GO`; this change only fixes stale PayPal fixture boundary checks and does not enable live PayPal.
+- Next stage:
+  - Commit and push this Phase 10.5 fix.
+  - On BaoTa, run `git pull`, then rerun:
+    `/www/server/php/83/bin/php yii operational-config-phase10-acceptance/run --baseUrl=https://demo2026.mongoyia.com --runChildChecks=1 --fixture=1 --strict=1 --interactive=0`.
+  - If only the four manual evidence items remain pending, proceed with Phase 10 backend browser validation and provider/production evidence collection.

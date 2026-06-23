@@ -494,6 +494,8 @@ php yii store-profile-test/run --interactive=0
 php yii mongoyia-acceptance/run --baseUrl=http://127.0.0.1:8089 --profile=local --cleanupAfterRun=1 --interactive=0
 ```
 
+Phase 2.1 merchant audit POST guard: backend merchant application approve/reject and store category authorization approve/reject now use `MONGOYIA_MERCHANT_APPLICATION_AUDIT_POST_GUARD_V1` / `MONGOYIA_STORE_CATEGORY_AUTH_AUDIT_POST_GUARD_V1`, POST-only verb filters, POST-only parameter reads, and CSRF POST forms on the platform list pages. `merchant-backend-closure-test/run` checks these markers so onboarding approval and category authorization cannot be triggered by plain GET links.
+
 ## Phase 3 Backlog
 
 | Priority | Work | Status | Verification |

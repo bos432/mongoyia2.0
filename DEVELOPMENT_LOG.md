@@ -7800,3 +7800,38 @@
   - Phase 10/11/12/13/15 external/provider/browser evidence gates remain pending; production remains `NO-GO`.
 - Next stage:
   - Commit and push this Phase 14 logistics workflow guard patch, then reread the plan/log and continue with the next plan-listed readiness item.
+
+## 2026-06-24 Phase 2 Merchant Audit POST Guard
+
+- Stage name: Phase 2 merchant application and category authorization POST guard
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting the stage.
+  - Added `MONGOYIA_MERCHANT_APPLICATION_AUDIT_POST_GUARD_V1` to the backend merchant application controller.
+  - Added `MONGOYIA_STORE_CATEGORY_AUTH_AUDIT_POST_GUARD_V1` to the backend store category authorization controller.
+  - Restricted merchant application approve/reject and store category authorization approve/reject actions to POST.
+  - Removed GET parameter reads from those audit write actions for `id` and `remark`; the remaining merchant application `get('id')` path is the read-only category authorization detail page.
+  - Changed merchant application and store category authorization list-page audit buttons from GET links to CSRF-protected inline POST forms.
+  - Added source coverage to `merchant-backend-closure-test/run` for both POST guards and UI form markers.
+  - Updated the Phase 2 backlog notes to record this small stage as Phase 2.1.
+- Main files changed/added:
+  - `backend/modules/mall/controllers/MerchantApplicationController.php`
+  - `backend/modules/mall/controllers/StoreCategoryAuthController.php`
+  - `backend/modules/mall/views/merchant-application/index.php`
+  - `backend/modules/mall/views/store-category-auth/index.php`
+  - `console/controllers/MerchantBackendClosureTestController.php`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l backend/modules/mall/controllers/MerchantApplicationController.php` passed.
+  - `php -l backend/modules/mall/controllers/StoreCategoryAuthController.php` passed.
+  - `php -l backend/modules/mall/views/merchant-application/index.php` passed.
+  - `php -l backend/modules/mall/views/store-category-auth/index.php` passed.
+  - `php -l console/controllers/MerchantBackendClosureTestController.php` passed.
+  - Static marker checks confirmed both POST guard markers, CSRF form markers, POST-only verb filters, POST-only audit parameter reads, and `Phase 2.1`.
+  - `git diff --check` reported no whitespace errors, only existing Windows line-ending conversion warnings.
+  - Full Yii console execution remains BaoTa-only because this local checkout lacks `vendor/autoload.php`.
+- Remaining issues:
+  - Phase 2 backend browser role-flow evidence should be rechecked on BaoTa after deployment for merchant application approval, category authorization approval, and seller product audit flow.
+  - Phase 10/11/12/13/14/15 external/provider/browser evidence gates remain pending; production remains `NO-GO`.
+- Next stage:
+  - Commit and push this Phase 2 merchant audit guard patch, then reread the plan/log and continue with the next plan-listed readiness item.

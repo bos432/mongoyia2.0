@@ -9,7 +9,18 @@ use yii\web\ForbiddenHttpException;
 
 class StoreCategoryAuthController extends BaseController
 {
+    public const AUDIT_POST_GUARD_VERSION = 'MONGOYIA_STORE_CATEGORY_AUTH_AUDIT_POST_GUARD_V1';
+
     public $modelClass = StoreCategoryAuth::class;
+
+    public function behaviors()
+    {
+        $behaviors = parent::behaviors();
+        $behaviors['verbs']['actions']['approve'] = ['post'];
+        $behaviors['verbs']['actions']['reject'] = ['post'];
+
+        return $behaviors;
+    }
 
     public function beforeAction($action)
     {
@@ -65,13 +76,13 @@ class StoreCategoryAuthController extends BaseController
 
     private function setAuditStatus(string $auditStatus, int $status)
     {
-        $model = $this->findModel(Yii::$app->request->get('id'));
+        $model = $this->findModel(Yii::$app->request->post('id', 0));
         if (!$model) {
             return $this->redirectError(Yii::t('app', 'Invalid id'));
         }
 
         $model->audit_status = $auditStatus;
-        $model->audit_remark = Yii::$app->request->get('remark', $auditStatus . ' from backend.');
+        $model->audit_remark = Yii::$app->request->post('remark', $auditStatus . ' from backend.');
         $model->status = $status;
         if ($auditStatus === StoreCategoryAuth::AUDIT_APPROVED) {
             $model->authorized_at = time();

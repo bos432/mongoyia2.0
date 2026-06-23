@@ -5,6 +5,7 @@ use common\models\mall\Category;
 use common\models\mall\MerchantApplication as ActiveModel;
 use yii\grid\GridView;
 use yii\helpers\Inflector;
+use yii\helpers\Url;
 
 /* @var $this yii\web\View */
 /* @var $dataProvider yii\data\ActiveDataProvider */
@@ -12,6 +13,13 @@ use yii\helpers\Inflector;
 
 $this->title = '商家入驻审核';
 $this->params['breadcrumbs'][] = $this->title;
+$auditPostButton = static function (string $route, int $id, string $label, string $class, string $guard): string {
+    return '<form method="post" action="' . Html::encode(Url::to([$route])) . '" class="d-inline" data-mongoyia-merchant-application-post-guard="' . Html::encode($guard) . '">'
+        . '<input type="hidden" name="' . Html::encode(Yii::$app->request->csrfParam) . '" value="' . Html::encode(Yii::$app->request->csrfToken) . '">'
+        . '<input type="hidden" name="id" value="' . $id . '">'
+        . '<button type="submit" class="' . Html::encode($class) . '">' . Html::encode($label) . '</button>'
+        . '</form>';
+};
 ?>
 
 <div class="row">
@@ -54,17 +62,17 @@ $this->params['breadcrumbs'][] = $this->title;
                                 'categories' => function ($url, $model) {
                                     return Html::view(['categories', 'id' => $model->id], '类目授权', ['class' => 'btn btn-default btn-sm']);
                                 },
-                                'approve' => function ($url, $model) {
+                                'approve' => function ($url, $model) use ($auditPostButton) {
                                     if ($model->audit_status === ActiveModel::AUDIT_APPROVED) {
                                         return '';
                                     }
-                                    return Html::edit(['approve', 'id' => $model->id], '通过', ['class' => 'btn btn-success btn-sm']);
+                                    return $auditPostButton('approve', (int)$model->id, '通过', 'btn btn-success btn-sm', 'approve');
                                 },
-                                'reject' => function ($url, $model) {
+                                'reject' => function ($url, $model) use ($auditPostButton) {
                                     if ($model->audit_status === ActiveModel::AUDIT_REJECTED) {
                                         return '';
                                     }
-                                    return Html::edit(['reject', 'id' => $model->id], '驳回', ['class' => 'btn btn-warning btn-sm']);
+                                    return $auditPostButton('reject', (int)$model->id, '驳回', 'btn btn-warning btn-sm', 'reject');
                                 },
                             ],
                             'headerOptions' => ['class' => 'action-column action-column-lg'],

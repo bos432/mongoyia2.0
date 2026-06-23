@@ -32,6 +32,7 @@ class MerchantBackendClosureTestController extends Controller
         $this->checkFiles();
         $this->checkPermissions();
         $this->checkBackendRoutes();
+        $this->checkAuditPostGuards();
         if ($this->failures === 0) {
             $this->runFixtureFlow();
         }
@@ -110,6 +111,36 @@ class MerchantBackendClosureTestController extends Controller
                 $this->ok("Route method exists: {$class}::{$method}");
             }
         }
+    }
+
+    private function checkAuditPostGuards(): void
+    {
+        $this->section('Audit POST guards');
+        $this->requireFileContains('backend/modules/mall/controllers/MerchantApplicationController.php', [
+            'MONGOYIA_MERCHANT_APPLICATION_AUDIT_POST_GUARD_V1',
+            "'approve'] = ['post']",
+            "'reject'] = ['post']",
+            "post('id', 0)",
+            "post('remark', 'Approved from backend.')",
+            "post('remark', 'Rejected from backend.')",
+        ]);
+        $this->requireFileContains('backend/modules/mall/views/merchant-application/index.php', [
+            'data-mongoyia-merchant-application-post-guard',
+            'csrfToken',
+            "Url::to([\$route])",
+        ]);
+        $this->requireFileContains('backend/modules/mall/controllers/StoreCategoryAuthController.php', [
+            'MONGOYIA_STORE_CATEGORY_AUTH_AUDIT_POST_GUARD_V1',
+            "'approve'] = ['post']",
+            "'reject'] = ['post']",
+            "post('id', 0)",
+            "post('remark', \$auditStatus . ' from backend.')",
+        ]);
+        $this->requireFileContains('backend/modules/mall/views/store-category-auth/index.php', [
+            'data-mongoyia-store-category-auth-post-guard',
+            'csrfToken',
+            "Url::to([\$route])",
+        ]);
     }
 
     private function runFixtureFlow()
@@ -304,6 +335,25 @@ class MerchantBackendClosureTestController extends Controller
         }
 
         $this->fail("Missing file {$path}.");
+    }
+
+    private function requireFileContains(string $path, array $needles): void
+    {
+        $full = Yii::getAlias('@app') . '/../' . $path;
+        if (!is_file($full)) {
+            $this->fail("Missing file {$path}.");
+            return;
+        }
+
+        $content = (string)file_get_contents($full);
+        foreach ($needles as $needle) {
+            if (strpos($content, $needle) === false) {
+                $this->fail("File {$path} is missing marker {$needle}.");
+                return;
+            }
+        }
+
+        $this->ok("File markers exist: {$path}");
     }
 
     private function section(string $name)

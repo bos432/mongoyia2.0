@@ -6539,3 +6539,26 @@
   - Phase 10/11/12/14/15 external/browser evidence remains pending; production remains `NO-GO`.
 - Next stage:
   - Verify, commit, and push this Phase 13 checklist patch, then continue with the next plan-listed local readiness item.
+
+## 2026-06-23 Phase 12 Browser Evidence Checklist
+
+- Stage name: Phase 12 account/notification/language browser evidence checklist
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting the stage.
+  - Extended `account-notification-phase12-acceptance/run` report output with a browser role-flow checklist for buyer PC/H5/APP, platform admin, merchant/backend user, identity-provider callback/binding, password reset/security-code login, notifications, language switching, and secret-safety validation.
+  - Added an accepted-evidence command template showing how to pass third-party login, password recovery, notification, language review, and browser evidence paths after reviewer acceptance.
+  - Updated the development backlog to record that Phase 12 now has browser evidence checklist coverage and accepted-evidence command guidance.
+- Main files changed/added:
+  - `console/controllers/AccountNotificationPhase12AcceptanceController.php`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l console/controllers/AccountNotificationPhase12AcceptanceController.php` passed.
+  - Static marker checks confirmed `Browser Role-Flow Checklist`, `Accepted Evidence Command`, `phase12-browser-evidence`, and `phase12-third-party-login-evidence`.
+  - `git diff --check` reported no whitespace errors, only existing Windows line-ending conversion warnings.
+  - Full Yii console execution remains BaoTa-only because this local checkout lacks `vendor/autoload.php`.
+- Remaining issues:
+  - Facebook/Google provider callbacks and binding evidence, password recovery/security-code delivery evidence, notification delivery evidence, language review evidence, and browser role-flow evidence remain pending.
+  - Phase 10/11/13/14/15 external/browser evidence remains pending; production remains `NO-GO`.
+- Next stage:
+  - Commit and push this Phase 12 checklist patch, then re-read the development plan and this log before continuing with the next plan-listed local readiness or BaoTa/browser validation stage.

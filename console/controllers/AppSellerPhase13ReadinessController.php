@@ -106,6 +106,17 @@ class AppSellerPhase13ReadinessController extends Controller
             'submitShipment',
             'shipment_fee',
         ]);
+        $this->requireFileContains('Backend seller shipment form uses POST body id', 'backend/modules/mall/controllers/OrderController.php', [
+            'MONGOYIA_BACKEND_ORDER_SHIPMENT_POST_ID_GUARD_V1',
+            '$request->isPost ? $request->post(\'id\', 0) : $request->get(\'id\')',
+            'markShipped',
+        ]);
+        $this->requireFileContains('Backend seller shipment UI posts hidden id', 'backend/modules/mall/views/order/fh-ajax.php', [
+            'data-mongoyia-order-shipment-post-id-guard',
+            "Html::hiddenInput('id'",
+            "'action' => Url::to(['fh-ajax'])",
+            "'validationUrl' => Url::to(['fh-ajax'])",
+        ]);
         $this->requireFileContains('Seller product page posts audited product submissions', 'apps/mongoyia-customer-chat-uniapp/src/pages/seller/products.vue', [
             'data-mongoyia-phase13-seller-product-write',
             'MONGOYIA_APP_SELLER_PRODUCT_WRITE_V1',

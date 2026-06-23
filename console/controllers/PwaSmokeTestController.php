@@ -1177,9 +1177,14 @@ class PwaSmokeTestController extends Controller
                 $this->fail("Merchant {$label} form missing backend CSRF token.");
                 return false;
             }
+            if (stripos($form['body'], 'data-mongoyia-order-shipment-post-id-guard') === false || stripos($form['body'], 'name="id"') === false) {
+                $this->fail("Merchant {$label} form missing POST id guard marker.");
+                return false;
+            }
 
-            $submit = $client->post('/backend/mall/order/fh-ajax?id=' . $childOrderId, [
+            $submit = $client->post('/backend/mall/order/fh-ajax', [
                 '_csrf-backend' => $csrf,
+                'id' => $childOrderId,
                 'Order[shipment_id]' => (string)$shipmentId,
                 'Order[shipment_name]' => $shipmentName,
                 'Order[shipment_fee]' => (string)$shipmentFee,
@@ -1207,8 +1212,9 @@ class PwaSmokeTestController extends Controller
             }
 
             $fundAfterFirstSubmit = (float)$this->storeColumn($storeId, 'fund');
-            $repeat = $client->post('/backend/mall/order/fh-ajax?id=' . $childOrderId, [
+            $repeat = $client->post('/backend/mall/order/fh-ajax', [
                 '_csrf-backend' => $csrf,
+                'id' => $childOrderId,
                 'Order[shipment_id]' => (string)$shipmentId,
                 'Order[shipment_name]' => $shipmentName,
                 'Order[shipment_fee]' => (string)$shipmentFee,

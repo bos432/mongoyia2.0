@@ -16,6 +16,7 @@ use yii\web\ForbiddenHttpException;
 class OrderController extends BaseController
 {
     public const LOGISTICS_WORKFLOW_POST_GUARD_VERSION = 'MONGOYIA_ORDER_LOGISTICS_WORKFLOW_POST_GUARD_V1';
+    public const SHIPMENT_POST_ID_GUARD_VERSION = 'MONGOYIA_BACKEND_ORDER_SHIPMENT_POST_ID_GUARD_V1';
 
     /**
       * @var Order
@@ -115,7 +116,8 @@ class OrderController extends BaseController
 
     public function actionFhAjax()
     {
-        $id = Yii::$app->request->get('id');
+        $request = Yii::$app->request;
+        $id = $request->isPost ? $request->post('id', 0) : $request->get('id');
         $model = $this->findModel($id);
         if (!$model) {
             return $this->redirectError(Yii::t('app', 'Invalid id'));
@@ -125,7 +127,7 @@ class OrderController extends BaseController
 
         // ajax 校验
         $this->activeFormValidate($model);
-        if (Yii::$app->request->isPost && $model->load(Yii::$app->request->post())) {
+        if ($request->isPost && $model->load($request->post())) {
             try {
                 if ($this->beforeEditSave($id, $model)) {
                     $model->markShipped($model->shipment_id, $model->shipment_name, null, $model->shipment_fee);

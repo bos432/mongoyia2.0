@@ -423,6 +423,8 @@ Phase 13.19 merchant coupon store selector POST hardening: backend merchant-coup
 
 Phase 13.20 buyer received-order POST id hardening: PC/H5 buyer confirm-received forms now post `/mall/order/review` with the order id in a hidden POST field instead of a URL query parameter. `OrderController::actionReview()` reads `id` only from POST through `MONGOYIA_BUYER_ORDER_RECEIVED_POST_ID_GUARD_V1`; Phase 13 buyer readiness and aggregate acceptance reject the old URL-id write form.
 
+Phase 13.21 backend seller shipment POST id hardening: backend/seller shipment modal GET remains available for opening the form, but shipment submit and Ajax validation post to `/backend/mall/order/fh-ajax` without a query-string id. The form carries a hidden POST `id` and `data-mongoyia-order-shipment-post-id-guard`; `OrderController::actionFhAjax()` reads the order id from POST for write requests through `MONGOYIA_BACKEND_ORDER_SHIPMENT_POST_ID_GUARD_V1`. Phase 13 seller readiness and aggregate acceptance cover the guard.
+
 Phase 14 acceptance command:
 
 ```bash
@@ -441,6 +443,8 @@ Phase 14.8 order logistics workflow POST guard: backend order logistics status b
 Phase 14.9 review moderation POST id hardening: backend review approve/reject/mark-violation actions now use `MONGOYIA_REVIEW_MODERATION_ID_POST_GUARD_V1`, read review `id` only from POST, and render CSRF-protected moderation forms without URL id parameters. Favorite/review readiness and Phase 14 aggregate acceptance check the marker, POST id reads, UI form marker, and absence of the old URL-id action links.
 
 Phase 14.10 buyer received-order POST id hardening: the PC/H5 confirm-received precondition for review submission now uses POST body ids and stable `data-mongoyia-buyer-received-post-guard` form markers on both order list and detail pages. Favorite/review readiness and Phase 14 aggregate acceptance cover the guard so the received-order write cannot be triggered with a query-string order id.
+
+Phase 14.11 backend seller shipment POST id hardening: the logistics shipment form now posts hidden order ids and removes query-string ids from shipment write submissions while keeping modal GET open behavior. Logistics basic, PWA smoke, Phase 13 seller, and Phase 14 aggregate readiness cover `MONGOYIA_BACKEND_ORDER_SHIPMENT_POST_ID_GUARD_V1`.
 
 Phase 15 acceptance command:
 
@@ -569,6 +573,8 @@ php yii mongoyia-acceptance/run --baseUrl=http://127.0.0.1:8089 --profile=local 
 Phase 3.1 settlement draft backend POST guard: settlement draft workflow, payout evidence, and close actions now use `MONGOYIA_SETTLEMENT_DRAFT_BACKEND_POST_GUARD_V1`, POST-only verb filters, POST-only workflow parameter reads, and CSRF POST form markers on the backend draft page. `mongoyia-settlement-draft-backend-test/run` checks the guard so settlement draft status changes, payout evidence entry, and close actions cannot be triggered by plain GET links.
 
 Phase 3.2 logistics fee review apply POST guard: backend logistics-fee finance review now uses `MONGOYIA_LOGISTICS_FEE_REVIEW_APPLY_POST_GUARD_V1`, explicitly restricts `/backend/mall/logistics-fee-review/apply` to POST, keeps preview filters as GET on the index page, and marks the execute-adjustment form with `data-mongoyia-logistics-fee-review-post-guard`. `mongoyia-logistics-fee-review-test/run` checks the guard so fee adjustment application cannot be triggered by plain GET.
+
+Phase 3.3 backend seller shipment POST id hardening: backend order shipment submit now keeps GET only for opening the modal but reads the shipment write `id` from POST body data. The shipment form posts to `/backend/mall/order/fh-ajax` without query parameters, includes a hidden `id`, and exposes `data-mongoyia-order-shipment-post-id-guard`; logistics basic and PWA smoke checks cover the behavior.
 
 ## Open Risks
 

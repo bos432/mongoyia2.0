@@ -8101,3 +8101,43 @@
   - Phase 10/11/12/15 external/provider/browser evidence gates remain pending; production remains `NO-GO`.
 - Next stage:
   - Commit and push this Phase 13/14 buyer received-order POST id hardening patch, then reread the plan/log and continue with the next plan-listed readiness item.
+
+## 2026-06-24 Phase 3/13/14 Backend Seller Shipment POST ID Hardening
+
+- Stage name: Phase 3.3 / Phase 13.21 / Phase 14.11 backend seller shipment POST id hardening
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting the stage.
+  - Added `MONGOYIA_BACKEND_ORDER_SHIPMENT_POST_ID_GUARD_V1` to the backend mall order controller.
+  - Kept GET `fh-ajax?id=...` support for opening the shipment modal, but changed shipment write requests so POST reads `id` from the request body.
+  - Updated the shipment modal form action and Ajax validation URL to `/backend/mall/order/fh-ajax` without query-string ids.
+  - Added a hidden POST `id` field and `data-mongoyia-order-shipment-post-id-guard` marker to the shipment form.
+  - Updated PWA merchant shipment smoke to submit shipment writes with body `id` instead of URL `id`, while preserving the GET form-open probe.
+  - Added source coverage to logistics basic, Phase 13 seller/aggregate, and Phase 14 aggregate readiness checks.
+  - Updated the Phase 3, Phase 13, and Phase 14 backlog notes as Phase 3.3, Phase 13.21, and Phase 14.11.
+- Main files changed/added:
+  - `backend/modules/mall/controllers/OrderController.php`
+  - `backend/modules/mall/views/order/fh-ajax.php`
+  - `console/controllers/PwaSmokeTestController.php`
+  - `console/controllers/MongoyiaLogisticsBasicTestController.php`
+  - `console/controllers/AppSellerPhase13ReadinessController.php`
+  - `console/controllers/AppPhase13AcceptanceController.php`
+  - `console/controllers/LogisticsProductPhase14AcceptanceController.php`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l backend/modules/mall/controllers/OrderController.php` passed.
+  - `php -l backend/modules/mall/views/order/fh-ajax.php` passed.
+  - `php -l console/controllers/PwaSmokeTestController.php` passed.
+  - `php -l console/controllers/MongoyiaLogisticsBasicTestController.php` passed.
+  - `php -l console/controllers/AppSellerPhase13ReadinessController.php` passed.
+  - `php -l console/controllers/AppPhase13AcceptanceController.php` passed.
+  - `php -l console/controllers/LogisticsProductPhase14AcceptanceController.php` passed.
+  - Static marker checks confirmed `MONGOYIA_BACKEND_ORDER_SHIPMENT_POST_ID_GUARD_V1`, `data-mongoyia-order-shipment-post-id-guard`, hidden POST `id`, queryless form action/validation URL, and no remaining PWA shipment POST URL with query-string id.
+  - `git diff --check` reported no whitespace errors, only existing Windows line-ending conversion warnings.
+  - Full Yii console execution remains BaoTa-only because this local checkout lacks `vendor/autoload.php`.
+- Remaining issues:
+  - BaoTa/test server must rerun PWA merchant shipment smoke and Phase 13/14 readiness after deployment.
+  - Phase 13 authenticated H5/APP buyer/seller role-flow evidence and Phase 14 logistics/product/favorite/review browser evidence remain pending.
+  - Phase 10/11/12/15 external/provider/browser evidence gates remain pending; production remains `NO-GO`.
+- Next stage:
+  - Commit and push this backend seller shipment POST id hardening patch, then reread the plan/log and continue with the next plan-listed readiness item.

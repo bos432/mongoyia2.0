@@ -260,11 +260,23 @@ class AppPhase13AcceptanceController extends Controller
         $this->requireFileContains('Seller APP JSON API readiness', 'console/controllers/AppSellerPhase13ReadinessController.php', [
             'MONGOYIA_APP_SELLER_PHASE13_READINESS_V1',
             'MONGOYIA_APP_SELLER_SHIPMENT_POST_GUARD_V1',
+            'MONGOYIA_BACKEND_ORDER_SHIPMENT_POST_ID_GUARD_V1',
             'MONGOYIA_PRODUCT_AUDIT_POST_VERB_GUARD_V1',
             'MONGOYIA_MERCHANT_COUPON_POST_VERB_GUARD_V1',
             'MONGOYIA_MERCHANT_COUPON_STORE_ID_POST_GUARD_V1',
             'app-seller-phase13-readiness/run',
             'shipment write uses existing paid/COD checks',
+        ]);
+        $this->requireFileContains('Backend seller shipment form POST id guard', 'backend/modules/mall/controllers/OrderController.php', [
+            'MONGOYIA_BACKEND_ORDER_SHIPMENT_POST_ID_GUARD_V1',
+            '$request->isPost ? $request->post(\'id\', 0) : $request->get(\'id\')',
+            'markShipped',
+        ]);
+        $this->requireFileContains('Backend seller shipment form posts hidden id', 'backend/modules/mall/views/order/fh-ajax.php', [
+            'data-mongoyia-order-shipment-post-id-guard',
+            "Html::hiddenInput('id'",
+            "'action' => Url::to(['fh-ajax'])",
+            "'validationUrl' => Url::to(['fh-ajax'])",
         ]);
         $this->requireFileNotContains('Seller backend merchant coupon store_id has no POST/GET fallback', 'backend/modules/mall/controllers/MerchantCouponController.php', [
             "post('store_id', Yii::\$app->request->get('store_id', 0))",

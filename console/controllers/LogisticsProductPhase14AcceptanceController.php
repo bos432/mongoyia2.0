@@ -139,10 +139,18 @@ class LogisticsProductPhase14AcceptanceController extends Controller
         ]);
         $this->requireFileContains('Backend order logistics workflow POST guard', 'backend/modules/mall/controllers/OrderController.php', [
             'MONGOYIA_ORDER_LOGISTICS_WORKFLOW_POST_GUARD_V1',
+            'MONGOYIA_BACKEND_ORDER_SHIPMENT_POST_ID_GUARD_V1',
             "'logistics-status-batch'] = ['post']",
             "'logistics-review-batch'] = ['post']",
+            '$request->isPost ? $request->post(\'id\', 0) : $request->get(\'id\')',
             "post('target_status', 0)",
             "post('review_status', 0)",
+        ]);
+        $this->requireFileContains('Backend order shipment form POST id guard', 'backend/modules/mall/views/order/fh-ajax.php', [
+            'data-mongoyia-order-shipment-post-id-guard',
+            "Html::hiddenInput('id'",
+            "'action' => Url::to(['fh-ajax'])",
+            "'validationUrl' => Url::to(['fh-ajax'])",
         ]);
         $this->requireFileContains('Backend order logistics workflow UI posts CSRF forms', 'backend/modules/mall/views/order/index.php', [
             'data-mongoyia-order-logistics-post-guard',

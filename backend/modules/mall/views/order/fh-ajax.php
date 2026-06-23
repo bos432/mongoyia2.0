@@ -13,13 +13,16 @@ use common\models\mall\Order as ActiveModel;
 
 $form = ActiveForm::begin([
     'id' => $model->formName(),
+    'action' => Url::to(['fh-ajax']),
     'enableAjaxValidation' => true,
-    'validationUrl' => Url::to(['fh-ajax', 'id' => $model['id']]),
+    'validationUrl' => Url::to(['fh-ajax']),
+    'options' => ['data-mongoyia-order-shipment-post-id-guard' => '1'],
     'fieldConfig' => [
         'template' => "<div class='col-sm-2 text-sm-right'>{label}</div><div class='col-sm-10'>{input}\n{hint}\n{error}</div>",
     ],
 ]);
 ?>
+    <?= Html::hiddenInput('id', (int)$model['id']) ?>
     <div class="modal-header">
         <h4 class="modal-title">物流信息</h4>
         <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>

@@ -13,6 +13,7 @@ use common\models\mall\OrderLog;
 use common\models\mall\OrderProduct;
 use common\models\mall\Product;
 use common\models\mall\ProductSku;
+use common\models\mall\UserCoupon;
 use common\models\User;
 use Yii;
 use yii\filters\AccessControl;
@@ -53,14 +54,29 @@ class CartController extends BaseController
             ->all();
 
         foreach ($models as $key => $model) {
-            if (!Product::find()->where(['id' => $model->product_id])->exists()) {
+            $product = Product::findOne(['id' => $model->product_id]);
+            if (!$product) {
                 Yii::warning('Removed stale cart row for missing product #' . $model->product_id, __METHOD__);
                 $model->delete();
                 unset($models[$key]);
                 continue;
             }
 
-            if ((float)$model->price <= 0) {
+            $productSku = null;
+            if (strlen((string)$model->product_attribute_value) > 0) {
+                $productSku = ProductSku::findOne([
+                    'product_id' => $model->product_id,
+                    'attribute_value' => $model->product_attribute_value,
+                ]);
+                if (!$productSku) {
+                    Yii::warning('Removed stale cart row for missing SKU on product #' . $model->product_id, __METHOD__);
+                    $model->delete();
+                    unset($models[$key]);
+                    continue;
+                }
+            }
+
+            if ((float)$model->price <= 0 || $this->cartUnitPrice($product, $productSku) <= 0) {
                 Yii::warning('Removed stale cart row with invalid price for product #' . $model->product_id, __METHOD__);
                 $model->delete();
                 unset($models[$key]);
@@ -72,20 +88,7 @@ class CartController extends BaseController
         }
 
         $total = $productAmount;
-        $coupons = (new \yii\db\Query())->select(['cid'])->from('fb_mall_user_coupon')->where(['uid'=>Yii::$app->user->id,'status'=>0])->all();
-        $md = 0;
-        $cid = 0;
-//        var_dump($coupons);exit();
-        foreach ($coupons as $v){
-            $dis = $this->getDiscountNew($productAmount, $v['cid']);
-//            var_dump($dis);
-            if($dis < $md){
-                $md = $dis;
-                $cid = $v['cid'];
-            }
-        }
-//        exit();
-        $discount = $md;
+        [$discount, $cid] = $this->bestAvailableCouponDiscount($productAmount);
 //        var_dump($discount);exit();
         if($total + $discount <= 0){
             $discount = 0;
@@ -528,6 +531,42 @@ class CartController extends BaseController
         }
 
         return CouponType::getDiscountByCoupon($productAmount, $model);
+    }
+
+    private function bestAvailableCouponDiscount(float $productAmount): array
+    {
+        if ($productAmount <= 0 || Yii::$app->user->isGuest) {
+            return [0, 0];
+        }
+
+        try {
+            $table = UserCoupon::tableName();
+            if (Yii::$app->db->schema->getTableSchema($table, true) === null) {
+                Yii::warning('Skipped cart coupon calculation because user coupon table is missing.', __METHOD__);
+                return [0, 0];
+            }
+
+            $coupons = (new \yii\db\Query())
+                ->select(['cid'])
+                ->from($table)
+                ->where(['uid' => Yii::$app->user->id, 'status' => 0])
+                ->all();
+
+            $bestDiscount = 0;
+            $bestCouponId = 0;
+            foreach ($coupons as $coupon) {
+                $discount = (float)$this->getDiscountNew($productAmount, $coupon['cid'] ?? 0);
+                if ($discount < $bestDiscount) {
+                    $bestDiscount = $discount;
+                    $bestCouponId = (int)$coupon['cid'];
+                }
+            }
+
+            return [$bestDiscount, $bestCouponId];
+        } catch (\Throwable $e) {
+            Yii::warning('Skipped cart coupon calculation: ' . $e->getMessage(), __METHOD__);
+            return [0, 0];
+        }
     }
 
     protected function getDiscount($productAmount, $sn)

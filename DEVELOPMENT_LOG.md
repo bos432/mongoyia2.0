@@ -1,5 +1,28 @@
 # Development Log
 
+## 2026-06-23 Phase 13 Buyer Cart Coupon/SKU Defensive Hardening
+
+- Stage name: Phase 13 buyer cart coupon/SKU defensive hardening
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting the stage.
+  - Hardened the frontend cart page against stale cart rows whose product, SKU, stored cart price, or runtime product/SKU price is no longer valid.
+  - Replaced the direct `fb_mall_user_coupon` cart-page query with model-based, exception-safe coupon lookup so a missing or unhealthy coupon table no longer blocks the cart page.
+  - Kept checkout/payment behavior unchanged; the page now falls back to no coupon discount when coupon lookup cannot be safely completed.
+- Main files changed/added:
+  - `frontend/modules/mall/controllers/CartController.php`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l frontend/modules/mall/controllers/CartController.php` passed.
+  - Static marker checks confirmed `bestAvailableCouponDiscount`, `UserCoupon`, missing-SKU cleanup logging, and coupon-skip logging are present.
+  - `git diff --check` reported no whitespace errors, only existing Windows line-ending conversion warnings.
+  - Full Yii console execution remains BaoTa-only because this local checkout lacks `vendor/autoload.php`.
+- Remaining issues:
+  - BaoTa/test server still needs to pull this commit, clear PHP/opcache/runtime/page cache, and rerun Phase 13 browser cart/checkout validation.
+  - If the deployed cart still fails after this hardening is served, the next investigation should inspect the logged PHP exception from the server-side runtime.
+  - Phase 10/11/12/14/15 external provider, logistics, social-login, notification, production operations, and signoff evidence remain pending; production remains `NO-GO`.
+- Next stage:
+  - Commit and push this patch, then continue with BaoTa/browser validation after deployment catches up or another plan-listed local readiness item.
+
 ## 2026-06-20 Unattended Development Start
 
 - Stage name: Unattended development log initialization

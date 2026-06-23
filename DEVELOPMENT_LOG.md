@@ -7835,3 +7835,34 @@
   - Phase 10/11/12/13/14/15 external/provider/browser evidence gates remain pending; production remains `NO-GO`.
 - Next stage:
   - Commit and push this Phase 2 merchant audit guard patch, then reread the plan/log and continue with the next plan-listed readiness item.
+
+## 2026-06-24 Phase 3 Settlement Draft Backend POST Guard
+
+- Stage name: Phase 3 settlement draft backend POST guard
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting the stage.
+  - Added `MONGOYIA_SETTLEMENT_DRAFT_BACKEND_POST_GUARD_V1` to the backend settlement draft controller.
+  - Restricted settlement draft workflow, payout evidence, and close actions to POST.
+  - Removed GET fallback parameter reads from the settlement draft workflow action for `id` and `workflow_action`.
+  - Added stable `data-mongoyia-settlement-draft-post-guard` markers to workflow, payout-evidence, and close CSRF forms on the backend settlement draft page.
+  - Added source coverage to `mongoyia-settlement-draft-backend-test/run` for the POST guards and form markers.
+  - Updated the Phase 3 backlog notes to record this small stage as Phase 3.1.
+- Main files changed/added:
+  - `backend/modules/mall/controllers/SettlementDraftController.php`
+  - `backend/modules/mall/views/settlement-draft/index.php`
+  - `console/controllers/MongoyiaSettlementDraftBackendTestController.php`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l backend/modules/mall/controllers/SettlementDraftController.php` passed.
+  - `php -l backend/modules/mall/views/settlement-draft/index.php` passed.
+  - `php -l console/controllers/MongoyiaSettlementDraftBackendTestController.php` passed.
+  - Static marker checks confirmed `MONGOYIA_SETTLEMENT_DRAFT_BACKEND_POST_GUARD_V1`, POST-only verb filters, settlement draft form markers, and `Phase 3.1`.
+  - Static stale-route check found no remaining settlement draft workflow GET fallback markers in the changed controller/view/test files.
+  - `git diff --check` reported no whitespace errors, only existing Windows line-ending conversion warnings.
+  - Full Yii console execution remains BaoTa-only because this local checkout lacks `vendor/autoload.php`.
+- Remaining issues:
+  - Phase 3 settlement draft browser role-flow evidence should be rechecked on BaoTa after deployment for workflow transitions, payout evidence entry, and close actions.
+  - Phase 10/11/12/13/14/15 external/provider/browser evidence gates remain pending; production remains `NO-GO`.
+- Next stage:
+  - Commit and push this Phase 3 settlement draft guard patch, then reread the plan/log and continue with the next plan-listed readiness item.

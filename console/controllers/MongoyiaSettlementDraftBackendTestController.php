@@ -46,8 +46,37 @@ class MongoyiaSettlementDraftBackendTestController extends Controller
         $this->requireFileContains('common/services/mall/SettlementDraftWorkflowService.php', ['class SettlementDraftWorkflowService', 'ACTION_APPROVE', 'transitionBlockReason']);
         $this->requireFileContains('common/services/mall/SettlementPayoutEvidenceService.php', ['class SettlementPayoutEvidenceService', 'activeEvidenceExists', 'evidenceRows']);
         $this->requireFileContains('common/services/mall/SettlementCloseService.php', ['class SettlementCloseService', 'payout evidence is required', 'DRAFT_STATUS_CLOSED']);
-        $this->requireFileContains('backend/modules/mall/controllers/SettlementDraftController.php', ['actionIndex', 'actionWorkflow', 'actionPayoutEvidence', 'actionClose', 'SettlementDraftWorkflowService', 'SettlementPayoutEvidenceService', 'SettlementCloseService', 'isMallPlatformOperator', 'draftOrderRows']);
-        $this->requireFileContains('backend/modules/mall/views/settlement-draft/index.php', ['结算草案', '草案订单明细', '记录线下打款凭证', 'workflow_action', 'ACTION_APPROVE', '打款凭证', 'payout-evidence', '关闭结算']);
+        $this->requireFileContains('backend/modules/mall/controllers/SettlementDraftController.php', [
+            'MONGOYIA_SETTLEMENT_DRAFT_BACKEND_POST_GUARD_V1',
+            "'workflow'] = ['post']",
+            "'payout-evidence'] = ['post']",
+            "'close'] = ['post']",
+            "post('id', 0)",
+            "post('workflow_action', '')",
+            'actionIndex',
+            'actionWorkflow',
+            'actionPayoutEvidence',
+            'actionClose',
+            'SettlementDraftWorkflowService',
+            'SettlementPayoutEvidenceService',
+            'SettlementCloseService',
+            'isMallPlatformOperator',
+            'draftOrderRows',
+        ]);
+        $this->requireFileContains('backend/modules/mall/views/settlement-draft/index.php', [
+            '结算草案',
+            '草案订单明细',
+            '记录线下打款凭证',
+            'workflow_action',
+            'ACTION_APPROVE',
+            '打款凭证',
+            'payout-evidence',
+            '关闭结算',
+            'data-mongoyia-settlement-draft-post-guard="workflow"',
+            'data-mongoyia-settlement-draft-post-guard="payout-evidence"',
+            'data-mongoyia-settlement-draft-post-guard="close"',
+            'csrfToken',
+        ]);
         $this->requireFileContains('console/migrations/m260618_174000_mongoyia_settlement_draft.php', ['mall_settlement_draft', 'mall_settlement_draft_order']);
         $this->requireFileContains('console/migrations/m260618_181000_mongoyia_settlement_payout_evidence.php', ['mall_settlement_payout_evidence', 'transaction_no']);
         $this->requireFileContains('console/migrations/m260618_175000_mongoyia_settlement_draft_permission.php', ['/mall/settlement-draft/index', '结算草案']);

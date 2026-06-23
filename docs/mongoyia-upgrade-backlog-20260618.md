@@ -553,6 +553,8 @@ php yii mongoyia-phase3-scheduled-ops/run --interactive=0
 php yii mongoyia-acceptance/run --baseUrl=http://127.0.0.1:8089 --profile=local --cleanupAfterRun=1 --interactive=0
 ```
 
+Phase 3.1 settlement draft backend POST guard: settlement draft workflow, payout evidence, and close actions now use `MONGOYIA_SETTLEMENT_DRAFT_BACKEND_POST_GUARD_V1`, POST-only verb filters, POST-only workflow parameter reads, and CSRF POST form markers on the backend draft page. `mongoyia-settlement-draft-backend-test/run` checks the guard so settlement draft status changes, payout evidence entry, and close actions cannot be triggered by plain GET links.
+
 ## Open Risks
 
 - Real test server credentials, domain, TLS, WSS reverse proxy, payment sandbox secrets, and mail service are external inputs.

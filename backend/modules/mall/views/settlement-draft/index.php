@@ -103,7 +103,7 @@ $workflowActions = [
                                     <small class="text-muted"><?= Html::encode($evidence['transaction_no']) ?></small><br>
                                     <small><?= number_format((float)$evidence['amount'], 2) ?> <?= Html::encode($evidence['currency']) ?></small>
                                 <?php elseif ((string)$row['draft_status'] === SettlementDraftService::DRAFT_STATUS_APPROVED): ?>
-                                    <form method="post" action="<?= Html::encode(\yii\helpers\Url::to(['payout-evidence'])) ?>" class="mb-0">
+                                    <form method="post" action="<?= Html::encode(\yii\helpers\Url::to(['payout-evidence'])) ?>" class="mb-0" data-mongoyia-settlement-draft-post-guard="payout-evidence">
                                         <input type="hidden" name="<?= Html::encode(Yii::$app->request->csrfParam) ?>" value="<?= Html::encode(Yii::$app->request->csrfToken) ?>">
                                         <input type="hidden" name="id" value="<?= (int)$row['id'] ?>">
                                         <input type="hidden" name="amount" value="<?= number_format((float)$row['net_amount'], 2, '.', '') ?>">
@@ -124,7 +124,7 @@ $workflowActions = [
                             </td>
                             <td>
                                 <?php foreach ($workflowActions[$row['draft_status']] ?? [] as $action => $button): ?>
-                                    <form method="post" action="<?= Html::encode(\yii\helpers\Url::to(['workflow'])) ?>" class="d-inline">
+                                    <form method="post" action="<?= Html::encode(\yii\helpers\Url::to(['workflow'])) ?>" class="d-inline" data-mongoyia-settlement-draft-post-guard="workflow">
                                         <input type="hidden" name="<?= Html::encode(Yii::$app->request->csrfParam) ?>" value="<?= Html::encode(Yii::$app->request->csrfToken) ?>">
                                         <input type="hidden" name="id" value="<?= (int)$row['id'] ?>">
                                         <input type="hidden" name="workflow_action" value="<?= Html::encode($action) ?>">
@@ -132,7 +132,7 @@ $workflowActions = [
                                     </form>
                                 <?php endforeach; ?>
                                 <?php if ($evidence && (string)$row['draft_status'] === SettlementDraftService::DRAFT_STATUS_APPROVED): ?>
-                                    <form method="post" action="<?= Html::encode(\yii\helpers\Url::to(['close'])) ?>" class="d-inline">
+                                    <form method="post" action="<?= Html::encode(\yii\helpers\Url::to(['close'])) ?>" class="d-inline" data-mongoyia-settlement-draft-post-guard="close">
                                         <input type="hidden" name="<?= Html::encode(Yii::$app->request->csrfParam) ?>" value="<?= Html::encode(Yii::$app->request->csrfToken) ?>">
                                         <input type="hidden" name="id" value="<?= (int)$row['id'] ?>">
                                         <button type="submit" class="btn btn-outline-dark btn-sm mb-1">关闭结算</button>

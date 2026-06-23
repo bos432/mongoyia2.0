@@ -11,6 +11,18 @@ use yii\web\ForbiddenHttpException;
 
 class SettlementDraftController extends BaseController
 {
+    public const BACKEND_POST_GUARD_VERSION = 'MONGOYIA_SETTLEMENT_DRAFT_BACKEND_POST_GUARD_V1';
+
+    public function behaviors()
+    {
+        $behaviors = parent::behaviors();
+        $behaviors['verbs']['actions']['workflow'] = ['post'];
+        $behaviors['verbs']['actions']['payout-evidence'] = ['post'];
+        $behaviors['verbs']['actions']['close'] = ['post'];
+
+        return $behaviors;
+    }
+
     public function actionIndex()
     {
         if (!$this->isMallPlatformOperator()) {
@@ -39,8 +51,8 @@ class SettlementDraftController extends BaseController
             throw new ForbiddenHttpException(Yii::t('app', 'No Auth'));
         }
 
-        $id = (int)Yii::$app->request->post('id', Yii::$app->request->get('id', 0));
-        $action = (string)Yii::$app->request->post('workflow_action', Yii::$app->request->get('workflow_action', ''));
+        $id = (int)Yii::$app->request->post('id', 0);
+        $action = (string)Yii::$app->request->post('workflow_action', '');
         if ($id <= 0 || $action === '') {
             return $this->redirectError(Yii::t('app', 'Invalid id'));
         }

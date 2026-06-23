@@ -178,14 +178,37 @@ class AccountNotificationPhase12AcceptanceController extends Controller
         ]);
         $this->requireFileContains('Account security frontend boundary', 'frontend/controllers/AccountSecurityController.php', [
             'MONGOYIA_ACCOUNT_SECURITY_BOUNDARY_V1',
+            'MONGOYIA_ACCOUNT_SECURITY_CODE_RUNTIME_V1',
+            'AccountSecurityCodeService',
             'actionRequestCode',
             'actionLoginCode',
             'SECURITY_CODE_POLICY_GATE',
+            'SECURITY_CODE_RUNTIME_GATE',
         ]);
         $this->requireFileContains('Account security readiness command', 'console/controllers/AccountSecurityReadinessController.php', [
             'MONGOYIA_ACCOUNT_SECURITY_READINESS_V1',
             'account-security-readiness',
             'Frontend account security boundary controller',
+        ]);
+        $this->requireFileContains('Security-code delivery/storage runtime', 'common/services/mall/AccountSecurityCodeService.php', [
+            'MONGOYIA_ACCOUNT_SECURITY_CODE_RUNTIME_V1',
+            'security_code_hash_only_no_plaintext',
+            'requestCode',
+            'loginWithCode',
+            'DELIVERY_RESERVED',
+        ]);
+        $this->requireFileContains('Security-code storage migration', 'console/migrations/m260623_166000_mongoyia_account_security_code.php', [
+            'mall_account_security_code',
+            'target_hash',
+            'target_masked',
+            'code_hash',
+            'delivery_status',
+            'verify_status',
+        ]);
+        $this->requireFileContains('Security-code runtime readiness command', 'console/controllers/AccountSecurityCodeReadinessController.php', [
+            'MONGOYIA_ACCOUNT_SECURITY_CODE_READINESS_V1',
+            'account-security-code-readiness',
+            'Forbidden plaintext security-code column',
         ]);
         $this->requireFileContains('Site message foundation', 'common/components/base/MessageSystem.php', [
             'sendMessageType',
@@ -318,7 +341,12 @@ class AccountNotificationPhase12AcceptanceController extends Controller
             'Account security policy foundation' => [
                 'status' => 'PASS',
                 'evidence' => 'common/services/mall/OperationalAccountSecurityService.php',
-                'notes' => 'Backend switches and frontend reserved security-code routes are present; live code delivery remains evidence-gated.',
+                'notes' => 'Backend switches and frontend security-code routes are present; email runtime storage is hash-only and mobile delivery remains evidence-gated.',
+            ],
+            'Security-code delivery/storage runtime foundation' => [
+                'status' => 'PASS',
+                'evidence' => 'common/services/mall/AccountSecurityCodeService.php',
+                'notes' => 'Email security-code request/login runtime, attempt limits, lockouts, and hashed storage are present; SMS/APP delivery remains reserved.',
             ],
             'Existing site message foundation' => [
                 'status' => 'PASS',
@@ -380,6 +408,7 @@ class AccountNotificationPhase12AcceptanceController extends Controller
             'Identity provider config readiness' => ['route' => 'identity-config-readiness/run', 'fixture' => true],
             'Social auth runtime readiness' => ['route' => 'social-auth-runtime-readiness/run', 'fixture' => true],
             'Account security policy readiness' => ['route' => 'account-security-readiness/run', 'fixture' => true],
+            'Security-code delivery/storage runtime readiness' => ['route' => 'account-security-code-readiness/run', 'fixture' => true],
             'Notification event/send-log readiness' => ['route' => 'notification-phase12-readiness/run', 'fixture' => true],
             'Language review import/export readiness' => ['route' => 'language-review-phase12-readiness/run', 'fixture' => true],
             'Operational mail config readiness' => ['route' => 'operational-config-mail-test/run', 'fixture' => true],
@@ -431,6 +460,7 @@ class AccountNotificationPhase12AcceptanceController extends Controller
             '/www/server/php/83/bin/php yii migrate/up --interactive=0',
             '/www/server/php/83/bin/php yii social-auth-runtime-readiness/run --fixture=1 --interactive=0',
             '/www/server/php/83/bin/php yii account-security-readiness/run --fixture=1 --interactive=0',
+            '/www/server/php/83/bin/php yii account-security-code-readiness/run --fixture=1 --interactive=0',
             '/www/server/php/83/bin/php yii notification-phase12-readiness/run --fixture=1 --interactive=0',
             '/www/server/php/83/bin/php yii language-review-phase12-readiness/run --fixture=1 --interactive=0',
             '/www/server/php/83/bin/php yii account-notification-phase12-acceptance/run \\',

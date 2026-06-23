@@ -81,7 +81,10 @@ class AccountSecurityReadinessController extends Controller
         ]);
         $this->requireFileContains('Frontend account security boundary controller', 'frontend/controllers/AccountSecurityController.php', [
             'MONGOYIA_ACCOUNT_SECURITY_BOUNDARY_V1',
+            'MONGOYIA_ACCOUNT_SECURITY_CODE_RUNTIME_V1',
             'SECURITY_CODE_POLICY_GATE',
+            'SECURITY_CODE_RUNTIME_GATE',
+            'AccountSecurityCodeService',
             'actionRequestCode',
             'actionLoginCode',
             'SECURITY_CODE_LOGIN_DISABLED',
@@ -150,9 +153,9 @@ class AccountSecurityReadinessController extends Controller
             '- Generated at: ' . date('Y-m-d H:i:s'),
             '- Failures: ' . $this->failures,
             '- Warnings: ' . $this->warnings,
-            '- Scope: encrypted account-security policy, backend switches, frontend reserved security-code routes, and permission migration.',
+            '- Scope: encrypted account-security policy, backend switches, frontend security-code routes, and permission migration.',
             '- Safety: this command does not send verification codes, mutate users, log users in, call SMS/mail providers, or store provider secrets.',
-            '- Boundary: live code delivery and security-code login remain disabled/reserved until provider delivery evidence and audit storage are accepted.',
+            '- Boundary: email security-code runtime is controlled by backend policy and mailer configuration; mobile/SMS delivery remains reserved until provider evidence is accepted.',
             '',
             '## Checks',
             '',

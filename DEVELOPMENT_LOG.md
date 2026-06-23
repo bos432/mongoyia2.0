@@ -5048,3 +5048,41 @@
 - Next stage:
   - Commit and push Phase 12.5, then on BaoTa run migrations plus `social-auth-runtime-readiness/run --fixture=1` and the Phase 12 aggregate command.
   - Continue Phase 12.6 by adding security-code delivery/storage runtime foundation for email/mobile code request, verification, attempt limits, lockouts, and audit logs without requiring SMS provider secrets in code.
+
+## 2026-06-23 Phase 12.6 Security-Code Delivery/Storage Runtime Foundation
+
+- Stage name: Phase 12.6 security-code delivery/storage runtime foundation
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting the stage.
+  - Added hash-only account security-code runtime storage with target hashing, target masking, expiry, attempt count, lockout, consumed markers, delivery status, verify status, and sanitized error summaries.
+  - Added email security-code request and login runtime behind the existing backend account-security policy switches.
+  - Kept mobile/SMS code delivery evidence-gated and reserved until SMS or APP provider evidence is accepted.
+  - Updated frontend `/account-security/request-code` and `/account-security/login-code` JSON endpoints to call the runtime service, return clear status codes, and avoid user-enumeration on missing targets.
+  - Added `mall_account_security_code` migration without plaintext code/target columns.
+  - Added `account-security-code-readiness/run` and wired it into the Phase 12 aggregate command.
+  - Updated the Phase 12 backlog status and command list to record the security-code runtime foundation.
+- Main files changed/added:
+  - `common/services/mall/AccountSecurityCodeService.php`
+  - `frontend/controllers/AccountSecurityController.php`
+  - `console/migrations/m260623_166000_mongoyia_account_security_code.php`
+  - `console/controllers/AccountSecurityCodeReadinessController.php`
+  - `console/controllers/AccountSecurityReadinessController.php`
+  - `console/controllers/AccountNotificationPhase12AcceptanceController.php`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l common/services/mall/AccountSecurityCodeService.php` passed.
+  - `php -l frontend/controllers/AccountSecurityController.php` passed.
+  - `php -l console/migrations/m260623_166000_mongoyia_account_security_code.php` passed.
+  - `php -l console/controllers/AccountSecurityCodeReadinessController.php` passed.
+  - `php -l console/controllers/AccountNotificationPhase12AcceptanceController.php` passed.
+  - Static marker checks confirmed security-code runtime, migration, readiness command, Phase 12 aggregate wiring, and backlog command markers.
+  - `git diff --check` reported no whitespace errors; only existing Windows line-ending conversion warnings.
+  - Full Yii console execution was not run locally because this patch checkout does not have `vendor/autoload.php`; run migrations and readiness commands on BaoTa/full-vendor environment after pull.
+- Remaining issues:
+  - Real SMTP delivery evidence and browser security-code flow evidence remain external acceptance items.
+  - Mobile/SMS security-code delivery remains reserved until SMS or APP provider evidence is accepted.
+  - Facebook/Google provider callbacks, APP/SMS/mail notification evidence, human language review evidence, Phase 10/11 external provider evidence, and production signoff remain pending; production remains `NO-GO`.
+- Next stage:
+  - Commit and push Phase 12.6, then on BaoTa run migrations plus `account-security-code-readiness/run --fixture=1` and the Phase 12 aggregate command.
+  - Continue with Phase 13 full buyer/seller APP foundations after Phase 12 automated checks pass, while keeping external evidence gates explicit.

@@ -5509,3 +5509,29 @@
   - Phase 15 distributor training and operations support center remains planned.
 - Next stage:
   - Commit and push Phase 14.5, then continue Phase 14 browser role-flow evidence or proceed to Phase 15 if browser evidence must wait for BaoTa deployment.
+
+## 2026-06-23 Phase 15.0 Distributor Support Acceptance Scaffold
+
+- Stage name: Phase 15.0 distributor support acceptance scaffold
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting the stage.
+  - Added `distribution-support-phase15-acceptance/run` as the aggregate Phase 15 evidence gate.
+  - Registered Phase 15 checks for multilingual distributor training/FAQ/support content, promotion material enhancement, material download tracking, payout/invite reward signoff evidence, and browser role-flow validation.
+  - Added explicit safety wording that the Phase 15 gate does not approve commissions, create withdrawals, write fund logs, change payment state, or trigger real payouts.
+  - Updated the Phase 15 backlog status and command list.
+- Main files changed/added:
+  - `console/controllers/DistributionSupportPhase15AcceptanceController.php`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l console/controllers/DistributionSupportPhase15AcceptanceController.php` passed.
+  - Static marker checks confirmed the Phase 15 command marker, backlog command, and log markers.
+  - `git diff --check` reported no whitespace errors; only existing Windows line-ending conversion warnings.
+  - Full Yii console execution is not available locally because this patch checkout does not have `vendor/autoload.php`; after BaoTa pull run `distribution-support-phase15-acceptance/run --fixture=1`.
+- Remaining issues:
+  - Phase 15.1 training/FAQ/support content remains pending.
+  - Multilingual promotion material enhancement, material download tracking, payout/invite reward signoff evidence, and browser role-flow evidence remain pending.
+  - Phase 10/11/12 external provider and production evidence remain incomplete; production remains `NO-GO`.
+- Next stage:
+  - Run local syntax/static checks for Phase 15.0, commit and push when clean.
+  - Continue Phase 15.1 by adding distributor training/FAQ/support content schema, backend management, and distributor-facing display.

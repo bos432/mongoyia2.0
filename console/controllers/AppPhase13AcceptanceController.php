@@ -292,6 +292,7 @@ class AppPhase13AcceptanceController extends Controller
             'MONGOYIA_PRODUCT_AUDIT_POST_VERB_GUARD_V1',
             'MONGOYIA_MERCHANT_COUPON_POST_VERB_GUARD_V1',
             'MONGOYIA_MERCHANT_COUPON_STORE_ID_POST_GUARD_V1',
+            'MONGOYIA_STORE_PROFILE_POST_STORE_ID_GUARD_V1',
             'app-seller-phase13-readiness/run',
             'shipment write uses existing paid/COD checks',
         ]);
@@ -308,6 +309,22 @@ class AppPhase13AcceptanceController extends Controller
         ]);
         $this->requireFileNotContains('Seller backend merchant coupon store_id has no POST/GET fallback', 'backend/modules/mall/controllers/MerchantCouponController.php', [
             "post('store_id', Yii::\$app->request->get('store_id', 0))",
+        ]);
+        $this->requireFileContains('Backend store profile save POST store id guard', 'backend/modules/mall/controllers/StoreProfileController.php', [
+            'MONGOYIA_STORE_PROFILE_POST_STORE_ID_GUARD_V1',
+            '$profileStoreId = (int)$model->id',
+            '$model->id = $profileStoreId',
+            "\$request->isPost ? (int)\$request->post('store_id', 0) : (int)\$request->get('store_id', \$this->getStoreId())",
+        ]);
+        $this->requireFileContains('Backend store profile form POST store id guard', 'backend/modules/mall/views/store-profile/edit.php', [
+            'data-mongoyia-store-profile-post-store-id-guard',
+            "'action' => ['edit']",
+            "Html::hiddenInput('store_id'",
+            "'disabled' => true",
+        ]);
+        $this->requireFileNotContains('Backend store profile has no POST/GET store_id fallback', 'backend/modules/mall/controllers/StoreProfileController.php', [
+            "post('store_id', Yii::\$app->request->get('store_id'",
+            "request->post('store_id', \$request->get('store_id'",
         ]);
         $this->requireFileContains('APP auth handoff readiness', 'console/controllers/AppAuthPhase13ReadinessController.php', [
             'MONGOYIA_APP_AUTH_PHASE13_READINESS_V1',

@@ -12,6 +12,8 @@ $this->params['breadcrumbs'][] = $this->title;
 ?>
 
 <?php $form = ActiveForm::begin([
+    'action' => ['edit'],
+    'options' => ['data-mongoyia-store-profile-post-store-id-guard' => '1'],
     'fieldConfig' => [
         'template' => "<div class='col-sm-2 text-sm-right'>{label}</div><div class='col-sm-10'>{input}\n{hint}\n{error}</div>",
         'options' => ['class' => 'form-group row'],
@@ -25,7 +27,8 @@ $this->params['breadcrumbs'][] = $this->title;
             </div>
             <div class="card-body">
                 <?php if ($isPlatformOperator): ?>
-                    <?= $form->field($model, 'id')->textInput(['readonly' => true]) ?>
+                    <?= Html::hiddenInput('store_id', (int)$model->id, ['data-mongoyia-store-profile-post-store-id-guard' => '1']) ?>
+                    <?= $form->field($model, 'id')->textInput(['readonly' => true, 'disabled' => true]) ?>
                 <?php endif; ?>
                 <?= $form->field($model, 'name')->textInput(['maxlength' => true]) ?>
                 <?= $form->field($model, 'name_en')->textInput(['maxlength' => true]) ?>

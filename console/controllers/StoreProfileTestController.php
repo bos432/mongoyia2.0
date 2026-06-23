@@ -88,6 +88,23 @@ class StoreProfileTestController extends Controller
             }
             $this->ok("Route method exists: {$class}::{$method}");
         }
+
+        $this->requireFileContains('backend/modules/mall/controllers/StoreProfileController.php', [
+            'MONGOYIA_STORE_PROFILE_POST_STORE_ID_GUARD_V1',
+            '$profileStoreId = (int)$model->id',
+            '$model->id = $profileStoreId',
+            "\$request->isPost ? (int)\$request->post('store_id', 0) : (int)\$request->get('store_id', \$this->getStoreId())",
+        ]);
+        $this->requireFileContains('backend/modules/mall/views/store-profile/edit.php', [
+            'data-mongoyia-store-profile-post-store-id-guard',
+            "'action' => ['edit']",
+            "Html::hiddenInput('store_id'",
+            "'disabled' => true",
+        ]);
+        $this->requireFileNotContains('backend/modules/mall/controllers/StoreProfileController.php', [
+            "post('store_id', Yii::\$app->request->get('store_id'",
+            "request->post('store_id', \$request->get('store_id'",
+        ]);
     }
 
     private function runFixtureFlow()
@@ -189,6 +206,44 @@ class StoreProfileTestController extends Controller
         }
 
         $this->fail("Missing file {$path}.");
+    }
+
+    private function requireFileContains(string $path, array $needles)
+    {
+        $fullPath = Yii::getAlias('@app') . '/../' . $path;
+        if (!is_file($fullPath)) {
+            $this->fail("Missing file {$path}.");
+            return;
+        }
+
+        $body = file_get_contents($fullPath);
+        foreach ($needles as $needle) {
+            if (strpos($body, $needle) === false) {
+                $this->fail("File {$path} missing marker: {$needle}");
+                return;
+            }
+        }
+
+        $this->ok("File {$path} contains required markers.");
+    }
+
+    private function requireFileNotContains(string $path, array $needles)
+    {
+        $fullPath = Yii::getAlias('@app') . '/../' . $path;
+        if (!is_file($fullPath)) {
+            $this->fail("Missing file {$path}.");
+            return;
+        }
+
+        $body = file_get_contents($fullPath);
+        foreach ($needles as $needle) {
+            if (strpos($body, $needle) !== false) {
+                $this->fail("File {$path} still contains stale pattern: {$needle}");
+                return;
+            }
+        }
+
+        $this->ok("File {$path} has no stale store-profile write fallback.");
     }
 
     private function section(string $name)

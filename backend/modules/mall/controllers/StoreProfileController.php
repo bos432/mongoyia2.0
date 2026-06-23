@@ -14,8 +14,11 @@ class StoreProfileController extends BaseController
     {
         $model = $this->findProfileStore();
         $this->assertCanEditStoreProfile($model);
+        $profileStoreId = (int)$model->id;
 
         if (Yii::$app->request->isPost && $model->load(Yii::$app->request->post())) {
+            // MONGOYIA_STORE_PROFILE_POST_STORE_ID_GUARD_V1: writes use the POST body target store only.
+            $model->id = $profileStoreId;
             $this->keepProtectedStoreFields($model);
             if ($model->save()) {
                 $this->clearCache();
@@ -34,8 +37,9 @@ class StoreProfileController extends BaseController
 
     private function findProfileStore(): Store
     {
+        $request = Yii::$app->request;
         $storeId = $this->isMallPlatformOperator()
-            ? (int)Yii::$app->request->get('store_id', $this->getStoreId())
+            ? ($request->isPost ? (int)$request->post('store_id', 0) : (int)$request->get('store_id', $this->getStoreId()))
             : (int)$this->getStoreId();
 
         $model = Store::findOne($storeId);

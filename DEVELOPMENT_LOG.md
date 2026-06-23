@@ -8310,3 +8310,39 @@
   - Phase 13 authenticated H5/APP buyer/seller role-flow evidence and Phase 10/11/12/14/15 external/provider/browser evidence gates remain pending; production remains `NO-GO`.
 - Next stage:
   - Commit and push this buyer address edit POST id hardening patch, then reread the plan/log and continue with the next plan-listed readiness item.
+
+## 2026-06-24 Phase 2/13 Store Profile POST Store ID Hardening
+
+- Stage name: Phase 2.2 / Phase 13.25 backend store-profile POST store-id hardening
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting the stage.
+  - Added `MONGOYIA_STORE_PROFILE_POST_STORE_ID_GUARD_V1` to the backend store-profile controller.
+  - Kept GET `store_id` support for platform operators opening/read-only switching store profiles, but changed save requests so the target store is resolved only from POST body `store_id`.
+  - Preserved the loaded store primary key after model load so a submitted `Store[id]` value cannot retarget the row being saved.
+  - Changed the store-profile form to submit to `/backend/mall/store-profile/edit` without query-string target ids, added hidden POST `store_id`, and disabled the displayed id field.
+  - Added source coverage to `store-profile-test/run`, `app-seller-phase13-readiness/run`, and `app-phase13-acceptance/run`.
+  - Updated the Phase 2 and Phase 13 backlog notes as Phase 2.2 and Phase 13.25.
+- Main files changed/added:
+  - `backend/modules/mall/controllers/StoreProfileController.php`
+  - `backend/modules/mall/views/store-profile/edit.php`
+  - `console/controllers/StoreProfileTestController.php`
+  - `console/controllers/AppSellerPhase13ReadinessController.php`
+  - `console/controllers/AppPhase13AcceptanceController.php`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l backend/modules/mall/controllers/StoreProfileController.php` passed.
+  - `php -l backend/modules/mall/views/store-profile/edit.php` passed.
+  - `php -l console/controllers/StoreProfileTestController.php` passed.
+  - `php -l console/controllers/AppSellerPhase13ReadinessController.php` passed.
+  - `php -l console/controllers/AppPhase13AcceptanceController.php` passed.
+  - Static marker checks confirmed `MONGOYIA_STORE_PROFILE_POST_STORE_ID_GUARD_V1`, `data-mongoyia-store-profile-post-store-id-guard`, hidden POST `store_id`, disabled displayed id, primary-key restore, and Phase 2.2/Phase 13.25 backlog entries.
+  - Static stale-fallback checks found no remaining store-profile `store_id` POST/GET fallback patterns in the changed controller/readiness coverage.
+  - `git diff --check` reported no whitespace errors, only existing Windows line-ending conversion warnings.
+  - Full Yii console execution remains BaoTa-only because this local checkout lacks `vendor/autoload.php`.
+- Remaining issues:
+  - BaoTa/test server must rerun `store-profile-test/run`, Phase 13 seller/aggregate readiness, and the total requirements closure acceptance after deployment.
+  - Authenticated seller browser evidence should recheck the store-profile edit page and save flow after this patch is pulled.
+  - Phase 10/11/12/13/14/15 external/provider/browser evidence gates remain pending; production remains `NO-GO`.
+- Next stage:
+  - Commit and push this Phase 2/13 store-profile POST store-id hardening patch, then reread the plan/log and continue with the next plan-listed readiness item.

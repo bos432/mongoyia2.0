@@ -113,6 +113,31 @@ class DistributionSupportPhase15AcceptanceController extends Controller
             'WITHDRAW_STATUS_PENDING',
             'requestWithdraw',
         ]);
+        $this->requireFileContains('Distributor support content service', 'common/services/mall/DistributionSupportContentService.php', [
+            'MONGOYIA_DISTRIBUTION_SUPPORT_CONTENT_PHASE15_V1',
+            'visibleForDistributor',
+            'saveContent',
+            'disableContent',
+        ]);
+        $this->requireFileContains('Distributor support content readiness', 'console/controllers/DistributionSupportContentPhase15ReadinessController.php', [
+            'MONGOYIA_DISTRIBUTION_SUPPORT_CONTENT_PHASE15_READINESS_V1',
+            'DistributionSupportContentService',
+            'Distributor support content fixture',
+        ]);
+        $this->requireFileContains('Distributor support content migration', 'console/migrations/m260623_200000_mongoyia_distribution_support_content.php', [
+            'mall_distribution_support_content',
+            'content_type',
+            'language',
+            'support_url',
+        ]);
+        $this->requireFileContains('Distributor-facing support content UI', 'web/resources/mall/default/views/user/distribution.php', [
+            'data-mongoyia-phase15-distributor-training',
+            'Training & FAQ',
+        ]);
+        $this->requireFileContains('Backend support content UI', 'backend/modules/mall/views/distribution-distributor/index.php', [
+            'data-mongoyia-phase15-support-content',
+            '分销培训/FAQ/规则',
+        ]);
     }
 
     private function checkPlannedScopeMatrix(): void
@@ -209,6 +234,7 @@ class DistributionSupportPhase15AcceptanceController extends Controller
             'cd /www/wwwroot/demo2026.mongoyia.com',
             'git pull',
             '/www/server/php/83/bin/php yii migrate/up --interactive=0',
+            '/www/server/php/83/bin/php yii distribution-support-content-phase15-readiness/run --fixture=1 --interactive=0',
             '/www/server/php/83/bin/php yii distribution-support-phase15-acceptance/run --fixture=1 --interactive=0',
             '```',
             '',

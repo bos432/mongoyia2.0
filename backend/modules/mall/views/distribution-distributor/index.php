@@ -12,6 +12,12 @@ use yii\helpers\Url;
 /* @var $profiles array */
 /* @var $materials array */
 /* @var $risks array */
+/* @var $supportType string */
+/* @var $supportLanguage string */
+/* @var $supportContents array */
+/* @var $supportTypeLabels array */
+/* @var $supportLanguageLabels array */
+/* @var $supportStatusLabels array */
 /* @var $invites array */
 /* @var $inviteRewards array */
 /* @var $analyticsRows array */
@@ -86,6 +92,107 @@ $this->params['breadcrumbs'][] = $this->title;
                     <?php endforeach; ?>
                     </tbody>
                 </table>
+            </div>
+        </div>
+
+        <div class="card" data-mongoyia-phase15-support-content>
+            <div class="card-header">
+                <h3 class="card-title">分销培训/FAQ/规则</h3>
+            </div>
+            <div class="card-body">
+                <form method="post" action="<?= Html::encode(Url::to(['support-content-save'])) ?>">
+                    <input type="hidden" name="<?= Html::encode(Yii::$app->request->csrfParam) ?>" value="<?= Html::encode(Yii::$app->request->csrfToken) ?>">
+                    <div class="row">
+                        <div class="col-md-2 mb-2">
+                            <select name="content_type" class="form-control form-control-sm">
+                                <?php foreach ($supportTypeLabels as $key => $label): ?>
+                                    <option value="<?= Html::encode($key) ?>"><?= Html::encode($label) ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                        <div class="col-md-2 mb-2">
+                            <select name="language" class="form-control form-control-sm">
+                                <?php foreach ($supportLanguageLabels as $key => $label): ?>
+                                    <option value="<?= Html::encode($key) ?>"><?= Html::encode($label) ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                        <div class="col-md-2 mb-2">
+                            <input name="category" maxlength="64" class="form-control form-control-sm" placeholder="分类">
+                        </div>
+                        <div class="col-md-3 mb-2">
+                            <input name="title" maxlength="160" class="form-control form-control-sm" placeholder="标题">
+                        </div>
+                        <div class="col-md-2 mb-2">
+                            <input name="support_url" maxlength="255" class="form-control form-control-sm" placeholder="外部链接">
+                        </div>
+                        <div class="col-md-1 mb-2">
+                            <input name="sort" type="number" min="0" max="9999" value="50" class="form-control form-control-sm">
+                        </div>
+                    </div>
+                    <textarea name="body" rows="3" class="form-control form-control-sm mb-2" placeholder="培训内容、FAQ 答案、平台规则或客服入口说明"></textarea>
+                    <div class="text-right">
+                        <button type="submit" class="btn btn-primary btn-sm">保存内容</button>
+                    </div>
+                </form>
+            </div>
+            <div class="card-body border-top">
+                <form method="get" class="form-inline mb-3">
+                    <select name="support_type" class="form-control form-control-sm mr-2">
+                        <option value="" <?= $supportType === '' ? 'selected' : '' ?>>全部类型</option>
+                        <?php foreach ($supportTypeLabels as $key => $label): ?>
+                            <option value="<?= Html::encode($key) ?>" <?= $supportType === $key ? 'selected' : '' ?>><?= Html::encode($label) ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                    <select name="support_language" class="form-control form-control-sm mr-2">
+                        <option value="" <?= $supportLanguage === '' ? 'selected' : '' ?>>全部语言</option>
+                        <?php foreach ($supportLanguageLabels as $key => $label): ?>
+                            <option value="<?= Html::encode($key) ?>" <?= $supportLanguage === $key ? 'selected' : '' ?>><?= Html::encode($label) ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                    <input type="hidden" name="profile_status" value="<?= Html::encode($profileStatus) ?>">
+                    <input type="hidden" name="limit" value="<?= (int)$limit ?>">
+                    <button class="btn btn-outline-primary btn-sm" type="submit">筛选内容</button>
+                </form>
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                        <tr>
+                            <th>内容</th>
+                            <th>类型/语言</th>
+                            <th>正文</th>
+                            <th>链接</th>
+                            <th>状态</th>
+                            <th>操作</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <?php if (empty($supportContents)): ?>
+                            <tr><td colspan="6" class="text-muted text-center">暂无分销培训/FAQ内容</td></tr>
+                        <?php endif; ?>
+                        <?php foreach ($supportContents as $row): ?>
+                            <tr>
+                                <td>#<?= (int)$row['id'] ?><br><small><?= Html::encode($row['title']) ?></small><br><small class="text-muted"><?= Html::encode($row['category']) ?></small></td>
+                                <td><?= Html::encode($supportTypeLabels[$row['content_type']] ?? $row['content_type']) ?><br><small><?= Html::encode($supportLanguageLabels[$row['language']] ?? $row['language']) ?></small></td>
+                                <td><small><?= nl2br(Html::encode($row['body'])) ?></small></td>
+                                <td><small><?= Html::encode($row['support_url']) ?></small></td>
+                                <td><?= Html::encode($supportStatusLabels[$row['content_status']] ?? $row['content_status']) ?></td>
+                                <td>
+                                    <?php if ((string)$row['content_status'] !== 'disabled'): ?>
+                                        <form method="post" action="<?= Html::encode(Url::to(['support-content-disable'])) ?>" class="d-inline">
+                                            <input type="hidden" name="<?= Html::encode(Yii::$app->request->csrfParam) ?>" value="<?= Html::encode(Yii::$app->request->csrfToken) ?>">
+                                            <input type="hidden" name="id" value="<?= (int)$row['id'] ?>">
+                                            <button type="submit" class="btn btn-outline-warning btn-sm">停用</button>
+                                        </form>
+                                    <?php else: ?>
+                                        <span class="text-muted">无操作</span>
+                                    <?php endif; ?>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
 

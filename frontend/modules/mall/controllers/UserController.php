@@ -15,6 +15,7 @@ use common\models\mall\ProductVisit;
 use common\services\mall\DistributionCommissionService;
 use common\services\mall\DistributionInviteService;
 use common\services\mall\DistributionProfileService;
+use common\services\mall\DistributionSupportContentService;
 use common\services\mall\DistributionWithdrawService;
 use common\models\ModelSearch;
 use Yii;
@@ -167,6 +168,8 @@ class UserController extends BaseController
         $profileService = new DistributionProfileService();
         $inviteService = new DistributionInviteService();
         $withdrawService = new DistributionWithdrawService();
+        $supportService = new DistributionSupportContentService();
+        $supportLanguage = $supportService->normalizeLanguage((string)Yii::$app->request->get('language', Yii::$app->language));
         $statusLabels = [
             DistributionCommissionService::COMMISSION_STATUS_PENDING => Yii::t('app', 'Pending'),
             DistributionCommissionService::COMMISSION_STATUS_APPROVED => Yii::t('app', 'Approved'),
@@ -211,6 +214,10 @@ class UserController extends BaseController
             'withdrawStatusLabels' => $withdrawStatusLabels,
             'profile' => $profileService->profile($userId),
             'materials' => $profileService->materials(10),
+            'supportLanguage' => $supportLanguage,
+            'supportLanguages' => $supportService->languageLabels(),
+            'supportContents' => $supportService->visibleForDistributor($supportLanguage, 50),
+            'supportTypeLabels' => $supportService->typeLabels(),
             'riskRows' => $profileService->risks($userId, 10),
             'profileStatusLabels' => $this->distributionProfileStatusLabels(),
             'inviteSummary' => $inviteService->summary($userId),

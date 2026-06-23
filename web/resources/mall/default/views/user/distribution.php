@@ -13,6 +13,10 @@ use yii\helpers\Url;
 /* @var $withdrawStatusLabels array */
 /* @var $profile array|null */
 /* @var $materials array */
+/* @var $supportLanguage string */
+/* @var $supportLanguages array */
+/* @var $supportContents array */
+/* @var $supportTypeLabels array */
 /* @var $riskRows array */
 /* @var $profileStatusLabels array */
 /* @var $inviteSummary array */
@@ -66,6 +70,37 @@ $this->params['breadcrumbs'][] = $this->title;
                                     <button class="btn btn-outline-primary" type="submit">Submit Profile</button>
                                 </div>
                             </form>
+                        </div>
+
+                        <div class="mb-5" data-mongoyia-phase15-distributor-training>
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h5 class="mb-0">Training & FAQ</h5>
+                                <div>
+                                    <?php foreach ($supportLanguages as $key => $label): ?>
+                                        <a class="btn btn-sm <?= $supportLanguage === $key ? 'btn-primary' : 'btn-outline-primary' ?> mb-1" href="<?= Html::encode(Url::current(['language' => $key])) ?>"><?= Html::encode($label) ?></a>
+                                    <?php endforeach; ?>
+                                </div>
+                            </div>
+                            <?php if (empty($supportContents)): ?>
+                                <p class="text-muted mb-0">No distributor training or FAQ content yet.</p>
+                            <?php endif; ?>
+                            <?php foreach ($supportContents as $row): ?>
+                                <div class="border rounded p-3 mb-2">
+                                    <div class="d-flex justify-content-between">
+                                        <strong><?= Html::encode($row['title']) ?></strong>
+                                        <small class="text-muted"><?= Html::encode($supportTypeLabels[$row['content_type']] ?? $row['content_type']) ?></small>
+                                    </div>
+                                    <?php if ((string)$row['category'] !== ''): ?>
+                                        <div><small class="text-muted"><?= Html::encode($row['category']) ?></small></div>
+                                    <?php endif; ?>
+                                    <?php if ((string)$row['body'] !== ''): ?>
+                                        <p class="mb-2"><?= nl2br(Html::encode($row['body'])) ?></p>
+                                    <?php endif; ?>
+                                    <?php if ((string)$row['support_url'] !== ''): ?>
+                                        <a href="<?= Html::encode($row['support_url']) ?>" target="_blank" rel="noopener">Open resource</a>
+                                    <?php endif; ?>
+                                </div>
+                            <?php endforeach; ?>
                         </div>
 
                         <div class="mb-5">

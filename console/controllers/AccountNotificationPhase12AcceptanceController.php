@@ -134,15 +134,35 @@ class AccountNotificationPhase12AcceptanceController extends Controller
         ]);
         $this->requireFileContains('Third-party login frontend boundary', 'frontend/controllers/SocialAuthController.php', [
             'MONGOYIA_SOCIAL_AUTH_BOUNDARY_V1',
+            'MONGOYIA_SOCIAL_AUTH_RUNTIME_V1',
             'actionRedirect',
             'actionCallback',
             'actionBind',
             'actionUnbind',
+            'SocialIdentityService',
+            'require_existing_session_before_first_login',
+        ]);
+        $this->requireFileContains('Third-party login runtime service', 'common/services/mall/SocialIdentityService.php', [
+            'MONGOYIA_SOCIAL_IDENTITY_RUNTIME_V1',
+            'authorizationUrl',
+            'handleCallback',
+            'bindIdentity',
+            'provider_secret_never_logged',
+        ]);
+        $this->requireFileContains('Third-party login binding migration', 'console/migrations/m260623_165000_mongoyia_social_identity.php', [
+            'mall_social_identity',
+            'provider_user_id',
+            'profile_json',
         ]);
         $this->requireFileContains('Third-party login readiness command', 'console/controllers/IdentityConfigReadinessController.php', [
             'MONGOYIA_IDENTITY_CONFIG_READINESS_V1',
             'identity-config-readiness',
             'Frontend social auth boundary controller',
+        ]);
+        $this->requireFileContains('Third-party login runtime readiness command', 'console/controllers/SocialAuthRuntimeReadinessController.php', [
+            'MONGOYIA_SOCIAL_AUTH_RUNTIME_READINESS_V1',
+            'social-auth-runtime-readiness',
+            'existing-session binding',
         ]);
         $this->requireFileContains('Encrypted account security policy service', 'common/services/mall/OperationalAccountSecurityService.php', [
             'MONGOYIA_OPERATIONAL_ACCOUNT_SECURITY_V1',
@@ -288,7 +308,12 @@ class AccountNotificationPhase12AcceptanceController extends Controller
             'Existing OAuth2 server foundation' => [
                 'status' => 'PASS',
                 'evidence' => 'frontend/controllers/Oauth2Controller.php',
-                'notes' => 'Internal OAuth2 grant foundation exists; Facebook/Google provider flow remains a Phase 12 implementation task.',
+                'notes' => 'Internal OAuth2 grant foundation exists; Facebook/Google provider runtime is handled by the Phase 12 social identity service.',
+            ],
+            'Third-party login runtime foundation' => [
+                'status' => 'PASS',
+                'evidence' => 'common/services/mall/SocialIdentityService.php',
+                'notes' => 'Google/Facebook OAuth redirect/callback, safe first-bind policy, unbind, and bound-user login runtime are present; provider credentials and browser callback evidence remain external.',
             ],
             'Account security policy foundation' => [
                 'status' => 'PASS',
@@ -353,6 +378,7 @@ class AccountNotificationPhase12AcceptanceController extends Controller
     {
         return [
             'Identity provider config readiness' => ['route' => 'identity-config-readiness/run', 'fixture' => true],
+            'Social auth runtime readiness' => ['route' => 'social-auth-runtime-readiness/run', 'fixture' => true],
             'Account security policy readiness' => ['route' => 'account-security-readiness/run', 'fixture' => true],
             'Notification event/send-log readiness' => ['route' => 'notification-phase12-readiness/run', 'fixture' => true],
             'Language review import/export readiness' => ['route' => 'language-review-phase12-readiness/run', 'fixture' => true],
@@ -403,6 +429,7 @@ class AccountNotificationPhase12AcceptanceController extends Controller
             'cd /www/wwwroot/demo2026.mongoyia.com',
             'git pull',
             '/www/server/php/83/bin/php yii migrate/up --interactive=0',
+            '/www/server/php/83/bin/php yii social-auth-runtime-readiness/run --fixture=1 --interactive=0',
             '/www/server/php/83/bin/php yii account-security-readiness/run --fixture=1 --interactive=0',
             '/www/server/php/83/bin/php yii notification-phase12-readiness/run --fixture=1 --interactive=0',
             '/www/server/php/83/bin/php yii language-review-phase12-readiness/run --fixture=1 --interactive=0',

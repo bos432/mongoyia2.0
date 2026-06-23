@@ -5011,3 +5011,40 @@
 - Next stage:
   - Commit and push Phase 12.4, then on BaoTa run `language-review-phase12-readiness/run --fixture=1` and the Phase 12 aggregate command.
   - Continue Phase 12.5 by adding third-party callback/binding runtime foundation if provider inputs remain unavailable, or run BaoTa checks and browser evidence when inputs are available.
+
+## 2026-06-23 Phase 12.5 Third-Party Callback/Binding Runtime Foundation
+
+- Stage name: Phase 12.5 third-party callback/binding runtime foundation
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting the stage.
+  - Added `SocialIdentityService` for Google/Facebook OAuth authorization URL generation, callback state validation, token exchange, profile fetch, profile normalization, first-bind policy, bound-user login, unbind, and redacted profile storage.
+  - Added `mall_social_identity` migration for provider bindings, stable provider user IDs, email/verified status, display name, avatar, redacted profile JSON, and last login time.
+  - Updated frontend `SocialAuthController` so redirect/bind/callback/unbind routes use the runtime service instead of reserved-only flash messages.
+  - Locked the safe first-login policy: a third-party account must be bound from an existing local session before it can be used for login; callback without an existing binding does not auto-create or auto-merge users.
+  - Added `social-auth-runtime-readiness/run` and wired it into `account-notification-phase12-acceptance/run --runChildChecks=1`.
+  - Updated the Phase 12 backlog status and command list to record the third-party callback/binding runtime foundation.
+- Main files changed/added:
+  - `common/services/mall/SocialIdentityService.php`
+  - `frontend/controllers/SocialAuthController.php`
+  - `console/migrations/m260623_165000_mongoyia_social_identity.php`
+  - `console/controllers/SocialAuthRuntimeReadinessController.php`
+  - `console/controllers/AccountNotificationPhase12AcceptanceController.php`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l common/services/mall/SocialIdentityService.php` passed.
+  - `php -l frontend/controllers/SocialAuthController.php` passed.
+  - `php -l console/migrations/m260623_165000_mongoyia_social_identity.php` passed.
+  - `php -l console/controllers/SocialAuthRuntimeReadinessController.php` passed.
+  - `php -l console/controllers/AccountNotificationPhase12AcceptanceController.php` passed.
+  - Static marker checks confirmed runtime service, frontend runtime controller markers, migration markers, runtime readiness command, and Phase 12 aggregate wiring.
+  - `git diff --check` reported no whitespace errors; only existing Windows line-ending conversion warnings.
+  - Full Yii console execution was not run locally because this patch checkout does not have `vendor/autoload.php`; run migrations and readiness commands on BaoTa/full-vendor environment after pull.
+- Remaining issues:
+  - Real Google/Facebook provider credentials, callback URLs, and browser callback/bind/unbind evidence remain pending.
+  - Security-code provider delivery/storage runtime remains pending after the Phase 12.2 policy foundation.
+  - External notification provider evidence and human language review evidence remain pending.
+  - Phase 10/11 external provider and production evidence remain incomplete, so production remains `NO-GO`.
+- Next stage:
+  - Commit and push Phase 12.5, then on BaoTa run migrations plus `social-auth-runtime-readiness/run --fixture=1` and the Phase 12 aggregate command.
+  - Continue Phase 12.6 by adding security-code delivery/storage runtime foundation for email/mobile code request, verification, attempt limits, lockouts, and audit logs without requiring SMS provider secrets in code.

@@ -4,7 +4,10 @@
       <text class="section-title">订单发货</text>
       <button size="mini" @tap="loadOrders">刷新</button>
     </view>
-    <view v-if="state.error" class="notice">{{ state.error }}</view>
+    <view v-if="state.error" class="notice">
+      <text>{{ state.error }}</text>
+      <button size="mini" @tap="openLogin">商家登录</button>
+    </view>
     <view v-else-if="!state.items.length" class="empty">暂无订单</view>
     <view v-else class="order-list">
       <view v-for="item in state.items" :key="item.id || item.sn" class="order-row">
@@ -75,6 +78,13 @@ export default {
       } catch (error) {
         uni.showToast({ title: error.message || '提交失败', icon: 'none' })
       }
+    },
+    openLogin() {
+      uni.navigateTo({
+        url: '/pages/auth/login?role=seller&redirect='
+          + encodeURIComponent('/pages/seller/orders')
+          + '&baseUrl=' + encodeURIComponent(this.baseUrl)
+      })
     }
   }
 }
@@ -114,6 +124,11 @@ export default {
   padding: 18px 0;
   color: #64748b;
   text-align: center;
+}
+
+.notice text {
+  display: block;
+  margin-bottom: 10px;
 }
 
 .order-list {

@@ -4,7 +4,10 @@
       <text class="section-title">购物车</text>
       <button size="mini" @tap="loadCart">刷新</button>
     </view>
-    <view v-if="state.error" class="notice">{{ state.error }}</view>
+    <view v-if="state.error" class="notice">
+      <text>{{ state.error }}</text>
+      <button size="mini" @tap="openLogin">去登录</button>
+    </view>
     <view v-else-if="!state.items.length" class="empty">购物车为空</view>
     <view v-else class="cart-list">
       <view v-for="item in state.items" :key="item.id" class="cart-row">
@@ -72,6 +75,13 @@ export default {
         return
       }
       uni.navigateTo({ url: '/pages/buyer/orders?mode=checkout&baseUrl=' + encodeURIComponent(this.baseUrl) })
+    },
+    openLogin() {
+      uni.navigateTo({
+        url: '/pages/auth/login?role=buyer&redirect='
+          + encodeURIComponent('/pages/buyer/cart')
+          + '&baseUrl=' + encodeURIComponent(this.baseUrl)
+      })
     }
   }
 }
@@ -102,6 +112,11 @@ export default {
   padding: 18px 0;
   color: #64748b;
   text-align: center;
+}
+
+.notice text {
+  display: block;
+  margin-bottom: 10px;
 }
 
 .cart-list {

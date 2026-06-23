@@ -21,7 +21,10 @@
       <button class="action-btn" @tap="loadDashboard">刷新数据</button>
     </view>
 
-    <view v-if="state.error" class="notice">{{ state.error }}</view>
+    <view v-if="state.error" class="notice">
+      <text>{{ state.error }}</text>
+      <button size="mini" @tap="openLogin">商家登录</button>
+    </view>
   </view>
 </template>
 
@@ -63,6 +66,13 @@ export default {
     },
     goOrders() {
       uni.navigateTo({ url: '/pages/seller/orders?baseUrl=' + encodeURIComponent(this.baseUrl) })
+    },
+    openLogin() {
+      uni.navigateTo({
+        url: '/pages/auth/login?role=seller&redirect='
+          + encodeURIComponent('/pages/seller/dashboard')
+          + '&baseUrl=' + encodeURIComponent(this.baseUrl)
+      })
     }
   }
 }
@@ -124,5 +134,10 @@ export default {
   padding: 18px 0;
   color: #64748b;
   text-align: center;
+}
+
+.notice text {
+  display: block;
+  margin-bottom: 10px;
 }
 </style>

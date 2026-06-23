@@ -27,8 +27,10 @@ export function authHeaders(token = '') {
   return token ? { 'access-token': token } : {}
 }
 
-export function appRequest({ baseUrl, path, query = {}, data = {}, method = 'GET' }) {
-  return requestJson({ baseUrl, path, query, data, method })
+export function appRequest({ baseUrl, path, query = {}, data = {}, method = 'GET', header = {}, withAuth = true }) {
+  return requestJson({ baseUrl, path, query, data, method, header, withAuth }).then((response) => {
+    return response && response.data ? response.data : response
+  })
 }
 
 export function pageState(overrides = {}) {

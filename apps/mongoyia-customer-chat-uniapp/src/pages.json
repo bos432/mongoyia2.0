@@ -73,6 +73,14 @@
       }
     },
     {
+      "path": "pages/auth/login",
+      "style": {
+        "navigationBarTitleText": "登录",
+        "navigationBarBackgroundColor": "#0f766e",
+        "navigationBarTextStyle": "white"
+      }
+    },
+    {
       "path": "pages/chat/index",
       "style": {
         "navigationBarTitleText": "Mongoyia客服",

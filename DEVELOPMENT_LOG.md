@@ -5204,3 +5204,48 @@
 - Next stage:
   - Commit and push Phase 13.2, then on BaoTa run `app-seller-phase13-readiness/run --fixture=1` and `app-phase13-acceptance/run --fixture=1`.
   - Continue Phase 13.3 by adding APP login/token handoff and H5 role-flow wiring so authenticated buyer/seller pages can call the JSON APIs without embedding secrets.
+
+## 2026-06-23 Phase 13.3 APP Login/Token Handoff
+
+- Stage name: Phase 13.3 APP login/token handoff and protected page wiring
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting the stage.
+  - Added APP auth handoff utilities that store only access token, refresh token, base URL, and non-sensitive user summary in local storage.
+  - Updated shared APP request helper to automatically send the stored `access-token` header to buyer/seller JSON APIs and unwrap the standard API `data` payload for page use.
+  - Added `/pages/auth/login` H5 login page that reuses existing `/api/site/login`, supports buyer/seller role redirect, and does not store passwords.
+  - Kept buyer home as the first APP page while adding login entries for buyer home/cart/orders and seller dashboard/products/orders.
+  - Added stored base URL fallback so H5 role-flow can keep the same environment after tab navigation.
+  - Added `app-auth-phase13-readiness/run` and wired APP auth handoff coverage into the Phase 13 aggregate acceptance command.
+  - Updated the Phase 13 backlog status and command list to record login/token handoff.
+- Main files changed/added:
+  - `apps/mongoyia-customer-chat-uniapp/src/utils/api.js`
+  - `apps/mongoyia-customer-chat-uniapp/src/utils/appApi.js`
+  - `apps/mongoyia-customer-chat-uniapp/src/utils/config.js`
+  - `apps/mongoyia-customer-chat-uniapp/src/pages/auth/login.vue`
+  - `apps/mongoyia-customer-chat-uniapp/src/pages.json`
+  - `apps/mongoyia-customer-chat-uniapp/src/pages/buyer/home.vue`
+  - `apps/mongoyia-customer-chat-uniapp/src/pages/buyer/cart.vue`
+  - `apps/mongoyia-customer-chat-uniapp/src/pages/buyer/orders.vue`
+  - `apps/mongoyia-customer-chat-uniapp/src/pages/seller/dashboard.vue`
+  - `apps/mongoyia-customer-chat-uniapp/src/pages/seller/products.vue`
+  - `apps/mongoyia-customer-chat-uniapp/src/pages/seller/orders.vue`
+  - `console/controllers/AppAuthPhase13ReadinessController.php`
+  - `console/controllers/AppPhase13AcceptanceController.php`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l console/controllers/AppAuthPhase13ReadinessController.php` passed.
+  - `php -l console/controllers/AppPhase13AcceptanceController.php` passed.
+  - `node -e "JSON.parse(...pages.json...)"` passed.
+  - `npm run build:h5` passed in `apps/mongoyia-customer-chat-uniapp`; output contained only uni-app/Vite informational/deprecation warnings.
+  - Static marker checks confirmed auth handoff marker, login page, existing API login path, local token storage, automatic `access-token` header, protected page login entries, readiness command, aggregate wiring, and backlog command markers.
+  - `git diff --check` reported no whitespace errors; only existing Windows line-ending conversion warnings.
+  - Full Yii console execution was not run locally because this patch checkout does not have `vendor/autoload.php`; run auth readiness and Phase 13 aggregate commands on BaoTa/full-vendor environment after pull.
+- Remaining issues:
+  - H5 browser role-flow evidence with real buyer/seller accounts remains pending.
+  - Buyer checkout/order creation remains intentionally gated until payment, address, stock, and browser role-flow safety evidence is accepted.
+  - Shipment, product write, and coupon participation write APIs remain intentionally gated until logistics/stock/fee/audit/browser evidence is accepted.
+  - Phase 10/11/12 external provider and production evidence remain incomplete; production remains `NO-GO`.
+- Next stage:
+  - Commit and push Phase 13.3, then on BaoTa run `app-auth-phase13-readiness/run --fixture=1` and `app-phase13-acceptance/run --fixture=1`.
+  - Continue Phase 13.4 by running H5/browser role-flow evidence where possible and deciding which gated write paths can be opened only after their payment/address/stock/logistics evidence gates pass.

@@ -4,8 +4,18 @@ export const DEFAULT_CONFIG = {
   language: 'en'
 }
 
+export const APP_BASE_URL_KEY = 'mongoyia_app_base_url'
+
+export function storedBaseUrl() {
+  try {
+    return uni.getStorageSync(APP_BASE_URL_KEY) || ''
+  } catch (error) {
+    return ''
+  }
+}
+
 export function cleanBaseUrl(value) {
-  const text = String(value || DEFAULT_CONFIG.baseUrl).trim()
+  const text = String(value || storedBaseUrl() || DEFAULT_CONFIG.baseUrl).trim()
   return text.replace(/\/+$/, '')
 }
 

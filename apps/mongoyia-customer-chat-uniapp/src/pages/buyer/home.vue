@@ -10,6 +10,7 @@
       <button class="quick-btn" @tap="go('/pages/buyer/cart')">购物车</button>
       <button class="quick-btn" @tap="go('/pages/buyer/orders')">订单</button>
       <button class="quick-btn" @tap="go('/pages/seller/dashboard')">商家</button>
+      <button class="quick-btn" @tap="openLogin('buyer')">登录</button>
     </view>
 
     <view class="section-head">
@@ -71,6 +72,12 @@ export default {
     },
     go(url) {
       uni.switchTab({ url })
+    },
+    openLogin(role) {
+      uni.navigateTo({
+        url: '/pages/auth/login?role=' + role
+          + '&baseUrl=' + encodeURIComponent(this.baseUrl)
+      })
     }
   }
 }
@@ -106,7 +113,7 @@ export default {
 
 .quick-grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 8px;
   margin: 12px 0;
 }
@@ -115,7 +122,7 @@ export default {
   height: 38px;
   padding: 0;
   border-radius: 6px;
-  font-size: 13px;
+  font-size: 12px;
 }
 
 .section-head {

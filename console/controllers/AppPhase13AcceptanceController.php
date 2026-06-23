@@ -145,6 +145,11 @@ class AppPhase13AcceptanceController extends Controller
             'app-seller-phase13-readiness/run',
             'shipment/product/coupon/write paths remain gated',
         ]);
+        $this->requireFileContains('APP auth handoff readiness', 'console/controllers/AppAuthPhase13ReadinessController.php', [
+            'MONGOYIA_APP_AUTH_PHASE13_READINESS_V1',
+            'app-auth-phase13-readiness/run',
+            'access-token header',
+        ]);
         $this->requireFileContains('APP API URL manager hyphen route support', 'api/config/main.php', [
             '<modules:[\w-]+>/<controller:[\w-]+>/<action:[\w-]+>',
         ]);
@@ -294,6 +299,7 @@ class AppPhase13AcceptanceController extends Controller
             'git pull',
             '/www/server/php/83/bin/php yii app-buyer-phase13-readiness/run --fixture=1 --interactive=0',
             '/www/server/php/83/bin/php yii app-seller-phase13-readiness/run --fixture=1 --interactive=0',
+            '/www/server/php/83/bin/php yii app-auth-phase13-readiness/run --fixture=1 --interactive=0',
             '/www/server/php/83/bin/php yii app-phase13-acceptance/run --fixture=1 --interactive=0',
             '```',
             '',

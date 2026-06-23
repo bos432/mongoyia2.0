@@ -4,7 +4,10 @@
       <text class="section-title">商品管理</text>
       <button size="mini" @tap="loadProducts">刷新</button>
     </view>
-    <view v-if="state.error" class="notice">{{ state.error }}</view>
+    <view v-if="state.error" class="notice">
+      <text>{{ state.error }}</text>
+      <button size="mini" @tap="openLogin">商家登录</button>
+    </view>
     <view v-else-if="!state.items.length" class="empty">暂无商品</view>
     <view v-else class="product-list">
       <view v-for="item in state.items" :key="item.id || item.product_id" class="product-row">
@@ -50,6 +53,13 @@ export default {
       } finally {
         this.state.loading = false
       }
+    },
+    openLogin() {
+      uni.navigateTo({
+        url: '/pages/auth/login?role=seller&redirect='
+          + encodeURIComponent('/pages/seller/products')
+          + '&baseUrl=' + encodeURIComponent(this.baseUrl)
+      })
     }
   }
 }
@@ -89,6 +99,11 @@ export default {
   padding: 18px 0;
   color: #64748b;
   text-align: center;
+}
+
+.notice text {
+  display: block;
+  margin-bottom: 10px;
 }
 
 .product-list {

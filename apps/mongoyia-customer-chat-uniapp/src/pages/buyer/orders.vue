@@ -12,7 +12,10 @@
       <button type="primary" @tap="submitOrder">提交订单</button>
     </view>
 
-    <view v-if="state.error" class="notice">{{ state.error }}</view>
+    <view v-if="state.error" class="notice">
+      <text>{{ state.error }}</text>
+      <button size="mini" @tap="openLogin">去登录</button>
+    </view>
     <view v-else-if="!state.items.length" class="empty">暂无订单</view>
     <view v-else class="order-list">
       <view v-for="item in state.items" :key="item.id || item.sn" class="order-row">
@@ -102,6 +105,13 @@ export default {
         content: item.status_label || item.status || '',
         showCancel: false
       })
+    },
+    openLogin() {
+      uni.navigateTo({
+        url: '/pages/auth/login?role=buyer&redirect='
+          + encodeURIComponent('/pages/buyer/orders')
+          + '&baseUrl=' + encodeURIComponent(this.baseUrl)
+      })
     }
   }
 }
@@ -161,6 +171,11 @@ export default {
   padding: 18px 0;
   color: #64748b;
   text-align: center;
+}
+
+.notice text {
+  display: block;
+  margin-bottom: 10px;
 }
 
 .order-list {

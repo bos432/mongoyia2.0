@@ -42,7 +42,16 @@ class MongoyiaDistributionWithdrawTestController extends Controller
         $this->requireFileContains('common/services/mall/DistributionWithdrawService.php', ['class DistributionWithdrawService', 'WITHDRAW_STATUS_PENDING', 'ACTION_APPROVE', 'commission_ids']);
         $this->requireFileContains('frontend/modules/mall/controllers/UserController.php', ['actionDistributionWithdraw', 'DistributionWithdrawService', 'distributionWithdrawRows']);
         $this->requireFileContains('web/resources/mall/default/views/user/distribution.php', ['Withdrawal Request', 'Request Withdrawal', 'Withdrawal Records', 'does not trigger real payout']);
-        $this->requireFileContains('backend/modules/mall/controllers/DistributionWithdrawController.php', ['actionIndex', 'actionWorkflow', 'isMallPlatformOperator', 'mall_distribution_withdraw']);
+        $this->requireFileContains('backend/modules/mall/controllers/DistributionWithdrawController.php', [
+            'MONGOYIA_DISTRIBUTION_COMMISSION_WITHDRAW_POST_VERB_GUARD_V1',
+            'behaviors',
+            "'workflow'] = ['post']",
+            "post('id', 0)",
+            'actionIndex',
+            'actionWorkflow',
+            'isMallPlatformOperator',
+            'mall_distribution_withdraw',
+        ]);
         $this->requireFileContains('backend/modules/mall/views/distribution-withdraw/index.php', ['分销提现审核', '提现状态汇总', '提现申请', '不会触发真实打款']);
         $this->requireFileContains('console/migrations/m260618_185000_mongoyia_distribution_withdraw_workflow.php', ['commission_ids', '/mall/distribution-withdraw/index', '/mall/distribution-withdraw/*']);
     }

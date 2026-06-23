@@ -7615,3 +7615,32 @@
   - Phase 11/12/13/14/15 external/provider/browser evidence gates remain pending.
 - Next stage:
   - Commit and push this Phase 10 POST verb guard patch, then reread the plan/log and continue with the next plan-listed readiness item.
+
+## 2026-06-24 Phase 15 Distributor Commission/Withdraw POST Verb Guard
+
+- Stage name: Phase 15 distributor commission/withdraw POST verb guard
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting the stage.
+  - Added `MONGOYIA_DISTRIBUTION_COMMISSION_WITHDRAW_POST_VERB_GUARD_V1` to the backend distribution commission and withdraw controllers.
+  - Restricted commission approval/rejection and offline withdrawal approval/rejection workflow actions to POST.
+  - Removed GET fallback parameter reads from those workflow actions so constructed links cannot carry `id` or `workflow_action` into fund-adjacent status changes.
+  - Added source coverage to Phase 4 distribution backend/withdraw tests and the Phase 15 aggregate acceptance command.
+  - Updated the Phase 15 backlog notes to record this small stage as Phase 15.6.
+- Main files changed/added:
+  - `backend/modules/mall/controllers/DistributionCommissionController.php`
+  - `backend/modules/mall/controllers/DistributionWithdrawController.php`
+  - `console/controllers/MongoyiaDistributionBackendTestController.php`
+  - `console/controllers/MongoyiaDistributionWithdrawTestController.php`
+  - `console/controllers/DistributionSupportPhase15AcceptanceController.php`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l` passed for all changed PHP files.
+  - Static marker checks confirmed `MONGOYIA_DISTRIBUTION_COMMISSION_WITHDRAW_POST_VERB_GUARD_V1`, POST-only workflow guards, POST-only parameter reads, and `Phase 15.6`.
+  - `git diff --check` reported no whitespace errors, only existing Windows line-ending conversion warnings.
+  - Full Yii console execution remains BaoTa-only because this local checkout lacks `vendor/autoload.php`.
+- Remaining issues:
+  - Phase 15 browser role-flow evidence still requires the BaoTa/test server to pull the latest code, run migrations/readiness, and verify distributor materials/training/signoff/withdrawal flows.
+  - Phase 10/11/12/13/14 external/provider/browser evidence gates remain pending; production remains `NO-GO`.
+- Next stage:
+  - Commit and push this Phase 15 distributor workflow guard patch, then reread the plan/log and continue with the next plan-listed readiness item.

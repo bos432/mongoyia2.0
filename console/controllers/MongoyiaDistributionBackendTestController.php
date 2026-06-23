@@ -39,7 +39,17 @@ class MongoyiaDistributionBackendTestController extends Controller
     {
         $this->section('Backend files');
         $this->requireFileContains('common/services/mall/DistributionCommissionWorkflowService.php', ['class DistributionCommissionWorkflowService', 'ACTION_APPROVE', 'transitionBlockReason']);
-        $this->requireFileContains('backend/modules/mall/controllers/DistributionCommissionController.php', ['actionIndex', 'actionWorkflow', 'isMallPlatformOperator', 'mall_distribution_commission', 'statusLabels']);
+        $this->requireFileContains('backend/modules/mall/controllers/DistributionCommissionController.php', [
+            'MONGOYIA_DISTRIBUTION_COMMISSION_WITHDRAW_POST_VERB_GUARD_V1',
+            'behaviors',
+            "'workflow'] = ['post']",
+            "post('id', 0)",
+            'actionIndex',
+            'actionWorkflow',
+            'isMallPlatformOperator',
+            'mall_distribution_commission',
+            'statusLabels',
+        ]);
         $this->requireFileContains('backend/modules/mall/views/distribution-commission/index.php', ['分销佣金审核', '分销规则', '佣金状态汇总', '佣金账本', 'workflow_action', '不会触发真实打款']);
         $this->requireFileContains('console/migrations/m260618_183000_mongoyia_distribution_commission.php', ['mall_distribution_rule', 'mall_distribution_commission', 'mall_distribution_withdraw']);
         $this->requireFileContains('console/migrations/m260618_184000_mongoyia_distribution_commission_permission.php', ['/mall/distribution-commission/index', '/mall/distribution-commission/*', '分销佣金审核']);

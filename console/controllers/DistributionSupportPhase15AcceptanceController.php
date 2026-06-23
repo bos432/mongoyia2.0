@@ -113,6 +113,18 @@ class DistributionSupportPhase15AcceptanceController extends Controller
             'WITHDRAW_STATUS_PENDING',
             'requestWithdraw',
         ]);
+        $this->requireFileContains('Distributor commission workflow POST guard', 'backend/modules/mall/controllers/DistributionCommissionController.php', [
+            'MONGOYIA_DISTRIBUTION_COMMISSION_WITHDRAW_POST_VERB_GUARD_V1',
+            'behaviors',
+            "'workflow'] = ['post']",
+            "post('workflow_action', '')",
+        ]);
+        $this->requireFileContains('Distributor withdraw workflow POST guard', 'backend/modules/mall/controllers/DistributionWithdrawController.php', [
+            'MONGOYIA_DISTRIBUTION_COMMISSION_WITHDRAW_POST_VERB_GUARD_V1',
+            'behaviors',
+            "'workflow'] = ['post']",
+            "post('workflow_action', '')",
+        ]);
         $this->requireFileContains('Distributor backend POST verb guard', 'backend/modules/mall/controllers/DistributionDistributorController.php', [
             'MONGOYIA_DISTRIBUTION_PHASE15_BACKEND_POST_VERB_GUARD_V1',
             'behaviors',

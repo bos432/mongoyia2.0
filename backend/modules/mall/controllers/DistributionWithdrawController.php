@@ -8,6 +8,16 @@ use yii\web\ForbiddenHttpException;
 
 class DistributionWithdrawController extends BaseController
 {
+    public const BACKEND_WORKFLOW_VERB_GUARD_VERSION = 'MONGOYIA_DISTRIBUTION_COMMISSION_WITHDRAW_POST_VERB_GUARD_V1';
+
+    public function behaviors()
+    {
+        $behaviors = parent::behaviors();
+        $behaviors['verbs']['actions']['workflow'] = ['post'];
+
+        return $behaviors;
+    }
+
     public function actionIndex()
     {
         if (!$this->isMallPlatformOperator()) {
@@ -32,8 +42,8 @@ class DistributionWithdrawController extends BaseController
             throw new ForbiddenHttpException(Yii::t('app', 'No Auth'));
         }
 
-        $id = (int)Yii::$app->request->post('id', Yii::$app->request->get('id', 0));
-        $action = (string)Yii::$app->request->post('workflow_action', Yii::$app->request->get('workflow_action', ''));
+        $id = (int)Yii::$app->request->post('id', 0);
+        $action = (string)Yii::$app->request->post('workflow_action', '');
         if ($id <= 0 || $action === '') {
             return $this->redirectError(Yii::t('app', 'Invalid id'));
         }

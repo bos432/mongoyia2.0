@@ -153,6 +153,25 @@ class PaymentPhase11AcceptanceController extends Controller
             'grantToRoles',
             'clearAllPermission',
         ]);
+        $this->requireFileContains('Payment statistics service', 'common/services/mall/PaymentStatisticsService.php', [
+            'MONGOYIA_PAYMENT_STATISTICS_V1',
+            'dailyRows',
+            'providerRows',
+            'failureRows',
+            'anomalyRows',
+            'reconciliationRows',
+        ]);
+        $this->requireFileContains('Payment statistics backend UI', 'backend/modules/mall/views/payment-stat/index.php', [
+            'data-mongoyia-payment-statistics',
+            'data-mongoyia-payment-statistics-summary',
+            'data-mongoyia-payment-statistics-anomaly',
+            'data-mongoyia-payment-statistics-reconciliation',
+        ]);
+        $this->requireFileContains('Payment statistics readiness command', 'console/controllers/PaymentStatReadinessController.php', [
+            'Mongoyia payment statistics readiness',
+            'PaymentStatisticsService',
+            'payment-stat-readiness',
+        ]);
         $this->requireFileContains('Phase 10 production readiness boundary', 'console/controllers/OperationalConfigPhase10AcceptanceController.php', [
             'Production launch remains `NO-GO`',
             'providerEvidenceAccepted',
@@ -230,6 +249,7 @@ class PaymentPhase11AcceptanceController extends Controller
             'PayPal runtime paths' => ['route' => 'operational-config-paypal-test/run', 'fixture' => true],
             'Base mall payment regression' => ['route' => 'mall-payment-test/run', 'fixture' => false],
             'Payment callback readiness' => ['route' => 'mongoyia-payment-callback-readiness/run', 'fixture' => false],
+            'Payment statistics readiness' => ['route' => 'payment-stat-readiness/run', 'fixture' => true],
             'PayPal final read-only go/no-go gate' => ['route' => 'payment-provider-paypal-final-go-no-go-gate/run', 'fixture' => true],
         ];
     }

@@ -56,6 +56,10 @@ $statusClass = [
                         'class' => 'btn btn-sm btn-outline-primary',
                         'data-mongoyia-merchant-payment-entry' => '1',
                     ]) ?>
+                    <?= Html::a('支付统计', ['/mall/payment-stat/index'], [
+                        'class' => 'btn btn-sm btn-outline-info',
+                        'data-mongoyia-payment-statistics-entry' => '1',
+                    ]) ?>
                 </p>
             </div>
             <div class="card-body p-0">

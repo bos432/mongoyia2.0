@@ -4762,3 +4762,39 @@
   - Phase 11 still needs payment statistics, full sandbox evidence, callback/audit regression evidence, and browser role-flow acceptance.
 - Next stage:
   - Reread the development plan and this log, then continue Phase 11.2 by adding payment statistics foundation for daily amount, payment method distribution, failure reasons, callback anomalies, and reconciliation-difference readiness without calling real providers.
+
+## 2026-06-23 Phase 11.2 Payment Statistics Foundation
+
+- Stage name: Phase 11.2 read-only payment statistics foundation
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting the stage.
+  - Added `PaymentStatisticsService` to aggregate payment-attempt audit rows into daily payment totals, provider/event distribution, failure reasons, callback anomalies, and reconciliation-difference rows.
+  - Added backend `/backend/mall/payment-stat/index` with date and store filters, summary cards, daily table, provider/event table, failure reason table, callback anomaly table, and reconciliation difference table.
+  - Added store isolation: platform users can view all stores or a selected store; merchant users can only view their own store.
+  - Added permission migration for `/mall/payment-stat/index` and an operations-center shortcut button.
+  - Added `payment-stat-readiness/run` as a read-only readiness command and wired it into `payment-phase11-acceptance/run --runChildChecks=1`.
+  - Updated the Phase 11 backlog status to record the statistics foundation.
+- Main files changed/added:
+  - `common/services/mall/PaymentStatisticsService.php`
+  - `backend/modules/mall/controllers/PaymentStatController.php`
+  - `backend/modules/mall/views/payment-stat/index.php`
+  - `backend/modules/mall/views/operational-config/index.php`
+  - `console/migrations/m260623_161000_mongoyia_payment_stat_permission.php`
+  - `console/controllers/PaymentStatReadinessController.php`
+  - `console/controllers/PaymentPhase11AcceptanceController.php`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l common/services/mall/PaymentStatisticsService.php` passed.
+  - `php -l backend/modules/mall/controllers/PaymentStatController.php` passed.
+  - `php -l backend/modules/mall/views/payment-stat/index.php` passed.
+  - `php -l console/migrations/m260623_161000_mongoyia_payment_stat_permission.php` passed.
+  - `php -l console/controllers/PaymentStatReadinessController.php` passed.
+  - `php -l console/controllers/PaymentPhase11AcceptanceController.php` passed.
+  - Full Yii command execution is still expected on BaoTa/full-vendor environment because this patch checkout does not have Composer `vendor/autoload.php`.
+- Remaining issues:
+  - Phase 10 manual evidence remains incomplete, and production remains `NO-GO`.
+  - Phase 11 still needs sandbox provider evidence, callback/audit regression evidence, and browser role-flow acceptance.
+  - Statistics are read-only and derived from existing audit rows; no scheduled persistent aggregate table is added in this substage.
+- Next stage:
+  - Reread the development plan and this log, then continue Phase 11.3 by adding sandbox/callback regression readiness for disabled-channel, failure callback, duplicate callback, amount mismatch, and signature-error cases without calling live providers.

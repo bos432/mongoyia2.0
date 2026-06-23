@@ -15,7 +15,11 @@
       </view>
 
       <view v-else class="form-stack">
-        <input v-model="codeTarget" class="form-input" placeholder="邮箱" />
+        <view class="channel-row" data-mongoyia-phase12-security-code-channel="MONGOYIA_APP_SECURITY_CODE_CHANNEL_SELECTOR_V1">
+          <button size="mini" :type="codeChannel === 'email' ? 'primary' : 'default'" @tap="setCodeChannel('email')">邮箱</button>
+          <button size="mini" :type="codeChannel === 'mobile' ? 'primary' : 'default'" @tap="setCodeChannel('mobile')">手机</button>
+        </view>
+        <input v-model="codeTarget" class="form-input" :placeholder="codeTargetPlaceholder" />
         <view class="code-row">
           <input v-model="codeValue" class="form-input code-input" placeholder="验证码" />
           <button size="mini" :loading="codeLoading" @tap="requestSecurityCode">发送</button>
@@ -50,6 +54,7 @@ export default {
       username: '',
       password: '',
       authMode: 'password',
+      codeChannel: 'email',
       codeTarget: '',
       codeValue: '',
       codeLoading: false,
@@ -57,6 +62,17 @@ export default {
       redirect: '',
       loading: false,
       error: ''
+    }
+  },
+  computed: {
+    codeTargetPlaceholder() {
+      return this.codeChannel === 'mobile' ? '手机号' : '邮箱'
+    },
+    codeTargetRequiredMessage() {
+      return this.codeChannel === 'mobile' ? '请输入手机号' : '请输入邮箱'
+    },
+    codeLoginRequiredMessage() {
+      return this.codeChannel === 'mobile' ? '请输入手机号和验证码' : '请输入邮箱和验证码'
     }
   },
   onLoad(options = {}) {
@@ -96,9 +112,15 @@ export default {
         this.loading = false
       }
     },
+    setCodeChannel(channel) {
+      this.codeChannel = channel === 'mobile' ? 'mobile' : 'email'
+      this.codeTarget = ''
+      this.codeValue = ''
+      this.error = ''
+    },
     async requestSecurityCode() {
       if (!this.codeTarget) {
-        this.error = '请输入邮箱'
+        this.error = this.codeTargetRequiredMessage
         return
       }
       this.codeLoading = true
@@ -109,7 +131,7 @@ export default {
           path: '/api/site/security-code-request',
           method: 'POST',
           data: {
-            channel: 'email',
+            channel: this.codeChannel,
             target: this.codeTarget
           },
           withAuth: false
@@ -124,7 +146,7 @@ export default {
     },
     async submitCodeLogin() {
       if (!this.codeTarget || !this.codeValue) {
-        this.error = '请输入邮箱和验证码'
+        this.error = this.codeLoginRequiredMessage
         return
       }
       this.loading = true
@@ -135,7 +157,7 @@ export default {
           path: '/api/site/security-code-login',
           method: 'POST',
           data: {
-            channel: 'email',
+            channel: this.codeChannel,
             target: this.codeTarget,
             code: this.codeValue
           },
@@ -238,6 +260,7 @@ export default {
 }
 
 .mode-row,
+.channel-row,
 .role-row,
 .social-row {
   display: grid;

@@ -387,6 +387,8 @@ Phase 12.11 OAuth token scope storage normalization: authorization-code, access-
 
 Phase 12.12 social-login provider response guard: Google/Facebook redirect and bind routes now short-circuit disabled backend providers before building OAuth URLs, and `SocialIdentityService` sanitizes empty/non-JSON/non-object provider responses without logging raw provider response bodies (`provider_response_errors_are_sanitized`). Readiness checks cover the disabled-provider boundary and JSON response guard; provider callback/browser evidence remains external.
 
+Phase 12.13 APP security-code channel selector: the uni-app/H5 login page now lets buyers or sellers choose email or mobile before requesting a security code. Email continues through the configured mailer and hash-only code storage; mobile is surfaced in the UI but remains gated by the existing SMS/APP provider evidence response until external delivery evidence is accepted.
+
 Phase 13 acceptance command:
 
 ```bash

@@ -91,6 +91,9 @@ class AccountSecurityCodeReadinessController extends Controller
             'data-mongoyia-phase12-app-account-entry',
             '/api/site/security-code-request',
             '/api/site/security-code-login',
+            'MONGOYIA_APP_SECURITY_CODE_CHANNEL_SELECTOR_V1',
+            'codeChannel',
+            'setCodeChannel',
             'requestSecurityCode',
             'submitCodeLogin',
         ]);

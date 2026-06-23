@@ -7375,3 +7375,31 @@
   - Phase 10/11/12/13/14/15 external/provider/browser evidence gates remain pending; production remains `NO-GO`.
 - Next stage:
   - Commit and push this browser freshness record, then continue with another plan-listed local readiness item that does not depend on deployed server freshness.
+
+## 2026-06-24 Phase 12 APP Security-Code Channel Selector
+
+- Stage name: Phase 12 APP security-code channel selector
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting the stage.
+  - Added an email/mobile channel selector to the uni-app/H5 login page when the user chooses verification-code login.
+  - Updated request-code and code-login submissions to pass the selected `email` or `mobile` channel to the existing `/api/site/security-code-*` endpoints.
+  - Kept mobile delivery behind the existing backend SMS/APP provider evidence gate; this stage does not add SMS provider credentials or external delivery calls.
+  - Added Phase 12 readiness/acceptance markers for `MONGOYIA_APP_SECURITY_CODE_CHANNEL_SELECTOR_V1`.
+  - Updated the Phase 12 backlog notes to record this small stage as Phase 12.13.
+- Main files changed/added:
+  - `apps/mongoyia-customer-chat-uniapp/src/pages/auth/login.vue`
+  - `console/controllers/AccountSecurityCodeReadinessController.php`
+  - `console/controllers/AccountNotificationPhase12AcceptanceController.php`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l console/controllers/AccountSecurityCodeReadinessController.php` passed.
+  - `php -l console/controllers/AccountNotificationPhase12AcceptanceController.php` passed.
+  - Static marker check for `MONGOYIA_APP_SECURITY_CODE_CHANNEL_SELECTOR_V1`, `codeChannel`, `setCodeChannel`, and `Phase 12.13` passed.
+  - `npm run build:h5` passed in `apps/mongoyia-customer-chat-uniapp` with only existing Vite/uni-app warnings.
+- Remaining issues:
+  - Real email delivery, SMS/APP delivery, password recovery, social provider, notification, language-review, and browser evidence gates remain pending for strict Phase 12 acceptance.
+  - Phase 13 browser cart/checkout validation remains blocked until BaoTa pulls the latest code and clears stale caches.
+  - Production remains `NO-GO`.
+- Next stage:
+  - Run final diff checks, commit and push this Phase 12 APP account-entry patch, then continue with the next plan-listed local readiness item.

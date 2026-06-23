@@ -14,7 +14,13 @@ export const BUYER_ENDPOINTS = {
 export const SELLER_ENDPOINTS = {
   dashboard: '/api/v1/app-seller/dashboard',
   products: '/api/v1/app-seller/products',
-  orders: '/api/v1/app-seller/orders'
+  orders: '/api/v1/app-seller/orders',
+  shipment: '/api/v1/app-seller/shipment',
+  logistics: '/api/v1/app-seller/logistics',
+  deposit: '/api/v1/app-seller/deposit',
+  coupons: '/api/v1/app-seller/coupons',
+  statistics: '/api/v1/app-seller/statistics',
+  distribution: '/api/v1/app-seller/distribution'
 }
 
 export function authHeaders(token = '') {

@@ -62,7 +62,7 @@ export default {
       try {
         await appRequest({
           baseUrl: this.baseUrl,
-          path: SELLER_ENDPOINTS.orders,
+          path: SELLER_ENDPOINTS.shipment,
           method: 'POST',
           data: {
             order_id: item.id,

@@ -5166,3 +5166,41 @@
 - Next stage:
   - Commit and push Phase 13.1, then on BaoTa run `app-buyer-phase13-readiness/run --fixture=1` and `app-phase13-acceptance/run --fixture=1`.
   - Continue Phase 13.2 by adding seller APP JSON APIs for dashboard, products, orders, shipment, logistics fee, deposit, coupons, statistics, and distribution overview while preserving store isolation and high-risk write gates.
+
+## 2026-06-23 Phase 13.2 Seller APP JSON API Foundation
+
+- Stage name: Phase 13.2 seller APP JSON API foundation
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting the stage.
+  - Added seller APP JSON API service for dashboard, product list, order list, logistics method/fee summary, deposit balance/logs, coupons, statistics, and distribution overview.
+  - Added `/api/v1/app-seller/*` controller actions with authenticated-user store isolation through `store_id`; seller APP data is scoped to the logged-in seller store.
+  - Kept shipment, product write, and coupon participation writes gated with explicit safety codes instead of changing shipment/order/product/fund state from APP.
+  - Expanded shared uni-app seller endpoint constants and pointed the seller shipment button to the dedicated `shipment` endpoint.
+  - Added `app-seller-phase13-readiness/run` and wired seller API source/route coverage into the Phase 13 aggregate acceptance command.
+  - Updated the Phase 13 backlog status and command list to record the seller API foundation.
+- Main files changed/added:
+  - `common/services/mall/AppSellerApiService.php`
+  - `api/modules/v1/controllers/AppSellerController.php`
+  - `console/controllers/AppSellerPhase13ReadinessController.php`
+  - `console/controllers/AppPhase13AcceptanceController.php`
+  - `apps/mongoyia-customer-chat-uniapp/src/utils/appApi.js`
+  - `apps/mongoyia-customer-chat-uniapp/src/pages/seller/orders.vue`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l common/services/mall/AppSellerApiService.php` passed.
+  - `php -l api/modules/v1/controllers/AppSellerController.php` passed.
+  - `php -l console/controllers/AppSellerPhase13ReadinessController.php` passed.
+  - `php -l console/controllers/AppPhase13AcceptanceController.php` passed.
+  - `npm run build:h5` passed in `apps/mongoyia-customer-chat-uniapp`; output contained only uni-app/Vite informational/deprecation warnings.
+  - Static marker checks confirmed seller API service/controller/readiness markers, seller endpoint constants, shipment write gate marker, Phase 13 aggregate wiring, and backlog command markers.
+  - `git diff --check` reported no whitespace errors; only existing Windows line-ending conversion warnings.
+  - Full Yii console execution was not run locally because this patch checkout does not have `vendor/autoload.php`; run seller readiness and Phase 13 aggregate commands on BaoTa/full-vendor environment after pull.
+- Remaining issues:
+  - APP login/token handoff is still pending, so authenticated buyer/seller H5 pages need Phase 13.3 wiring before browser role-flow can pass end to end.
+  - Shipment, product write, and coupon participation write APIs remain intentionally gated until logistics/stock/fee/audit/browser evidence is accepted.
+  - Buyer checkout/order creation remains intentionally gated until payment, address, stock, and browser role-flow safety evidence is accepted.
+  - Phase 10/11/12 external provider and production evidence remain incomplete; production remains `NO-GO`.
+- Next stage:
+  - Commit and push Phase 13.2, then on BaoTa run `app-seller-phase13-readiness/run --fixture=1` and `app-phase13-acceptance/run --fixture=1`.
+  - Continue Phase 13.3 by adding APP login/token handoff and H5 role-flow wiring so authenticated buyer/seller pages can call the JSON APIs without embedding secrets.

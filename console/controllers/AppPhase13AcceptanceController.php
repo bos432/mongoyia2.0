@@ -135,6 +135,7 @@ class AppPhase13AcceptanceController extends Controller
         ]);
         $this->requireFileContains('Buyer APP JSON API controller', 'api/modules/v1/controllers/AppBuyerController.php', [
             'MONGOYIA_APP_BUYER_CONTROLLER_V1',
+            'MONGOYIA_APP_BUYER_WRITE_POST_GUARD_V1',
             'actionHome',
             'actionCategories',
             'actionSearch',
@@ -145,13 +146,17 @@ class AppPhase13AcceptanceController extends Controller
             'submitOrder',
             'actionCoupons',
             'actionFavorites',
+            'actionStoreFavorites',
             'actionReviews',
             'submitReview',
             'actionMyReviews',
             'actionNotifications',
+            'isWriteRequest',
+            'markNotificationRead',
         ]);
         $this->requireFileContains('Buyer APP JSON API readiness', 'console/controllers/AppBuyerPhase13ReadinessController.php', [
             'MONGOYIA_APP_BUYER_PHASE13_READINESS_V1',
+            'MONGOYIA_APP_BUYER_WRITE_POST_GUARD_V1',
             'app-buyer-phase13-readiness/run',
             'checkout/order creation validates cart',
             'MONGOYIA_CART_STALE_ROW_GUARD_V1',

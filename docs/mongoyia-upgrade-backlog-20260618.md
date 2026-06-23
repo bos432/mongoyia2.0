@@ -414,6 +414,8 @@ Phase 13.16 product audit backend POST guard: backend product audit approve/reje
 
 Phase 13.17 seller APP shipment POST guard: `/api/v1/app-seller/shipment` now uses `MONGOYIA_APP_SELLER_SHIPMENT_POST_GUARD_V1` and rejects non-POST requests with `SHIPMENT_REQUIRES_POST` before running the store-scoped shipment workflow. Phase 13 seller readiness and aggregate acceptance check the guard so APP shipment writes cannot be triggered by plain GET requests.
 
+Phase 13.18 buyer APP write POST guard: `AppBuyerController` now uses `MONGOYIA_APP_BUYER_WRITE_POST_GUARD_V1` and a shared `isWriteRequest()` branch for cart add, checkout/order submit, product favorite toggle, store favorite toggle, received-order review submit, and notification read-state writes. Phase 13 buyer readiness and aggregate acceptance check this guard while preserving GET list/detail reads on the same APP endpoints.
+
 Phase 14 acceptance command:
 
 ```bash

@@ -130,6 +130,7 @@ class AppBuyerPhase13ReadinessController extends Controller
         ]);
         $this->requireFileContains('Buyer APP API controller', 'api/modules/v1/controllers/AppBuyerController.php', [
             'MONGOYIA_APP_BUYER_CONTROLLER_V1',
+            'MONGOYIA_APP_BUYER_WRITE_POST_GUARD_V1',
             'actionHome',
             'actionCategories',
             'actionSearch',
@@ -139,11 +140,14 @@ class AppBuyerPhase13ReadinessController extends Controller
             'actionOrders',
             'actionCoupons',
             'actionFavorites',
+            'actionStoreFavorites',
             'actionReviews',
             'actionMyReviews',
             'actionNotifications',
+            'isWriteRequest',
             'submitOrder',
             'submitReview',
+            'markNotificationRead',
         ]);
         $this->requireFileContains('APP shared API helper uses buyer endpoints', 'apps/mongoyia-customer-chat-uniapp/src/utils/appApi.js', [
             '/api/v1/app-buyer/home',
@@ -205,6 +209,7 @@ class AppBuyerPhase13ReadinessController extends Controller
             '/api/v1/app-buyer/orders' => 'authenticated order list plus checkout write',
             '/api/v1/app-buyer/coupons' => 'authenticated coupon list',
             '/api/v1/app-buyer/favorites' => 'authenticated favorite list/toggle',
+            '/api/v1/app-buyer/store-favorites' => 'authenticated store favorite list/toggle',
             '/api/v1/app-buyer/reviews' => 'public product review list plus authenticated received-order review submit',
             '/api/v1/app-buyer/my-reviews' => 'authenticated buyer review list',
             '/api/v1/app-buyer/notifications' => 'authenticated buyer notification list/read state',
@@ -230,7 +235,7 @@ class AppBuyerPhase13ReadinessController extends Controller
             '- Failures: ' . $this->failures,
             '- Warnings: ' . $this->warnings,
             '- Scope: buyer APP JSON APIs for home, categories, search, product detail, cart, checkout/order creation, coupons, favorites, reviews, notifications, customer-service entry, buyer cart stale-row guard coverage, and cart checkout URL parameter-builder coverage.',
-            '- Safety: checkout/order creation validates cart, stock, receiver address, parent/child order rows, order-product rows, stale cart cleanup, and cart cleanup without marking online payments paid.',
+            '- Safety: checkout/order creation validates cart, stock, receiver address, parent/child order rows, order-product rows, stale cart cleanup, and cart cleanup without marking online payments paid. Buyer write branches for cart, orders, favorites, store favorites, reviews, and notification read-state are explicitly routed through the POST request guard.',
             '',
             '## Checks',
             '',

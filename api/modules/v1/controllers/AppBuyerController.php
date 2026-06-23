@@ -10,6 +10,7 @@ use Yii;
 class AppBuyerController extends BaseController
 {
     public const VERSION = 'MONGOYIA_APP_BUYER_CONTROLLER_V1';
+    public const WRITE_POST_GUARD = 'MONGOYIA_APP_BUYER_WRITE_POST_GUARD_V1';
 
     public $modelClass = Product::class;
     public $skipModelClass = '*';
@@ -72,7 +73,7 @@ class AppBuyerController extends BaseController
     public function actionCart()
     {
         try {
-            if (Yii::$app->request->isPost) {
+            if ($this->isWriteRequest()) {
                 $this->requireLogin();
                 return $this->buyerService()->addCart(
                     $this->currentUserId(),
@@ -90,7 +91,7 @@ class AppBuyerController extends BaseController
     public function actionOrders()
     {
         try {
-            if (Yii::$app->request->isPost) {
+            if ($this->isWriteRequest()) {
                 $this->requireLogin();
                 return $this->buyerService()->submitOrder(
                     $this->currentUserId(),
@@ -117,7 +118,7 @@ class AppBuyerController extends BaseController
     public function actionFavorites()
     {
         try {
-            if (Yii::$app->request->isPost) {
+            if ($this->isWriteRequest()) {
                 $this->requireLogin();
                 return $this->buyerService()->toggleFavorite(
                     $this->currentUserId(),
@@ -135,7 +136,7 @@ class AppBuyerController extends BaseController
     public function actionStoreFavorites()
     {
         try {
-            if (Yii::$app->request->isPost) {
+            if ($this->isWriteRequest()) {
                 $this->requireLogin();
                 return $this->buyerService()->toggleStoreFavorite($this->currentUserId(), (int)Yii::$app->request->post('store_id'));
             }
@@ -149,7 +150,7 @@ class AppBuyerController extends BaseController
     public function actionReviews()
     {
         try {
-            if (Yii::$app->request->isPost) {
+            if ($this->isWriteRequest()) {
                 $this->requireLogin();
                 return $this->buyerService()->submitReview($this->currentUserId(), Yii::$app->request->post());
             }
@@ -181,7 +182,7 @@ class AppBuyerController extends BaseController
     public function actionNotifications()
     {
         try {
-            if (Yii::$app->request->isPost) {
+            if ($this->isWriteRequest()) {
                 $this->requireLogin();
                 return $this->buyerService()->markNotificationRead(
                     $this->currentUserId(),
@@ -224,6 +225,11 @@ class AppBuyerController extends BaseController
         if ($this->isGuest()) {
             throw new \RuntimeException('AUTH_REQUIRED');
         }
+    }
+
+    private function isWriteRequest(): bool
+    {
+        return Yii::$app->request->isPost;
     }
 
     private function apiError(string $message, int $statusCode): array

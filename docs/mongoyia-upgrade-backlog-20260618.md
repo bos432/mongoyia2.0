@@ -383,6 +383,8 @@ Phase 12.9 OAuth response adapter completion: the PSR-7 response and stream adap
 
 Phase 12.10 OAuth authorization-code repository completion: the authorization-code repository now persists, revokes, and checks auth-code state through `OauthSystem` and the existing `oauth_authorization_code` table (`MONGOYIA_OAUTH_AUTH_CODE_REPOSITORY_V1`). This keeps OAuth2 authorization-code flows aligned with the existing access-token and refresh-token repositories without adding provider secrets or external identity-provider calls to readiness checks.
 
+Phase 12.11 OAuth token scope storage normalization: authorization-code, access-token, and refresh-token persistence now normalize OAuth scope entities to JSON-safe identifier arrays before writing the existing JSON `scope` fields. This supports OAuth2 token issuance and APP token handoff without adding new schema or storing provider secrets.
+
 Phase 13 acceptance command:
 
 ```bash

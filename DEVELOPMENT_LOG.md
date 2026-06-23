@@ -1,5 +1,29 @@
 # Development Log
 
+## 2026-06-24 Phase 12 OAuth Token Scope Storage Normalization
+
+- Stage name: Phase 12 OAuth token scope storage normalization
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting the stage.
+  - Updated OAuth access-token and refresh-token persistence to normalize scope entities through the same JSON-safe scope storage helper used by authorization codes.
+  - Added `normalizeScopeForStorage` to Phase 12 acceptance source coverage and updated the backlog with Phase 12.11.
+- Main files changed/added:
+  - `common/components/base/OauthSystem.php`
+  - `console/controllers/AccountNotificationPhase12AcceptanceController.php`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l common/components/base/OauthSystem.php` passed.
+  - `php -l console/controllers/AccountNotificationPhase12AcceptanceController.php` passed.
+  - Static marker scan confirmed `normalizeScopeForStorage` is used by authorization-code, access-token, and refresh-token persistence and is covered by Phase 12 acceptance.
+  - `git diff --check` reported no whitespace errors, only existing Windows line-ending conversion warnings.
+  - Full Yii console execution remains BaoTa-only because this local checkout lacks `vendor/autoload.php`.
+- Remaining issues:
+  - Real Facebook/Google provider callback evidence, password recovery/security-code delivery evidence, notification delivery evidence, language-review evidence, and browser role-flow evidence remain pending.
+  - Production remains `NO-GO`.
+- Next stage:
+  - Verify, commit, and push this Phase 12 OAuth token-scope normalization, then continue with the next plan-listed local readiness item or BaoTa/browser validation after the server refreshes.
+
 ## 2026-06-24 Phase 12 OAuth Authorization-Code Repository Completion
 
 - Stage name: Phase 12 OAuth authorization-code repository completion

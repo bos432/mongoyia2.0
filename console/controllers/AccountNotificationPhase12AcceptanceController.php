@@ -122,6 +122,7 @@ class AccountNotificationPhase12AcceptanceController extends Controller
             'authorizationCodeCreate',
             'authorizationCodeDelete',
             'authorizationCodeFindByCode',
+            'normalizeScopeForStorage',
         ]);
         $this->requireFileContains('OAuth authorization-code repository', 'common/models/oauth/repositories/AuthCodeRepository.php', [
             'MONGOYIA_OAUTH_AUTH_CODE_REPOSITORY_V1',

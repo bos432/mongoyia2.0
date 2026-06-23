@@ -125,7 +125,7 @@ class OauthSystem extends Component
         $model->access_token = $accessToken;
         $model->user_id = $userId ?? 1;
         $model->expired_at = $expiredAt;
-        $model->scope = $scope;
+        $model->scope = $this->normalizeScopeForStorage($scope);
         $model->grant_type = $grantType ?? '';
         if (!$model->save()) {
             Yii::$app->logSystem->db($model->errors);
@@ -166,7 +166,7 @@ class OauthSystem extends Component
         $model->refresh_token = $refreshToken;
         $model->user_id = $userId ?? 1;
         $model->expired_at = $expiredAt;
-        $model->scope = $scope;
+        $model->scope = $this->normalizeScopeForStorage($scope);
         $model->grant_type = $grantType ?? '';
         if (!$model->save()) {
             Yii::$app->logSystem->db($model->errors);

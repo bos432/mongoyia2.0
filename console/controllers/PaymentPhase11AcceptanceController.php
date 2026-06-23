@@ -105,6 +105,20 @@ class PaymentPhase11AcceptanceController extends Controller
             'public function actionPaypalCancel',
             'public function actionPaypalWebhook',
         ]);
+        $this->requireFileContains('Frontend payment channel selector', 'frontend/modules/mall/controllers/PaymentController.php', [
+            'MONGOYIA_PAYMENT_CHANNEL_SELECTOR_V1',
+            'paymentChannels',
+            "'provider' => 'qpay'",
+            "'provider' => 'lianlian'",
+            "'provider' => 'paypal'",
+            'isPaypalConfigReady',
+        ]);
+        $this->requireFileContains('Frontend payment dynamic channel UI', 'web/resources/mall/default/views/payment/index.php', [
+            'data-mongoyia-phase11-payment-channel-list',
+            'data-mongoyia-phase11-payment-channel',
+            'data-mongoyia-phase11-payment-no-channel',
+            'Pay with {provider}',
+        ]);
         $this->requireFileContains('Payment callback safety guards', 'frontend/modules/mall/controllers/PaymentController.php', [
             'assertPaidAmountMatches',
             'paymentCallbackLockName',

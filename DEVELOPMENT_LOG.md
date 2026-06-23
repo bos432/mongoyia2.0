@@ -6125,3 +6125,62 @@
 - Next stage:
   - Commit and push the aggregate acceptance command.
   - Re-read the development plan and this log, then either run BaoTa/browser validation after the server pulls latest code or continue another plan-listed local readiness/evidence item that does not need external provider credentials.
+
+## 2026-06-23 Phase 13-15 Browser Evidence Deployment Recheck After Aggregate Gate
+
+- Stage name: Phase 13/14/15 browser evidence deployment recheck after aggregate gate
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting the stage.
+  - Reused the right-side browser tab on `https://demo2026.mongoyia.com/backend/mall/distribution-distributor/index`.
+  - Reloaded the deployed backend distributor operations page after the aggregate acceptance command had been pushed to GitHub.
+  - Checked Phase 15 browser markers for support content, material management, and signoff evidence.
+  - Checked for browser console errors.
+  - Did not submit forms or change business data.
+- Main files changed/added:
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - Browser URL checked: `https://demo2026.mongoyia.com/backend/mall/distribution-distributor/index`.
+  - Browser page title: `分销员运营`.
+  - Marker check result: `supportContent=false`, `materialManagement=false`, `signoffEvidence=false`.
+  - Aggregate command text marker on page: `false`.
+  - Browser console error result: none captured.
+- Remaining issues:
+  - BaoTa/test server is still running a pre-Phase-15 deployment, so Phase 13 authenticated buyer/seller APP role-flow evidence, Phase 14 logistics/product/favorite/review browser evidence, and Phase 15 distributor support browser evidence remain blocked until the server pulls latest commits and runs migrations/readiness commands.
+  - Phase 10/11/12 external provider and production evidence remain incomplete; production remains `NO-GO`.
+- Next stage:
+  - Continue checking for local, plan-listed code gaps that do not require external provider credentials or an updated BaoTa deployment.
+
+## 2026-06-23 Phase 11.4 Frontend Dynamic Payment Channel Selector
+
+- Stage name: Phase 11.4 frontend dynamic payment channel selector
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting the stage.
+  - Added `MONGOYIA_PAYMENT_CHANNEL_SELECTOR_V1` and a runtime channel selector to the frontend payment controller.
+  - Buyer payment page now renders only runtime-ready channels from backend encrypted payment config: QPay, LianLian, and PayPal.
+  - Added a clear no-channel state when all online payment channels are disabled or missing required runtime config.
+  - Updated Phase 11 acceptance source checks to require the channel selector and dynamic payment UI markers.
+  - Updated PWA mobile payment smoke coverage so it accepts either an enabled channel or the no-channel state instead of assuming LianLian is always available.
+  - Added Chinese and Mongolian translations for the generic payment-channel button and no-channel message.
+  - Updated the development backlog to record Phase 11.4.
+- Main files changed/added:
+  - `frontend/modules/mall/controllers/PaymentController.php`
+  - `web/resources/mall/default/views/payment/index.php`
+  - `console/controllers/PaymentPhase11AcceptanceController.php`
+  - `console/controllers/PwaSmokeTestController.php`
+  - `common/messages/zh-CN/mall.php`
+  - `common/messages/mn/mall.php`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l` passed for `PaymentController.php`, `payment/index.php`, `PaymentPhase11AcceptanceController.php`, `PwaSmokeTestController.php`, `common/messages/zh-CN/mall.php`, and `common/messages/mn/mall.php`.
+  - Static marker checks confirmed `MONGOYIA_PAYMENT_CHANNEL_SELECTOR_V1`, `paymentChannels`, `data-mongoyia-phase11-payment-channel-list`, `data-mongoyia-phase11-payment-channel`, `data-mongoyia-phase11-payment-no-channel`, and `Pay with {provider}`.
+  - Static compatibility check confirmed the payment view source does not hardcode `/mall/payment/paypal`, `Pay with PayPal`, or `PAYPAL_CLIENT_ID`; PayPal is exposed only through runtime channel data after config readiness.
+  - `git diff --check` reported no whitespace errors; only existing Windows line-ending conversion warnings.
+  - Full Yii console execution was not run locally because this patch checkout does not have `vendor/autoload.php`; after BaoTa pull run `payment-phase11-acceptance/run --runChildChecks=1 --fixture=1`, `pwa-smoke-test/run`, and the aggregate `mongoyia-requirements-closure-acceptance/run --fixture=1 --runChildChecks=1`.
+- Remaining issues:
+  - Real QPay/LianLian/PayPal sandbox evidence, callback/audit browser evidence, and payment manual acceptance flags remain external and pending.
+  - BaoTa/test server still needs to pull this commit and run migrations/readiness before browser role-flow payment evidence can be collected.
+  - Phase 10 provider/production evidence remains incomplete; production remains `NO-GO`.
+- Next stage:
+  - Commit and push Phase 11.4.
+  - Re-read the development plan and this log, then continue with the next plan-listed local closure item or BaoTa/browser validation after the server pulls latest code.

@@ -1715,8 +1715,8 @@ class PwaSmokeTestController extends Controller
                 $paymentPath,
                 $payment,
                 'frontend',
-                ['data-mongoyia-mobile-ui="payment"', 'payment-order-summary', (string)$order['sn'], '/mall/payment/lianlian'],
-                ['Amount Payable', 'Pay with LianLian', 'control-full']
+                ['data-mongoyia-mobile-ui="payment"', 'payment-order-summary', (string)$order['sn'], 'data-mongoyia-phase11-payment-channel-list'],
+                ['data-mongoyia-phase11-payment-channel=', 'data-mongoyia-phase11-payment-no-channel']
             )) {
                 return;
             }

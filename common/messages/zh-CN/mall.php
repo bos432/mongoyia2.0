@@ -91,6 +91,8 @@ return [
     'Order Number' => '订单号',
     'Amount Payable' => '应付金额',
     'Pay with LianLian' => '使用连连支付',
+    'Pay with {provider}' => '使用 {provider} 支付',
+    'No online payment channel is currently available. Please contact customer service.' => '当前没有可用的在线支付渠道，请联系客服。',
 
     // payment/cancelled
     'Payment has been cancelled' => '支付已取消',

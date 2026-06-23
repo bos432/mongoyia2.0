@@ -35,6 +35,7 @@ class PaymentController extends BaseController
     public const MONGOYIA_PAYPAL_RETURN_ROUTE_V1 = 'MONGOYIA_PAYPAL_RETURN_ROUTE_V1';
     public const MONGOYIA_PAYPAL_CANCEL_ROUTE_V1 = 'MONGOYIA_PAYPAL_CANCEL_ROUTE_V1';
     public const MONGOYIA_PAYPAL_WEBHOOK_ROUTE_V1 = 'MONGOYIA_PAYPAL_WEBHOOK_ROUTE_V1';
+    public const MONGOYIA_PAYMENT_CHANNEL_SELECTOR_V1 = 'MONGOYIA_PAYMENT_CHANNEL_SELECTOR_V1';
 
     public $modelClass = Order::class;
 
@@ -71,6 +72,46 @@ class PaymentController extends BaseController
     protected function isPaypalEnabled()
     {
         return $this->paymentProviderEnabled($this->paymentProviderConfig('paypal'));
+    }
+
+    protected function paymentChannels(): array
+    {
+        $channels = [];
+
+        $qpayConfig = $this->paymentProviderConfig('qpay');
+        if ($this->paymentProviderEnabled($qpayConfig)
+            && (string)($qpayConfig['auth_basic'] ?? '') !== ''
+            && (string)($qpayConfig['invoice_code'] ?? '') !== ''
+        ) {
+            $channels[] = [
+                'provider' => 'qpay',
+                'label' => 'QPay',
+                'route' => '/mall/payment/qpay',
+                'class' => 'btn btn-primary control-full',
+            ];
+        }
+
+        $lianlianConfig = $this->paymentProviderConfig('lianlian');
+        if ($this->paymentProviderEnabled($lianlianConfig) && PayConstant::isConfigured($lianlianConfig)) {
+            $channels[] = [
+                'provider' => 'lianlian',
+                'label' => 'LianLian',
+                'route' => '/mall/payment/lianlian',
+                'class' => 'btn btn-success control-full',
+            ];
+        }
+
+        $paypalConfig = $this->paymentProviderConfig('paypal');
+        if ($this->isPaypalConfigReady($paypalConfig)) {
+            $channels[] = [
+                'provider' => 'paypal',
+                'label' => 'PayPal',
+                'route' => '/mall/payment/paypal',
+                'class' => 'btn btn-info control-full',
+            ];
+        }
+
+        return $channels;
     }
 
     protected function paymentProviderConfig($provider)
@@ -1636,6 +1677,7 @@ class PaymentController extends BaseController
 
         return $this->render($this->action->id, [
             'model' => $model,
+            'paymentChannels' => $this->paymentChannels(),
         ]);
     }
 

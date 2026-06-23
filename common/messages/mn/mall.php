@@ -30,4 +30,6 @@ return [
     'Order Number' => 'Захиалгын дугаар',
     'Amount Payable' => 'Төлөх дүн',
     'Pay with LianLian' => 'LianLian-р төлөх',
+    'Pay with {provider}' => '{provider}-р төлөх',
+    'No online payment channel is currently available. Please contact customer service.' => 'Одоогоор онлайн төлбөрийн суваг байхгүй байна. Харилцагчийн үйлчилгээтэй холбогдоно уу.',
 ];

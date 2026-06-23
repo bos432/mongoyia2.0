@@ -2,9 +2,11 @@
 use yii\helpers\Html;
 
 /* @var $model \common\models\mall\Order */
+/* @var $paymentChannels array */
 
 $this->title = Yii::t('app', 'Payment');
 $amount = $this->context->getNumberByCurrency($model->amount);
+$paymentChannels = $paymentChannels ?? [];
 ?>
 
 <section class="page-section payment-index" data-mongoyia-mobile-ui="payment">
@@ -21,7 +23,24 @@ $amount = $this->context->getNumberByCurrency($model->amount);
                             <p><strong><?= Yii::t('mall', 'Order Number') ?>:</strong> <?= Html::encode($model->sn) ?></p>
                             <p><strong><?= Yii::t('mall', 'Amount Payable') ?>:</strong> <?= Html::encode($amount) ?></p>
                         </div>
-                        <?= Html::a(Yii::t('mall', 'Pay with LianLian'), ['/mall/payment/lianlian', 'id' => $model->id], ['class' => 'btn btn-success control-full']) ?>
+                        <div class="payment-channel-list" data-mongoyia-phase11-payment-channel-list>
+                            <?php if ($paymentChannels): ?>
+                                <?php foreach ($paymentChannels as $channel): ?>
+                                    <?= Html::a(
+                                        Yii::t('mall', 'Pay with {provider}', ['provider' => $channel['label']]),
+                                        [$channel['route'], 'id' => $model->id],
+                                        [
+                                            'class' => $channel['class'],
+                                            'data-mongoyia-phase11-payment-channel' => $channel['provider'],
+                                        ]
+                                    ) ?>
+                                <?php endforeach; ?>
+                            <?php else: ?>
+                                <div class="alert alert-warning" data-mongoyia-phase11-payment-no-channel>
+                                    <?= Yii::t('mall', 'No online payment channel is currently available. Please contact customer service.') ?>
+                                </div>
+                            <?php endif; ?>
+                        </div>
                     </div>
                 </div>
             </div>

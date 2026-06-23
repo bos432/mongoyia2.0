@@ -385,6 +385,8 @@ Phase 12.10 OAuth authorization-code repository completion: the authorization-co
 
 Phase 12.11 OAuth token scope storage normalization: authorization-code, access-token, and refresh-token persistence now normalize OAuth scope entities to JSON-safe identifier arrays before writing the existing JSON `scope` fields. This supports OAuth2 token issuance and APP token handoff without adding new schema or storing provider secrets.
 
+Phase 12.12 social-login provider response guard: Google/Facebook redirect and bind routes now short-circuit disabled backend providers before building OAuth URLs, and `SocialIdentityService` sanitizes empty/non-JSON/non-object provider responses without logging raw provider response bodies (`provider_response_errors_are_sanitized`). Readiness checks cover the disabled-provider boundary and JSON response guard; provider callback/browser evidence remains external.
+
 Phase 13 acceptance command:
 
 ```bash

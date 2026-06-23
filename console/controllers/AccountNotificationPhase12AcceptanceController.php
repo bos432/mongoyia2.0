@@ -162,6 +162,7 @@ class AccountNotificationPhase12AcceptanceController extends Controller
             'actionBind',
             'actionUnbind',
             'SocialIdentityService',
+            'SOCIAL_AUTH_DISABLED',
             'require_existing_session_before_first_login',
         ]);
         $this->requireFileContains('Third-party login runtime service', 'common/services/mall/SocialIdentityService.php', [
@@ -170,6 +171,8 @@ class AccountNotificationPhase12AcceptanceController extends Controller
             'handleCallback',
             'bindIdentity',
             'provider_secret_never_logged',
+            'provider_response_errors_are_sanitized',
+            'decodeProviderJson',
         ]);
         $this->requireFileContains('Third-party login binding migration', 'console/migrations/m260623_165000_mongoyia_social_identity.php', [
             'mall_social_identity',

@@ -20,6 +20,11 @@ class SocialAuthController extends BaseController
     public function actionRedirect($provider = '')
     {
         $provider = $this->normalizeProvider($provider);
+        $config = $this->providerConfig($provider);
+        if (!$this->providerEnabled($config)) {
+            return $this->disabledResponse($provider);
+        }
+
         try {
             $url = (new SocialIdentityService())->authorizationUrl(
                 $provider,
@@ -67,6 +72,11 @@ class SocialAuthController extends BaseController
         }
 
         $provider = $this->normalizeProvider($provider);
+        $config = $this->providerConfig($provider);
+        if (!$this->providerEnabled($config)) {
+            return $this->disabledResponse($provider);
+        }
+
         try {
             $url = (new SocialIdentityService())->authorizationUrl(
                 $provider,

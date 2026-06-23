@@ -7323,3 +7323,34 @@
   - Production remains `NO-GO` until external provider, logistics, social-login, notification, operations, and business/security signoff evidence is accepted.
 - Next stage:
   - After BaoTa pulls latest code, runs migrations/readiness, and clears cache, rerun browser cart/checkout validation and the aggregate acceptance command.
+
+## 2026-06-24 Phase 12 Social Login Provider Response Guard
+
+- Stage name: Phase 12 social login provider response guard
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting the stage.
+  - Added a disabled-provider short-circuit to the Google/Facebook redirect and bind routes so backend-disabled providers do not build OAuth authorization URLs.
+  - Hardened `SocialIdentityService` provider HTTP handling for missing curl, failed initialization, non-2xx statuses, empty bodies, non-JSON bodies, and non-object JSON.
+  - Kept provider response logging redacted by recording only status, a short response-body hash, and decode error text instead of raw provider bodies or secrets.
+  - Added readiness markers for `provider_response_errors_are_sanitized`, the disabled-provider boundary, and the JSON response guard.
+  - Updated the Phase 12 backlog notes to record this small stage as Phase 12.12.
+- Main files changed/added:
+  - `frontend/controllers/SocialAuthController.php`
+  - `common/services/mall/SocialIdentityService.php`
+  - `console/controllers/SocialAuthRuntimeReadinessController.php`
+  - `console/controllers/AccountNotificationPhase12AcceptanceController.php`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l frontend/controllers/SocialAuthController.php` passed.
+  - `php -l common/services/mall/SocialIdentityService.php` passed.
+  - `php -l console/controllers/SocialAuthRuntimeReadinessController.php` passed.
+  - `php -l console/controllers/AccountNotificationPhase12AcceptanceController.php` passed.
+  - Static marker check for `provider_response_errors_are_sanitized`, `decodeProviderJson`, `SOCIAL_AUTH_DISABLED`, and `Phase 12.12` passed.
+  - `git diff --check` reported no whitespace errors, only existing Windows line-ending conversion warnings.
+  - Full Yii acceptance remains BaoTa-only because this local checkout lacks `vendor/autoload.php`.
+- Remaining issues:
+  - Facebook/Google real provider callback and binding evidence are still external Phase 12 gates.
+  - Phase 10/11/12/13/14/15 browser and provider evidence gates remain pending; production remains `NO-GO`.
+- Next stage:
+  - Commit and push this Phase 12 runtime guard patch, then reread the plan/log and continue with the next plan-listed local readiness or BaoTa/browser validation stage.

@@ -61,6 +61,9 @@ class SocialAuthRuntimeReadinessController extends Controller
             'handleCallback',
             'bindIdentity',
             'provider_secret_never_logged',
+            'PROVIDER_RESPONSE_ERROR_POLICY',
+            'provider_response_errors_are_sanitized',
+            'decodeProviderJson',
         ]);
         $this->requireFileContains('Social auth frontend runtime controller', 'frontend/controllers/SocialAuthController.php', [
             'MONGOYIA_SOCIAL_AUTH_RUNTIME_V1',
@@ -69,6 +72,8 @@ class SocialAuthRuntimeReadinessController extends Controller
             'actionCallback',
             'actionBind',
             'actionUnbind',
+            'providerEnabled',
+            'SOCIAL_AUTH_DISABLED',
             'SOCIAL_AUTH_UNAVAILABLE',
             'require_existing_session_before_first_login',
         ]);

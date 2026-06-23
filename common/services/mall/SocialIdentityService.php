@@ -14,6 +14,7 @@ class SocialIdentityService
     public const TABLE = '{{%mall_social_identity}}';
     public const SESSION_KEY_PREFIX = 'mongoyia_social_auth_state_';
     public const BIND_POLICY_REQUIRE_EXISTING_SESSION = 'require_existing_session_before_first_login';
+    public const PROVIDER_RESPONSE_ERROR_POLICY = 'provider_response_errors_are_sanitized';
 
     private $configService;
 
@@ -265,7 +266,15 @@ class SocialIdentityService
 
     private function curlJson(string $url, array $post = [], array $headers = [], string $method = 'POST'): array
     {
+        if (!function_exists('curl_init')) {
+            throw new \RuntimeException('Provider HTTP client is unavailable.');
+        }
+
         $ch = curl_init($url);
+        if ($ch === false) {
+            throw new \RuntimeException('Provider HTTP client could not be initialized.');
+        }
+
         $headers[] = 'Accept: application/json';
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 8);
@@ -284,9 +293,39 @@ class SocialIdentityService
         if ($errno) {
             throw new \RuntimeException('Provider request failed: ' . $error);
         }
-        $data = Json::decode((string)$raw, true);
-        if ($status >= 400 || !is_array($data)) {
-            throw new \RuntimeException('Provider request returned invalid response status ' . $status . '.');
+
+        if ($status < 200 || $status >= 400) {
+            throw new \RuntimeException('Provider request returned unavailable response status ' . $status . '.');
+        }
+
+        $data = $this->decodeProviderJson((string)$raw, $status);
+        if (!is_array($data)) {
+            throw new \RuntimeException('Provider request returned invalid JSON response status ' . $status . '.');
+        }
+
+        return $data;
+    }
+
+    private function decodeProviderJson(string $raw, int $status): array
+    {
+        $body = trim($raw);
+        if ($body === '') {
+            throw new \RuntimeException('Provider request returned empty response status ' . $status . '.');
+        }
+
+        try {
+            $data = Json::decode($body, true);
+        } catch (\Throwable $e) {
+            Yii::warning([
+                'status' => $status,
+                'body_sha256_16' => substr(hash('sha256', $body), 0, 16),
+                'message' => $e->getMessage(),
+            ], 'mall.social_auth.provider_json_decode_failed');
+            throw new \RuntimeException('Provider request returned invalid JSON response status ' . $status . '.');
+        }
+
+        if (!is_array($data)) {
+            throw new \RuntimeException('Provider request returned non-object JSON response status ' . $status . '.');
         }
 
         return $data;

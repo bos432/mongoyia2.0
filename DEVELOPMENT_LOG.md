@@ -4383,3 +4383,58 @@
 - Next stage:
   - Commit and push this Phase 9.7 H5/API fix.
   - On BaoTa, run `git pull`, `yii migrate/up`, and `customer-service-phase9-acceptance/run --runChildChecks=1 --fixture=1`; then re-run APP/H5 rating validation and final strict acceptance with `--browserAccepted=1 --appAccepted=1` plus evidence paths.
+
+## 2026-06-23 Phase 9.7 Final Browser And APP/H5 Acceptance Evidence
+
+- Stage name: Phase 9.7 final browser/APP evidence after BaoTa pull
+- Verification time:
+  - 2026-06-23 13:17-13:24 Asia/Shanghai.
+- Verification environment:
+  - BaoTa test server: `https://demo2026.mongoyia.com`, product `gid=2`.
+  - BaoTa code state from user-provided terminal output: pulled `85a54d3 Fix Phase 9 uni-app H5 acceptance`.
+  - Local APP/H5 client: `apps/mongoyia-customer-chat-uniapp`, `npm run dev:h5 -- --port 5173`, accessed through Vite proxy `/demo-api` and `/ws-im`.
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before continuing Phase 9.7.
+  - Reviewed the BaoTa terminal output after `git pull`, `yii migrate/up`, and `customer-service-phase9-acceptance/run --runChildChecks=1 --fixture=1 --interactive=0`.
+  - Confirmed BaoTa Phase 9.1-9.6 automated child checks all pass with `0 failure(s), 0 warning(s), 2 pending`, where the only pending items are the intended manual browser/app evidence gates.
+  - Rebuilt the local uni-app H5 client with `npm run build:h5`; build passed with only the known Vite CJS deprecation warning and `NODE_ENV=production` notice.
+  - Started local H5 dev client on `http://127.0.0.1:5173` and opened:
+    `#/pages/chat/index?gid=2&lang=en&baseUrl=http://127.0.0.1:5173/demo-api&wsUrl=ws://127.0.0.1:5173/ws-im`.
+  - Verified APP/H5 page render: title `Mongoyia客服`, backend/WSS/product fields populated, image/file/video/voice controls visible, rating controls visible, and no browser console errors.
+  - Connected APP/H5 WSS successfully; `/mall/chat/token` returned merchant UID `1` and store ID `1`.
+  - Sent APP/H5 message `Codex Phase9 final uni-app H5 message 2026-06-23T05:22:04.487Z`; it displayed with timestamp `2026-06-23 13:22:05`.
+  - Submitted APP/H5 satisfied rating with reason `Codex Phase9 final APP H5 acceptance` and remark `Codex Phase9 final APP H5 rating submit after BaoTa pull; keep this data.`; page displayed `评价已提交` and no `提交失败`.
+  - Refreshed APP/H5, reconnected WSS, and confirmed the sent message was restored from chat history with connected state and no failure text.
+- Test data summary:
+  - APP/H5 customer UUID: `codex-app-phase9-final-1782192078286`.
+  - APP/H5 message: `Codex Phase9 final uni-app H5 message 2026-06-23T05:22:04.487Z`.
+  - APP/H5 rating: satisfied, reason `Codex Phase9 final APP H5 acceptance`, remark `Codex Phase9 final APP H5 rating submit after BaoTa pull; keep this data.`
+  - Prior browser role-flow evidence kept from the same Phase 9.7 round: buyer PC/H5 message `Codex Phase9 buyer text test 2026-06-23T04:43:34.056Z`, backend reply `Codex Phase9 backend reply test 2026-06-23T04:45:50.813Z`, tickets `#2 CSO-20260623054614-2282`, `#3 CSC-20260623054617-1877`, and linked assistance `#4 CSO-20260623055217-1763`.
+- Pass items:
+  - Page can open and render.
+  - APP/H5 token handoff works.
+  - APP/H5 WSS connects through the local dev proxy to the test server.
+  - APP/H5 text send and chat-history restore work.
+  - APP/H5 satisfaction rating submit works after the BaoTa CSRF exemption deployment.
+  - Browser console showed no APP page errors during page load, connect, send, rating submit, or refresh/reconnect.
+  - BaoTa automated source/readiness checks pass for translation, full media, assistance, complaint loop, analytics, and uni-app.
+- Found issues:
+  - Browser automation did not select real local media files; media upload/download policy remains covered by `customer-service-media-test/run --fixture=1` and visible UI controls.
+  - Final BaoTa strict acceptance still needs to be rerun with `--browserAccepted=1 --appAccepted=1` and evidence paths to convert the two pending manual gates into PASS rows.
+  - Overall production go-live remains separate from Phase 9客服 acceptance and still depends on payment/mail/scheduler/alert/load/security/business signoff evidence.
+- Whether this reaches online-operation standard:
+  - Phase 9 customer-service complete-requirements browser/APP evidence is ready for accepted-gate strict verification.
+  - The whole platform should still be treated as production `NO-GO` until the global production gates outside Phase 9 are completed.
+- Main files changed/added:
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `npm run build:h5` passed locally.
+  - `npm run dev:h5 -- --port 5173` started locally.
+  - Browser APP/H5 validation passed for render, connect, text send, rating submit, and refresh history.
+  - BaoTa acceptance output supplied by the user passed all automated child checks with `0 failure(s), 0 warning(s), 2 pending`.
+- Remaining issues:
+  - Need run the final BaoTa strict command with accepted evidence flags.
+- Next stage:
+  - Push this log/backlog update, then run final BaoTa strict acceptance:
+    `/www/server/php/83/bin/php yii customer-service-phase9-acceptance/run --baseUrl=https://demo2026.mongoyia.com --productId=2 --runChildChecks=1 --fixture=1 --browserAccepted=1 --browserEvidencePath=DEVELOPMENT_LOG.md#2026-06-23-Phase-9.7-Final-Browser-And-APP-H5-Acceptance-Evidence --appAccepted=1 --appEvidencePath=DEVELOPMENT_LOG.md#2026-06-23-Phase-9.7-Final-Browser-And-APP-H5-Acceptance-Evidence --strict=1 --interactive=0`.

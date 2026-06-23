@@ -63,7 +63,8 @@ class AppSellerPhase13ReadinessController extends Controller
             'coupons',
             'statistics',
             'distribution',
-            'seller_shipment_write_requires_logistics_stock_fee_acceptance',
+            'MONGOYIA_APP_SELLER_SHIPMENT_WRITE_V1',
+            'shipOrder',
         ]);
         $this->requireFileContains('Seller APP API controller', 'api/modules/v1/controllers/AppSellerController.php', [
             'MONGOYIA_APP_SELLER_CONTROLLER_V1',
@@ -77,6 +78,7 @@ class AppSellerPhase13ReadinessController extends Controller
             'actionStatistics',
             'actionDistribution',
             'sellerStoreId',
+            'shipOrder',
         ]);
         $this->requireFileContains('APP shared API helper uses seller endpoints', 'apps/mongoyia-customer-chat-uniapp/src/utils/appApi.js', [
             '/api/v1/app-seller/dashboard',
@@ -92,6 +94,7 @@ class AppSellerPhase13ReadinessController extends Controller
         $this->requireFileContains('Seller shipment page posts to shipment endpoint', 'apps/mongoyia-customer-chat-uniapp/src/pages/seller/orders.vue', [
             'SELLER_ENDPOINTS.shipment',
             'submitShipment',
+            'shipment_fee',
         ]);
         $this->requireFileContains('API URL manager supports APP controller ids', 'api/config/main.php', [
             '<modules:[\w-]+>/<controller:[\w-]+>/<action:[\w-]+>',
@@ -112,8 +115,8 @@ class AppSellerPhase13ReadinessController extends Controller
         foreach ([
             '/api/v1/app-seller/dashboard' => 'authenticated seller dashboard summary',
             '/api/v1/app-seller/products' => 'authenticated seller product list plus product write gate',
-            '/api/v1/app-seller/orders' => 'authenticated seller order list plus shipment write gate',
-            '/api/v1/app-seller/shipment' => 'authenticated seller shipment write gate',
+            '/api/v1/app-seller/orders' => 'authenticated seller order list plus shipment write alias',
+            '/api/v1/app-seller/shipment' => 'authenticated seller shipment write',
             '/api/v1/app-seller/logistics' => 'authenticated seller logistics method and fee summary',
             '/api/v1/app-seller/deposit' => 'authenticated seller deposit balance and recent logs',
             '/api/v1/app-seller/coupons' => 'authenticated seller coupon and platform participation summary',
@@ -140,8 +143,8 @@ class AppSellerPhase13ReadinessController extends Controller
             '- Generated at: ' . date('Y-m-d H:i:s'),
             '- Failures: ' . $this->failures,
             '- Warnings: ' . $this->warnings,
-            '- Scope: seller APP JSON APIs for dashboard, products, orders, shipment, logistics fee, deposit, coupons, statistics, and distribution overview.',
-            '- Safety: seller APIs are store-scoped to the authenticated user store; shipment/product/coupon/write paths remain gated until role-flow and logistics/payment evidence are accepted.',
+            '- Scope: seller APP JSON APIs for dashboard, products, orders, shipment write, logistics fee, deposit, coupons, statistics, and distribution overview.',
+            '- Safety: seller APIs are store-scoped to the authenticated user store; shipment write uses existing paid/COD checks and idempotent shipment-fee deduction, while product/coupon write paths remain gated until audit/browser evidence is accepted.',
             '',
             '## Checks',
             '',

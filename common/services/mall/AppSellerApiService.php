@@ -19,7 +19,7 @@ use yii\db\Query;
 class AppSellerApiService
 {
     public const VERSION = 'MONGOYIA_APP_SELLER_API_V1';
-    public const SHIPMENT_WRITE_GATE = 'seller_shipment_write_requires_logistics_stock_fee_acceptance';
+    public const SHIPMENT_WRITE_VERSION = 'MONGOYIA_APP_SELLER_SHIPMENT_WRITE_V1';
     public const PRODUCT_WRITE_GATE = 'seller_product_write_requires_audit_browser_acceptance';
 
     public function dashboard(int $storeId): array
@@ -43,7 +43,7 @@ class AppSellerApiService
                 'fund' => number_format((float)$store->fund, 2, '.', ''),
             ],
             'gates' => [
-                'shipment_write' => self::SHIPMENT_WRITE_GATE,
+                'shipment_write_version' => self::SHIPMENT_WRITE_VERSION,
                 'product_write' => self::PRODUCT_WRITE_GATE,
             ],
         ];
@@ -119,18 +119,65 @@ class AppSellerApiService
                 'total' => $total,
                 'page' => $page,
                 'page_size' => $pageSize,
-                'shipment_write_gate' => self::SHIPMENT_WRITE_GATE,
+                'shipment_write_version' => self::SHIPMENT_WRITE_VERSION,
             ],
         ];
     }
 
-    public function shipmentReserved(): array
+    public function shipOrder(int $storeId, array $input): array
     {
+        $orderId = (int)($input['order_id'] ?? $input['id'] ?? 0);
+        $trackingNo = mb_substr(trim((string)($input['tracking_no'] ?? $input['wldh'] ?? '')), 0, 255, 'UTF-8');
+        $logisticsCompany = mb_substr(trim((string)($input['logistics_company'] ?? $input['shipment_name'] ?? $input['wlgs'] ?? '')), 0, 255, 'UTF-8');
+        $shipmentId = (int)($input['shipment_id'] ?? 0);
+        $shipmentFee = $this->optionalMoney($input['shipment_fee'] ?? null);
+
+        if ($orderId <= 0) {
+            throw new \RuntimeException('ORDER_ID_REQUIRED');
+        }
+        if ($trackingNo === '') {
+            throw new \RuntimeException('TRACKING_NO_REQUIRED');
+        }
+        if ($logisticsCompany === '') {
+            $logisticsCompany = 'APP Shipment';
+        }
+
+        $order = Order::find()
+            ->where(['id' => $orderId, 'store_id' => $storeId])
+            ->andWhere(['>', 'parent_id', 0])
+            ->andWhere(['>', 'status', BaseModel::STATUS_DELETED])
+            ->one();
+        if (!$order) {
+            throw new \RuntimeException('ORDER_NOT_FOUND_OR_OUT_OF_SCOPE');
+        }
+
+        if (method_exists($order, 'hasAttribute') && $order->hasAttribute('wldh')) {
+            $order->wldh = $trackingNo;
+        }
+        if (method_exists($order, 'hasAttribute') && $order->hasAttribute('wlgs')) {
+            $order->wlgs = $logisticsCompany;
+        }
+        $order->shipment_name = $logisticsCompany;
+        if ($shipmentId > 0) {
+            $order->shipment_id = $shipmentId;
+        }
+        if ($shipmentFee !== null) {
+            $order->shipment_fee = $shipmentFee;
+        }
+
+        $order->markShipped(
+            $shipmentId > 0 ? $shipmentId : null,
+            $logisticsCompany,
+            null,
+            $shipmentFee
+        );
+
+        $order = Order::findOne((int)$order->id) ?: $order;
         return [
             'version' => self::VERSION,
-            'shipment_reserved' => true,
-            'message' => 'Shipment write API is reserved until Phase 13/14 logistics, stock, fee deduction, and browser role-flow acceptance is complete.',
-            'gate' => self::SHIPMENT_WRITE_GATE,
+            'shipment_write_version' => self::SHIPMENT_WRITE_VERSION,
+            'order' => $this->orderSummary($order),
+            'tracking_no' => $trackingNo,
         ];
     }
 
@@ -387,6 +434,8 @@ class AppSellerApiService
             'shipment_status_label' => Order::getShipmentStatusLabels((int)$order->shipment_status, true),
             'shipment_name' => (string)$order->shipment_name,
             'shipment_fee' => number_format((float)$order->shipment_fee, 2, '.', ''),
+            'tracking_no' => $this->attr($order, 'wldh', ''),
+            'logistics_company' => $this->attr($order, 'wlgs', (string)$order->shipment_name),
             'status' => (int)$order->status,
             'status_label' => Order::getStatusLabels((int)$order->status, true),
             'created_at' => (int)$order->created_at,
@@ -595,6 +644,15 @@ class AppSellerApiService
         } catch (\Throwable $e) {
             return $default;
         }
+    }
+
+    private function optionalMoney($value): ?float
+    {
+        if ($value === null || $value === '') {
+            return null;
+        }
+
+        return is_numeric($value) ? round((float)$value, 2) : null;
     }
 
     private function tableExists(string $table): bool

@@ -132,7 +132,8 @@ class AppPhase13AcceptanceController extends Controller
             'dashboard',
             'products',
             'orders',
-            'seller_shipment_write_requires_logistics_stock_fee_acceptance',
+            'MONGOYIA_APP_SELLER_SHIPMENT_WRITE_V1',
+            'shipOrder',
         ]);
         $this->requireFileContains('Seller APP JSON API controller', 'api/modules/v1/controllers/AppSellerController.php', [
             'MONGOYIA_APP_SELLER_CONTROLLER_V1',
@@ -141,11 +142,12 @@ class AppPhase13AcceptanceController extends Controller
             'actionOrders',
             'actionShipment',
             'sellerStoreId',
+            'shipOrder',
         ]);
         $this->requireFileContains('Seller APP JSON API readiness', 'console/controllers/AppSellerPhase13ReadinessController.php', [
             'MONGOYIA_APP_SELLER_PHASE13_READINESS_V1',
             'app-seller-phase13-readiness/run',
-            'shipment/product/coupon/write paths remain gated',
+            'shipment write uses existing paid/COD checks',
         ]);
         $this->requireFileContains('APP auth handoff readiness', 'console/controllers/AppAuthPhase13ReadinessController.php', [
             'MONGOYIA_APP_AUTH_PHASE13_READINESS_V1',
@@ -188,7 +190,7 @@ class AppPhase13AcceptanceController extends Controller
             $this->sellerApiAccepted,
             $this->sellerEvidencePath,
             'Seller APP dashboard/product/order/shipment APIs were accepted.',
-            'Implement and validate seller APP JSON APIs for store profile, product management, order shipment, logistics fee, deposit, coupons, statistics, and distribution overview.'
+            'Validate seller APP JSON APIs for store profile, product list, order shipment write, logistics fee, deposit, coupons, statistics, and distribution overview.'
         );
         $this->manualFlag(
             'Browser H5 APP role-flow acceptance',
@@ -277,7 +279,7 @@ class AppPhase13AcceptanceController extends Controller
             '- Pending: ' . $this->pending,
             '- Scope: buyer APP, seller APP workbench, shared backend APIs, customer-service entry, H5 development package, and role-flow evidence.',
             '- Safety: this command does not mutate orders, carts, products, shipment rows, funds, stock, or credentials.',
-            '- Boundary: Phase 13.0 verifies the APP route shell. Full JSON APIs and browser/APP role-flow evidence remain pending until later Phase 13 increments.',
+            '- Boundary: Phase 13 verifies the APP route shell, buyer checkout write, and seller shipment write. Product/coupon writes and browser/APP role-flow evidence remain pending until later acceptance.',
             '',
             '## Checks',
             '',

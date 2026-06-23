@@ -128,7 +128,7 @@ class AppAuthPhase13ReadinessController extends Controller
             '- Failures: ' . $this->failures,
             '- Warnings: ' . $this->warnings,
             '- Scope: APP login page, token storage, token header injection, protected buyer/seller page login handoff, and H5 role-flow preparation.',
-            '- Safety: password is posted only to the existing `/api/site/login` endpoint and is not stored locally; checkout/shipment/product/coupon writes remain gated by earlier Phase 13 API guards.',
+            '- Safety: password is posted only to the existing `/api/site/login` endpoint and is not stored locally; buyer checkout and seller shipment writes use scoped API guards, while product/coupon writes remain gated by later audit/browser acceptance.',
             '',
             '## Checks',
             '',

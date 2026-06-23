@@ -49,8 +49,7 @@ class AppSellerController extends BaseController
     {
         return $this->runSellerAction(function (int $storeId) {
             if (Yii::$app->request->isPost) {
-                Yii::$app->response->statusCode = 409;
-                return $this->sellerService()->shipmentReserved();
+                return $this->sellerService()->shipOrder($storeId, Yii::$app->request->post());
             }
 
             return $this->sellerService()->orders($storeId, Yii::$app->request->get());
@@ -60,8 +59,7 @@ class AppSellerController extends BaseController
     public function actionShipment()
     {
         return $this->runSellerAction(function (int $storeId) {
-            Yii::$app->response->statusCode = 409;
-            return $this->sellerService()->shipmentReserved();
+            return $this->sellerService()->shipOrder($storeId, Yii::$app->request->post());
         });
     }
 

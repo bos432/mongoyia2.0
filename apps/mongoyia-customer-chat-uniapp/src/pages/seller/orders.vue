@@ -16,8 +16,13 @@
           <text class="order-status">{{ item.status_label || item.status || '' }}</text>
         </view>
         <text class="order-meta">{{ item.receiver || item.mobile || '' }}</text>
+        <text class="order-meta">{{ item.logistics_company || item.shipment_name || '未填写物流公司' }} {{ item.tracking_no || '' }}</text>
         <view class="ship-row">
+          <input v-model="shipmentCompany[item.id || item.sn]" class="ship-input company-input" placeholder="物流公司" />
           <input v-model="shipment[item.id || item.sn]" class="ship-input" placeholder="物流单号" />
+        </view>
+        <view class="ship-row">
+          <input v-model="shipmentFee[item.id || item.sn]" class="ship-input" placeholder="运费（可选）" />
           <button size="mini" type="primary" @tap="submitShipment(item)">发货</button>
         </view>
       </view>
@@ -34,6 +39,8 @@ export default {
     return {
       baseUrl: DEFAULT_CONFIG.baseUrl,
       shipment: {},
+      shipmentCompany: {},
+      shipmentFee: {},
       state: pageState()
     }
   },
@@ -48,6 +55,7 @@ export default {
       try {
         const response = await appRequest({ baseUrl: this.baseUrl, path: SELLER_ENDPOINTS.orders })
         this.state.items = normalizeListPayload(response)
+        this.prefillShipmentFields(this.state.items)
         this.state.loaded = true
       } catch (error) {
         this.state.error = error.message || '数据暂不可用'
@@ -58,6 +66,8 @@ export default {
     async submitShipment(item) {
       const key = item.id || item.sn
       const trackingNo = String(this.shipment[key] || '').trim()
+      const logisticsCompany = String(this.shipmentCompany[key] || '').trim()
+      const shipmentFee = String(this.shipmentFee[key] || '').trim()
       if (!trackingNo) {
         uni.showToast({ title: '请输入物流单号', icon: 'none' })
         return
@@ -70,6 +80,8 @@ export default {
           data: {
             order_id: item.id,
             tracking_no: trackingNo,
+            logistics_company: logisticsCompany,
+            shipment_fee: shipmentFee,
             action: 'ship'
           }
         })
@@ -78,6 +90,24 @@ export default {
       } catch (error) {
         uni.showToast({ title: error.message || '提交失败', icon: 'none' })
       }
+    },
+    prefillShipmentFields(items = []) {
+      items.forEach((item) => {
+        const key = item.id || item.sn
+        if (!key) {
+          return
+        }
+        if (item.tracking_no && !this.shipment[key]) {
+          this.shipment[key] = item.tracking_no
+        }
+        const company = item.logistics_company || item.shipment_name || ''
+        if (company && !this.shipmentCompany[key]) {
+          this.shipmentCompany[key] = company
+        }
+        if (item.shipment_fee && !this.shipmentFee[key]) {
+          this.shipmentFee[key] = item.shipment_fee
+        }
+      })
     },
     openLogin() {
       uni.navigateTo({
@@ -176,5 +206,9 @@ export default {
   border: 1px solid #d8dee8;
   border-radius: 6px;
   background: #ffffff;
+}
+
+.company-input {
+  max-width: 42%;
 }
 </style>

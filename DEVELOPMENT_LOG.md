@@ -5701,3 +5701,38 @@
 - Next stage:
   - Commit and push Phase 13.5.
   - Continue with the next plan-listed small stage: seller APP shipment write path, while keeping product/coupon writes gated until audit/browser evidence is available.
+
+## 2026-06-23 Phase 13.6 Seller APP Shipment Write
+
+- Stage name: Phase 13.6 seller APP shipment write path
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting the stage.
+  - Replaced the seller APP shipment reservation with a real store-scoped shipment writer in `AppSellerApiService`.
+  - Added child-order lookup constrained to the authenticated seller store, logistics company capture, tracking number capture, optional shipment fee capture, and response fields for refresh persistence.
+  - Reused the existing `Order::markShipped()` lifecycle so unpaid/refunded orders remain blocked and shipment-fee deduction stays idempotent.
+  - Updated `/api/v1/app-seller/shipment` and seller orders POST alias to call the real shipment writer.
+  - Updated the uni-app seller order page with logistics company, tracking number, optional fee inputs, and existing logistics display after refresh.
+  - Updated Phase 13 seller/auth/aggregate readiness markers and the development backlog to record seller shipment write as implemented while product/coupon writes remain gated.
+- Main files changed/added:
+  - `common/services/mall/AppSellerApiService.php`
+  - `api/modules/v1/controllers/AppSellerController.php`
+  - `apps/mongoyia-customer-chat-uniapp/src/pages/seller/orders.vue`
+  - `console/controllers/AppSellerPhase13ReadinessController.php`
+  - `console/controllers/AppPhase13AcceptanceController.php`
+  - `console/controllers/AppAuthPhase13ReadinessController.php`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l` passed for `AppSellerApiService.php`, `AppSellerController.php`, `AppSellerPhase13ReadinessController.php`, `AppPhase13AcceptanceController.php`, and `AppAuthPhase13ReadinessController.php`.
+  - `npm run build:h5` passed in `apps/mongoyia-customer-chat-uniapp`; output contained only existing uni-app/Vite informational/deprecation warnings.
+  - Static marker checks confirmed `MONGOYIA_APP_SELLER_SHIPMENT_WRITE_V1`, `shipOrder`, APP `shipment_fee`, and Phase 13.6 backlog markers.
+  - `git diff --check` reported no whitespace errors; only existing Windows line-ending conversion warnings.
+  - Full Yii console execution was not run locally because this patch checkout does not have `vendor/autoload.php`; after BaoTa pull run `app-seller-phase13-readiness/run --fixture=1` and `app-phase13-acceptance/run --fixture=1`.
+- Remaining issues:
+  - Phase 13 authenticated browser/H5 buyer checkout and seller shipment role-flow evidence remains pending until BaoTa pulls these commits.
+  - Seller APP product and coupon write paths remain gated until audit/browser evidence is available.
+  - Phase 14/15 browser evidence remains blocked because the test server page still shows pre-Phase-15 code.
+  - Phase 10/11/12 external provider and production evidence remain incomplete; production remains `NO-GO`.
+- Next stage:
+  - Commit and push Phase 13.6.
+  - Continue with the next plan-listed small stage: seller APP product-management write path, if it can be implemented without bypassing product audit and store-isolation requirements.

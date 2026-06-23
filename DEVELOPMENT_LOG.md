@@ -4632,3 +4632,70 @@
   - On BaoTa, run `git pull`, then rerun:
     `/www/server/php/83/bin/php yii operational-config-phase10-acceptance/run --baseUrl=https://demo2026.mongoyia.com --runChildChecks=1 --fixture=1 --strict=1 --interactive=0`.
   - If only the four manual evidence items remain pending, proceed with Phase 10 backend browser validation and provider/production evidence collection.
+
+## 2026-06-23 Phase 10.6 BaoTa Automated Acceptance And Browser NO-GO Evidence
+
+- Stage name: Phase 10.6 operational config automated acceptance and browser readiness evidence
+- Verification time:
+  - 2026-06-23 15:26-15:33 Asia/Shanghai.
+- Verification environment:
+  - BaoTa test server: `https://demo2026.mongoyia.com`.
+  - Backend page: `/backend/mall/operational-config/index`.
+  - Server report supplied by user:
+    `/www/wwwroot/demo2026.mongoyia.com/runtime/handover/mongoyia-operational-config-phase10-acceptance-20260623-072615.md`.
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before continuing Phase 10.
+  - Reviewed the BaoTa output after pulling `6b198f3`.
+  - Confirmed PayPal external evidence collection, manifest import, manifest review readiness, signoff import, review-result apply, live provider evidence, live execution evidence, live verification, PayPal final NO-GO, production external evidence, production evidence summary, and production go-live child gates now pass.
+  - Confirmed final Phase 10 automated summary is `0 failure(s), 0 warning(s), 4 pending`.
+  - Opened the backend operations configuration center in the in-app browser.
+  - Verified page title `运营配置中心`, URL `https://demo2026.mongoyia.com/backend/mall/operational-config/index`, and login state were valid.
+  - Verified required page markers are present:
+    - `data-mongoyia-operational-phase10-readiness`
+    - `data-mongoyia-operational-payment-config`
+    - `data-mongoyia-operational-mail-config`
+    - `data-mongoyia-operational-ops-alert`
+    - `data-mongoyia-operational-launch-signoff`
+    - `data-mongoyia-operational-provider-evidence`
+  - Verified payment/mail/provider labels are visible for QPay, LianLian, PayPal, and SMTP.
+  - Reloaded the page and confirmed the same key cards remain visible.
+  - Verified browser console has no captured error-level logs during page open and reload.
+  - Confirmed the readiness card correctly remains `NO-GO`, citing missing launch signoff and production/provider/manual evidence rather than pretending production is ready.
+- Test data summary:
+  - No secrets or provider credentials were entered.
+  - No payment, SMTP, translation, alert, launch, or production signoff rows were submitted in the browser during this pass.
+- Pass items:
+  - Phase 10 automated child checks pass with no failures and no warnings.
+  - Backend operations config page opens while authenticated.
+  - Payment, mail, alert, launch signoff, provider evidence, and Phase 10 readiness cards render.
+  - Page refresh preserves visible state.
+  - No browser console errors were observed.
+- Found issues:
+  - Four manual evidence gates remain pending by design:
+    - Backend operations browser acceptance.
+    - Provider evidence acceptance.
+    - Production operations evidence acceptance.
+    - Redacted export review acceptance.
+  - Page readiness remains `NO-GO` because provider credentials/evidence, launch signoff references, production evidence, and redacted export review have not been accepted.
+- Whether this reaches online-operation standard:
+  - No. Automated and browser readiness are now healthy, but production operation standard is not reached until the four manual evidence gates are completed with real provider and production evidence.
+- Main files changed/added:
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - BaoTa command:
+    `/www/server/php/83/bin/php yii operational-config-phase10-acceptance/run --baseUrl=https://demo2026.mongoyia.com --runChildChecks=1 --fixture=1 --strict=1 --interactive=0`
+  - BaoTa result:
+    `Summary: 0 failure(s), 0 warning(s), 4 pending.`
+  - Browser validation:
+    - Backend page open/reload/marker checks passed.
+    - Console error log check passed.
+- Remaining issues:
+  - The local checkout still has unrelated untracked `docs/mongoyia-operational-config-provider-setup-guide.md`; it was left untouched.
+  - Phase 10 cannot be honestly accepted until the four manual evidence gates are completed.
+  - Phase 11 should not start yet because the plan requires Phase 10 to record provider configuration evidence first.
+- Next stage:
+  - Record real or sandbox provider evidence references in the backend operations center for QPay, LianLian, PayPal, SMTP, translation, and alert channels.
+  - Run/review redacted export and confirm no secrets are exposed.
+  - Record production operations evidence for scheduler, backup restore, load/security/business signoff, rollback owner, launch window, and launch signoff.
+  - Rerun Phase 10 acceptance with the four manual accepted flags only after those records exist.

@@ -6489,3 +6489,28 @@
   - Phase 10/11/12/13/14 external/browser evidence remains pending; production remains `NO-GO`.
 - Next stage:
   - Verify, commit, and push this Phase 15 checklist patch, then continue with the next plan-listed local readiness item.
+
+## 2026-06-23 Phase 14 Browser Evidence Checklist
+
+- Stage name: Phase 14 browser evidence checklist
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting the stage.
+  - Extended `logistics-product-phase14-acceptance/run` report output with a browser role-flow checklist for platform, seller, buyer, PC/H5/APP validation.
+  - Documented logistics provider adapter, simulated tracking, SKU/inventory/shipping timeout, product video/search/filter, store favorite, review moderation, refresh persistence, and safety checks inside the generated acceptance report.
+  - Added an accepted-evidence command template showing how to pass provider, tracking, SKU/inventory, search/video, favorite/review, and browser evidence paths after reviewer acceptance.
+  - Updated the development backlog to record that Phase 14 has a browser evidence checklist and accepted-evidence command template.
+- Main files changed/added:
+  - `console/controllers/LogisticsProductPhase14AcceptanceController.php`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l console/controllers/LogisticsProductPhase14AcceptanceController.php` passed.
+  - Static marker checks confirmed `Browser Role-Flow Checklist`, `Accepted Evidence Command`, `phase14-browser-evidence`, and backlog browser evidence checklist coverage.
+  - `git diff --check` reported no whitespace errors, only existing Windows line-ending conversion warnings.
+  - Full Yii console execution remains BaoTa-only because this local checkout lacks `vendor/autoload.php`.
+- Remaining issues:
+  - Phase 14 browser evidence still requires the BaoTa/test server to pull the latest code and run migrations/readiness.
+  - Real logistics provider evidence remains external; provider secrets must not be committed.
+  - Phase 10/11/12/13/15 external/browser evidence remains pending; production remains `NO-GO`.
+- Next stage:
+  - Verify, commit, and push this Phase 14 checklist patch, then continue with the next plan-listed local readiness item.

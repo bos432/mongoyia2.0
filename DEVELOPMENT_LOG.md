@@ -5881,3 +5881,25 @@
 - Next stage:
   - Commit and push Phase 13.10.
   - Re-read the development plan and this log, then continue with BaoTa/browser validation if the server has pulled the latest commits, otherwise move to the next plan-listed stage that can be advanced locally without real provider credentials.
+
+## 2026-06-23 Phase 13-15 Browser Evidence Deployment Check
+
+- Stage name: Phase 13/14/15 browser evidence deployment check
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting the stage.
+  - Reused the right-side browser tab on `https://demo2026.mongoyia.com/backend/mall/distribution-distributor/index`.
+  - Checked the deployed backend page for Phase 15 browser markers required before Phase 14/15 browser role-flow evidence can be trusted.
+  - Confirmed `data-mongoyia-phase15-support-content`, `data-mongoyia-phase15-material-management`, and `data-mongoyia-phase15-signoff-evidence` are still absent on the server page.
+- Main files changed/added:
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - Browser URL opened: `https://demo2026.mongoyia.com/backend/mall/distribution-distributor/index`.
+  - Browser page title: `分销员运营`.
+  - Marker check result: `supportContent=false`, `materialManagement=false`, `signoffEvidence=false`.
+  - No business form was submitted and no browser data was changed.
+- Remaining issues:
+  - BaoTa/test server still appears to be running a pre-Phase-15 deployment, so Phase 13 authenticated APP role-flow, Phase 14 logistics/product/favorite/review browser evidence, and Phase 15 distributor support browser evidence remain blocked until the server pulls latest commits and runs migrations.
+  - Phase 10/11/12 external provider and production evidence remain incomplete; production remains `NO-GO`.
+- Next stage:
+  - Push this deployment-check log entry.
+  - Continue with the next plan-listed stage that can be advanced locally without server deployment or real provider credentials.

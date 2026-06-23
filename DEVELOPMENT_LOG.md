@@ -6241,3 +6241,30 @@
 - Next stage:
   - Commit and push this browser deployment recheck log entry.
   - Continue only with plan-listed local readiness/evidence work that does not require deployed server updates, real provider credentials, or production signoff.
+
+## 2026-06-23 Phase 11.6 Payment Channel List UI Stability
+
+- Stage name: Phase 11.6 payment channel list UI stability
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting the stage.
+  - Added `MONGOYIA_PAYMENT_CHANNEL_LIST_UI_V1` CSS marker and stable `.payment-channel-list` layout rules.
+  - Ensured multiple payment-channel buttons stack with consistent spacing, full-width tap targets, and long-label wrapping on mobile/H5.
+  - Kept the no-channel alert compact by removing extra bottom margin in the payment-channel list.
+  - Updated Phase 11 acceptance source checks to verify the dynamic payment-channel CSS marker.
+  - Updated the development backlog to record Phase 11.6.
+- Main files changed/added:
+  - `web/resources/mall/default/css/style.css`
+  - `console/controllers/PaymentPhase11AcceptanceController.php`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l console/controllers/PaymentPhase11AcceptanceController.php` passed.
+  - Static marker checks confirmed `MONGOYIA_PAYMENT_CHANNEL_LIST_UI_V1`, `.payment-channel-list`, and `overflow-wrap: anywhere`.
+  - `git diff --check` reported no whitespace errors; only existing Windows line-ending conversion warnings.
+  - Browser UI validation remains blocked until BaoTa pulls the latest commits and serves the updated CSS.
+- Remaining issues:
+  - Phase 11 payment browser evidence remains pending on the deployed server.
+  - Real QPay/LianLian/PayPal sandbox evidence and Phase 10 production evidence remain incomplete; production remains `NO-GO`.
+- Next stage:
+  - Commit and push Phase 11.6.
+  - Re-read the development plan and this log, then continue with the next plan-listed local closure item or BaoTa/browser validation after the server pulls latest code.

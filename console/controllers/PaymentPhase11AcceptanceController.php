@@ -125,6 +125,11 @@ class PaymentPhase11AcceptanceController extends Controller
             'data-mongoyia-phase11-payment-no-channel',
             'Pay with {provider}',
         ]);
+        $this->requireFileContains('Frontend payment dynamic channel CSS', 'web/resources/mall/default/css/style.css', [
+            'MONGOYIA_PAYMENT_CHANNEL_LIST_UI_V1',
+            '.payment-channel-list',
+            'overflow-wrap: anywhere',
+        ]);
         $this->requireFileContains('Payment callback safety guards', 'frontend/modules/mall/controllers/PaymentController.php', [
             'assertPaidAmountMatches',
             'paymentCallbackLockName',

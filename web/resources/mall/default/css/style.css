@@ -3000,6 +3000,24 @@ img {
 
 /*** end of user ***/
 
+/* MONGOYIA_PAYMENT_CHANNEL_LIST_UI_V1 */
+.payment-channel-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.payment-channel-list .control-full {
+    display: block;
+    width: 100%;
+    white-space: normal;
+    overflow-wrap: anywhere;
+}
+
+.payment-channel-list .alert {
+    margin-bottom: 0;
+}
+
 /* MONGOYIA_FRONTEND_PWA_DENSITY */
 .mongoyia-pwa-shell {
     min-height: 100vh;

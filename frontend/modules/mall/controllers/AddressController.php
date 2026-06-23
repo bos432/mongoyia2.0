@@ -18,6 +18,7 @@ use Yii;
 class AddressController extends BaseController
 {
     public const ADDRESS_DELETE_POST_GUARD_VERSION = 'MONGOYIA_BUYER_ADDRESS_DELETE_POST_GUARD_V1';
+    public const ADDRESS_EDIT_POST_ID_GUARD_VERSION = 'MONGOYIA_BUYER_ADDRESS_EDIT_POST_ID_GUARD_V1';
 
     public $modelClass = Address::class;
 
@@ -53,7 +54,9 @@ class AddressController extends BaseController
     public function actionEdit()
     {
 //        echo 111;exit();
-        $id = Yii::$app->request->get('id');
+        $id = Yii::$app->request->isPost
+            ? (int)Yii::$app->request->post('id', 0)
+            : (int)Yii::$app->request->get('id', 0);
         $model = $this->findModel($id);
 
         if ($model->load(Yii::$app->request->post())) {

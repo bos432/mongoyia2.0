@@ -8277,3 +8277,36 @@
   - Phase 10/11/12/13/14/15 external/provider/browser evidence gates remain pending; production remains `NO-GO`.
 - Next stage:
   - Commit and push this buyer address delete POST guard patch, then reread the plan/log and continue with the next plan-listed readiness item.
+
+## 2026-06-24 Phase 13 Buyer Address Edit POST ID Hardening
+
+- Stage name: Phase 13.24 buyer address edit POST id hardening
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting the stage.
+  - Added `MONGOYIA_BUYER_ADDRESS_EDIT_POST_ID_GUARD_V1` to the frontend mall address controller.
+  - Changed `/mall/address/edit` so GET still opens create/edit forms, while POST save requests read the address `id` only from POST body data.
+  - Added a hidden `id` field and `data-mongoyia-address-edit-post-id-guard` marker to the address edit form.
+  - Added readiness coverage in PWA smoke, Phase 13 buyer readiness, and Phase 13 aggregate acceptance.
+  - Updated the Phase 13 backlog notes as Phase 13.24.
+- Main files changed/added:
+  - `frontend/modules/mall/controllers/AddressController.php`
+  - `web/resources/mall/default/views/address/edit.php`
+  - `console/controllers/PwaSmokeTestController.php`
+  - `console/controllers/AppBuyerPhase13ReadinessController.php`
+  - `console/controllers/AppPhase13AcceptanceController.php`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l frontend/modules/mall/controllers/AddressController.php` passed.
+  - `php -l web/resources/mall/default/views/address/edit.php` passed.
+  - `php -l console/controllers/PwaSmokeTestController.php` passed.
+  - `php -l console/controllers/AppBuyerPhase13ReadinessController.php` passed.
+  - `php -l console/controllers/AppPhase13AcceptanceController.php` passed.
+  - Static marker checks confirmed `MONGOYIA_BUYER_ADDRESS_EDIT_POST_ID_GUARD_V1`, POST/GET id branch, hidden POST `id`, `data-mongoyia-address-edit-post-id-guard`, and `Phase 13.24`.
+  - `git diff --check` reported no whitespace errors, only existing Windows line-ending conversion warnings.
+  - Full Yii console execution remains BaoTa-only because this local checkout lacks `vendor/autoload.php`.
+- Remaining issues:
+  - BaoTa/test server must rerun PWA smoke and Phase 13 buyer/aggregate acceptance after deployment.
+  - Phase 13 authenticated H5/APP buyer/seller role-flow evidence and Phase 10/11/12/14/15 external/provider/browser evidence gates remain pending; production remains `NO-GO`.
+- Next stage:
+  - Commit and push this buyer address edit POST id hardening patch, then reread the plan/log and continue with the next plan-listed readiness item.

@@ -431,6 +431,8 @@ Phase 13.22 buyer product consultation POST id hardening: PC/H5 product consulta
 
 Phase 13.23 buyer address delete POST guard: PC/H5 buyer address deletion now uses `MONGOYIA_BUYER_ADDRESS_DELETE_POST_GUARD_V1`, explicitly restricts `/mall/address/delete` to POST, and reads the address `id` only from POST body data. The user address list renders a CSRF POST form with hidden `id` and `data-mongoyia-address-delete-post-guard` instead of a URL-id delete link; PWA smoke, Phase 13 buyer readiness, and aggregate acceptance cover the guard.
 
+Phase 13.24 buyer address edit POST id hardening: PC/H5 buyer address edit/create keeps GET for opening the form, but save requests now use `MONGOYIA_BUYER_ADDRESS_EDIT_POST_ID_GUARD_V1` and read the address `id` from POST body data. The address edit form includes a hidden `id` and `data-mongoyia-address-edit-post-id-guard`; PWA smoke, Phase 13 buyer readiness, and aggregate acceptance cover the guard.
+
 Phase 14 acceptance command:
 
 ```bash

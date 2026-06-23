@@ -8,7 +8,9 @@ use common\helpers\CommonHelper;
 $this->title = (Yii::$app->request->get('id') ? Yii::t('app', 'Update ') : Yii::t('app', 'Create ')) . Yii::t('app', 'Address') ;
 $this->params['breadcrumbs'][] = $this->title;
 
-$form = ActiveForm::begin([]);
+$form = ActiveForm::begin([
+    'options' => ['data-mongoyia-address-edit-post-id-guard' => '1'],
+]);
 ?>
 
 <div class="page-section">
@@ -21,6 +23,7 @@ $form = ActiveForm::begin([]);
 
                 <div class="card-body">
 
+                    <?= Html::hiddenInput('id', (int)$model->id) ?>
                     <?= $form->field($model, 'first_name', ['template' => "{input}\n{label}\n{hint}\n{error}", 'options' => ['class' => 'form-group form-label-group']])->textInput(['autofocus' => true, 'placeholder' => Yii::t('app', ' ')]) ?>
                     <?= $form->field($model, 'last_name', ['template' => "{input}\n{label}\n{hint}\n{error}", 'options' => ['class' => 'form-group form-label-group']])->textInput(['autofocus' => true, 'placeholder' => Yii::t('app', ' ')]) ?>
                     <?= $form->field($model, 'address', ['template' => "{input}\n{label}\n{hint}\n{error}", 'options' => ['class' => 'form-group form-label-group']])->textInput(['placeholder' => Yii::t('app', ' ')]) ?>

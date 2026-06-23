@@ -143,8 +143,14 @@ class PwaSmokeTestController extends Controller
         }
         $this->requireFileContains('frontend/modules/mall/controllers/AddressController.php', [
             'MONGOYIA_BUYER_ADDRESS_DELETE_POST_GUARD_V1',
+            'MONGOYIA_BUYER_ADDRESS_EDIT_POST_ID_GUARD_V1',
             "'delete' => ['POST']",
+            "isPost",
             "post('id', 0)",
+        ]);
+        $this->requireFileContains('web/resources/mall/default/views/address/edit.php', [
+            'data-mongoyia-address-edit-post-id-guard',
+            "Html::hiddenInput('id'",
         ]);
         $this->requireFileContains('web/resources/mall/default/views/user/address_.php', [
             'data-mongoyia-address-delete-post-guard',

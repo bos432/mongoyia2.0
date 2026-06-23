@@ -112,13 +112,26 @@ class LogisticsProductPhase14AcceptanceController extends Controller
             'star',
             'content',
         ]);
+        $this->requireFileContains('Logistics provider adapter service', 'common/services/mall/LogisticsProviderAdapterService.php', [
+            'MONGOYIA_LOGISTICS_PROVIDER_ADAPTER_V1',
+            'PROVIDER_SIMULATED',
+            'createShipmentPreview',
+            'queryTracking',
+            'batchTracking',
+            'provider_secret_never_logged',
+        ]);
+        $this->requireFileContains('Logistics provider adapter readiness', 'console/controllers/LogisticsProviderPhase14ReadinessController.php', [
+            'MONGOYIA_LOGISTICS_PROVIDER_PHASE14_READINESS_V1',
+            'logistics-provider-phase14-readiness/run',
+            'Simulated provider fixture',
+        ]);
     }
 
     private function checkPlannedScopeMatrix(): void
     {
         $this->section('Phase 14 planned scope matrix');
         foreach ([
-            'Logistics provider adapter contract' => 'Provider adapter config, simulated provider, real provider evidence gate, and no committed provider secrets.',
+            'Logistics provider adapter contract' => 'Provider adapter config, simulated provider, real provider evidence gate, readiness command, and no committed provider secrets.',
             'Tracking sync contract' => 'Single/batch tracking query, abnormal status mapping, audit evidence, and retry-safe sync.',
             'SKU/inventory/shipping contract' => 'Automatic SKU code generation, shipping timeout/deposit deduction, inventory location, and safe stock checks.',
             'Search/video contract' => 'SKU/keyword suggestions, brand/price/sales filters, and product video exposure.',

@@ -5,6 +5,7 @@ namespace backend\modules\mall\controllers;
 use common\services\mall\OperationalConfigService;
 use common\services\mall\CustomerServiceTranslationService;
 use common\services\mall\MerchantPaymentConfigService;
+use common\services\mall\OperationalAccountSecurityService;
 use common\services\mall\OperationalIdentityConfigService;
 use common\services\mall\OperationalLaunchSignoffService;
 use common\services\mall\OperationalMailConfigService;
@@ -108,6 +109,49 @@ class OperationalConfigController extends BaseController
             'snapshot' => (new OperationalIdentityConfigService())->snapshot($environment),
             'identityEnvironments' => (new OperationalIdentityConfigService())->environments(),
         ]);
+    }
+
+    public function actionAccountSecurity()
+    {
+        if (!$this->isMallPlatformOperator()) {
+            throw new ForbiddenHttpException(Yii::t('app', 'No Auth'));
+        }
+
+        return $this->render('account-security', [
+            'snapshot' => (new OperationalAccountSecurityService())->snapshot(),
+        ]);
+    }
+
+    public function actionSaveAccountSecurity()
+    {
+        if (!$this->isMallPlatformOperator()) {
+            throw new ForbiddenHttpException(Yii::t('app', 'No Auth'));
+        }
+
+        try {
+            $result = (new OperationalAccountSecurityService())->save((array)Yii::$app->request->post('security', []));
+            Yii::$app->session->setFlash('success', '账号安全策略已保存，检测结果：' . $result['result'] . ' - ' . $result['message']);
+        } catch (\Throwable $e) {
+            Yii::$app->session->setFlash('error', '账号安全策略保存失败：' . $e->getMessage());
+        }
+
+        return $this->redirect(['account-security']);
+    }
+
+    public function actionCheckAccountSecurity()
+    {
+        if (!$this->isMallPlatformOperator()) {
+            throw new ForbiddenHttpException(Yii::t('app', 'No Auth'));
+        }
+
+        try {
+            $result = (new OperationalAccountSecurityService())->check(true);
+            Yii::$app->session->setFlash('success', '账号安全策略检测完成：' . $result['result'] . ' - ' . $result['message']);
+        } catch (\Throwable $e) {
+            Yii::$app->session->setFlash('error', '账号安全策略检测失败：' . $e->getMessage());
+        }
+
+        return $this->redirect(['account-security']);
     }
 
     public function actionSaveIdentityConfig()

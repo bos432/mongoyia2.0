@@ -144,6 +144,29 @@ class AccountNotificationPhase12AcceptanceController extends Controller
             'identity-config-readiness',
             'Frontend social auth boundary controller',
         ]);
+        $this->requireFileContains('Encrypted account security policy service', 'common/services/mall/OperationalAccountSecurityService.php', [
+            'MONGOYIA_OPERATIONAL_ACCOUNT_SECURITY_V1',
+            'email_reset_enabled',
+            'mobile_code_login_enabled',
+            'code_ttl_seconds',
+            'audit_enabled',
+        ]);
+        $this->requireFileContains('Account security backend config page', 'backend/modules/mall/views/operational-config/account-security.php', [
+            'data-mongoyia-account-security',
+            'data-mongoyia-account-security-policy',
+            'data-mongoyia-account-security-routes',
+        ]);
+        $this->requireFileContains('Account security frontend boundary', 'frontend/controllers/AccountSecurityController.php', [
+            'MONGOYIA_ACCOUNT_SECURITY_BOUNDARY_V1',
+            'actionRequestCode',
+            'actionLoginCode',
+            'SECURITY_CODE_POLICY_GATE',
+        ]);
+        $this->requireFileContains('Account security readiness command', 'console/controllers/AccountSecurityReadinessController.php', [
+            'MONGOYIA_ACCOUNT_SECURITY_READINESS_V1',
+            'account-security-readiness',
+            'Frontend account security boundary controller',
+        ]);
         $this->requireFileContains('Site message foundation', 'common/components/base/MessageSystem.php', [
             'sendMessageType',
             'MessageType::SEND_TARGET_ALL',
@@ -220,6 +243,11 @@ class AccountNotificationPhase12AcceptanceController extends Controller
                 'evidence' => 'frontend/controllers/Oauth2Controller.php',
                 'notes' => 'Internal OAuth2 grant foundation exists; Facebook/Google provider flow remains a Phase 12 implementation task.',
             ],
+            'Account security policy foundation' => [
+                'status' => 'PASS',
+                'evidence' => 'common/services/mall/OperationalAccountSecurityService.php',
+                'notes' => 'Backend switches and frontend reserved security-code routes are present; live code delivery remains evidence-gated.',
+            ],
             'Existing site message foundation' => [
                 'status' => 'PASS',
                 'evidence' => 'common/components/base/MessageSystem.php',
@@ -268,6 +296,7 @@ class AccountNotificationPhase12AcceptanceController extends Controller
     {
         return [
             'Identity provider config readiness' => ['route' => 'identity-config-readiness/run', 'fixture' => true],
+            'Account security policy readiness' => ['route' => 'account-security-readiness/run', 'fixture' => true],
             'Operational mail config readiness' => ['route' => 'operational-config-mail-test/run', 'fixture' => true],
         ];
     }
@@ -315,6 +344,7 @@ class AccountNotificationPhase12AcceptanceController extends Controller
             'cd /www/wwwroot/demo2026.mongoyia.com',
             'git pull',
             '/www/server/php/83/bin/php yii migrate/up --interactive=0',
+            '/www/server/php/83/bin/php yii account-security-readiness/run --fixture=1 --interactive=0',
             '/www/server/php/83/bin/php yii account-notification-phase12-acceptance/run \\',
             '  --baseUrl=https://demo2026.mongoyia.com \\',
             '  --runChildChecks=1 \\',

@@ -4889,3 +4889,44 @@
   - Phase 10/11 external evidence remains incomplete, and production remains `NO-GO`.
 - Next stage:
   - Commit and push Phase 12.1, then continue Phase 12.2 by adding password recovery/security-code login policy foundation with backend switches and operation-log/readiness coverage.
+
+## 2026-06-23 Phase 12.2 Account Security Policy Foundation
+
+- Stage name: Phase 12.2 password recovery/security-code login policy foundation
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before continuing the stage.
+  - Added `OperationalAccountSecurityService` for backend-managed email/mobile recovery switches, email/mobile security-code login switches, code length, TTL, max attempts, lock minutes, allowed channels, and audit-required policy checks.
+  - Added backend `/backend/mall/operational-config/account-security` page and save/check actions so platform operators can manage the policy and record readiness checks through the encrypted operations-config foundation.
+  - Added frontend `AccountSecurityController` route boundary for security-code request/login. The routes stay disabled or reserved until provider delivery evidence and audit storage are accepted; they do not send codes or log users in.
+  - Added permission migration for account-security view/save/check routes.
+  - Added `account-security-readiness/run` and wired it into `account-notification-phase12-acceptance/run --runChildChecks=1`.
+  - Updated the Phase 12 backlog status and command list to record the account-security policy foundation.
+- Main files changed/added:
+  - `common/services/mall/OperationalAccountSecurityService.php`
+  - `frontend/controllers/AccountSecurityController.php`
+  - `backend/modules/mall/controllers/OperationalConfigController.php`
+  - `backend/modules/mall/views/operational-config/index.php`
+  - `backend/modules/mall/views/operational-config/account-security.php`
+  - `console/migrations/m260623_163000_mongoyia_account_security_permission.php`
+  - `console/controllers/AccountSecurityReadinessController.php`
+  - `console/controllers/AccountNotificationPhase12AcceptanceController.php`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l common/services/mall/OperationalAccountSecurityService.php` passed.
+  - `php -l frontend/controllers/AccountSecurityController.php` passed.
+  - `php -l backend/modules/mall/controllers/OperationalConfigController.php` passed.
+  - `php -l backend/modules/mall/views/operational-config/account-security.php` passed.
+  - `php -l console/migrations/m260623_163000_mongoyia_account_security_permission.php` passed.
+  - `php -l console/controllers/AccountSecurityReadinessController.php` passed.
+  - `php -l console/controllers/AccountNotificationPhase12AcceptanceController.php` passed.
+  - Static marker checks confirmed account-security readiness wiring, backend entry markers, frontend boundary markers, and backlog command markers.
+  - `git diff --check` reported no whitespace errors; only existing Windows line-ending conversion warnings.
+  - Full Yii console execution was not run locally because this patch checkout does not have `vendor/autoload.php`; run migrations and readiness commands on BaoTa/full-vendor environment after pull.
+- Remaining issues:
+  - Live email/mobile security-code delivery, verification storage, operation-log persistence, and provider evidence are still pending by design.
+  - Real Facebook/Google callbacks/bindings, notification event hooks/send logs, language review import/export, and browser evidence remain pending.
+  - Phase 10/11 external provider and production evidence remain incomplete, so production remains `NO-GO`.
+- Next stage:
+  - Commit and push Phase 12.2, then on BaoTa run migrations plus `account-security-readiness/run --fixture=1` and the Phase 12 aggregate command.
+  - Continue Phase 12.3 by adding notification event hooks and send-log foundation for order, logistics, payment, customer-service reply, and complaint result notifications without calling external push/SMS providers.

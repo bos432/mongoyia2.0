@@ -64,6 +64,10 @@ $statusClass = [
                         'class' => 'btn btn-sm btn-outline-secondary',
                         'data-mongoyia-identity-config-entry' => '1',
                     ]) ?>
+                    <?= Html::a('账号安全策略', ['account-security'], [
+                        'class' => 'btn btn-sm btn-outline-secondary',
+                        'data-mongoyia-account-security-entry' => '1',
+                    ]) ?>
                 </p>
             </div>
             <div class="card-body p-0">

@@ -1,6 +1,7 @@
 <?php
 return [
-    'system_version' => '1.1.3',
+    // MONGOYIA_PHASE13_ASSET_CACHE_BUST_V1: force refreshed mall H5 assets for cart/browser acceptance.
+    'system_version' => '1.1.4',
     'sys_tags' => '1',
     'adminEmail' => 'admin@example.com',
     'supportEmail' => 'funson86@gmail.com',

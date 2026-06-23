@@ -1,5 +1,33 @@
 # Development Log
 
+## 2026-06-23 Phase 13 H5 Asset Cache-Bust Version
+
+- Stage name: Phase 13 H5 asset cache-bust version
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting the stage.
+  - Confirmed the public mall layout versions `main.js` with `Yii::$app->params['system_version']`.
+  - Bumped `system_version` from `1.1.3` to `1.1.4` and added `MONGOYIA_PHASE13_ASSET_CACHE_BUST_V1` so browsers request the refreshed mall H5 assets after BaoTa pulls the latest code.
+  - Added the asset cache-bust marker to Phase 13 buyer readiness and aggregate APP acceptance coverage.
+  - Updated the Phase 13 backlog rows to record cache-bust coverage alongside the cart stale-row guard, cart-index fallback, and cached cart-link normalizer.
+- Main files changed/added:
+  - `common/config/params.php`
+  - `console/controllers/AppBuyerPhase13ReadinessController.php`
+  - `console/controllers/AppPhase13AcceptanceController.php`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l common/config/params.php` passed.
+  - `php -l console/controllers/AppBuyerPhase13ReadinessController.php` passed.
+  - `php -l console/controllers/AppPhase13AcceptanceController.php` passed.
+  - Static marker scan confirmed `MONGOYIA_PHASE13_ASSET_CACHE_BUST_V1`, `system_version` `1.1.4`, and Phase 13 backlog coverage.
+  - `git diff --check` reported no whitespace errors, only existing Windows line-ending conversion warnings.
+  - Full Yii console execution remains BaoTa-only because this local checkout lacks `vendor/autoload.php`.
+- Remaining issues:
+  - BaoTa/test server still must pull the latest commit, clear PHP/opcache/runtime/page/static caches as needed, and then re-run Phase 13 browser validation.
+  - Phase 10/11/12/13/14/15 external and browser evidence remain incomplete; production remains `NO-GO`.
+- Next stage:
+  - Run PHP/static checks, commit and push this cache-bust update, then continue with BaoTa/browser validation or the next plan-listed local readiness item.
+
 ## 2026-06-23 Phase 13 Deployed Static Asset Freshness Recheck
 
 - Stage name: Phase 13 deployed static asset freshness recheck

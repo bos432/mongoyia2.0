@@ -161,6 +161,10 @@ class AppPhase13AcceptanceController extends Controller
             'MONGOYIA_CART_LINK_NORMALIZER_V1',
             '/mall/cart/index',
         ]);
+        $this->requireFileContains('Buyer web asset cache-bust version', 'common/config/params.php', [
+            'MONGOYIA_PHASE13_ASSET_CACHE_BUST_V1',
+            "'system_version' => '1.1.4'",
+        ]);
         $this->requireFileContains('Seller APP JSON API service', 'common/services/mall/AppSellerApiService.php', [
             'MONGOYIA_APP_SELLER_API_V1',
             'dashboard',

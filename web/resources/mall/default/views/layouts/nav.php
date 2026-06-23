@@ -230,9 +230,9 @@ $categoriesTree = ArrayHelper::tree($categories);
             <div class="col-lg-3">
                 <div class="header-cart">
                     <ul>
-                        <li><a href="<?= Url::to(['/mall/cart']) ?>"><i class="fa fa-shopping-bag"></i> <span><?= $this->context->getCartCount() ?></span></a></li>
+                        <li><a href="<?= Url::to(['/mall/cart/index']) ?>"><i class="fa fa-shopping-bag"></i> <span><?= $this->context->getCartCount() ?></span></a></li>
                     </ul>
-                    <div class="header-cart-price"><a href="<?= Url::to(['/mall/cart']) ?>"><?= Html::encode($layoutText('item')) ?> <span><?= $this->context->getCurrentCurrencySymbol() . $this->context->getCartAmount() ?></span></a></div>
+                    <div class="header-cart-price"><a href="<?= Url::to(['/mall/cart/index']) ?>"><?= Html::encode($layoutText('item')) ?> <span><?= $this->context->getCurrentCurrencySymbol() . $this->context->getCartAmount() ?></span></a></div>
                 </div>
             </div>
         </div>

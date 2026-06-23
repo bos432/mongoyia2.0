@@ -1,5 +1,6 @@
 <?php
 use yii\helpers\Url;
+use yii\helpers\Html;
 use common\models\mall\Product;
 use common\models\mall\AttributeItem;
 
@@ -33,11 +34,11 @@ $this->params['breadcrumbs'][] = $this->title;
                         <?php foreach ($models as $model) { $product = Yii::$app->cacheSystemMall->getProductById($model->product_id); ?>
                         <tr data-id="<?= $model->id ?>">
                             <td class="cart-product-item">
-                                <a href="<?= $this->context->getSeoUrl($product) ?>">
+                                <?php if ($product) { ?><a href="<?= $this->context->getSeoUrl($product) ?>"><?php } else { ?><span class="text-muted"><?php } ?>
                                     <?= strlen($model->thumb) > 5 ? "<img class=\"c-img\" src='{$model->thumb}'>" : '' ?>
                                     <div class="cart-product-item-title">
                                         <h6>
-                                            <?= fbt(Product::getTableCode(), $product->id, 'name', $model->name) ?>
+                                            <?= $product ? fbt(Product::getTableCode(), $product->id, 'name', $model->name) : Html::encode($model->name ?: Yii::t('mall', 'Unavailable product')) ?>
                                             <?php if (strlen($model->product_attribute_value) > 0) {
                                                 $arr = [];
                                                 $arrProductAttributeValue = explode(',', $model->product_attribute_value);
@@ -53,10 +54,10 @@ $this->params['breadcrumbs'][] = $this->title;
                                             } ?>
                                         </h6>
                                         <div class="rating">
-                                            <?= \common\helpers\UiHelper::renderStar($product->star) ?>
+                                            <?= $product ? \common\helpers\UiHelper::renderStar($product->star) : Html::encode(Yii::t('mall', 'Unavailable product')) ?>
                                         </div>
                                     </div>
-                                </a>
+                                <?= $product ? '</a>' : '</span>' ?>
                             </td>
                             <td class="cart-price"><?= $this->context->getNumberByCurrency($model->price) ?></td>
                             <td class="cart-quantity">
@@ -109,7 +110,7 @@ $this->params['breadcrumbs'][] = $this->title;
             </div>
             <div class="col-lg-6 col-md-6 col-sm-6 col-6">
                 <div class="cart-btn update-btn">
-                    <a href="<?= Url::to(['/mall/cart']) ?>"><span class="fa fa-refresh"></span> <?= Yii::t('app', 'Refresh') ?></a>
+                    <a href="<?= Url::to(['/mall/cart/index']) ?>"><span class="fa fa-refresh"></span> <?= Yii::t('app', 'Refresh') ?></a>
                 </div>
             </div>
         </div>

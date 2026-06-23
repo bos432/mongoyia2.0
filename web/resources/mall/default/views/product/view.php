@@ -461,7 +461,7 @@ $("#addToCart").on('click', function () {
     };
     $.post('<?= Url::to(['/mall/cart/edit-ajax']) ?>', param, function(data) {
         if (data.code === 200) {
-            window.location.href = "<?= Url::to(['/mall/cart']) ?>";
+            window.location.href = "<?= Url::to(['/mall/cart/index']) ?>";
         } else {
             alert(data.msg);
         }

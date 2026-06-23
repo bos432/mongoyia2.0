@@ -11,6 +11,7 @@ return [
     'Shopping Cart' => 'Сагс',
     'Your cart is currently empty' => 'Таны сагс хоосон байна',
     'Please add some products to your shopping cart before proceeding to checkout.' => 'Төлбөр төлөхөөс өмнө сагсандаа бараа нэмнэ үү.',
+    'Unavailable product' => 'Бараа боломжгүй байна',
     'Shopping Now' => 'Одоо дэлгүүр хэсэх',
     'SHOPPING NOW' => 'ОДОО ДЭЛГҮҮР ХЭСЭХ',
     'Checkout' => 'Төлбөр төлөх',

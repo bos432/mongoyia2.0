@@ -49,6 +49,22 @@ class CartController extends BaseController
             ->where(['store_id' => $this->getStoreId()])
             ->andWhere(['or', ['session_id' => Yii::$app->session->id], ['user_id' => (Yii::$app->user->isGuest ? 0 : Yii::$app->user->id)]])
             ->all();
+
+        foreach ($models as $key => $model) {
+            if (!Product::find()->where(['id' => $model->product_id])->exists()) {
+                Yii::warning('Removed stale cart row for missing product #' . $model->product_id, __METHOD__);
+                $model->delete();
+                unset($models[$key]);
+                continue;
+            }
+
+            if ((float)$model->price <= 0) {
+                Yii::warning('Removed stale cart row with invalid price for product #' . $model->product_id, __METHOD__);
+                $model->delete();
+                unset($models[$key]);
+            }
+        }
+
         foreach ($models as $model) {
             $productAmount += $model->price * $model->number;
         }
@@ -176,6 +192,11 @@ class CartController extends BaseController
 
         // 计算库存
         $product = Yii::$app->cacheSystemMall->getProductById($model->product_id);
+        if (!$product) {
+            $model->delete();
+            return $this->error(-1, Yii::t('mall', 'Unavailable product'));
+        }
+
         $productSku = Yii::$app->cacheSystemMall->getProductSkuByProductId($model->product_id, $model->product_attribute_value);
         $productStock = $productSku->stock ?? $product->stock;
 
@@ -229,7 +250,9 @@ class CartController extends BaseController
         foreach ($carts as $cart) {
             $product = Product::findOne(['id' => $cart->product_id]);
             if (!$product) {
-                return $this->redirectError(Yii::t('app', 'Input Param Error'));
+                $cart->delete();
+                $this->flashWarning(Yii::t('mall', 'Unavailable product'));
+                return $this->redirect(['/mall/cart/index']);
             }
             $cartProducts[$cart->id] = $product;
 

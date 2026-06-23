@@ -1672,7 +1672,7 @@ class PaymentController extends BaseController
                 'result' => PaymentAttempt::RESULT_FAILED,
                 'error_message' => 'LianLian payment create failed',
             ]);
-            return $this->redirectError('支付金额不能小于$1，请添加其他商品','/mall/cart');
+            return $this->redirectError('支付金额不能小于$1，请添加其他商品','/mall/cart/index');
         }
 
     }

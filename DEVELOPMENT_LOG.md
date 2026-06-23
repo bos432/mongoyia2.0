@@ -6335,3 +6335,39 @@
 - Next stage:
   - Commit and push this Phase 12 acceptance command alignment.
   - Re-read the development plan and this log, then continue with BaoTa/browser validation after server pull, or another plan-listed local readiness item.
+
+## 2026-06-23 Phase 13 Buyer Cart Flow Hardening
+
+- Stage name: Phase 13 buyer cart flow hardening during browser validation
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting the stage.
+  - Continued right-side browser validation after the BaoTa pull/migration/aggregate acceptance command was reported as executed.
+  - Confirmed the buyer product page opens for `https://demo2026.mongoyia.com/product-codex-test-product-1781945133`, the buyer session is active, the customer-service entry is visible, and the Phase 14 review-sort marker is present.
+  - Found the buyer cart route currently returns an HTTP response failure in the browser when opening `/mall/cart` or `/mall/cart/index`, likely triggered by stale cart rows or invalid product/price data.
+  - Hardened the frontend cart flow so stale cart rows for missing products or invalid prices are removed before rendering, cart quantity updates reject missing products without a fatal error, and checkout redirects back to the cart after removing an unavailable product.
+  - Updated cart rendering to tolerate an unavailable product without dereferencing a null product object.
+  - Normalized add-cart success, header cart links, cart refresh links, and the low-amount payment fallback to `/mall/cart/index`.
+  - Added zh-CN and mn translations for the unavailable-product message.
+- Main files changed/added:
+  - `frontend/modules/mall/controllers/CartController.php`
+  - `frontend/modules/mall/controllers/PaymentController.php`
+  - `web/resources/mall/default/views/cart/index.php`
+  - `web/resources/mall/default/views/product/view.php`
+  - `web/resources/mall/default/views/layouts/nav.php`
+  - `common/messages/zh-CN/mall.php`
+  - `common/messages/mn/mall.php`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l frontend/modules/mall/controllers/CartController.php` passed.
+  - `php -l frontend/modules/mall/controllers/PaymentController.php` passed.
+  - `php -l web/resources/mall/default/views/cart/index.php` passed.
+  - `php -l web/resources/mall/default/views/product/view.php` passed.
+  - `php -l web/resources/mall/default/views/layouts/nav.php` passed.
+  - `git diff --check` reported no whitespace errors, only existing Windows line-ending conversion warnings.
+  - Full Yii/browser revalidation must run on BaoTa after this patch is pulled because the local checkout still lacks `vendor/autoload.php`.
+- Remaining issues:
+  - Buyer cart and checkout browser validation remains pending until BaoTa pulls this fix.
+  - Real payment/provider evidence, social login evidence, logistics provider evidence, and production operations/signoff evidence remain external gates; production remains `NO-GO`.
+- Next stage:
+  - Commit and push this cart-flow hardening fix.
+  - After BaoTa pulls it, rerun migrations and `mongoyia-requirements-closure-acceptance/run --baseUrl=https://demo2026.mongoyia.com --fixture=1 --runChildChecks=1 --strict=1 --interactive=0`, then resume buyer cart/checkout browser validation.

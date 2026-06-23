@@ -64,6 +64,7 @@ return [
     'Shopping Cart' => '购物车',
     'Order Detail' => '订单详情',
     'Go Shopping' => '去下单',
+    'Unavailable product' => '商品已失效',
     'Discount code' => '折扣码',
     'Cart Total' => '购物车总额',
     'Enter your coupon code' => '输入您的折扣码',

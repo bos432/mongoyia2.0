@@ -1,5 +1,29 @@
 # Development Log
 
+## 2026-06-24 Phase 13 Acceptance Report Checkout URL Scope
+
+- Stage name: Phase 13 acceptance report checkout URL scope
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting the stage.
+  - Updated the Phase 13 buyer readiness report scope text to include cart checkout URL parameter-builder coverage.
+  - Updated the Phase 13 aggregate APP acceptance report scope and boundary text to include buyer checkout URL parameter generation.
+  - Kept the change documentation-only inside existing Phase 13 readiness reporting; no business runtime behavior changed in this stage.
+- Main files changed/added:
+  - `console/controllers/AppBuyerPhase13ReadinessController.php`
+  - `console/controllers/AppPhase13AcceptanceController.php`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l console/controllers/AppBuyerPhase13ReadinessController.php` passed.
+  - `php -l console/controllers/AppPhase13AcceptanceController.php` passed.
+  - Static marker scan confirmed `cart checkout URL parameter-builder coverage`, `cart checkout URL parameter builder`, and `buyer checkout URL parameter generation` in the generated report text.
+  - `git diff --check` reported no whitespace errors, only existing Windows line-ending conversion warnings.
+  - Full Yii console execution remains BaoTa-only because this local checkout lacks `vendor/autoload.php`.
+- Remaining issues:
+  - BaoTa/test server must pull the latest commits before generated Phase 13 reports include this clarified checkout URL scope.
+  - Phase 10/11/12/13/14/15 external and browser evidence remain incomplete; production remains `NO-GO`.
+- Next stage:
+  - Commit and push this report-scope clarification, then reread the plan/log and continue with another plan-listed local readiness item or deployed browser validation after BaoTa is refreshed.
+
 ## 2026-06-24 Phase 10-15 Aggregate Cart Checkout URL Coverage
 
 - Stage name: Phase 10-15 aggregate cart checkout URL coverage

@@ -222,7 +222,7 @@ class AppBuyerPhase13ReadinessController extends Controller
             '- Generated at: ' . date('Y-m-d H:i:s'),
             '- Failures: ' . $this->failures,
             '- Warnings: ' . $this->warnings,
-            '- Scope: buyer APP JSON APIs for home, categories, search, product detail, cart, checkout/order creation, coupons, favorites, reviews, notifications, customer-service entry, and buyer cart stale-row guard coverage.',
+            '- Scope: buyer APP JSON APIs for home, categories, search, product detail, cart, checkout/order creation, coupons, favorites, reviews, notifications, customer-service entry, buyer cart stale-row guard coverage, and cart checkout URL parameter-builder coverage.',
             '- Safety: checkout/order creation validates cart, stock, receiver address, parent/child order rows, order-product rows, stale cart cleanup, and cart cleanup without marking online payments paid.',
             '',
             '## Checks',

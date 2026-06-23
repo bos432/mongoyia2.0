@@ -49,7 +49,7 @@ $this->params['breadcrumbs'][] = $this->title;
 
                         <div class="mb-5">
                             <h5>Distributor Profile</h5>
-                            <form method="post" action="<?= Html::encode(Url::to(['/mall/user/distribution-profile'])) ?>">
+                            <form method="post" action="<?= Html::encode(Url::to(['/mall/user/distribution-profile'])) ?>" data-mongoyia-distribution-frontend-post-guard="profile">
                                 <input type="hidden" name="<?= Html::encode(Yii::$app->request->csrfParam) ?>" value="<?= Html::encode(Yii::$app->request->csrfToken) ?>">
                                 <div class="row">
                                     <div class="col-md-3 mb-3">
@@ -237,7 +237,7 @@ $this->params['breadcrumbs'][] = $this->title;
                                     <div><?= $this->context->getNumberByCurrency((float)$withdrawSummary['pendingWithdrawAmount']) ?></div>
                                 </div>
                                 <div class="col-md-3 text-md-right mt-3 mt-md-0">
-                                    <form method="post" action="<?= Html::encode(Url::to(['/mall/user/distribution-withdraw'])) ?>">
+                                    <form method="post" action="<?= Html::encode(Url::to(['/mall/user/distribution-withdraw'])) ?>" data-mongoyia-distribution-frontend-post-guard="withdraw">
                                         <input type="hidden" name="<?= Html::encode(Yii::$app->request->csrfParam) ?>" value="<?= Html::encode(Yii::$app->request->csrfToken) ?>">
                                         <button class="btn btn-primary" type="submit" <?= (float)$withdrawSummary['availableAmount'] <= 0 ? 'disabled' : '' ?>>Request Withdrawal</button>
                                     </form>

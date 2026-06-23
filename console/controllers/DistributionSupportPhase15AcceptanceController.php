@@ -136,6 +136,20 @@ class DistributionSupportPhase15AcceptanceController extends Controller
             "post('id', 0)",
             "post('workflow_action', '')",
         ]);
+        $this->requireFileContains('Distributor frontend profile/withdraw POST verb guard', 'frontend/modules/mall/controllers/UserController.php', [
+            'MONGOYIA_DISTRIBUTION_FRONTEND_POST_VERB_GUARD_V1',
+            'VerbFilter',
+            "'distribution-profile' => ['POST']",
+            "'distribution-withdraw' => ['POST']",
+            'actionDistributionProfile',
+            'actionDistributionWithdraw',
+        ]);
+        $this->requireFileContains('Distributor frontend forms carry POST guard markers', 'web/resources/mall/default/views/user/distribution.php', [
+            'data-mongoyia-distribution-frontend-post-guard="profile"',
+            'data-mongoyia-distribution-frontend-post-guard="withdraw"',
+            '/mall/user/distribution-profile',
+            '/mall/user/distribution-withdraw',
+        ]);
         $this->requireFileContains('Distributor support content service', 'common/services/mall/DistributionSupportContentService.php', [
             'MONGOYIA_DISTRIBUTION_SUPPORT_CONTENT_PHASE15_V1',
             'visibleForDistributor',

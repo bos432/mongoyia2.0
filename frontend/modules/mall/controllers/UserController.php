@@ -23,6 +23,7 @@ use Yii;
 use yii\db\Query;
 use yii\helpers\Url;
 use yii\filters\AccessControl;
+use yii\filters\VerbFilter;
 
 /**
  * Class UserController
@@ -31,6 +32,8 @@ use yii\filters\AccessControl;
  */
 class UserController extends BaseController
 {
+    public const DISTRIBUTION_FRONTEND_POST_GUARD_VERSION = 'MONGOYIA_DISTRIBUTION_FRONTEND_POST_VERB_GUARD_V1';
+
     public function behaviors()
     {
         return [
@@ -42,6 +45,13 @@ class UserController extends BaseController
                         'roles' => ['@']
                     ]
                 ]
+            ],
+            'verbs' => [
+                'class' => VerbFilter::className(),
+                'actions' => [
+                    'distribution-profile' => ['POST'],
+                    'distribution-withdraw' => ['POST'],
+                ],
             ],
         ];
     }

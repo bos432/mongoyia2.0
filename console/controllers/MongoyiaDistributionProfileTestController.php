@@ -39,8 +39,22 @@ class MongoyiaDistributionProfileTestController extends Controller
     {
         $this->section('Files');
         $this->requireFileContains('common/services/mall/DistributionProfileService.php', ['class DistributionProfileService', 'PROFILE_STATUS_PENDING', 'MATERIAL_STATUS_ACTIVE', 'RISK_STATUS_OPEN']);
-        $this->requireFileContains('frontend/modules/mall/controllers/UserController.php', ['actionDistributionProfile', 'DistributionProfileService', 'distributionProfileStatusLabels']);
-        $this->requireFileContains('web/resources/mall/default/views/user/distribution.php', ['Distributor Profile', 'Promotion Materials', 'Risk Records', 'Submit Profile']);
+        $this->requireFileContains('frontend/modules/mall/controllers/UserController.php', [
+            'MONGOYIA_DISTRIBUTION_FRONTEND_POST_VERB_GUARD_V1',
+            'VerbFilter',
+            "'distribution-profile' => ['POST']",
+            "'distribution-withdraw' => ['POST']",
+            'actionDistributionProfile',
+            'DistributionProfileService',
+            'distributionProfileStatusLabels',
+        ]);
+        $this->requireFileContains('web/resources/mall/default/views/user/distribution.php', [
+            'Distributor Profile',
+            'Promotion Materials',
+            'Risk Records',
+            'Submit Profile',
+            'data-mongoyia-distribution-frontend-post-guard="profile"',
+        ]);
         $this->requireFileContains('backend/modules/mall/controllers/DistributionDistributorController.php', ['actionIndex', 'actionProfileWorkflow', 'actionRiskWorkflow', 'isMallPlatformOperator']);
         $this->requireFileContains('backend/modules/mall/views/distribution-distributor/index.php', ['分销员运营', '分销员资料审核', '推广素材', '风险记录']);
         $this->requireFileContains('console/migrations/m260618_190000_mongoyia_distribution_profile_material_risk.php', ['mall_distribution_profile', 'mall_distribution_material', 'mall_distribution_risk', '/mall/distribution-distributor/index']);

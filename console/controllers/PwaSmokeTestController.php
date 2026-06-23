@@ -157,6 +157,15 @@ class PwaSmokeTestController extends Controller
             "Html::beginForm(['/mall/address/delete'], 'post'",
             "hiddenInput('id'",
         ]);
+        $this->requireFileContains('frontend/modules/mall/controllers/UserController.php', [
+            'MONGOYIA_DISTRIBUTION_FRONTEND_POST_VERB_GUARD_V1',
+            "'distribution-profile' => ['POST']",
+            "'distribution-withdraw' => ['POST']",
+        ]);
+        $this->requireFileContains('web/resources/mall/default/views/user/distribution.php', [
+            'data-mongoyia-distribution-frontend-post-guard="profile"',
+            'data-mongoyia-distribution-frontend-post-guard="withdraw"',
+        ]);
         $this->requireFileContains('frontend/modules/mall/controllers/CartController.php', [
             'MONGOYIA_CART_STALE_ROW_GUARD_V1',
             'MONGOYIA_CART_AJAX_POST_GUARD_V1',

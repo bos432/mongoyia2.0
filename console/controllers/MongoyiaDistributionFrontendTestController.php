@@ -38,6 +38,10 @@ class MongoyiaDistributionFrontendTestController extends Controller
     {
         $this->section('Frontend files');
         $this->requireFileContains('frontend/modules/mall/controllers/UserController.php', [
+            'MONGOYIA_DISTRIBUTION_FRONTEND_POST_VERB_GUARD_V1',
+            'VerbFilter',
+            "'distribution-profile' => ['POST']",
+            "'distribution-withdraw' => ['POST']",
             'actionDistribution',
             'mall_distribution_commission',
             'fxid',
@@ -54,6 +58,8 @@ class MongoyiaDistributionFrontendTestController extends Controller
             'Commission Records',
             'fxid=',
             'read-only',
+            'data-mongoyia-distribution-frontend-post-guard="profile"',
+            'data-mongoyia-distribution-frontend-post-guard="withdraw"',
         ]);
     }
 

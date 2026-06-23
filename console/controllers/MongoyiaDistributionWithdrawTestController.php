@@ -40,8 +40,22 @@ class MongoyiaDistributionWithdrawTestController extends Controller
     {
         $this->section('Files');
         $this->requireFileContains('common/services/mall/DistributionWithdrawService.php', ['class DistributionWithdrawService', 'WITHDRAW_STATUS_PENDING', 'ACTION_APPROVE', 'commission_ids']);
-        $this->requireFileContains('frontend/modules/mall/controllers/UserController.php', ['actionDistributionWithdraw', 'DistributionWithdrawService', 'distributionWithdrawRows']);
-        $this->requireFileContains('web/resources/mall/default/views/user/distribution.php', ['Withdrawal Request', 'Request Withdrawal', 'Withdrawal Records', 'does not trigger real payout']);
+        $this->requireFileContains('frontend/modules/mall/controllers/UserController.php', [
+            'MONGOYIA_DISTRIBUTION_FRONTEND_POST_VERB_GUARD_V1',
+            'VerbFilter',
+            "'distribution-profile' => ['POST']",
+            "'distribution-withdraw' => ['POST']",
+            'actionDistributionWithdraw',
+            'DistributionWithdrawService',
+            'distributionWithdrawRows',
+        ]);
+        $this->requireFileContains('web/resources/mall/default/views/user/distribution.php', [
+            'Withdrawal Request',
+            'Request Withdrawal',
+            'Withdrawal Records',
+            'does not trigger real payout',
+            'data-mongoyia-distribution-frontend-post-guard="withdraw"',
+        ]);
         $this->requireFileContains('backend/modules/mall/controllers/DistributionWithdrawController.php', [
             'MONGOYIA_DISTRIBUTION_COMMISSION_WITHDRAW_POST_VERB_GUARD_V1',
             'behaviors',

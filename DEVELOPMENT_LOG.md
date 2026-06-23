@@ -8382,3 +8382,42 @@
   - Phase 10/11/12/13/14/15 external/provider/browser evidence gates remain pending; production remains `NO-GO`.
 - Next stage:
   - Commit and push this Phase 13 buyer cart Ajax POST guard patch, then reread the plan/log and continue with the next plan-listed readiness item.
+
+## 2026-06-24 Phase 15 Frontend Distributor POST Guard
+
+- Stage name: Phase 15.8 frontend distributor profile/withdraw POST guard
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting the stage.
+  - Added `MONGOYIA_DISTRIBUTION_FRONTEND_POST_VERB_GUARD_V1` to the frontend mall user controller.
+  - Added explicit `VerbFilter` POST-only rules for `/mall/user/distribution-profile` and `/mall/user/distribution-withdraw`.
+  - Preserved GET display for `/mall/user/distribution` and GET material click/download tracking for `/mall/user/distribution-material-track`.
+  - Added stable `data-mongoyia-distribution-frontend-post-guard` markers to the distributor profile and withdrawal forms.
+  - Added coverage to Phase 4 distribution frontend/profile/withdraw readiness checks, Phase 15 aggregate acceptance, and PWA smoke.
+  - Updated the Phase 15 backlog notes as Phase 15.8.
+- Main files changed/added:
+  - `frontend/modules/mall/controllers/UserController.php`
+  - `web/resources/mall/default/views/user/distribution.php`
+  - `console/controllers/MongoyiaDistributionFrontendTestController.php`
+  - `console/controllers/MongoyiaDistributionProfileTestController.php`
+  - `console/controllers/MongoyiaDistributionWithdrawTestController.php`
+  - `console/controllers/DistributionSupportPhase15AcceptanceController.php`
+  - `console/controllers/PwaSmokeTestController.php`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l frontend/modules/mall/controllers/UserController.php` passed.
+  - `php -l web/resources/mall/default/views/user/distribution.php` passed.
+  - `php -l console/controllers/MongoyiaDistributionFrontendTestController.php` passed.
+  - `php -l console/controllers/MongoyiaDistributionProfileTestController.php` passed.
+  - `php -l console/controllers/MongoyiaDistributionWithdrawTestController.php` passed.
+  - `php -l console/controllers/DistributionSupportPhase15AcceptanceController.php` passed.
+  - `php -l console/controllers/PwaSmokeTestController.php` passed.
+  - Static marker checks confirmed `MONGOYIA_DISTRIBUTION_FRONTEND_POST_VERB_GUARD_V1`, profile/withdraw POST-only rules, form markers, and Phase 15.8 backlog coverage.
+  - `git diff --check` reported no whitespace errors, only existing Windows line-ending conversion warnings.
+  - Full Yii console execution remains BaoTa-only because this local checkout lacks `vendor/autoload.php`.
+- Remaining issues:
+  - BaoTa/test server must rerun Phase 4 distribution frontend/profile/withdraw tests, PWA smoke, Phase 15 aggregate acceptance, and total requirements closure acceptance after deployment.
+  - Browser role-flow evidence should recheck distributor profile submission, withdrawal request button, and platform review pages.
+  - Phase 10/11/12/13/14/15 external/provider/browser evidence gates remain pending; production remains `NO-GO`.
+- Next stage:
+  - Commit and push this Phase 15 frontend distributor POST guard patch, then reread the plan/log and continue with the next plan-listed readiness item.

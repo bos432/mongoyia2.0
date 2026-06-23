@@ -75,7 +75,9 @@ class AppBuyerPhase13ReadinessController extends Controller
         ]);
         $this->requireFileContains('Buyer web cart stale-row guard', 'frontend/modules/mall/controllers/CartController.php', [
             'MONGOYIA_CART_STALE_ROW_GUARD_V1',
+            'MONGOYIA_CART_INDEX_FALLBACK_V1',
             'Unavailable product',
+            'Shopping cart was refreshed',
             '/mall/cart/index',
         ]);
         $this->requireFileContains('Buyer cart guard smoke coverage', 'console/controllers/PwaSmokeTestController.php', [

@@ -9,9 +9,11 @@ use common\models\mall\AttributeItem;
 /* @var $productAmount float */
 /* @var $discount float */
 /* @var $total float */
+/* @var $cartProducts array */
 
 $this->title = Yii::t('mall', 'Shopping Cart');
 $this->params['breadcrumbs'][] = $this->title;
+$cartProducts = $cartProducts ?? [];
 ?>
 
 <section class="page-section shop-cart" data-mongoyia-mobile-ui="cart">
@@ -31,7 +33,7 @@ $this->params['breadcrumbs'][] = $this->title;
                         </tr>
                         </thead>
                         <tbody>
-                        <?php foreach ($models as $model) { $product = Yii::$app->cacheSystemMall->getProductById($model->product_id); ?>
+                        <?php foreach ($models as $model) { $product = $cartProducts[$model->id] ?? null; ?>
                         <tr data-id="<?= $model->id ?>">
                             <td class="cart-product-item">
                                 <?php if ($product) { ?><a href="<?= $this->context->getSeoUrl($product) ?>"><?php } else { ?><span class="text-muted"><?php } ?>

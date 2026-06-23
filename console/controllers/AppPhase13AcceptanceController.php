@@ -147,7 +147,9 @@ class AppPhase13AcceptanceController extends Controller
         ]);
         $this->requireFileContains('Buyer web cart stale-row guard', 'frontend/modules/mall/controllers/CartController.php', [
             'MONGOYIA_CART_STALE_ROW_GUARD_V1',
+            'MONGOYIA_CART_INDEX_FALLBACK_V1',
             'Unavailable product',
+            'Shopping cart was refreshed',
             '/mall/cart/index',
         ]);
         $this->requireFileContains('PWA smoke tracks buyer cart guard', 'console/controllers/PwaSmokeTestController.php', [
@@ -331,7 +333,7 @@ class AppPhase13AcceptanceController extends Controller
             '- Failures: ' . $this->failures,
             '- Warnings: ' . $this->warnings,
             '- Pending: ' . $this->pending,
-            '- Scope: buyer APP, seller APP workbench, buyer cart stale-row guard, buyer received-order review submission, audited seller product create/edit, seller coupon participation join/leave, seller store/logistics/deposit/statistics/distribution overview, shared backend APIs, customer-service entry, H5 development package, and role-flow evidence.',
+            '- Scope: buyer APP, seller APP workbench, buyer cart stale-row guard and cart-index fallback guard, buyer received-order review submission, audited seller product create/edit, seller coupon participation join/leave, seller store/logistics/deposit/statistics/distribution overview, shared backend APIs, customer-service entry, H5 development package, and role-flow evidence.',
             '- Safety: this command does not mutate orders, carts, products, shipment rows, funds, stock, or credentials.',
             '- Boundary: Phase 13 verifies the APP route shell, buyer cart stale-row cleanup before checkout/rendering, buyer checkout write, buyer received-order review submit with pending moderation, seller shipment write, seller product create/edit submission, and seller platform coupon participation join/leave. Seller product writes are forced inactive/submitted for platform review, review submissions are not public until backend approval, and coupon participation writes do not issue coupons or mutate orders. Browser/APP role-flow evidence remains pending until later acceptance.',
             '',

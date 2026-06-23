@@ -27,6 +27,7 @@ use yii\web\NotFoundHttpException;
 class CartController extends BaseController
 {
     private const CART_STALE_ROW_GUARD = 'MONGOYIA_CART_STALE_ROW_GUARD_V1';
+    private const CART_INDEX_FALLBACK_GUARD = 'MONGOYIA_CART_INDEX_FALLBACK_V1';
 
     public function behaviors()
     {
@@ -47,17 +48,44 @@ class CartController extends BaseController
 
     public function actionIndex()
     {
+        try {
+            return $this->render($this->action->id, $this->buildCartIndexData());
+        } catch (\Throwable $e) {
+            Yii::error('Cart index fallback rendered after exception: ' . $e->getMessage(), __METHOD__);
+            $this->flashWarning(Yii::t('mall', 'Shopping cart was refreshed. Please add products again if needed.'));
+
+            return $this->render($this->action->id, [
+                'models' => [],
+                'cartProducts' => [],
+                'productAmount' => 0,
+                'discount' => 0,
+                'total' => 0,
+                'cid' => 0,
+            ]);
+        }
+    }
+
+    private function buildCartIndexData(): array
+    {
         $productAmount = $discount = $total = 0;
         $models = Cart::find()
             ->where(['store_id' => $this->getStoreId()])
             ->andWhere(['or', ['session_id' => Yii::$app->session->id], ['user_id' => (Yii::$app->user->isGuest ? 0 : Yii::$app->user->id)]])
             ->all();
+        $cartProducts = [];
 
         foreach ($models as $key => $model) {
             $product = Product::findOne(['id' => $model->product_id]);
             if (!$product) {
                 Yii::warning('Removed stale cart row for missing product #' . $model->product_id, __METHOD__);
-                $model->delete();
+                $this->deleteCartRow($model);
+                unset($models[$key]);
+                continue;
+            }
+
+            if ((int)$model->number <= 0) {
+                Yii::warning('Removed stale cart row with invalid quantity for product #' . $model->product_id, __METHOD__);
+                $this->deleteCartRow($model);
                 unset($models[$key]);
                 continue;
             }
@@ -70,7 +98,7 @@ class CartController extends BaseController
                 ]);
                 if (!$productSku) {
                     Yii::warning('Removed stale cart row for missing SKU on product #' . $model->product_id, __METHOD__);
-                    $model->delete();
+                    $this->deleteCartRow($model);
                     unset($models[$key]);
                     continue;
                 }
@@ -78,11 +106,30 @@ class CartController extends BaseController
 
             if ((float)$model->price <= 0 || $this->cartUnitPrice($product, $productSku) <= 0) {
                 Yii::warning('Removed stale cart row with invalid price for product #' . $model->product_id, __METHOD__);
-                $model->delete();
+                $this->deleteCartRow($model);
                 unset($models[$key]);
+                continue;
             }
+
+            $stock = $productSku ? (int)$productSku->stock : (int)$product->stock;
+            if ($stock <= 0) {
+                Yii::warning('Removed stale cart row for out-of-stock product #' . $model->product_id, __METHOD__);
+                $this->deleteCartRow($model);
+                unset($models[$key]);
+                continue;
+            }
+
+            if ((int)$model->number > $stock) {
+                $model->number = $stock;
+                if (!$model->save(false, ['number', 'updated_at', 'updated_by'])) {
+                    Yii::warning('Could not trim stale cart quantity for product #' . $model->product_id, __METHOD__);
+                }
+            }
+
+            $cartProducts[$model->id] = $product;
         }
 
+        $models = array_values($models);
         foreach ($models as $model) {
             $productAmount += $model->price * $model->number;
         }
@@ -108,13 +155,23 @@ class CartController extends BaseController
             $cid = 0;
         }
 
-        return $this->render($this->action->id, [
+        return [
             'models' => $models,
+            'cartProducts' => $cartProducts,
             'productAmount' => $productAmount,
             'discount' => $discount,
             'total' => $total,
             'cid'=>$cid
-        ]);
+        ];
+    }
+
+    private function deleteCartRow(Cart $model): void
+    {
+        try {
+            $model->delete();
+        } catch (\Throwable $e) {
+            Yii::warning('Failed to delete stale cart row #' . $model->id . ': ' . $e->getMessage(), __METHOD__);
+        }
     }
 
     public function actionEditAjax()

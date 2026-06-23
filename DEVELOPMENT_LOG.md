@@ -1,5 +1,37 @@
 # Development Log
 
+## 2026-06-23 Phase 13 Buyer Cart Index Fallback Guard
+
+- Stage name: Phase 13 buyer cart index fallback guard
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting the stage.
+  - Rechecked the right-side browser and confirmed the deployed product page now shows the Phase 14 review-sort marker, but still has two stale desktop `/mall/cart` links and `/mall/cart/index` still fails with `ERR_HTTP_RESPONSE_CODE_FAILURE`.
+  - Hardened `CartController::actionIndex()` so cart data preparation is isolated and the page renders a safe empty-cart fallback instead of a 500 if an unexpected cart-render exception is raised.
+  - Expanded stale cart cleanup to remove invalid quantity and out-of-stock rows, trim over-stock quantity, and delete invalid rows through an exception-safe helper.
+  - Passed validated product objects from the controller to the cart view so the view no longer re-queries product cache for each cart row.
+  - Added the cart-index fallback marker to Phase 13 buyer readiness and aggregate acceptance coverage.
+  - Updated the Phase 13 backlog row to record buyer cart stale-row plus cart-index fallback coverage.
+- Main files changed/added:
+  - `frontend/modules/mall/controllers/CartController.php`
+  - `web/resources/mall/default/views/cart/index.php`
+  - `console/controllers/AppBuyerPhase13ReadinessController.php`
+  - `console/controllers/AppPhase13AcceptanceController.php`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l frontend/modules/mall/controllers/CartController.php` passed.
+  - `php -l web/resources/mall/default/views/cart/index.php` passed.
+  - `php -l console/controllers/AppBuyerPhase13ReadinessController.php` passed.
+  - `php -l console/controllers/AppPhase13AcceptanceController.php` passed.
+  - Static marker scan confirmed `MONGOYIA_CART_INDEX_FALLBACK_V1`, `Shopping cart was refreshed`, `cartProducts`, and Phase 13 backlog coverage.
+  - Full Yii console execution remains BaoTa-only because this local checkout lacks `vendor/autoload.php`.
+- Remaining issues:
+  - BaoTa/test server must pull this commit, run migrations/readiness, restart PHP-FPM or clear opcache/runtime/page cache, then recheck `/mall/cart/index` in the browser.
+  - The deployed desktop header still showed stale `/mall/cart` links during this stage, so browser role-flow evidence cannot close until deployed output is fresh.
+  - Phase 10/11/12/13/14/15 external and browser evidence remain incomplete; production remains `NO-GO`.
+- Next stage:
+  - Run whitespace/static checks, commit and push this Phase 13 cart fallback guard, then continue with BaoTa/browser validation or another plan-listed local readiness item.
+
 ## 2026-06-23 Phase 10-15 Browser Deployment Freshness Recheck
 
 - Stage name: Phase 10-15 browser deployment freshness recheck

@@ -6465,3 +6465,27 @@
   - Production remains `NO-GO` until external provider, logistics, social-login, notification, production operations, and business/security signoff evidence is accepted.
 - Next stage:
   - Commit and push this browser recheck log entry, then continue with another plan-listed local readiness item that does not require deployed server freshness.
+
+## 2026-06-23 Phase 15 Browser Evidence Checklist
+
+- Stage name: Phase 15 browser evidence checklist
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting the stage.
+  - Extended `distribution-support-phase15-acceptance/run` report output with a browser role-flow checklist for platform backend and distributor frontend validation.
+  - Documented test-only training/FAQ, promotion material, material tracking, signoff evidence, refresh persistence, and safety checks inside the generated acceptance report.
+  - Added an accepted-evidence command template showing how to pass training, promotion, download tracking, payout signoff, and browser evidence paths after reviewer acceptance.
+  - Updated the development backlog to record that Phase 15 has a browser evidence checklist and accepted-evidence command template.
+- Main files changed/added:
+  - `console/controllers/DistributionSupportPhase15AcceptanceController.php`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l console/controllers/DistributionSupportPhase15AcceptanceController.php` passed.
+  - Static marker checks confirmed `Browser Role-Flow Checklist`, `Accepted Evidence Command`, `phase15-browser-evidence`, and backlog browser evidence checklist coverage.
+  - `git diff --check` reported no whitespace errors, only existing Windows line-ending conversion warnings.
+  - Full Yii console execution remains BaoTa-only because this local checkout lacks `vendor/autoload.php`.
+- Remaining issues:
+  - Phase 15 browser evidence still requires the BaoTa/test server to pull the latest code and run migrations/readiness.
+  - Phase 10/11/12/13/14 external/browser evidence remains pending; production remains `NO-GO`.
+- Next stage:
+  - Verify, commit, and push this Phase 15 checklist patch, then continue with the next plan-listed local readiness item.

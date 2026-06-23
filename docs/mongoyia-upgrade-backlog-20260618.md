@@ -582,6 +582,8 @@ Phase 3.2 logistics fee review apply POST guard: backend logistics-fee finance r
 
 Phase 3.3 backend seller shipment POST id hardening: backend order shipment submit now keeps GET only for opening the modal but reads the shipment write `id` from POST body data. The shipment form posts to `/backend/mall/order/fh-ajax` without query parameters, includes a hidden `id`, and exposes `data-mongoyia-order-shipment-post-id-guard`; logistics basic and PWA smoke checks cover the behavior.
 
+Phase 3.4 merchant deposit adjustment POST guard: backend merchant deposit adjustment now uses `MONGOYIA_MERCHANT_DEPOSIT_ADJUST_POST_GUARD_V1`, explicitly restricts `/backend/mall/merchant-deposit/adjust` to POST, and reads write `store_id` only from POST body data while preserving GET store switching for the read-only index page. The deposit adjustment form posts to `/backend/mall/merchant-deposit/adjust` without query-string store ids and exposes `data-mongoyia-merchant-deposit-post-guard`; `mongoyia-deposit-readiness/run` checks the guard and rejects the old query-id action.
+
 ## Open Risks
 
 - Real test server credentials, domain, TLS, WSS reverse proxy, payment sandbox secrets, and mail service are external inputs.

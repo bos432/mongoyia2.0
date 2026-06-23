@@ -55,7 +55,7 @@ $this->params['breadcrumbs'][] = $this->title;
                                     <h3 class="card-title">充值/扣费</h3>
                                 </div>
                                 <div class="card-body">
-                                    <form method="post" action="<?= \yii\helpers\Url::to(['adjust', 'store_id' => $storeId]) ?>">
+                                    <form method="post" action="<?= \yii\helpers\Url::to(['adjust']) ?>" data-mongoyia-merchant-deposit-post-guard="1">
                                         <input type="hidden" name="<?= Yii::$app->request->csrfParam ?>" value="<?= Yii::$app->request->csrfToken ?>">
                                         <input type="hidden" name="store_id" value="<?= (int)$storeId ?>">
                                         <div class="form-row">

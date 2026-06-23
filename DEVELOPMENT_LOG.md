@@ -8209,3 +8209,35 @@
   - Phase 10/11/12/15 external/provider/browser evidence gates remain pending; production remains `NO-GO`.
 - Next stage:
   - Commit and push this product consultation POST id hardening patch, then reread the plan/log and continue with the next plan-listed readiness item.
+
+## 2026-06-24 Phase 3 Merchant Deposit Adjustment POST Guard
+
+- Stage name: Phase 3.4 merchant deposit adjustment POST guard
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting the stage.
+  - Added `MONGOYIA_MERCHANT_DEPOSIT_ADJUST_POST_GUARD_V1` to the backend merchant deposit controller.
+  - Restricted `/backend/mall/merchant-deposit/adjust` to POST with the existing backend verb-filter pattern.
+  - Changed platform store resolution so write requests read `store_id` only from POST body data while index store switching remains GET-based and read-only.
+  - Updated the merchant deposit adjustment form to post without query-string `store_id` and added `data-mongoyia-merchant-deposit-post-guard`.
+  - Added readiness coverage to `mongoyia-deposit-readiness/run` for the controller guard, POST-only store id branch, form marker, and old query-id action removal.
+  - Updated the Phase 3 backlog notes as Phase 3.4.
+- Main files changed/added:
+  - `backend/modules/mall/controllers/MerchantDepositController.php`
+  - `backend/modules/mall/views/merchant-deposit/index.php`
+  - `console/controllers/MongoyiaDepositReadinessController.php`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l backend/modules/mall/controllers/MerchantDepositController.php` passed.
+  - `php -l backend/modules/mall/views/merchant-deposit/index.php` passed.
+  - `php -l console/controllers/MongoyiaDepositReadinessController.php` passed.
+  - Static marker checks confirmed `MONGOYIA_MERCHANT_DEPOSIT_ADJUST_POST_GUARD_V1`, `data-mongoyia-merchant-deposit-post-guard`, POST body `store_id`, read-only GET store switching, and `Phase 3.4`.
+  - Static stale-action check found no remaining query-string `Url::to(['adjust', 'store_id' => ...])` write form or old GET/POST fallback in the merchant deposit controller/view; the stale strings only remain inside the readiness command's negative checks.
+  - `git diff --check` reported no whitespace errors, only existing Windows line-ending conversion warnings.
+  - Full Yii console execution remains BaoTa-only because this local checkout lacks `vendor/autoload.php`.
+- Remaining issues:
+  - BaoTa/test server must rerun merchant deposit readiness/backend smoke after deployment.
+  - Phase 3 finance/logistics browser role-flow evidence should be rechecked for deposit adjustment, logistics fee review, settlement, and payout evidence pages.
+  - Phase 10/11/12/13/14/15 external/provider/browser evidence gates remain pending; production remains `NO-GO`.
+- Next stage:
+  - Commit and push this merchant deposit adjustment POST guard patch, then reread the plan/log and continue with the next plan-listed readiness item.

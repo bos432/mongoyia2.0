@@ -48,8 +48,29 @@ class MongoyiaDepositReadinessController extends Controller
     private function checkBackendEntrances()
     {
         $this->section('Backend entrances');
-        $this->requireFileContains('@app/../backend/modules/mall/controllers/MerchantDepositController.php', ['actionIndex', 'actionAdjust', 'fundLogs']);
-        $this->requireFileContains('@app/../backend/modules/mall/views/merchant-deposit/index.php', ['商家预存金', '预存金流水', '充值/扣费']);
+        $this->requireFileContains('@app/../backend/modules/mall/controllers/MerchantDepositController.php', [
+            'actionIndex',
+            'actionAdjust',
+            'fundLogs',
+            'MONGOYIA_MERCHANT_DEPOSIT_ADJUST_POST_GUARD_V1',
+            "'adjust'] = ['post']",
+            "post('store_id', 0)",
+            "get('store_id', 0)",
+        ]);
+        $this->requireFileNotContains('@app/../backend/modules/mall/controllers/MerchantDepositController.php', [
+            "get('store_id', Yii::\$app->request->post('store_id', 0))",
+        ]);
+        $this->requireFileContains('@app/../backend/modules/mall/views/merchant-deposit/index.php', [
+            '商家预存金',
+            '预存金流水',
+            '充值/扣费',
+            'data-mongoyia-merchant-deposit-post-guard',
+            "Url::to(['adjust'])",
+            'name="store_id"',
+        ]);
+        $this->requireFileNotContains('@app/../backend/modules/mall/views/merchant-deposit/index.php', [
+            "Url::to(['adjust', 'store_id' =>",
+        ]);
     }
 
     private function checkDepositFixture()
@@ -193,6 +214,23 @@ class MongoyiaDepositReadinessController extends Controller
             }
         }
         $this->ok("File contains required markers: {$path}");
+    }
+
+    private function requireFileNotContains(string $alias, array $needles)
+    {
+        $path = Yii::getAlias($alias);
+        if (!is_file($path)) {
+            $this->fail("Missing file {$path}.");
+            return;
+        }
+        $content = file_get_contents($path);
+        foreach ($needles as $needle) {
+            if (strpos($content, $needle) !== false) {
+                $this->fail("File {$path} still contains stale marker '{$needle}'.");
+                return;
+            }
+        }
+        $this->ok("File excludes stale markers: {$path}");
     }
 
     private function section(string $name)

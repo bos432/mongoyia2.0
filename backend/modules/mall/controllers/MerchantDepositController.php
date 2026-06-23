@@ -9,6 +9,16 @@ use yii\db\Query;
 
 class MerchantDepositController extends BaseController
 {
+    public const ADJUST_POST_GUARD_VERSION = 'MONGOYIA_MERCHANT_DEPOSIT_ADJUST_POST_GUARD_V1';
+
+    public function behaviors()
+    {
+        $behaviors = parent::behaviors();
+        $behaviors['verbs']['actions']['adjust'] = ['post'];
+
+        return $behaviors;
+    }
+
     public function actionIndex()
     {
         $storeId = $this->resolveStoreId();
@@ -84,7 +94,9 @@ class MerchantDepositController extends BaseController
     private function resolveStoreId(): int
     {
         if ($this->isMallPlatformOperator()) {
-            $requested = (int)Yii::$app->request->get('store_id', Yii::$app->request->post('store_id', 0));
+            $requested = Yii::$app->request->isPost
+                ? (int)Yii::$app->request->post('store_id', 0)
+                : (int)Yii::$app->request->get('store_id', 0);
             if ($requested > 0) {
                 return $requested;
             }

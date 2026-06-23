@@ -402,6 +402,8 @@ Strict Phase 13 acceptance remains pending until H5 browser role-flow evidence a
 
 Phase 13.12 buyer APP category store scope: `AppBuyerApiService::categories()` now counts category products through the same store-scoped public product query used for listing, so store-specific APP category pages do not show cross-store product counts. Readiness checks cover `MONGOYIA_APP_BUYER_CATEGORY_STORE_SCOPE_V1`.
 
+Phase 13.13 buyer APP product detail store scope: `/api/v1/app-buyer/product` now passes the current store context into `AppBuyerApiService::product()`, and product detail lookup uses the same store-scoped public product query as home/category/search. Readiness checks cover `MONGOYIA_APP_BUYER_PRODUCT_STORE_SCOPE_V1`.
+
 Phase 14 acceptance command:
 
 ```bash

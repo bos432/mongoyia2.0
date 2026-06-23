@@ -59,7 +59,11 @@ class AppBuyerController extends BaseController
     public function actionProduct()
     {
         try {
-            return $this->buyerService()->product((int)Yii::$app->request->get('id'), $this->currentUserId());
+            return $this->buyerService()->product(
+                (int)Yii::$app->request->get('id'),
+                $this->currentUserId(),
+                (int)$this->getStoreId()
+            );
         } catch (\Throwable $e) {
             return $this->apiError($e->getMessage(), 404);
         }

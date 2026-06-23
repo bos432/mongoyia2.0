@@ -27,6 +27,7 @@ class AppBuyerApiService
     public const NOTIFICATION_CENTER_VERSION = 'MONGOYIA_APP_BUYER_NOTIFICATION_CENTER_V1';
     public const REVIEW_WRITE_VERSION = 'MONGOYIA_APP_BUYER_REVIEW_WRITE_V1';
     public const CATEGORY_STORE_SCOPE_VERSION = 'MONGOYIA_APP_BUYER_CATEGORY_STORE_SCOPE_V1';
+    public const PRODUCT_STORE_SCOPE_VERSION = 'MONGOYIA_APP_BUYER_PRODUCT_STORE_SCOPE_V1';
 
     private $searchVideoService;
 
@@ -163,9 +164,9 @@ class AppBuyerApiService
         ];
     }
 
-    public function product(int $id, int $userId = 0): array
+    public function product(int $id, int $userId = 0, int $storeId = 0): array
     {
-        $product = $this->publicProductQuery(0)->andWhere(['id' => $id])->one();
+        $product = $this->publicProductQuery($storeId)->andWhere(['id' => $id])->one();
         if (!$product) {
             throw new \RuntimeException('Product not found.');
         }
@@ -187,6 +188,7 @@ class AppBuyerApiService
 
         return [
             'version' => self::VERSION,
+            'product_store_scope_version' => self::PRODUCT_STORE_SCOPE_VERSION,
             'product' => $this->productDetail($product),
             'skus' => array_map([$this, 'skuSummary'], ProductSku::find()
                 ->where(['product_id' => $id])

@@ -7457,3 +7457,33 @@
   - Phase 10/11/12/13/15 external/provider/browser evidence gates remain pending; production remains `NO-GO`.
 - Next stage:
   - Commit and push this Phase 14 moderation guard patch, then reread the plan/log and continue with the next plan-listed local readiness item or BaoTa/browser validation.
+
+## 2026-06-24 Phase 13 Buyer APP Product Detail Store Scope
+
+- Stage name: Phase 13 buyer APP product detail store scope
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting the stage.
+  - Updated `/api/v1/app-buyer/product` to pass the current store context into `AppBuyerApiService::product()`.
+  - Updated `AppBuyerApiService::product()` so product detail lookup uses the same `$storeId`-scoped public product query as home/category/search.
+  - Added response/readiness marker `MONGOYIA_APP_BUYER_PRODUCT_STORE_SCOPE_V1` and `product_store_scope_version`.
+  - Updated the Phase 13 backlog notes to record this small stage as Phase 13.13.
+- Main files changed/added:
+  - `api/modules/v1/controllers/AppBuyerController.php`
+  - `common/services/mall/AppBuyerApiService.php`
+  - `console/controllers/AppBuyerPhase13ReadinessController.php`
+  - `console/controllers/AppPhase13AcceptanceController.php`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l common/services/mall/AppBuyerApiService.php` passed.
+  - `php -l api/modules/v1/controllers/AppBuyerController.php` passed.
+  - `php -l console/controllers/AppBuyerPhase13ReadinessController.php` passed.
+  - `php -l console/controllers/AppPhase13AcceptanceController.php` passed.
+  - Static marker/source checks confirmed `MONGOYIA_APP_BUYER_PRODUCT_STORE_SCOPE_V1`, `product_store_scope_version`, controller `getStoreId()` handoff, and service `publicProductQuery($storeId)` usage.
+  - `git diff --check` reported no whitespace errors, only existing Windows line-ending conversion warnings.
+  - Full Yii acceptance remains BaoTa-only because this local checkout lacks `vendor/autoload.php`.
+- Remaining issues:
+  - Phase 13 browser role-flow evidence and APP accepted evidence remain pending until BaoTa deploys fresh code and browser checkout/cart validation passes.
+  - Phase 10/11/12/14/15 external/provider/browser evidence gates remain pending; production remains `NO-GO`.
+- Next stage:
+  - Commit and push this Phase 13 product-scope patch, then reread the plan/log and continue with the next plan-listed readiness item.

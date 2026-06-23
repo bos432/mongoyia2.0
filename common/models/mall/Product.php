@@ -17,6 +17,8 @@ use common\models\Store;
  * @property string $stock_code 仓库条码
  * @property int $stock 库存数量
  * @property int $stock_warning 库存预警
+ * @property int $shipment_timeout_hours 发货时效小时
+ * @property float $shipment_timeout_deduct_fee 发货超时预存金扣费
  * @property float $weight 重量
  * @property float $volume 体积
  * @property float $price 价格
@@ -65,9 +67,9 @@ class Product extends ProductBase
     public function rules()
     {
         return array_merge(parent::rules(), [
-            [['store_id', 'category_id', 'stock', 'stock_warning', 'brand_id', 'vendor_id', 'attribute_set_id', 'param_id', 'reviews', 'sales', 'reviewed_at', 'reviewer_id', 'click', 'type', 'sort', 'status', 'created_at', 'updated_at', 'created_by', 'updated_by'], 'integer'],
+            [['store_id', 'category_id', 'stock', 'stock_warning', 'shipment_timeout_hours', 'brand_id', 'vendor_id', 'attribute_set_id', 'param_id', 'reviews', 'sales', 'reviewed_at', 'reviewer_id', 'click', 'type', 'sort', 'status', 'created_at', 'updated_at', 'created_by', 'updated_by'], 'integer'],
             [['category_id', 'name', 'sku'], 'required'],
-            [['weight', 'volume', 'price', 'market_price', 'cost_price', 'wholesale_price', 'star'], 'number'],
+            [['weight', 'volume', 'price', 'market_price', 'cost_price', 'wholesale_price', 'star', 'shipment_timeout_deduct_fee'], 'number'],
             [['images', 'tags'], 'safe'],
             [['brief', 'content', 'seo_description'], 'string'],
             [['name', 'sku', 'stock_code', 'thumb', 'image', 'seo_url', 'seo_title', 'seo_keywords', 'audit_remark'], 'string', 'max' => 255],
@@ -90,6 +92,8 @@ class Product extends ProductBase
                 'stock_code' => '仓库条码',
                 'stock' => '库存数量',
                 'stock_warning' => '库存预警',
+                'shipment_timeout_hours' => '发货时效小时',
+                'shipment_timeout_deduct_fee' => '发货超时预存金扣费',
                 'weight' => '重量',
                 'volume' => '体积',
                 'price' => '价格',
@@ -137,6 +141,8 @@ class Product extends ProductBase
                 'stock_code' => Yii::t('app', 'Stock Code'),
                 'stock' => Yii::t('app', 'Stock'),
                 'stock_warning' => Yii::t('app', 'Stock Warning'),
+                'shipment_timeout_hours' => Yii::t('app', 'Shipment Timeout Hours'),
+                'shipment_timeout_deduct_fee' => Yii::t('app', 'Shipment Timeout Deduct Fee'),
                 'weight' => Yii::t('app', 'Weight'),
                 'volume' => Yii::t('app', 'Volume'),
                 'price' => Yii::t('app', 'Price'),

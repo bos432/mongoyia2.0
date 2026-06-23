@@ -5374,3 +5374,40 @@
 - Next stage:
   - Commit and push Phase 14.2, then on BaoTa run `logistics-tracking-phase14-readiness/run --fixture=1` and `logistics-product-phase14-acceptance/run --fixture=1`.
   - Continue Phase 14.3 by adding SKU generation, inventory location, and shipping timeout/deposit evidence while keeping high-risk writes gated.
+
+## 2026-06-23 Phase 14.3 Product Inventory And Shipping Timeout
+
+- Stage name: Phase 14.3 SKU generation, inventory location, and shipping timeout/deposit evidence
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting the stage.
+  - Added migration `m260623_170000_mongoyia_product_inventory_shipping_fields` for `mall_product.shipment_timeout_hours`, `mall_product.shipment_timeout_deduct_fee`, and `mall_product_sku.inventory_location`.
+  - Updated product and SKU models/labels so the new fields are recognized after migration.
+  - Added `ProductInventoryPhase14Service` with automatic SKU code generation, inventory location option/readiness planning, duplicate SKU detection, and missing-location review buckets.
+  - Added shipping timeout dry-run planning for pending deposit deduction, insufficient-fund block, still-watching, and already-shipped buckets.
+  - Added `product-inventory-phase14-readiness/run` and wired it into the Phase 14 aggregate acceptance source coverage.
+  - Updated the Phase 14 backlog status and command list.
+- Main files changed/added:
+  - `console/migrations/m260623_170000_mongoyia_product_inventory_shipping_fields.php`
+  - `common/models/mall/Product.php`
+  - `common/models/mall/ProductBase.php`
+  - `common/models/mall/ProductSku.php`
+  - `common/models/mall/ProductSkuBase.php`
+  - `common/services/mall/ProductInventoryPhase14Service.php`
+  - `console/controllers/ProductInventoryPhase14ReadinessController.php`
+  - `console/controllers/LogisticsProductPhase14AcceptanceController.php`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l` passed for the new migration, updated product/SKU models, product inventory service, product inventory readiness command, and Phase 14 aggregate acceptance command.
+  - Pure PHP offline simulation passed for SKU generation, duplicate SKU detection, missing inventory location detection, timeout pending deduction, insufficient-fund block, watch bucket, and already-shipped bucket.
+  - Static marker checks confirmed migration fields, model fields, service markers, readiness command, aggregate acceptance wiring, and backlog command markers.
+  - `git diff --check` reported no whitespace errors; only existing Windows line-ending conversion warnings.
+  - Full Yii console execution is not available locally because this patch checkout does not have `vendor/autoload.php`; after BaoTa pull run `migrate/up`, `product-inventory-phase14-readiness/run --fixture=1`, and `logistics-product-phase14-acceptance/run --fixture=1`.
+- Remaining issues:
+  - Phase 14.4 search filters and product video behavior are pending.
+  - Store favorite, review moderation, and browser role-flow evidence remain pending.
+  - Shipping timeout deposit deduction remains a dry-run/finance-gated plan; no product, stock, order, or fund rows are mutated by this stage.
+  - Phase 10/11/12 external provider and production evidence remain incomplete; production remains `NO-GO`.
+- Next stage:
+  - Commit and push Phase 14.3, then on BaoTa run `migrate/up`, `product-inventory-phase14-readiness/run --fixture=1`, and `logistics-product-phase14-acceptance/run --fixture=1`.
+  - Continue Phase 14.4 by adding SKU/keyword suggestions, brand/price/sales filters, and product video readiness.

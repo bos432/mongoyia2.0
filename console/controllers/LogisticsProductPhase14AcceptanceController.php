@@ -137,6 +137,23 @@ class LogisticsProductPhase14AcceptanceController extends Controller
             'logistics-tracking-phase14-readiness/run',
             'Tracking plan fixture',
         ]);
+        $this->requireFileContains('Product inventory and shipping timeout service', 'common/services/mall/ProductInventoryPhase14Service.php', [
+            'MONGOYIA_PRODUCT_INVENTORY_PHASE14_V1',
+            'generateSkuCode',
+            'planSkuInventory',
+            'planShippingTimeout',
+            'shipping_timeout_deposit_apply_requires_finance_acceptance',
+        ]);
+        $this->requireFileContains('Product inventory and shipping timeout readiness', 'console/controllers/ProductInventoryPhase14ReadinessController.php', [
+            'MONGOYIA_PRODUCT_INVENTORY_PHASE14_READINESS_V1',
+            'product-inventory-phase14-readiness/run',
+            'Product inventory fixture',
+        ]);
+        $this->requireFileContains('Product inventory migration', 'console/migrations/m260623_170000_mongoyia_product_inventory_shipping_fields.php', [
+            'shipment_timeout_hours',
+            'shipment_timeout_deduct_fee',
+            'inventory_location',
+        ]);
     }
 
     private function checkPlannedScopeMatrix(): void
@@ -145,7 +162,7 @@ class LogisticsProductPhase14AcceptanceController extends Controller
         foreach ([
             'Logistics provider adapter contract' => 'Provider adapter config, simulated provider, real provider evidence gate, readiness command, and no committed provider secrets.',
             'Tracking sync contract' => 'Single/batch tracking query, abnormal status mapping, audit evidence, retry-safe sync, and readiness command.',
-            'SKU/inventory/shipping contract' => 'Automatic SKU code generation, shipping timeout/deposit deduction, inventory location, and safe stock checks.',
+            'SKU/inventory/shipping contract' => 'Automatic SKU code generation, shipping timeout/deposit deduction dry-run, inventory location, safe stock checks, and readiness command.',
             'Search/video contract' => 'SKU/keyword suggestions, brand/price/sales filters, and product video exposure.',
             'Store favorite/review moderation contract' => 'Store favorite, review approval/reject workflow, sorting, and violation handling.',
         ] as $area => $notes) {

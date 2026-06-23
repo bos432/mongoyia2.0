@@ -47,6 +47,7 @@ class ProductSkuBase extends BaseModel
             'wholesale_price' => Yii::t('app', 'Wholesale Price'),
             'sku' => Yii::t('app', 'Sku'),
             'stock_code' => Yii::t('app', 'Stock Code'),
+            'inventory_location' => Yii::t('app', 'Inventory Location'),
             'stock' => Yii::t('app', 'Stock'),
             'weight' => Yii::t('app', 'Weight'),
             'volume' => Yii::t('app', 'Volume'),

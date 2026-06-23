@@ -21,6 +21,7 @@ use common\models\Store;
  * @property float $wholesale_price 拼团价
  * @property string $sku 库存编号
  * @property string $stock_code 仓库条码
+ * @property string $inventory_location 库存地点
  * @property int $stock 库存数量
  * @property float $weight 重量
  * @property float $volume 体积
@@ -52,6 +53,7 @@ class ProductSku extends ProductSkuBase
             [['product_id', 'sku'], 'required'],
             [['price', 'market_price', 'cost_price', 'wholesale_price', 'weight', 'volume'], 'number'],
             [['name', 'attribute_value', 'thumb', 'sku', 'stock_code'], 'string', 'max' => 255],
+            [['inventory_location'], 'string', 'max' => 128],
         ]);
     }
 
@@ -74,6 +76,7 @@ class ProductSku extends ProductSkuBase
                 'wholesale_price' => '拼团价',
                 'sku' => '库存编号',
                 'stock_code' => '仓库条码',
+                'inventory_location' => '库存地点',
                 'stock' => '库存数量',
                 'weight' => '重量',
                 'volume' => '体积',
@@ -99,6 +102,7 @@ class ProductSku extends ProductSkuBase
                 'wholesale_price' => Yii::t('app', 'Wholesale Price'),
                 'sku' => Yii::t('app', 'Sku'),
                 'stock_code' => Yii::t('app', 'Stock Code'),
+                'inventory_location' => Yii::t('app', 'Inventory Location'),
                 'stock' => Yii::t('app', 'Stock'),
                 'weight' => Yii::t('app', 'Weight'),
                 'volume' => Yii::t('app', 'Volume'),

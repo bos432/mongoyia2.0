@@ -80,6 +80,8 @@ class ProductBase extends BaseModel
             'stock_code' => Yii::t('app', 'Stock Code'),
             'stock' => Yii::t('app', 'Stock'),
             'stock_warning' => Yii::t('app', 'Stock Warning'),
+            'shipment_timeout_hours' => Yii::t('app', 'Shipment Timeout Hours'),
+            'shipment_timeout_deduct_fee' => Yii::t('app', 'Shipment Timeout Deduct Fee'),
             'weight' => Yii::t('app', 'Weight'),
             'volume' => Yii::t('app', 'Volume'),
             'price' => Yii::t('app', 'Price'),

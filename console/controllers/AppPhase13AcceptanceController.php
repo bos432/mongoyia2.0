@@ -240,8 +240,12 @@ class AppPhase13AcceptanceController extends Controller
             'MONGOYIA_APP_SELLER_SHIPMENT_POST_GUARD_V1',
             'MONGOYIA_PRODUCT_AUDIT_POST_VERB_GUARD_V1',
             'MONGOYIA_MERCHANT_COUPON_POST_VERB_GUARD_V1',
+            'MONGOYIA_MERCHANT_COUPON_STORE_ID_POST_GUARD_V1',
             'app-seller-phase13-readiness/run',
             'shipment write uses existing paid/COD checks',
+        ]);
+        $this->requireFileNotContains('Seller backend merchant coupon store_id has no POST/GET fallback', 'backend/modules/mall/controllers/MerchantCouponController.php', [
+            "post('store_id', Yii::\$app->request->get('store_id', 0))",
         ]);
         $this->requireFileContains('APP auth handoff readiness', 'console/controllers/AppAuthPhase13ReadinessController.php', [
             'MONGOYIA_APP_AUTH_PHASE13_READINESS_V1',

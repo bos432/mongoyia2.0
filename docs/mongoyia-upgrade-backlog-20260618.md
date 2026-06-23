@@ -416,6 +416,8 @@ Phase 13.17 seller APP shipment POST guard: `/api/v1/app-seller/shipment` now us
 
 Phase 13.18 buyer APP write POST guard: `AppBuyerController` now uses `MONGOYIA_APP_BUYER_WRITE_POST_GUARD_V1` and a shared `isWriteRequest()` branch for cart add, checkout/order submit, product favorite toggle, store favorite toggle, received-order review submit, and notification read-state writes. Phase 13 buyer readiness and aggregate acceptance check this guard while preserving GET list/detail reads on the same APP endpoints.
 
+Phase 13.19 merchant coupon store selector POST hardening: backend merchant-coupon participation keeps the platform operator's read-only GET store switch on the index page, but join/leave POST requests now read `store_id` only from POST through `MONGOYIA_MERCHANT_COUPON_STORE_ID_POST_GUARD_V1`. Phase 13 seller readiness and aggregate acceptance check the marker and reject the old POST/GET fallback, so platform-coupon participation cannot be redirected to a query-string store id during write actions.
+
 Phase 14 acceptance command:
 
 ```bash

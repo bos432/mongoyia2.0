@@ -11,6 +11,7 @@ use yii\db\Query;
 class MerchantCouponController extends BaseController
 {
     public const BACKEND_PARTICIPATION_VERB_GUARD_VERSION = 'MONGOYIA_MERCHANT_COUPON_POST_VERB_GUARD_V1';
+    public const BACKEND_STORE_ID_VERB_GUARD_VERSION = 'MONGOYIA_MERCHANT_COUPON_STORE_ID_POST_GUARD_V1';
 
     public function behaviors()
     {
@@ -86,7 +87,9 @@ class MerchantCouponController extends BaseController
     private function resolveStoreId(): int
     {
         if ($this->isMallPlatformOperator()) {
-            $requested = (int)Yii::$app->request->post('store_id', Yii::$app->request->get('store_id', 0));
+            $requested = Yii::$app->request->isPost
+                ? (int)Yii::$app->request->post('store_id', 0)
+                : (int)Yii::$app->request->get('store_id', 0);
             if ($requested > 0) {
                 return $requested;
             }

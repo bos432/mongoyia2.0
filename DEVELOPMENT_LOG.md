@@ -7900,3 +7900,33 @@
   - Phase 10/11/12/13/14 external/provider/browser evidence gates remain pending; production remains `NO-GO`.
 - Next stage:
   - Commit and push this Phase 15 distributor POST parameter hardening patch, then reread the plan/log and continue with the next plan-listed readiness item.
+
+## 2026-06-24 Phase 13 Merchant Coupon Store Selector POST Hardening
+
+- Stage name: Phase 13 merchant coupon store selector POST hardening
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting the stage.
+  - Added `MONGOYIA_MERCHANT_COUPON_STORE_ID_POST_GUARD_V1` to the backend merchant coupon controller.
+  - Kept the platform operator's read-only GET `store_id` selector on `/backend/mall/merchant-coupon/index`.
+  - Hardened join/leave write requests so POST requests read `store_id` only from POST form data instead of falling back to query strings.
+  - Added Phase 13 seller readiness and aggregate acceptance coverage for the marker, POST/GET split, and forbidden legacy fallback.
+  - Updated the Phase 13 backlog notes to record this small stage as Phase 13.19.
+- Main files changed/added:
+  - `backend/modules/mall/controllers/MerchantCouponController.php`
+  - `console/controllers/AppSellerPhase13ReadinessController.php`
+  - `console/controllers/AppPhase13AcceptanceController.php`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l backend/modules/mall/controllers/MerchantCouponController.php` passed.
+  - `php -l console/controllers/AppSellerPhase13ReadinessController.php` passed.
+  - `php -l console/controllers/AppPhase13AcceptanceController.php` passed.
+  - Static marker checks confirmed `MONGOYIA_MERCHANT_COUPON_STORE_ID_POST_GUARD_V1`, POST-only write `store_id` reads, GET-only list selector support, and `Phase 13.19`.
+  - Static stale-fallback check found no remaining `post('store_id', Yii::$app->request->get('store_id', 0))` in `MerchantCouponController.php`.
+  - `git diff --check` reported no whitespace errors, only existing Windows line-ending conversion warnings.
+  - Full Yii console execution remains BaoTa-only because this local checkout lacks `vendor/autoload.php`.
+- Remaining issues:
+  - Phase 13 authenticated H5/APP browser role-flow evidence still requires BaoTa/test server deployment and real buyer/seller test-account validation.
+  - Phase 10/11/12/14/15 external/provider/browser evidence gates remain pending; production remains `NO-GO`.
+- Next stage:
+  - Commit and push this Phase 13 merchant coupon store selector hardening patch, then reread the plan/log and continue with the next plan-listed readiness item.

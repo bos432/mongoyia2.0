@@ -132,9 +132,16 @@ class AppSellerPhase13ReadinessController extends Controller
         ]);
         $this->requireFileContains('Seller backend merchant coupon participation uses POST forms', 'backend/modules/mall/controllers/MerchantCouponController.php', [
             'MONGOYIA_MERCHANT_COUPON_POST_VERB_GUARD_V1',
+            'MONGOYIA_MERCHANT_COUPON_STORE_ID_POST_GUARD_V1',
             "'join'] = ['post']",
             "'leave'] = ['post']",
             "post('coupon_type_id', 0)",
+            'Yii::$app->request->isPost',
+            "post('store_id', 0)",
+            "get('store_id', 0)",
+        ]);
+        $this->requireFileNotContains('Seller backend merchant coupon store_id has no POST/GET fallback', 'backend/modules/mall/controllers/MerchantCouponController.php', [
+            "post('store_id', Yii::\$app->request->get('store_id', 0))",
         ]);
         $this->requireFileContains('Seller backend merchant coupon UI posts CSRF forms', 'backend/modules/mall/views/merchant-coupon/index.php', [
             'data-mongoyia-merchant-coupon-post-guard',
@@ -244,6 +251,25 @@ class AppSellerPhase13ReadinessController extends Controller
         }
 
         $this->addCheck($label, 'PASS', $path, 'Required seller APP API markers are present.');
+    }
+
+    private function requireFileNotContains(string $label, string $path, array $needles): void
+    {
+        $full = $this->resolvePath($path);
+        if (!is_file($full)) {
+            $this->addCheck($label, 'FAIL', $path, 'Required file is missing.');
+            return;
+        }
+
+        $content = (string)file_get_contents($full);
+        foreach ($needles as $needle) {
+            if (strpos($content, $needle) !== false) {
+                $this->addCheck($label, 'FAIL', $path, "Forbidden marker {$needle} is still present.");
+                return;
+            }
+        }
+
+        $this->addCheck($label, 'PASS', $path, 'Forbidden seller APP API markers are absent.');
     }
 
     private function section(string $name): void

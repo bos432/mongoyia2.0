@@ -381,6 +381,8 @@ Strict Phase 12 acceptance remains pending until Facebook/Google provider callba
 
 Phase 12.9 OAuth response adapter completion: the PSR-7 response and stream adapters used by OAuth2 token flows now implement header-line, body write/read, seek, metadata, and stream string behavior with `MONGOYIA_OAUTH_RESPONSE_ADAPTER_V1` source coverage in Phase 12 acceptance. This supports the planned Facebook/Google login and security-code token handoff flows without storing provider secrets or calling external identity providers during readiness checks.
 
+Phase 12.10 OAuth authorization-code repository completion: the authorization-code repository now persists, revokes, and checks auth-code state through `OauthSystem` and the existing `oauth_authorization_code` table (`MONGOYIA_OAUTH_AUTH_CODE_REPOSITORY_V1`). This keeps OAuth2 authorization-code flows aligned with the existing access-token and refresh-token repositories without adding provider secrets or external identity-provider calls to readiness checks.
+
 Phase 13 acceptance command:
 
 ```bash

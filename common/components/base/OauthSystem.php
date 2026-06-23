@@ -4,6 +4,7 @@ namespace common\components\base;
 
 use common\helpers\CommonHelper;
 use common\models\oauth\AccessToken;
+use common\models\oauth\AuthorizationCode;
 use common\models\oauth\Client;
 use common\models\oauth\RefreshToken;
 use common\models\oauth\repositories\AccessTokenRepository;
@@ -66,6 +67,44 @@ class OauthSystem extends Component
     {
         return Yii::$app->settingSystem->getValue('oauth_encryption_key') ?? Yii::$app->params['oauth']['encryptionKey'];
 
+    }
+
+    /**
+     * @param $clientId
+     * @param $code
+     * @param $expiredAt
+     * @param $scope
+     * @param $redirectUri
+     * @return bool
+     * @throws \yii\base\InvalidConfigException
+     */
+    public function authorizationCodeCreate($clientId, $code, $expiredAt, $scope, $redirectUri)
+    {
+        $model = new AuthorizationCode();
+        $model->name = $code;
+        $model->client_id = $clientId;
+        $model->expired_at = $expiredAt;
+        $model->scope = $this->normalizeScopeForStorage($scope);
+        $model->redirect_uri = $redirectUri ?: '';
+        if (!$model->save()) {
+            Yii::$app->logSystem->db($model->errors);
+            return false;
+        }
+
+        return true;
+    }
+
+    public function authorizationCodeDelete($code)
+    {
+        AuthorizationCode::deleteAll(['name' => $code]);
+    }
+
+    public function authorizationCodeFindByCode($code, $clientId = null)
+    {
+        return AuthorizationCode::find()
+            ->where(['name' => $code, 'status' => AuthorizationCode::STATUS_ACTIVE])
+            ->andFilterWhere(['client_id' => $clientId])
+            ->one();
     }
 
     /**
@@ -161,5 +200,19 @@ class OauthSystem extends Component
     {
         !$storeId && $storeId = Yii::$app->storeSystem->getId();
         return Client::findOne(['client_id' => $id, 'status' => Client::STATUS_ACTIVE, 'store_id' => $storeId]);
+    }
+
+    private function normalizeScopeForStorage($scope): string
+    {
+        $values = [];
+        foreach ((array)$scope as $item) {
+            if (is_object($item) && method_exists($item, 'getIdentifier')) {
+                $values[] = $item->getIdentifier();
+            } elseif (is_scalar($item)) {
+                $values[] = (string)$item;
+            }
+        }
+
+        return json_encode(array_values(array_unique($values)), JSON_UNESCAPED_UNICODE);
     }
 }

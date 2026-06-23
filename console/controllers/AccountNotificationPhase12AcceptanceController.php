@@ -119,6 +119,15 @@ class AccountNotificationPhase12AcceptanceController extends Controller
             'AccessTokenRepository',
             'ClientRepository',
             'ScopeRepository',
+            'authorizationCodeCreate',
+            'authorizationCodeDelete',
+            'authorizationCodeFindByCode',
+        ]);
+        $this->requireFileContains('OAuth authorization-code repository', 'common/models/oauth/repositories/AuthCodeRepository.php', [
+            'MONGOYIA_OAUTH_AUTH_CODE_REPOSITORY_V1',
+            'persistNewAuthCode',
+            'revokeAuthCode',
+            'isAuthCodeRevoked',
         ]);
         $this->requireFileContains('OAuth PSR-7 response adapter', 'api/components/response/OauthResponse.php', [
             'MONGOYIA_OAUTH_RESPONSE_ADAPTER_V1',

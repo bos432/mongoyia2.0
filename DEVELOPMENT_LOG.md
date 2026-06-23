@@ -1,5 +1,33 @@
 # Development Log
 
+## 2026-06-24 Phase 12 OAuth Authorization-Code Repository Completion
+
+- Stage name: Phase 12 OAuth authorization-code repository completion
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting the stage.
+  - Completed `AuthCodeRepository` so OAuth2 authorization-code flows can persist new authorization codes, revoke codes, and check revocation state instead of returning empty TODO stubs.
+  - Added `OauthSystem` authorization-code create/delete/find helpers using the existing `oauth_authorization_code` table and existing service-layer pattern.
+  - Added `MONGOYIA_OAUTH_AUTH_CODE_REPOSITORY_V1` coverage to Phase 12 acceptance and updated the backlog with Phase 12.10.
+- Main files changed/added:
+  - `common/models/oauth/repositories/AuthCodeRepository.php`
+  - `common/components/base/OauthSystem.php`
+  - `console/controllers/AccountNotificationPhase12AcceptanceController.php`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l common/models/oauth/repositories/AuthCodeRepository.php` passed.
+  - `php -l common/components/base/OauthSystem.php` passed.
+  - `php -l console/controllers/AccountNotificationPhase12AcceptanceController.php` passed.
+  - Static marker scan confirmed `MONGOYIA_OAUTH_AUTH_CODE_REPOSITORY_V1`, `authorizationCodeCreate`, `authorizationCodeDelete`, `authorizationCodeFindByCode`, `persistNewAuthCode`, and `isAuthCodeRevoked`.
+  - `rg "TODO: Implement"` found no remaining authorization-code repository TODO stubs.
+  - `git diff --check` reported no whitespace errors, only existing Windows line-ending conversion warnings.
+  - Full Yii console execution remains BaoTa-only because this local checkout lacks `vendor/autoload.php`.
+- Remaining issues:
+  - Real Facebook/Google provider callback evidence, password recovery/security-code delivery evidence, notification delivery evidence, language-review evidence, and browser role-flow evidence remain pending.
+  - Production remains `NO-GO`.
+- Next stage:
+  - Verify, commit, and push this Phase 12 authorization-code repository completion, then continue with the next plan-listed local readiness item or BaoTa/browser validation after the server refreshes.
+
 ## 2026-06-24 Phase 12 OAuth PSR-7 Response Adapter Completion
 
 - Stage name: Phase 12 OAuth PSR-7 response/stream adapter completion

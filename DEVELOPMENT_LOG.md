@@ -7354,3 +7354,24 @@
   - Phase 10/11/12/13/14/15 browser and provider evidence gates remain pending; production remains `NO-GO`.
 - Next stage:
   - Commit and push this Phase 12 runtime guard patch, then reread the plan/log and continue with the next plan-listed local readiness or BaoTa/browser validation stage.
+
+## 2026-06-24 Phase 13 Browser Deployment Freshness Recheck
+
+- Stage name: Phase 13 browser deployment freshness recheck
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting the stage.
+  - Reused the right-side browser session and inspected `https://demo2026.mongoyia.com/product-codex-test-product-1781945133` without submitting forms or mutating data.
+  - Confirmed the deployed product page still serves `https://demo2026.mongoyia.com/resources/mall/default/js/main.js?v=1.1.3`.
+  - Confirmed the deployed product page still contains two exact stale `/mall/cart` links along with newer `/mall/cart/index` links.
+  - Confirmed the existing browser tab for `https://demo2026.mongoyia.com/mall/cart/index` remains on the browser error page with `ERR_HTTP_RESPONSE_CODE_FAILURE`.
+- Main files changed/added:
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - Browser product page: opens, but deployed asset/page output is stale.
+  - Browser cart page: still blocked by HTTP response failure in the authenticated browser session.
+  - No checkout/payment/order/customer data was submitted or changed.
+- Remaining issues:
+  - BaoTa/test server must pull `fa329e3` or newer and clear Yii cache, PHP opcache, runtime/page/static cache before Phase 13 buyer cart/checkout browser validation can continue.
+  - Phase 10/11/12/13/14/15 external/provider/browser evidence gates remain pending; production remains `NO-GO`.
+- Next stage:
+  - Commit and push this browser freshness record, then continue with another plan-listed local readiness item that does not depend on deployed server freshness.

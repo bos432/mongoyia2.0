@@ -44,9 +44,13 @@ class OperationalConfigOpsAlertTestController extends Controller
             'backup_failed',
         ]);
         $this->requireFileContains('@app/../backend/modules/mall/controllers/OperationalConfigController.php', [
+            'MONGOYIA_OPERATIONAL_CONFIG_BACKEND_POST_VERB_GUARD_V1',
             'actionSaveAlert',
             'actionTestAlert',
             'OperationalOpsAlertService',
+            "'save-alert'",
+            "'test-alert'",
+            "['post']",
         ]);
         $this->requireFileContains('@app/../backend/modules/mall/views/operational-config/index.php', [
             'data-mongoyia-operational-ops-alert',

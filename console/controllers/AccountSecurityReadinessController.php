@@ -64,10 +64,14 @@ class AccountSecurityReadinessController extends Controller
             'codeLoginEnabled',
         ]);
         $this->requireFileContains('Backend account security actions', 'backend/modules/mall/controllers/OperationalConfigController.php', [
+            'MONGOYIA_OPERATIONAL_CONFIG_BACKEND_POST_VERB_GUARD_V1',
             'OperationalAccountSecurityService',
             'actionAccountSecurity',
             'actionSaveAccountSecurity',
             'actionCheckAccountSecurity',
+            "'save-account-security'",
+            "'check-account-security'",
+            "['post']",
         ]);
         $this->requireFileContains('Backend account security page', 'backend/modules/mall/views/operational-config/account-security.php', [
             'data-mongoyia-account-security',

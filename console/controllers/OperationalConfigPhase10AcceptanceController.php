@@ -82,6 +82,10 @@ class OperationalConfigPhase10AcceptanceController extends Controller
             'Production launch remains `NO-GO`',
         ]);
         $this->requireFileContains('Operational config backend controller', 'backend/modules/mall/controllers/OperationalConfigController.php', [
+            'MONGOYIA_OPERATIONAL_CONFIG_BACKEND_POST_VERB_GUARD_V1',
+            'public function behaviors()',
+            "'save-payment'",
+            "'check-payment'",
             'actionSavePayment',
             'actionCheckPayment',
             'actionSaveMail',
@@ -91,6 +95,9 @@ class OperationalConfigPhase10AcceptanceController extends Controller
             'actionSaveLaunch',
             'actionSaveTranslation',
             'actionCheckTranslation',
+            "'save-provider-evidence'",
+            "'check-provider-evidence'",
+            "['post']",
         ]);
         $this->requireFileContains('Operational config backend page', 'backend/modules/mall/views/operational-config/index.php', [
             'data-mongoyia-operational-phase10-readiness',

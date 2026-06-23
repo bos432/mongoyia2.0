@@ -44,8 +44,11 @@ class OperationalConfigLaunchTestController extends Controller
             'GO，签核和证据引用已齐全',
         ]);
         $this->requireFileContains('@app/../backend/modules/mall/controllers/OperationalConfigController.php', [
+            'MONGOYIA_OPERATIONAL_CONFIG_BACKEND_POST_VERB_GUARD_V1',
             'actionSaveLaunch',
             'OperationalLaunchSignoffService',
+            "'save-launch'",
+            "['post']",
         ]);
         $this->requireFileContains('@app/../backend/modules/mall/views/operational-config/index.php', [
             'data-mongoyia-operational-launch-signoff',

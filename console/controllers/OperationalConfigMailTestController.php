@@ -50,9 +50,13 @@ class OperationalConfigMailTestController extends Controller
             'operational_config_fallback',
         ]);
         $this->requireFileContains('@app/../backend/modules/mall/controllers/OperationalConfigController.php', [
+            'MONGOYIA_OPERATIONAL_CONFIG_BACKEND_POST_VERB_GUARD_V1',
             'actionSaveMail',
             'actionTestMail',
             'OperationalMailConfigService',
+            "'save-mail'",
+            "'test-mail'",
+            "['post']",
         ]);
         $this->requireFileContains('@app/../backend/modules/mall/views/operational-config/index.php', [
             'data-mongoyia-operational-mail-config',

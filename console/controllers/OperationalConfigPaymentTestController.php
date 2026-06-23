@@ -41,9 +41,13 @@ class OperationalConfigPaymentTestController extends Controller
     {
         $this->section('Backend files');
         $this->requireFileContains('@app/../backend/modules/mall/controllers/OperationalConfigController.php', [
+            'MONGOYIA_OPERATIONAL_CONFIG_BACKEND_POST_VERB_GUARD_V1',
             'actionSavePayment',
             'actionCheckPayment',
             'OperationalPaymentConfigService',
+            "'save-payment'",
+            "'check-payment'",
+            "['post']",
         ]);
         $this->requireFileContains('@app/../backend/modules/mall/views/operational-config/index.php', [
             'data-mongoyia-operational-payment-config',

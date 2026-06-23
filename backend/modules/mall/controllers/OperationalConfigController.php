@@ -18,6 +18,38 @@ use yii\web\ForbiddenHttpException;
 
 class OperationalConfigController extends BaseController
 {
+    public const BACKEND_VERB_GUARD_VERSION = 'MONGOYIA_OPERATIONAL_CONFIG_BACKEND_POST_VERB_GUARD_V1';
+
+    public function behaviors()
+    {
+        $behaviors = parent::behaviors();
+        foreach ([
+            'save-payment',
+            'check-payment',
+            'save-account-security',
+            'check-account-security',
+            'save-identity-config',
+            'check-identity-config',
+            'save-merchant-payment-permission',
+            'save-merchant-payment',
+            'check-merchant-payment',
+            'save-translation',
+            'check-translation',
+            'test-translation',
+            'save-mail',
+            'test-mail',
+            'save-alert',
+            'test-alert',
+            'save-launch',
+            'save-provider-evidence',
+            'check-provider-evidence',
+        ] as $action) {
+            $behaviors['verbs']['actions'][$action] = ['post'];
+        }
+
+        return $behaviors;
+    }
+
     public function actionIndex()
     {
         if (!$this->isMallPlatformOperator()) {

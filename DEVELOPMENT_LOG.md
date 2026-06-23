@@ -7581,3 +7581,37 @@
   - Phase 10/11/12/13/14 external/provider/browser evidence gates remain pending; production remains `NO-GO`.
 - Next stage:
   - Commit and push this Phase 15 POST verb guard patch, then reread the plan/log and continue with the next plan-listed readiness item.
+
+## 2026-06-24 Phase 10 Operational Config Backend POST Verb Guard
+
+- Stage name: Phase 10 operational config backend POST verb guard
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting the stage.
+  - Added `MONGOYIA_OPERATIONAL_CONFIG_BACKEND_POST_VERB_GUARD_V1` to the backend operational config controller.
+  - Restricted operational config save/check/test/evidence actions to POST, including payment, merchant payment, SMTP, alert, launch signoff, provider evidence, translation, identity config, and account-security policy actions.
+  - Added source coverage to Phase 10 aggregate readiness plus the relevant payment, mail, alert, launch, provider evidence, translation, identity, account-security, and merchant-payment readiness checks.
+  - Updated the Phase 10 backlog notes to record this small stage as Phase 10.7.
+- Main files changed/added:
+  - `backend/modules/mall/controllers/OperationalConfigController.php`
+  - `console/controllers/OperationalConfigPhase10AcceptanceController.php`
+  - `console/controllers/OperationalConfigProviderEvidenceTestController.php`
+  - `console/controllers/OperationalConfigPaymentTestController.php`
+  - `console/controllers/OperationalConfigMailTestController.php`
+  - `console/controllers/OperationalConfigOpsAlertTestController.php`
+  - `console/controllers/OperationalConfigLaunchTestController.php`
+  - `console/controllers/CustomerServiceTranslationTestController.php`
+  - `console/controllers/IdentityConfigReadinessController.php`
+  - `console/controllers/AccountSecurityReadinessController.php`
+  - `console/controllers/PaymentPhase11AcceptanceController.php`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l` passed for all changed PHP files.
+  - Static marker checks confirmed `MONGOYIA_OPERATIONAL_CONFIG_BACKEND_POST_VERB_GUARD_V1`, representative guarded action IDs, `['post']`, and `Phase 10.7`.
+  - `git diff --check` reported no whitespace errors, only existing Windows line-ending conversion warnings.
+  - Full Yii console execution remains BaoTa-only because this local checkout lacks `vendor/autoload.php`.
+- Remaining issues:
+  - Phase 10 browser/provider/production/redacted-export manual evidence gates remain pending; production remains `NO-GO`.
+  - Phase 11/12/13/14/15 external/provider/browser evidence gates remain pending.
+- Next stage:
+  - Commit and push this Phase 10 POST verb guard patch, then reread the plan/log and continue with the next plan-listed readiness item.

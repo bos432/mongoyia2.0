@@ -161,11 +161,16 @@ class PaymentPhase11AcceptanceController extends Controller
             'merchant_live_enablement_requires_phase10_provider_and_production_evidence',
         ]);
         $this->requireFileContains('Merchant payment backend actions', 'backend/modules/mall/controllers/OperationalConfigController.php', [
+            'MONGOYIA_OPERATIONAL_CONFIG_BACKEND_POST_VERB_GUARD_V1',
             'actionMerchantPayment',
             'actionSaveMerchantPaymentPermission',
             'actionSaveMerchantPayment',
             'actionCheckMerchantPayment',
             'merchantPaymentStoreId',
+            "'save-merchant-payment-permission'",
+            "'save-merchant-payment'",
+            "'check-merchant-payment'",
+            "['post']",
         ]);
         $this->requireFileContains('Merchant payment backend UI', 'backend/modules/mall/views/operational-config/merchant-payment.php', [
             'data-mongoyia-merchant-payment-config',

@@ -44,9 +44,14 @@ class OperationalConfigProviderEvidenceTestController extends Controller
             'looksSensitive',
         ]);
         $this->requireFileContains('@app/../backend/modules/mall/controllers/OperationalConfigController.php', [
+            'MONGOYIA_OPERATIONAL_CONFIG_BACKEND_POST_VERB_GUARD_V1',
+            'public function behaviors()',
             'OperationalProviderEvidenceService',
             'actionSaveProviderEvidence',
             'actionCheckProviderEvidence',
+            "'save-provider-evidence'",
+            "'check-provider-evidence'",
+            "['post']",
         ]);
         $this->requireFileContains('@app/../backend/modules/mall/views/operational-config/index.php', [
             'data-mongoyia-operational-provider-evidence',

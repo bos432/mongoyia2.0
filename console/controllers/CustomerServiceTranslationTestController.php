@@ -76,10 +76,15 @@ class CustomerServiceTranslationTestController extends Controller
             'Translation provider is disabled',
         ]);
         $this->requireFileContains('@app/../backend/modules/mall/controllers/OperationalConfigController.php', [
+            'MONGOYIA_OPERATIONAL_CONFIG_BACKEND_POST_VERB_GUARD_V1',
             'CustomerServiceTranslationService',
             'actionSaveTranslation',
             'actionCheckTranslation',
             'actionTestTranslation',
+            "'save-translation'",
+            "'check-translation'",
+            "'test-translation'",
+            "['post']",
         ]);
         $this->requireFileContains('@app/../backend/modules/mall/views/operational-config/index.php', [
             'data-mongoyia-customer-service-translation-config',

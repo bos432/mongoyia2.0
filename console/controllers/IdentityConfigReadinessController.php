@@ -64,10 +64,14 @@ class IdentityConfigReadinessController extends Controller
             'runtimeConfig',
         ]);
         $this->requireFileContains('Backend identity config actions', 'backend/modules/mall/controllers/OperationalConfigController.php', [
+            'MONGOYIA_OPERATIONAL_CONFIG_BACKEND_POST_VERB_GUARD_V1',
             'OperationalIdentityConfigService',
             'actionIdentityConfig',
             'actionSaveIdentityConfig',
             'actionCheckIdentityConfig',
+            "'save-identity-config'",
+            "'check-identity-config'",
+            "['post']",
         ]);
         $this->requireFileContains('Backend identity config page', 'backend/modules/mall/views/operational-config/identity-config.php', [
             'data-mongoyia-identity-config',

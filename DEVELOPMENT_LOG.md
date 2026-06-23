@@ -5643,3 +5643,24 @@
 - Next stage:
   - Commit and push Phase 15.3 after local checks pass.
   - After BaoTa pull/migration, run Phase 14/15 readiness commands and complete browser role-flow evidence, or continue only if a plan-listed code gap remains.
+
+## 2026-06-23 Phase 15 Browser Evidence Deployment Blocker
+
+- Stage name: Phase 15 browser role-flow evidence deployment blocker
+- Completed:
+  - Reopened the test server backend page `/backend/mall/distribution-distributor/index` in the right-side browser after Phase 15.3 was pushed.
+  - Confirmed the backend page itself opens and the current browser session is authenticated.
+  - Checked for the Phase 15 browser markers `data-mongoyia-phase15-support-content`, `data-mongoyia-phase15-material-management`, and `data-mongoyia-phase15-signoff-evidence`.
+  - Confirmed all three Phase 15 markers are absent on the server page, so the server is still running the pre-Phase-15 deployment.
+- Main files changed/added:
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - Browser URL opened: `https://demo2026.mongoyia.com/backend/mall/distribution-distributor/index`.
+  - Browser page title: `分销员运营`.
+  - Marker check result: `supportContent=false`, `materialManagement=false`, `signoffEvidence=false`.
+- Remaining issues:
+  - BaoTa/server must pull the latest pushed commits and run migrations before Phase 14/15 readiness commands and browser role-flow evidence can be completed.
+  - Phase 10/11/12 external provider and production evidence remain incomplete; production remains `NO-GO`.
+- Next stage:
+  - On BaoTa run `git pull`, `migrate/up`, Phase 14 readiness, and Phase 15 readiness commands.
+  - After BaoTa deployment succeeds, complete right-side browser role-flow evidence for distributor training, materials, tracking, signoff evidence, and review actions.

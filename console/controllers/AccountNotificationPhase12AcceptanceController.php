@@ -242,8 +242,10 @@ class AccountNotificationPhase12AcceptanceController extends Controller
             'Forbidden plaintext security-code column',
         ]);
         $this->requireFileContains('APP security-code token handoff', 'api/controllers/SiteController.php', [
+            'MONGOYIA_SECURITY_CODE_API_POST_GUARD_V1',
             'actionSecurityCodeRequest',
             'actionSecurityCodeLogin',
+            'SECURITY_CODE_REQUIRES_POST',
             'accessTokenSystem->getAccessToken',
         ]);
         $this->requireFileContains('APP security-code login entry', 'apps/mongoyia-customer-chat-uniapp/src/pages/auth/login.vue', [

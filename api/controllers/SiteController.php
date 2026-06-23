@@ -17,6 +17,8 @@ use yii\web\NotFoundHttpException;
  */
 class SiteController extends BaseController
 {
+    public const SECURITY_CODE_POST_GUARD_VERSION = 'MONGOYIA_SECURITY_CODE_API_POST_GUARD_V1';
+
     public $modelClass = '';
 
     public $skipModelClass = '*';
@@ -68,6 +70,10 @@ class SiteController extends BaseController
 
     public function actionSecurityCodeRequest()
     {
+        if (!Yii::$app->request->isPost) {
+            return $this->securityCodeRequiresPost();
+        }
+
         $result = (new AccountSecurityCodeService())->requestCode(
             $this->securityCodeChannel(),
             $this->securityCodeTarget()
@@ -82,10 +88,14 @@ class SiteController extends BaseController
 
     public function actionSecurityCodeLogin()
     {
+        if (!Yii::$app->request->isPost) {
+            return $this->securityCodeRequiresPost();
+        }
+
         $result = (new AccountSecurityCodeService())->loginWithCode(
             $this->securityCodeChannel(),
             $this->securityCodeTarget(),
-            trim((string)Yii::$app->request->post('code', Yii::$app->request->get('code', '')))
+            trim((string)Yii::$app->request->post('code', ''))
         );
         if (empty($result['success'])) {
             Yii::$app->response->statusCode = $this->securityCodeStatusCode($result);
@@ -118,14 +128,24 @@ class SiteController extends BaseController
 
     private function securityCodeChannel(): string
     {
-        $channel = Yii::$app->request->post('channel', Yii::$app->request->get('channel', 'email'));
+        $channel = Yii::$app->request->post('channel', 'email');
         $channel = strtolower(trim((string)$channel));
         return $channel === 'mobile' ? 'mobile' : 'email';
     }
 
     private function securityCodeTarget(): string
     {
-        return trim((string)Yii::$app->request->post('target', Yii::$app->request->get('target', '')));
+        return trim((string)Yii::$app->request->post('target', ''));
+    }
+
+    private function securityCodeRequiresPost(): array
+    {
+        Yii::$app->response->statusCode = 405;
+        return [
+            'success' => false,
+            'code' => 'SECURITY_CODE_REQUIRES_POST',
+            'message' => 'Security-code requests require POST.',
+        ];
     }
 
     private function securityCodeStatusCode(array $result): int

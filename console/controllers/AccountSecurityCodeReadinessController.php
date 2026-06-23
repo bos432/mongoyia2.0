@@ -82,10 +82,22 @@ class AccountSecurityCodeReadinessController extends Controller
             'SECURITY_CODE_RUNTIME_GATE',
         ]);
         $this->requireFileContains('API security-code token handoff', 'api/controllers/SiteController.php', [
+            'MONGOYIA_SECURITY_CODE_API_POST_GUARD_V1',
             'actionSecurityCodeRequest',
             'actionSecurityCodeLogin',
+            'securityCodeRequiresPost',
+            'SECURITY_CODE_REQUIRES_POST',
+            'Yii::$app->request->isPost',
             'AccountSecurityCodeService',
             'accessTokenSystem->getAccessToken',
+            "post('channel', 'email')",
+            "post('target', '')",
+            "post('code', '')",
+        ]);
+        $this->requireFileNotContains('API security-code endpoints have no GET fallback secrets', 'api/controllers/SiteController.php', [
+            "post('channel', Yii::\$app->request->get('channel', 'email'))",
+            "post('target', Yii::\$app->request->get('target', ''))",
+            "post('code', Yii::\$app->request->get('code', ''))",
         ]);
         $this->requireFileContains('APP security-code login entry', 'apps/mongoyia-customer-chat-uniapp/src/pages/auth/login.vue', [
             'data-mongoyia-phase12-app-account-entry',
@@ -233,6 +245,25 @@ class AccountSecurityCodeReadinessController extends Controller
         }
 
         $this->addCheck($label, 'PASS', $path, 'Required security-code markers are present.');
+    }
+
+    private function requireFileNotContains(string $label, string $path, array $needles): void
+    {
+        $full = $this->resolvePath($path);
+        if (!is_file($full)) {
+            $this->addCheck($label, 'FAIL', $path, 'Required file is missing.');
+            return;
+        }
+
+        $content = (string)file_get_contents($full);
+        foreach ($needles as $needle) {
+            if (strpos($content, $needle) !== false) {
+                $this->addCheck($label, 'FAIL', $path, "Forbidden marker {$needle} is still present.");
+                return;
+            }
+        }
+
+        $this->addCheck($label, 'PASS', $path, 'Forbidden security-code markers are absent.');
     }
 
     private function section(string $name): void

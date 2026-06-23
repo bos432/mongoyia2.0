@@ -391,6 +391,8 @@ Phase 12.12 social-login provider response guard: Google/Facebook redirect and b
 
 Phase 12.13 APP security-code channel selector: the uni-app/H5 login page now lets buyers or sellers choose email or mobile before requesting a security code. Email continues through the configured mailer and hash-only code storage; mobile is surfaced in the UI but remains gated by the existing SMS/APP provider evidence response until external delivery evidence is accepted.
 
+Phase 12.14 security-code API POST guard: `/api/site/security-code-request` and `/api/site/security-code-login` now use `MONGOYIA_SECURITY_CODE_API_POST_GUARD_V1`, reject non-POST requests with `SECURITY_CODE_REQUIRES_POST`, and read `channel`, `target`, and `code` only from POST. Account security-code readiness and Phase 12 aggregate acceptance check the guard so verification codes and login codes are not accepted through query strings.
+
 Phase 13 acceptance command:
 
 ```bash

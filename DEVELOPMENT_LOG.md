@@ -7992,3 +7992,33 @@
   - Phase 10/11/12/13/14/15 external/provider/browser evidence gates remain pending; production remains `NO-GO`.
 - Next stage:
   - Commit and push this Phase 3 logistics fee review POST guard patch, then reread the plan/log and continue with the next plan-listed readiness item.
+
+## 2026-06-24 Phase 12 Security-Code API POST Guard
+
+- Stage name: Phase 12 security-code API POST guard
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting the stage.
+  - Added `MONGOYIA_SECURITY_CODE_API_POST_GUARD_V1` to the API site controller.
+  - Hardened `/api/site/security-code-request` and `/api/site/security-code-login` so non-POST requests return `SECURITY_CODE_REQUIRES_POST` with HTTP 405.
+  - Removed GET fallback reads for security-code `channel`, `target`, and `code`; these values now come only from POST.
+  - Added source coverage to account security-code readiness and Phase 12 aggregate acceptance for the POST guard and old fallback removal.
+  - Updated the Phase 12 backlog notes to record this small stage as Phase 12.14.
+- Main files changed/added:
+  - `api/controllers/SiteController.php`
+  - `console/controllers/AccountSecurityCodeReadinessController.php`
+  - `console/controllers/AccountNotificationPhase12AcceptanceController.php`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l api/controllers/SiteController.php` passed.
+  - `php -l console/controllers/AccountSecurityCodeReadinessController.php` passed.
+  - `php -l console/controllers/AccountNotificationPhase12AcceptanceController.php` passed.
+  - Static marker checks confirmed `MONGOYIA_SECURITY_CODE_API_POST_GUARD_V1`, `SECURITY_CODE_REQUIRES_POST`, and `Phase 12.14`.
+  - Static stale-fallback check found no remaining `post('channel|target|code', Yii::$app->request->get(...))` in `api/controllers/SiteController.php`.
+  - `git diff --check` reported no whitespace errors, only existing Windows line-ending conversion warnings.
+  - Full Yii console execution remains BaoTa-only because this local checkout lacks `vendor/autoload.php`.
+- Remaining issues:
+  - Phase 12 browser/provider evidence still requires BaoTa/test server validation for email/mobile delivery, third-party login, notification delivery, language review, and APP login flows.
+  - Phase 10/11/13/14/15 external/provider/browser evidence gates remain pending; production remains `NO-GO`.
+- Next stage:
+  - Commit and push this Phase 12 security-code API POST guard patch, then reread the plan/log and continue with the next plan-listed readiness item.

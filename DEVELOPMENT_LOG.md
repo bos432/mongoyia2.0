@@ -8346,3 +8346,39 @@
   - Phase 10/11/12/13/14/15 external/provider/browser evidence gates remain pending; production remains `NO-GO`.
 - Next stage:
   - Commit and push this Phase 2/13 store-profile POST store-id hardening patch, then reread the plan/log and continue with the next plan-listed readiness item.
+
+## 2026-06-24 Phase 13 Buyer Cart Ajax POST Guard
+
+- Stage name: Phase 13.26 buyer cart Ajax POST guard
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting the stage.
+  - Added `MONGOYIA_CART_AJAX_POST_GUARD_V1` to the frontend mall cart controller.
+  - Added explicit `VerbFilter` POST-only rules for `/mall/cart/edit-ajax` and `/mall/cart/update-ajax`.
+  - Left `/mall/cart/checkout` unchanged so GET still opens the checkout form and POST still submits the order.
+  - Confirmed product, cart, and order-detail pages already submit cart add/update writes with `$.post`.
+  - Added source coverage to PWA smoke, Phase 13 buyer readiness, Phase 13 aggregate acceptance, and total requirements closure marker checks.
+  - Updated the Phase 13 backlog notes as Phase 13.26.
+- Main files changed/added:
+  - `frontend/modules/mall/controllers/CartController.php`
+  - `console/controllers/PwaSmokeTestController.php`
+  - `console/controllers/AppBuyerPhase13ReadinessController.php`
+  - `console/controllers/AppPhase13AcceptanceController.php`
+  - `console/controllers/MongoyiaRequirementsClosureAcceptanceController.php`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l frontend/modules/mall/controllers/CartController.php` passed.
+  - `php -l console/controllers/PwaSmokeTestController.php` passed.
+  - `php -l console/controllers/AppBuyerPhase13ReadinessController.php` passed.
+  - `php -l console/controllers/AppPhase13AcceptanceController.php` passed.
+  - `php -l console/controllers/MongoyiaRequirementsClosureAcceptanceController.php` passed.
+  - Static marker checks confirmed `MONGOYIA_CART_AJAX_POST_GUARD_V1`, `edit-ajax` POST-only guard, `update-ajax` POST-only guard, and Phase 13.26 backlog coverage.
+  - Static UI checks confirmed cart add/update calls in product, cart, and order-detail pages use `$.post`.
+  - `git diff --check` reported no whitespace errors, only existing Windows line-ending conversion warnings.
+  - Full Yii console execution remains BaoTa-only because this local checkout lacks `vendor/autoload.php`.
+- Remaining issues:
+  - BaoTa/test server must rerun PWA smoke, Phase 13 buyer/aggregate readiness, and total requirements closure acceptance after deployment.
+  - Authenticated buyer browser evidence should recheck product add-to-cart, cart quantity update/delete, checkout page open, and checkout submit.
+  - Phase 10/11/12/13/14/15 external/provider/browser evidence gates remain pending; production remains `NO-GO`.
+- Next stage:
+  - Commit and push this Phase 13 buyer cart Ajax POST guard patch, then reread the plan/log and continue with the next plan-listed readiness item.

@@ -17,6 +17,7 @@ use common\models\mall\UserCoupon;
 use common\models\User;
 use Yii;
 use yii\filters\AccessControl;
+use yii\filters\VerbFilter;
 use yii\web\NotFoundHttpException;
 
 /**
@@ -28,6 +29,7 @@ class CartController extends BaseController
 {
     private const CART_STALE_ROW_GUARD = 'MONGOYIA_CART_STALE_ROW_GUARD_V1';
     private const CART_INDEX_FALLBACK_GUARD = 'MONGOYIA_CART_INDEX_FALLBACK_V1';
+    private const CART_AJAX_POST_GUARD = 'MONGOYIA_CART_AJAX_POST_GUARD_V1';
 
     public function behaviors()
     {
@@ -42,6 +44,13 @@ class CartController extends BaseController
                         'roles' => ['@']
                     ]
                 ]
+            ],
+            'verbs' => [
+                'class' => VerbFilter::className(),
+                'actions' => [
+                    'edit-ajax' => ['POST'],
+                    'update-ajax' => ['POST'],
+                ],
             ],
         ];
     }

@@ -116,9 +116,13 @@ class CustomerServiceTestController extends Controller
 
         $this->requireFileMarkers('Frontend customer-service controller', 'frontend/modules/mall/controllers/ChatController.php', [
             'class ChatController extends BaseController',
+            'MONGOYIA_CUSTOMER_SERVICE_CHAT_POST_GUARD_V1',
             'public function actionIndex',
             'public function actionUpload',
             'public function actionToken',
+            'chatRequiresPost',
+            "post('gid', 0)",
+            "post('user_id', '')",
             "'type' => 'user'",
             "'uid' => (int)\$product['user_id']",
             "'product_id' => \$gid",
@@ -384,12 +388,11 @@ class CustomerServiceTestController extends Controller
         }
 
         $client = new CustomerServiceHttpClient($this->baseUrl, (int)$this->timeout);
-        $path = '/mall/chat/token?' . http_build_query([
+        $path = '/mall/chat/token?lang=en';
+        $response = $client->post($path, [
             'gid' => (int)$this->productContext['productId'],
             'user_id' => 'customer_service_readiness_' . date('YmdHis'),
-            'lang' => 'en',
         ]);
-        $response = $client->get($path);
         if ($response['status'] !== 200) {
             $this->addCheck('Frontend customer-service token endpoint', 'FAIL', 'HTTP ' . $response['status'], 'Token endpoint did not return HTTP 200.');
             return;

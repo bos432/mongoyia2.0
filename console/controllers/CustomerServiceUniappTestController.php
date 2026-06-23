@@ -45,6 +45,9 @@ class CustomerServiceUniappTestController extends Controller
         ]);
         $this->requireFileContains($src . 'pages/chat/index.vue', [
             'MONGOYIA_CUSTOMER_SERVICE_UNIAPP_CHAT_V1',
+            '/mall/chat/token',
+            "method: 'POST'",
+            'user_id: this.customerUuid',
             'uni.connectSocket',
             'chat_history',
             'msg_type: 1',
@@ -60,8 +63,12 @@ class CustomerServiceUniappTestController extends Controller
             'uni.uploadFile',
         ]);
         $this->requireFileContains('@app/../frontend/modules/mall/controllers/ChatController.php', [
+            'MONGOYIA_CUSTOMER_SERVICE_CHAT_POST_GUARD_V1',
+            'chatRequiresPost',
             "'translate'",
             "'rating-submit'",
+            "post('gid', 0)",
+            "post('user_id', '')",
             "'uid' => (int)\$product['user_id']",
             "'product_id' => \$gid",
             "'store_id' => (int)\$product['store_id']",

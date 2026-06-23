@@ -45,8 +45,11 @@ class CustomerServiceMediaTestController extends Controller
         ]);
         $this->requireFileContains('@app/../frontend/modules/mall/controllers/ChatController.php', [
             'CustomerServiceMediaService',
+            'MONGOYIA_CUSTOMER_SERVICE_CHAT_POST_GUARD_V1',
             'actionMediaUpload',
             'actionMediaView',
+            'chatRequiresPost',
+            "post('media', '')",
             'media_id',
         ]);
         $this->requireFileContains('@app/../backend/modules/mall/controllers/KfController.php', [

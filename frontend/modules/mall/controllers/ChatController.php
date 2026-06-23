@@ -19,6 +19,8 @@ use yii\web\UploadedFile;
  */
 class ChatController extends BaseController
 {
+    public const CHAT_POST_GUARD_VERSION = 'MONGOYIA_CUSTOMER_SERVICE_CHAT_POST_GUARD_V1';
+
     public function beforeAction($action)
     {
         if (in_array($action->id, ['upload', 'media-upload', 'token', 'translate', 'rating-submit'], true)) {
@@ -93,6 +95,9 @@ class ChatController extends BaseController
     public function actionRatingSubmit()
     {
         Yii::$app->response->format = Response::FORMAT_JSON;
+        if (!Yii::$app->request->isPost) {
+            return $this->chatRequiresPost();
+        }
 
         try {
             $result = (new CustomerServiceRatingService())->submit([
@@ -118,6 +123,9 @@ class ChatController extends BaseController
     public function actionUpload()
     {
         Yii::$app->response->format = Response::FORMAT_JSON;
+        if (!Yii::$app->request->isPost) {
+            return $this->chatRequiresPost();
+        }
 
         $file = UploadedFile::getInstanceByName('file');
         if (!$file) {
@@ -170,9 +178,12 @@ class ChatController extends BaseController
     public function actionMediaUpload()
     {
         Yii::$app->response->format = Response::FORMAT_JSON;
+        if (!Yii::$app->request->isPost) {
+            return $this->chatRequiresPost();
+        }
 
         try {
-            $media = (string)Yii::$app->request->post('media', Yii::$app->request->get('media', ''));
+            $media = (string)Yii::$app->request->post('media', '');
             $file = UploadedFile::getInstanceByName('file');
             if (!$file) {
                 return ['code' => 400, 'msg' => $this->chatMessage('uploadEmpty')];
@@ -210,9 +221,12 @@ class ChatController extends BaseController
     public function actionToken()
     {
         Yii::$app->response->format = Response::FORMAT_JSON;
+        if (!Yii::$app->request->isPost) {
+            return $this->chatRequiresPost();
+        }
 
-        $gid = (int)Yii::$app->request->post('gid', Yii::$app->request->get('gid', 0));
-        $uuid = trim((string)Yii::$app->request->post('user_id', Yii::$app->request->get('user_id', '')));
+        $gid = (int)Yii::$app->request->post('gid', 0);
+        $uuid = trim((string)Yii::$app->request->post('user_id', ''));
         if ($gid <= 0 || $uuid === '' || strlen($uuid) > 128) {
             return ['code' => 400, 'msg' => $this->chatMessage('invalidIdentity')];
         }
@@ -245,6 +259,12 @@ class ChatController extends BaseController
                 'store_id' => (int)$product['store_id'],
             ],
         ];
+    }
+
+    private function chatRequiresPost(): array
+    {
+        Yii::$app->response->statusCode = 405;
+        return ['code' => 405, 'msg' => $this->chatMessage('invalidRequestMethod')];
     }
 
     private function createImAuthToken(array $payload)

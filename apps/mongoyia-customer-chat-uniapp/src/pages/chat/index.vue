@@ -216,9 +216,12 @@ export default {
         baseUrl: this.baseUrl,
         path: '/mall/chat/token',
         query: {
-          gid: this.productId,
-          user_id: this.customerUuid,
           lang: this.language
+        },
+        method: 'POST',
+        data: {
+          gid: this.productId,
+          user_id: this.customerUuid
         }
       })
       const data = response.data || {}

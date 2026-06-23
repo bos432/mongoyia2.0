@@ -8022,3 +8022,39 @@
   - Phase 10/11/13/14/15 external/provider/browser evidence gates remain pending; production remains `NO-GO`.
 - Next stage:
   - Commit and push this Phase 12 security-code API POST guard patch, then reread the plan/log and continue with the next plan-listed readiness item.
+
+## 2026-06-24 Phase 9 Customer-Service Chat POST Guard
+
+- Stage name: Phase 9 customer-service chat POST guard
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting the stage.
+  - Added `MONGOYIA_CUSTOMER_SERVICE_CHAT_POST_GUARD_V1` to the frontend chat controller.
+  - Hardened frontend chat token, image upload, media upload, and satisfaction rating submit endpoints so they reject non-POST requests with HTTP 405.
+  - Removed GET fallback reads for frontend chat media type, product id, and customer UUID token fields.
+  - Updated the uni-app customer chat client so `/mall/chat/token` is requested with POST form data while keeping `lang` as a harmless query parameter for localization.
+  - Updated `customer-service-test/run`, `customer-service-phase9-acceptance/run`, `customer-service-media-test/run`, and `customer-service-uniapp-test/run` source coverage.
+  - Updated the Phase 9 backlog notes to record this small stage as Phase 9.8.
+- Main files changed/added:
+  - `frontend/modules/mall/controllers/ChatController.php`
+  - `apps/mongoyia-customer-chat-uniapp/src/pages/chat/index.vue`
+  - `console/controllers/CustomerServiceTestController.php`
+  - `console/controllers/CustomerServicePhase9AcceptanceController.php`
+  - `console/controllers/CustomerServiceMediaTestController.php`
+  - `console/controllers/CustomerServiceUniappTestController.php`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l frontend/modules/mall/controllers/ChatController.php` passed.
+  - `php -l console/controllers/CustomerServiceTestController.php` passed.
+  - `php -l console/controllers/CustomerServicePhase9AcceptanceController.php` passed.
+  - `php -l console/controllers/CustomerServiceMediaTestController.php` passed.
+  - `php -l console/controllers/CustomerServiceUniappTestController.php` passed.
+  - Static marker checks confirmed `MONGOYIA_CUSTOMER_SERVICE_CHAT_POST_GUARD_V1`, uni-app token `method: 'POST'`, and `Phase 9.8`.
+  - Static stale-fallback check found no remaining `post('media|gid|user_id', Yii::$app->request->get(...))` in `ChatController.php`.
+  - `git diff --check` reported no whitespace errors, only existing Windows line-ending conversion warnings.
+  - Full Yii console execution remains BaoTa-only because this local checkout lacks `vendor/autoload.php`.
+- Remaining issues:
+  - Phase 9 itself was previously accepted, but this hardening should be rechecked on BaoTa with customer-service token/media/rating browser and APP flows after deployment.
+  - Phase 10/11/12/13/14/15 external/provider/browser evidence gates remain pending; production remains `NO-GO`.
+- Next stage:
+  - Commit and push this Phase 9 customer-service chat POST guard patch, then reread the plan/log and continue with the next plan-listed readiness item.

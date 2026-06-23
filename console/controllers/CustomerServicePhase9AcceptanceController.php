@@ -105,8 +105,11 @@ class CustomerServicePhase9AcceptanceController extends Controller
             'viewFile',
         ]);
         $this->requireFileContains('Phase 9.2 frontend media runtime', 'frontend/modules/mall/controllers/ChatController.php', [
+            'MONGOYIA_CUSTOMER_SERVICE_CHAT_POST_GUARD_V1',
             'actionMediaUpload',
             'actionMediaView',
+            'chatRequiresPost',
+            "post('media', '')",
             'media_id',
         ]);
         $this->requireFileContains('Phase 9.2 backend media runtime', 'backend/modules/mall/controllers/KfController.php', [
@@ -204,12 +207,18 @@ class CustomerServicePhase9AcceptanceController extends Controller
         ]);
         $this->requireFileContains('Phase 9.6 uni-app chat page', 'apps/mongoyia-customer-chat-uniapp/src/pages/chat/index.vue', [
             'MONGOYIA_CUSTOMER_SERVICE_UNIAPP_CHAT_V1',
+            '/mall/chat/token',
+            "method: 'POST'",
             'uni.connectSocket',
             'uploadAndSend',
             'uploadMedia',
             '/mall/chat/rating-submit',
         ]);
         $this->requireFileContains('Phase 9.6 token handoff', 'frontend/modules/mall/controllers/ChatController.php', [
+            'MONGOYIA_CUSTOMER_SERVICE_CHAT_POST_GUARD_V1',
+            'chatRequiresPost',
+            "post('gid', 0)",
+            "post('user_id', '')",
             "'uid' => (int)\$product['user_id']",
             "'product_id' => \$gid",
             "'store_id' => (int)\$product['store_id']",

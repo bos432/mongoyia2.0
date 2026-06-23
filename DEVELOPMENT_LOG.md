@@ -5086,3 +5086,46 @@
 - Next stage:
   - Commit and push Phase 12.6, then on BaoTa run migrations plus `account-security-code-readiness/run --fixture=1` and the Phase 12 aggregate command.
   - Continue with Phase 13 full buyer/seller APP foundations after Phase 12 automated checks pass, while keeping external evidence gates explicit.
+
+## 2026-06-23 Phase 13.0 APP Route Shell And Acceptance Scaffold
+
+- Stage name: Phase 13.0 full buyer/seller APP route shell and acceptance scaffold
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting the stage.
+  - Expanded the existing Phase 9 uni-app customer-chat package into a Phase 13 APP shell with buyer home, category, search, product detail, cart, orders, seller dashboard, seller products, and seller orders routes.
+  - Added tab navigation for buyer home/category/cart/orders and seller dashboard.
+  - Added shared APP API helper constants for buyer and seller endpoints while keeping business logic on backend APIs.
+  - Reused the existing Phase 9 customer-service APP chat route for product/customer-service entry.
+  - Added `app-phase13-acceptance/run` with source coverage, route matrix, and manual evidence gates for buyer APIs, seller APIs, browser H5 role-flow evidence, and APP package evidence.
+  - Updated the Phase 13 backlog status and command list to record the APP route shell foundation.
+- Main files changed/added:
+  - `apps/mongoyia-customer-chat-uniapp/src/pages.json`
+  - `apps/mongoyia-customer-chat-uniapp/src/utils/appApi.js`
+  - `apps/mongoyia-customer-chat-uniapp/src/pages/buyer/home.vue`
+  - `apps/mongoyia-customer-chat-uniapp/src/pages/buyer/category.vue`
+  - `apps/mongoyia-customer-chat-uniapp/src/pages/buyer/search.vue`
+  - `apps/mongoyia-customer-chat-uniapp/src/pages/buyer/product.vue`
+  - `apps/mongoyia-customer-chat-uniapp/src/pages/buyer/cart.vue`
+  - `apps/mongoyia-customer-chat-uniapp/src/pages/buyer/orders.vue`
+  - `apps/mongoyia-customer-chat-uniapp/src/pages/seller/dashboard.vue`
+  - `apps/mongoyia-customer-chat-uniapp/src/pages/seller/products.vue`
+  - `apps/mongoyia-customer-chat-uniapp/src/pages/seller/orders.vue`
+  - `apps/mongoyia-customer-chat-uniapp/README.md`
+  - `console/controllers/AppPhase13AcceptanceController.php`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l console/controllers/AppPhase13AcceptanceController.php` passed.
+  - `node -e "JSON.parse(...pages.json...)"` passed.
+  - `npm run build:h5` passed in `apps/mongoyia-customer-chat-uniapp`; output contained only uni-app/Vite informational/deprecation warnings.
+  - Static marker checks confirmed Phase 13 route markers, shared APP API helper markers, acceptance command markers, and backlog command markers.
+  - `git diff --check` reported no whitespace errors; only existing Windows line-ending conversion warnings.
+  - Full Yii console execution was not run locally because this patch checkout does not have `vendor/autoload.php`; run `app-phase13-acceptance/run --fixture=1` on BaoTa/full-vendor environment after pull.
+- Remaining issues:
+  - Buyer JSON APIs for home/category/search/product/cart/checkout/coupons/favorites/reviews/customer-service entry still need implementation.
+  - Seller JSON APIs for dashboard/products/orders/shipment/logistics/deposit/coupons/statistics/distribution overview still need implementation.
+  - H5 browser role-flow and APP development package evidence remain pending.
+  - Phase 10/11/12 external provider and production evidence remain incomplete; production remains `NO-GO`.
+- Next stage:
+  - Commit and push Phase 13.0, then on BaoTa run `app-phase13-acceptance/run --fixture=1`.
+  - Continue Phase 13.1 by adding buyer APP JSON APIs for home/category/search/product detail/cart/checkout using existing backend models and preserving checkout/payment safety gates.

@@ -1,6 +1,78 @@
 {
   "pages": [
     {
+      "path": "pages/buyer/home",
+      "style": {
+        "navigationBarTitleText": "Mongoyia",
+        "navigationBarBackgroundColor": "#0f766e",
+        "navigationBarTextStyle": "white"
+      }
+    },
+    {
+      "path": "pages/buyer/category",
+      "style": {
+        "navigationBarTitleText": "分类",
+        "navigationBarBackgroundColor": "#0f766e",
+        "navigationBarTextStyle": "white"
+      }
+    },
+    {
+      "path": "pages/buyer/search",
+      "style": {
+        "navigationBarTitleText": "搜索",
+        "navigationBarBackgroundColor": "#0f766e",
+        "navigationBarTextStyle": "white"
+      }
+    },
+    {
+      "path": "pages/buyer/product",
+      "style": {
+        "navigationBarTitleText": "商品详情",
+        "navigationBarBackgroundColor": "#0f766e",
+        "navigationBarTextStyle": "white"
+      }
+    },
+    {
+      "path": "pages/buyer/cart",
+      "style": {
+        "navigationBarTitleText": "购物车",
+        "navigationBarBackgroundColor": "#0f766e",
+        "navigationBarTextStyle": "white"
+      }
+    },
+    {
+      "path": "pages/buyer/orders",
+      "style": {
+        "navigationBarTitleText": "订单",
+        "navigationBarBackgroundColor": "#0f766e",
+        "navigationBarTextStyle": "white"
+      }
+    },
+    {
+      "path": "pages/seller/dashboard",
+      "style": {
+        "navigationBarTitleText": "商家工作台",
+        "navigationBarBackgroundColor": "#334155",
+        "navigationBarTextStyle": "white"
+      }
+    },
+    {
+      "path": "pages/seller/products",
+      "style": {
+        "navigationBarTitleText": "商品管理",
+        "navigationBarBackgroundColor": "#334155",
+        "navigationBarTextStyle": "white"
+      }
+    },
+    {
+      "path": "pages/seller/orders",
+      "style": {
+        "navigationBarTitleText": "订单发货",
+        "navigationBarBackgroundColor": "#334155",
+        "navigationBarTextStyle": "white"
+      }
+    },
+    {
       "path": "pages/chat/index",
       "style": {
         "navigationBarTitleText": "Mongoyia客服",
@@ -13,5 +85,33 @@
     "navigationBarTextStyle": "black",
     "navigationBarTitleText": "Mongoyia",
     "backgroundColor": "#f6f7f9"
+  },
+  "tabBar": {
+    "color": "#64748b",
+    "selectedColor": "#0f766e",
+    "backgroundColor": "#ffffff",
+    "borderStyle": "black",
+    "list": [
+      {
+        "pagePath": "pages/buyer/home",
+        "text": "首页"
+      },
+      {
+        "pagePath": "pages/buyer/category",
+        "text": "分类"
+      },
+      {
+        "pagePath": "pages/buyer/cart",
+        "text": "购物车"
+      },
+      {
+        "pagePath": "pages/buyer/orders",
+        "text": "订单"
+      },
+      {
+        "pagePath": "pages/seller/dashboard",
+        "text": "商家"
+      }
+    ]
   }
 }

@@ -1,6 +1,6 @@
-# Mongoyia Customer Chat uni-app
+# Mongoyia uni-app Client
 
-Phase 9.6 first runnable APP customer-service chat client.
+Phase 9.6 delivered the first runnable customer-service chat client. Phase 13 expands the same uni-app/H5 package into the buyer APP and seller APP workbench shell while continuing to reuse backend APIs.
 
 ## Run
 
@@ -43,3 +43,23 @@ Example:
 - Uses existing `/mall/chat/token`, `/mall/chat/translate`, `/mall/chat/media-upload`, `/mall/chat/rating-submit`, and Python IM WSS protocol.
 - Supports text, image, file, video, voice, translated-message display, and satisfaction rating.
 - Does not copy order, payment, refund, stock, or complaint business logic into the APP.
+
+## Phase 13 Routes
+
+Buyer routes:
+
+- `/pages/buyer/home`
+- `/pages/buyer/category`
+- `/pages/buyer/search`
+- `/pages/buyer/product`
+- `/pages/buyer/cart`
+- `/pages/buyer/orders`
+- `/pages/chat/index`
+
+Seller routes:
+
+- `/pages/seller/dashboard`
+- `/pages/seller/products`
+- `/pages/seller/orders`
+
+Phase 13.0 adds the mobile route shell and shared API helpers. Buyer order submission, seller shipment submission, product/search/cart/order JSON APIs, and authenticated mobile role-flow acceptance are completed in later Phase 13 increments.

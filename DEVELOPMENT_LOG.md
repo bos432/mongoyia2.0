@@ -1,5 +1,29 @@
 # Development Log
 
+## 2026-06-23 Phase 13 Deployed Static Asset Freshness Recheck
+
+- Stage name: Phase 13 deployed static asset freshness recheck
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting the stage.
+  - Rechecked the right-side browser against `https://demo2026.mongoyia.com/product-codex-test-product-1781945133`.
+  - Confirmed the product page opens and still shows the Phase 14 review-sort marker, but the rendered DOM still contains both `/mall/cart/index` and stale `/mall/cart` links.
+  - Confirmed direct browser navigation to `https://demo2026.mongoyia.com/mall/cart/index` still fails with `ERR_HTTP_RESPONSE_CODE_FAILURE`.
+  - Checked the deployed mall frontend asset `https://demo2026.mongoyia.com/resources/mall/default/js/main.js?v=1.1.3`; it is still the 2026-06-20 version and does not contain `MONGOYIA_CART_LINK_NORMALIZER_V1`.
+  - Did not submit checkout/payment forms, create orders, mutate cart/order/payment/fund data, or enter credentials.
+- Main files changed/added:
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - Browser product page: opens.
+  - Browser cart page: still blocked with HTTP response failure.
+  - Static asset check: deployed `main.js` is stale and missing the latest cart-link normalizer.
+  - Local source and latest pushed commit still contain the cart-link normalizer; BaoTa/test server must pull and serve the updated static file before Phase 13 buyer cart/checkout browser evidence can close.
+- Remaining issues:
+  - BaoTa/test server must pull commit `700a21b` or newer, clear PHP/opcache/runtime/page/static caches as needed, and then re-run Phase 13 browser validation.
+  - If `/mall/cart/index` still fails after the deployed controller/view/static assets are fresh, inspect the server PHP exception log for the authenticated buyer session.
+  - Phase 10/11/12/13/14/15 external and browser evidence remain incomplete; production remains `NO-GO`.
+- Next stage:
+  - Commit and push this deployment-freshness evidence, then continue with another plan-listed local readiness item that does not require the test server to serve fresh assets.
+
 ## 2026-06-23 Phase 13 Cached Cart Link Normalizer
 
 - Stage name: Phase 13 cached cart link normalizer

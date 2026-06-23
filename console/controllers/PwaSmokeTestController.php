@@ -183,6 +183,15 @@ class PwaSmokeTestController extends Controller
         $this->requireFileContains('web/resources/mall/default/views/product/view.php', [
             '/mall/cart/index',
         ]);
+        $this->requireFileContains('frontend/modules/mall/controllers/ProductController.php', [
+            'MONGOYIA_PRODUCT_FAVORITE_POST_READ_GUARD_V1',
+            "'favorite' => ['GET', 'POST']",
+            "'store-favorite' => ['GET', 'POST']",
+            "post('product_id', 0)",
+            "get('product_id', 0)",
+            "post('store_id', 0)",
+            "get('store_id', 0)",
+        ]);
         $this->requireFileContains('backend/views/layouts/main-store.php', [
             'mongoyia-merchant-pwa-shell',
         ]);

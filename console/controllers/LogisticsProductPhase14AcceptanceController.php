@@ -209,8 +209,19 @@ class LogisticsProductPhase14AcceptanceController extends Controller
             'MONGOYIA_REVIEW_MODERATION_ID_POST_GUARD_V1',
             'MONGOYIA_BUYER_ORDER_RECEIVED_POST_ID_GUARD_V1',
             'MONGOYIA_PRODUCT_CONSULTATION_POST_ID_GUARD_V1',
+            'MONGOYIA_PRODUCT_FAVORITE_POST_READ_GUARD_V1',
             'favorite-review-phase14-readiness/run',
             'Favorite/review fixture',
+        ]);
+        $this->requireFileContains('Frontend product/store favorite GET read POST write guard', 'frontend/modules/mall/controllers/ProductController.php', [
+            'MONGOYIA_PRODUCT_FAVORITE_POST_READ_GUARD_V1',
+            "'favorite' => ['GET', 'POST']",
+            "'store-favorite' => ['GET', 'POST']",
+            "post('product_id', 0)",
+            "get('product_id', 0)",
+            "post('store_id', 0)",
+            "get('store_id', 0)",
+            'return $this->error(-1);',
         ]);
         $this->requireFileContains('Frontend product consultation POST id guard', 'frontend/modules/mall/controllers/ProductController.php', [
             'MONGOYIA_PRODUCT_CONSULTATION_POST_ID_GUARD_V1',

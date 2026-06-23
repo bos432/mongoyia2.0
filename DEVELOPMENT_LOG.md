@@ -1,5 +1,45 @@
 # Development Log
 
+## 2026-06-24 Phase 13/14 Product Favorite GET Read POST Write Guard
+
+- Stage name: Phase 13.28 / Phase 14.13 product favorite GET-read/POST-write guard
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting the stage.
+  - Added `MONGOYIA_PRODUCT_FAVORITE_POST_READ_GUARD_V1` to the frontend mall product controller.
+  - Added an explicit `VerbFilter` boundary for `/mall/product/favorite` and `/mall/product/store-favorite`, allowing only GET/POST.
+  - Kept Ajax GET as read-only favorite status lookup, while toggle writes read `product_id` and `store_id` only from POST body data.
+  - Changed unsupported non-Ajax `/mall/product/favorite` access to return a safe JSON error instead of attempting to render a missing product favorite view.
+  - Added coverage to favorite/review closure, PWA smoke, Phase 13 buyer readiness, Phase 13 aggregate acceptance, Phase 14 favorite/review readiness, and Phase 14 aggregate acceptance.
+  - Updated the Phase 13 and Phase 14 backlog notes as Phase 13.28 and Phase 14.13.
+- Main files changed/added:
+  - `frontend/modules/mall/controllers/ProductController.php`
+  - `console/controllers/MongoyiaFavoriteReviewTestController.php`
+  - `console/controllers/PwaSmokeTestController.php`
+  - `console/controllers/AppBuyerPhase13ReadinessController.php`
+  - `console/controllers/AppPhase13AcceptanceController.php`
+  - `console/controllers/FavoriteReviewPhase14ReadinessController.php`
+  - `console/controllers/LogisticsProductPhase14AcceptanceController.php`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l frontend/modules/mall/controllers/ProductController.php` passed.
+  - `php -l console/controllers/MongoyiaFavoriteReviewTestController.php` passed.
+  - `php -l console/controllers/PwaSmokeTestController.php` passed.
+  - `php -l console/controllers/AppBuyerPhase13ReadinessController.php` passed.
+  - `php -l console/controllers/AppPhase13AcceptanceController.php` passed.
+  - `php -l console/controllers/FavoriteReviewPhase14ReadinessController.php` passed.
+  - `php -l console/controllers/LogisticsProductPhase14AcceptanceController.php` passed.
+  - Static marker checks confirmed `MONGOYIA_PRODUCT_FAVORITE_POST_READ_GUARD_V1`, GET/POST verb boundaries, POST body id reads, Ajax GET status reads, and Phase 13.28/Phase 14.13 backlog/log coverage.
+  - Static stale-code check found no remaining `post('product_id');`, `get('product_id');`, `post('store_id');`, `get('store_id');`, or missing-view `return $this->render($this->action->id,` branch in the frontend mall product controller.
+  - `git diff --check` reported no whitespace errors, only existing Windows line-ending conversion warnings.
+  - Full Yii console execution remains BaoTa-only because this local checkout lacks `vendor/autoload.php`.
+- Remaining issues:
+  - BaoTa/test server must rerun favorite/review closure, PWA smoke, Phase 13 buyer/aggregate readiness, Phase 14 favorite-review/aggregate readiness, and total requirements closure acceptance after deployment.
+  - Browser role-flow evidence should recheck product favorite, store favorite, review display, cart/checkout, and APP/H5 buyer persistence after the server pulls this patch.
+  - Phase 10/11/12/13/14/15 external/provider/browser evidence gates remain pending; production remains `NO-GO`.
+- Next stage:
+  - Run syntax/static verification, commit and push this Phase 13/14 product favorite guard patch, then reread the plan/log and continue with the next plan-listed readiness item.
+
 ## 2026-06-24 Phase 13 Buyer Coupon Claim POST Guard
 
 - Stage name: Phase 13.27 buyer coupon claim POST guard

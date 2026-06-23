@@ -17,6 +17,7 @@ use common\models\mall\StoreFavorite;
 use common\models\Store;
 use Yii;
 use yii\data\ActiveDataProvider;
+use yii\filters\VerbFilter;
 
 /**
  * Class ProductController
@@ -26,6 +27,20 @@ use yii\data\ActiveDataProvider;
 class ProductController extends BaseController
 {
     public const CONSULTATION_POST_ID_GUARD_VERSION = 'MONGOYIA_PRODUCT_CONSULTATION_POST_ID_GUARD_V1';
+    public const FAVORITE_POST_READ_GUARD_VERSION = 'MONGOYIA_PRODUCT_FAVORITE_POST_READ_GUARD_V1';
+
+    public function behaviors()
+    {
+        return [
+            'verbs' => [
+                'class' => VerbFilter::className(),
+                'actions' => [
+                    'favorite' => ['GET', 'POST'],
+                    'store-favorite' => ['GET', 'POST'],
+                ],
+            ],
+        ];
+    }
 
     public function actionIndex()
     {
@@ -130,11 +145,12 @@ class ProductController extends BaseController
     {
         // 收藏&取消
         if (Yii::$app->request->isPost) {
+            // MONGOYIA_PRODUCT_FAVORITE_POST_READ_GUARD_V1: favorite writes only read identifiers from POST.
             if (Yii::$app->user->isGuest) {
                 return $this->error(-2);
             }
 
-            $productId = Yii::$app->request->post('product_id');
+            $productId = (int)Yii::$app->request->post('product_id', 0);
             if (!$productId) {
                 return $this->error(-11, Yii::t('mall', 'Need Product'));
             }
@@ -164,7 +180,7 @@ class ProductController extends BaseController
                 return $this->error(-2);
             }
 
-            $productId = Yii::$app->request->get('product_id');
+            $productId = (int)Yii::$app->request->get('product_id', 0);
             if (!$productId) {
                 return $this->error(-11, Yii::t('mall', 'Need Product'));
             }
@@ -180,17 +196,14 @@ class ProductController extends BaseController
             return $this->success(0);
         }
 
-        // 列表
-        $models = Favorite::find()->where(['user_id' => Yii::$app->user->id])->all();
-        return $this->render($this->action->id, [
-            'models' => $models,
-        ]);
+        return $this->error(-1);
     }
 
     public function actionStoreFavorite()
     {
         $tableReady = Yii::$app->db->schema->getTableSchema(StoreFavorite::tableName(), true) !== null;
         if (Yii::$app->request->isPost) {
+            // MONGOYIA_PRODUCT_FAVORITE_POST_READ_GUARD_V1: store-favorite writes only read identifiers from POST.
             if (Yii::$app->user->isGuest) {
                 return $this->error(-2);
             }
@@ -198,7 +211,7 @@ class ProductController extends BaseController
                 return $this->error(-11, Yii::t('app', 'Store favorite table is not ready'));
             }
 
-            $storeId = (int)Yii::$app->request->post('store_id');
+            $storeId = (int)Yii::$app->request->post('store_id', 0);
             if ($storeId <= 0) {
                 return $this->error(-11, Yii::t('mall', 'Need Store'));
             }
@@ -240,7 +253,7 @@ class ProductController extends BaseController
                 return $this->success(0);
             }
 
-            $storeId = (int)Yii::$app->request->get('store_id');
+            $storeId = (int)Yii::$app->request->get('store_id', 0);
             if ($storeId <= 0) {
                 return $this->error(-11, Yii::t('mall', 'Need Store'));
             }

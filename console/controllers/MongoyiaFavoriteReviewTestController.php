@@ -67,10 +67,25 @@ class MongoyiaFavoriteReviewTestController extends Controller
         $this->section('Entrances');
         $this->requireFileContains('@app/../frontend/modules/mall/controllers/ProductController.php', [
             'function actionFavorite',
+            'function actionStoreFavorite',
             'function actionConsultation',
             'function actionReview',
+            'MONGOYIA_PRODUCT_FAVORITE_POST_READ_GUARD_V1',
             'MONGOYIA_PRODUCT_CONSULTATION_POST_ID_GUARD_V1',
+            "'favorite' => ['GET', 'POST']",
+            "'store-favorite' => ['GET', 'POST']",
             "post('product_id', 0)",
+            "get('product_id', 0)",
+            "post('store_id', 0)",
+            "get('store_id', 0)",
+            'return $this->error(-1);',
+        ]);
+        $this->requireFileNotContains('@app/../frontend/modules/mall/controllers/ProductController.php', [
+            "post('product_id');",
+            "get('product_id');",
+            "post('store_id');",
+            "get('store_id');",
+            'return $this->render($this->action->id,',
         ]);
         $this->requireFileContains('@app/../frontend/modules/mall/controllers/OrderController.php', [
             'function actionView',
@@ -164,6 +179,23 @@ class MongoyiaFavoriteReviewTestController extends Controller
             }
         }
         $this->ok("File contains required markers: {$path}");
+    }
+
+    private function requireFileNotContains(string $alias, array $needles)
+    {
+        $path = Yii::getAlias($alias);
+        if (!is_file($path)) {
+            $this->fail("Missing file {$path}.");
+            return;
+        }
+        $content = file_get_contents($path);
+        foreach ($needles as $needle) {
+            if (strpos($content, $needle) !== false) {
+                $this->fail("File {$path} still contains stale marker '{$needle}'.");
+                return;
+            }
+        }
+        $this->ok("File has no stale markers: {$path}");
     }
 
     private function resolveBaseUrl()

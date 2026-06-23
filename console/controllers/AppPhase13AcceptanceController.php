@@ -203,6 +203,23 @@ class AppPhase13AcceptanceController extends Controller
         $this->requireFileNotContains('Buyer web product consultation has no GET/POST fallback', 'frontend/modules/mall/controllers/ProductController.php', [
             "get('product_id', Yii::\$app->request->post('product_id'))",
         ]);
+        $this->requireFileContains('Buyer web product/store favorite GET read POST write guard', 'frontend/modules/mall/controllers/ProductController.php', [
+            'MONGOYIA_PRODUCT_FAVORITE_POST_READ_GUARD_V1',
+            "'favorite' => ['GET', 'POST']",
+            "'store-favorite' => ['GET', 'POST']",
+            "post('product_id', 0)",
+            "get('product_id', 0)",
+            "post('store_id', 0)",
+            "get('store_id', 0)",
+            'return $this->error(-1);',
+        ]);
+        $this->requireFileNotContains('Buyer web product/store favorite has no stale id reads or missing view render', 'frontend/modules/mall/controllers/ProductController.php', [
+            "post('product_id');",
+            "get('product_id');",
+            "post('store_id');",
+            "get('store_id');",
+            'return $this->render($this->action->id,',
+        ]);
         $this->requireFileContains('Buyer web received-order list/detail forms use hidden POST id', 'web/resources/mall/default/views/user/order_.php', [
             "Html::beginForm(['/mall/order/review'], 'post'",
             'data-mongoyia-buyer-received-post-guard',

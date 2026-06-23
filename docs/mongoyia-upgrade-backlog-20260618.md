@@ -439,6 +439,8 @@ Phase 13.26 buyer cart Ajax POST guard: PC/H5 cart add/update write endpoints `/
 
 Phase 13.27 buyer coupon claim POST guard: PC/H5 buyer coupon claim now uses `MONGOYIA_USER_COUPON_CLAIM_POST_GUARD_V1`, restricts `/mall/user/getcode` to POST, reads `cid` only from POST body data, and uses an `exists()` check against `{{%mall_user_coupon}}` so the old GET-triggered claim path and stale `$count($count)` call cannot return a fatal error. Coupon closure, PWA smoke, Phase 13 buyer readiness, and Phase 13 aggregate acceptance cover the guard.
 
+Phase 13.28 product favorite GET-read/POST-write guard: PC/H5 product favorite and store favorite now use `MONGOYIA_PRODUCT_FAVORITE_POST_READ_GUARD_V1`, explicitly allow only GET/POST on `/mall/product/favorite` and `/mall/product/store-favorite`, read write identifiers only from POST body data, keep Ajax GET limited to status reads, and return a safe JSON error for unsupported non-Ajax access instead of rendering a missing product favorite view. Favorite/review closure, PWA smoke, Phase 13 buyer readiness, and Phase 13 aggregate acceptance cover the guard.
+
 Phase 14 acceptance command:
 
 ```bash
@@ -461,6 +463,8 @@ Phase 14.10 buyer received-order POST id hardening: the PC/H5 confirm-received p
 Phase 14.11 backend seller shipment POST id hardening: the logistics shipment form now posts hidden order ids and removes query-string ids from shipment write submissions while keeping modal GET open behavior. Logistics basic, PWA smoke, Phase 13 seller, and Phase 14 aggregate readiness cover `MONGOYIA_BACKEND_ORDER_SHIPMENT_POST_ID_GUARD_V1`.
 
 Phase 14.12 product consultation POST id hardening: product consultation writes now use POST body `product_id` only and keep GET query parameters limited to read-only consultation list loading. Favorite/review readiness and Phase 14 aggregate acceptance cover `MONGOYIA_PRODUCT_CONSULTATION_POST_ID_GUARD_V1` and the absence of the previous GET/POST fallback.
+
+Phase 14.13 product/store favorite GET-read/POST-write guard: product favorite and store favorite status reads remain Ajax GET, while toggle writes read `product_id`/`store_id` only from POST body data and unsupported non-Ajax access returns a safe JSON error. Favorite/review readiness and Phase 14 aggregate acceptance cover `MONGOYIA_PRODUCT_FAVORITE_POST_READ_GUARD_V1` and the absence of stale no-default id reads or missing-view rendering.
 
 Phase 15 acceptance command:
 

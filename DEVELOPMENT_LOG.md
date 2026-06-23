@@ -6314,3 +6314,24 @@
 - Next stage:
   - Commit and push this Phase 14 acceptance command alignment.
   - Re-read the development plan and this log, then continue with BaoTa/browser validation after server pull, or another plan-listed local readiness item.
+
+## 2026-06-23 Phase 12 Acceptance Command Coverage Alignment
+
+- Stage name: Phase 12 BaoTa verification command coverage alignment
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting the stage.
+  - Aligned the Phase 12 acceptance report's BaoTa verification command with the Phase 12 development-plan command list.
+  - Added the missing `identity-config-readiness/run --fixture=1` command before social-auth runtime, account-security, notification, language review, and aggregate Phase 12 acceptance commands.
+  - Kept the command report read-only; this stage does not call Facebook/Google providers, send SMS/APP push, mutate users, or store provider secrets.
+- Main files changed/added:
+  - `console/controllers/AccountNotificationPhase12AcceptanceController.php`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l console/controllers/AccountNotificationPhase12AcceptanceController.php` passed.
+  - Static marker checks confirmed the Phase 12 report now lists `identity-config-readiness/run`, `social-auth-runtime-readiness/run`, and `account-notification-phase12-acceptance/run`.
+- Remaining issues:
+  - Full Yii console execution was not run locally because this patch checkout does not have `vendor/autoload.php`; run the Phase 12 command list after BaoTa pulls latest code.
+  - Facebook/Google callback evidence, security-code delivery evidence, notification delivery evidence, language review evidence, and browser role-flow evidence remain pending; production remains `NO-GO`.
+- Next stage:
+  - Commit and push this Phase 12 acceptance command alignment.
+  - Re-read the development plan and this log, then continue with BaoTa/browser validation after server pull, or another plan-listed local readiness item.

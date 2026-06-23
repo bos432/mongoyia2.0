@@ -486,6 +486,7 @@ class AccountNotificationPhase12AcceptanceController extends Controller
             'cd /www/wwwroot/demo2026.mongoyia.com',
             'git pull',
             '/www/server/php/83/bin/php yii migrate/up --interactive=0',
+            '/www/server/php/83/bin/php yii identity-config-readiness/run --fixture=1 --interactive=0',
             '/www/server/php/83/bin/php yii social-auth-runtime-readiness/run --fixture=1 --interactive=0',
             '/www/server/php/83/bin/php yii account-security-readiness/run --fixture=1 --interactive=0',
             '/www/server/php/83/bin/php yii account-security-code-readiness/run --fixture=1 --interactive=0',

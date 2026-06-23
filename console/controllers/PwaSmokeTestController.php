@@ -1079,7 +1079,7 @@ class PwaSmokeTestController extends Controller
                 $this->fail("Merchant {$label} order index expected authenticated HTTP 200, got {$index['status']}.");
                 return;
             }
-            foreach ([$unshipped['sn'], $shipping['sn'], 'fh-ajax', 'logistics-status-batch'] as $needle) {
+            foreach ([$unshipped['sn'], $shipping['sn'], 'fh-ajax', 'logistics-status-batch', 'data-mongoyia-order-logistics-post-guard'] as $needle) {
                 if (stripos($index['body'], (string)$needle) === false) {
                     $this->fail("Merchant {$label} order index missing '{$needle}'.");
                     return;
@@ -1110,7 +1110,11 @@ class PwaSmokeTestController extends Controller
                 }
             }
 
-            $prepare = $client->get('/backend/mall/order/logistics-status-batch?ids=' . (int)$unshipped['child_id'] . '&target_status=' . \common\models\mall\Order::SHIPMENT_STATUS_PREPARING . '&apply=0');
+            $prepare = $client->post('/backend/mall/order/logistics-status-batch', [
+                'ids' => (int)$unshipped['child_id'],
+                'target_status' => \common\models\mall\Order::SHIPMENT_STATUS_PREPARING,
+                'apply' => 0,
+            ]);
             if (!in_array($prepare['status'], [200, 302], true)) {
                 $this->fail("Merchant {$label} prepare dry-run expected HTTP 200/302, got {$prepare['status']}.");
                 return;
@@ -1120,7 +1124,11 @@ class PwaSmokeTestController extends Controller
                 return;
             }
 
-            $receive = $client->get('/backend/mall/order/logistics-status-batch?ids=' . (int)$shipping['child_id'] . '&target_status=' . \common\models\mall\Order::SHIPMENT_STATUS_RECEIVED . '&apply=0');
+            $receive = $client->post('/backend/mall/order/logistics-status-batch', [
+                'ids' => (int)$shipping['child_id'],
+                'target_status' => \common\models\mall\Order::SHIPMENT_STATUS_RECEIVED,
+                'apply' => 0,
+            ]);
             if (!in_array($receive['status'], [200, 302], true)) {
                 $this->fail("Merchant {$label} receive dry-run expected HTTP 200/302, got {$receive['status']}.");
                 return;

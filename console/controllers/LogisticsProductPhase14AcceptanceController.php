@@ -137,6 +137,19 @@ class LogisticsProductPhase14AcceptanceController extends Controller
             'logistics-tracking-phase14-readiness/run',
             'Tracking plan fixture',
         ]);
+        $this->requireFileContains('Backend order logistics workflow POST guard', 'backend/modules/mall/controllers/OrderController.php', [
+            'MONGOYIA_ORDER_LOGISTICS_WORKFLOW_POST_GUARD_V1',
+            "'logistics-status-batch'] = ['post']",
+            "'logistics-review-batch'] = ['post']",
+            "post('target_status', 0)",
+            "post('review_status', 0)",
+        ]);
+        $this->requireFileContains('Backend order logistics workflow UI posts CSRF forms', 'backend/modules/mall/views/order/index.php', [
+            'data-mongoyia-order-logistics-post-guard',
+            'csrfToken',
+            'logistics-status-batch',
+            'logistics-review-batch',
+        ]);
         $this->requireFileContains('Product inventory and shipping timeout service', 'common/services/mall/ProductInventoryPhase14Service.php', [
             'MONGOYIA_PRODUCT_INVENTORY_PHASE14_V1',
             'generateSkuCode',

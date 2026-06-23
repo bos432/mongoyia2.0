@@ -135,8 +135,21 @@ class MongoyiaLogisticsPortReviewController extends Controller
     {
         $this->section('Backend entrances');
         $this->requireFileContains('@app/../common/models/mall/Order.php', ['reviewLogistics', 'batchReviewLogistics', 'LOGISTICS_REVIEW_PASSED']);
-        $this->requireFileContains('@app/../backend/modules/mall/controllers/OrderController.php', ['actionLogisticsReviewBatch', 'batchReviewLogistics']);
-        $this->requireFileContains('@app/../backend/modules/mall/views/order/index.php', ['logistics-review-batch', 'logistics_review_status', 'Review Passed']);
+        $this->requireFileContains('@app/../backend/modules/mall/controllers/OrderController.php', [
+            'MONGOYIA_ORDER_LOGISTICS_WORKFLOW_POST_GUARD_V1',
+            "'logistics-review-batch'] = ['post']",
+            "post('review_status', 0)",
+            "post('remark', '')",
+            'actionLogisticsReviewBatch',
+            'batchReviewLogistics',
+        ]);
+        $this->requireFileContains('@app/../backend/modules/mall/views/order/index.php', [
+            'data-mongoyia-order-logistics-post-guard',
+            'csrfToken',
+            'logistics-review-batch',
+            'logistics_review_status',
+            'Review Passed',
+        ]);
     }
 
     private function createOrder(int $storeId, int $userId, string $prefix, int $parentId, int $shipmentStatus, int $paymentStatus = Order::PAYMENT_STATUS_PAID): Order

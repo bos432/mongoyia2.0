@@ -7,6 +7,7 @@ use common\models\mall\Order as ActiveModel;
 use common\models\mall\PaymentAttempt;
 use yii\db\Expression;
 use yii\helpers\Inflector;
+use yii\helpers\Url;
 //use common\helpers\ArrayHelper;
 
 /* @var $this yii\web\View */
@@ -47,6 +48,19 @@ $paymentAttemptStats = $paymentOrderIds ? PaymentAttempt::find()
     ->indexBy('order_id')
     ->asArray()
     ->all() : [];
+$postActionButton = static function (array $url, string $label, array $options = [], string $guard = 'logistics-workflow'): string {
+    $route = array_shift($url);
+    $class = $options['class'] ?? 'btn btn-default btn-sm';
+    $html = '<form method="post" action="' . Html::encode(Url::to([$route])) . '" class="d-inline" data-mongoyia-order-logistics-post-guard="' . Html::encode($guard) . '">';
+    $html .= '<input type="hidden" name="' . Html::encode(Yii::$app->request->csrfParam) . '" value="' . Html::encode(Yii::$app->request->csrfToken) . '">';
+    foreach ($url as $name => $value) {
+        $html .= '<input type="hidden" name="' . Html::encode((string)$name) . '" value="' . Html::encode((string)$value) . '">';
+    }
+    $html .= '<button type="submit" class="' . Html::encode($class) . '">' . Html::encode($label) . '</button>';
+    $html .= '</form>';
+
+    return $html;
+};
 ?>
 
 <div class="row">
@@ -75,23 +89,23 @@ $paymentAttemptStats = $paymentOrderIds ? PaymentAttempt::find()
                         'fh' => function ($url, $model, $key) {
                             return Html::editModal(['fh-ajax', 'id' => $model->id],'发货');
                         },
-                        'prepare' => function ($url, $model, $key) {
+                        'prepare' => function ($url, $model, $key) use ($postActionButton) {
                             return in_array((int)$model->payment_status, [ActiveModel::PAYMENT_STATUS_PAID, ActiveModel::PAYMENT_STATUS_COD], true)
                                 && (int)$model->shipment_status === ActiveModel::SHIPMENT_STATUS_UNSHIPPED
-                                ? Html::buttonModal(['logistics-status-batch', 'ids' => $model->id, 'target_status' => ActiveModel::SHIPMENT_STATUS_PREPARING, 'apply' => 1], Yii::t('app', 'Prepare'), ['class' => 'btn btn-info btn-sm'], false)
+                                ? $postActionButton(['logistics-status-batch', 'ids' => $model->id, 'target_status' => ActiveModel::SHIPMENT_STATUS_PREPARING, 'apply' => 1], Yii::t('app', 'Prepare'), ['class' => 'btn btn-info btn-sm'], 'logistics-status-batch')
                                 : '';
                         },
-                        'receive' => function ($url, $model, $key) {
+                        'receive' => function ($url, $model, $key) use ($postActionButton) {
                             return in_array((int)$model->payment_status, [ActiveModel::PAYMENT_STATUS_PAID, ActiveModel::PAYMENT_STATUS_COD], true)
                                 && (int)$model->shipment_status === ActiveModel::SHIPMENT_STATUS_SHIPPING
-                                ? Html::buttonModal(['logistics-status-batch', 'ids' => $model->id, 'target_status' => ActiveModel::SHIPMENT_STATUS_RECEIVED, 'apply' => 1], Yii::t('app', 'Receive'), ['class' => 'btn btn-success btn-sm'], false)
+                                ? $postActionButton(['logistics-status-batch', 'ids' => $model->id, 'target_status' => ActiveModel::SHIPMENT_STATUS_RECEIVED, 'apply' => 1], Yii::t('app', 'Receive'), ['class' => 'btn btn-success btn-sm'], 'logistics-status-batch')
                                 : '';
                         },
-                        'review' => function ($url, $model, $key) use ($isPlatformOperator) {
+                        'review' => function ($url, $model, $key) use ($isPlatformOperator, $postActionButton) {
                             return $isPlatformOperator
                                 && (int)$model->shipment_status >= ActiveModel::SHIPMENT_STATUS_SHIPPING
                                 && (int)$model->logistics_review_status !== ActiveModel::LOGISTICS_REVIEW_PASSED
-                                ? Html::buttonModal(['logistics-review-batch', 'ids' => $model->id, 'review_status' => ActiveModel::LOGISTICS_REVIEW_PASSED, 'remark' => 'platform_port_review_passed', 'apply' => 1], Yii::t('app', 'Review Passed'), ['class' => 'btn btn-primary btn-sm'], false)
+                                ? $postActionButton(['logistics-review-batch', 'ids' => $model->id, 'review_status' => ActiveModel::LOGISTICS_REVIEW_PASSED, 'remark' => 'platform_port_review_passed', 'apply' => 1], Yii::t('app', 'Review Passed'), ['class' => 'btn btn-primary btn-sm'], 'logistics-review-batch')
                                 : '';
                         },
                         'delete' => function ($url, $model, $key) {

@@ -7762,3 +7762,41 @@
   - Phase 10/11/12/14/15 external/provider/browser evidence gates remain pending; production remains `NO-GO`.
 - Next stage:
   - Commit and push this Phase 13 buyer APP write guard patch, then reread the plan/log and continue with the next plan-listed readiness item.
+
+## 2026-06-24 Phase 14 Order Logistics Workflow POST Guard
+
+- Stage name: Phase 14 order logistics workflow POST guard
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting the stage.
+  - Added `MONGOYIA_ORDER_LOGISTICS_WORKFLOW_POST_GUARD_V1` to the backend order controller.
+  - Restricted backend order logistics status batch and platform logistics review batch actions to POST.
+  - Removed GET fallback parameter reads for logistics status/review workflow inputs: `ids`, `target_status`, `review_status`, `remark`, and `apply`.
+  - Changed the order-list Prepare, Receive, and Review Passed controls from GET links to CSRF-protected inline POST forms.
+  - Updated PWA merchant order smoke to call logistics status dry-runs with POST and to check the POST-form marker.
+  - Added source coverage to logistics status batch readiness, logistics port review readiness, and Phase 14 aggregate acceptance.
+  - Updated the Phase 14 backlog notes to record this small stage as Phase 14.8.
+- Main files changed/added:
+  - `backend/modules/mall/controllers/OrderController.php`
+  - `backend/modules/mall/views/order/index.php`
+  - `console/controllers/MongoyiaLogisticsStatusBatchController.php`
+  - `console/controllers/MongoyiaLogisticsPortReviewController.php`
+  - `console/controllers/LogisticsProductPhase14AcceptanceController.php`
+  - `console/controllers/PwaSmokeTestController.php`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l backend/modules/mall/controllers/OrderController.php` passed.
+  - `php -l backend/modules/mall/views/order/index.php` passed.
+  - `php -l console/controllers/MongoyiaLogisticsStatusBatchController.php` passed.
+  - `php -l console/controllers/MongoyiaLogisticsPortReviewController.php` passed.
+  - `php -l console/controllers/LogisticsProductPhase14AcceptanceController.php` passed.
+  - `php -l console/controllers/PwaSmokeTestController.php` passed.
+  - Static marker checks confirmed `MONGOYIA_ORDER_LOGISTICS_WORKFLOW_POST_GUARD_V1`, POST-only verb filters, CSRF form marker, POST smoke calls, and `Phase 14.8`.
+  - Static stale-route check found no remaining PWA smoke GET calls to `/backend/mall/order/logistics-status-batch?...`.
+  - `git diff --check` reported no whitespace errors, only existing Windows line-ending conversion warnings.
+  - Full Yii console execution remains BaoTa-only because this local checkout lacks `vendor/autoload.php`.
+- Remaining issues:
+  - Phase 14 browser role-flow evidence still requires BaoTa/test server deployment and verification of logistics status/review, search/video, inventory, store favorite, and review moderation flows.
+  - Phase 10/11/12/13/15 external/provider/browser evidence gates remain pending; production remains `NO-GO`.
+- Next stage:
+  - Commit and push this Phase 14 logistics workflow guard patch, then reread the plan/log and continue with the next plan-listed readiness item.

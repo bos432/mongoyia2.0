@@ -144,8 +144,21 @@ class MongoyiaLogisticsStatusBatchController extends Controller
     {
         $this->section('Backend entrances');
         $this->requireFileContains('@app/../common/models/mall/Order.php', ['setLogisticsStatus', 'batchSetLogisticsStatus']);
-        $this->requireFileContains('@app/../backend/modules/mall/controllers/OrderController.php', ['actionLogisticsStatusBatch', 'batchSetLogisticsStatus']);
-        $this->requireFileContains('@app/../backend/modules/mall/views/order/index.php', ['logistics-status-batch', 'Prepare', 'Receive']);
+        $this->requireFileContains('@app/../backend/modules/mall/controllers/OrderController.php', [
+            'MONGOYIA_ORDER_LOGISTICS_WORKFLOW_POST_GUARD_V1',
+            "'logistics-status-batch'] = ['post']",
+            "post('ids', '')",
+            "post('target_status', 0)",
+            'actionLogisticsStatusBatch',
+            'batchSetLogisticsStatus',
+        ]);
+        $this->requireFileContains('@app/../backend/modules/mall/views/order/index.php', [
+            'data-mongoyia-order-logistics-post-guard',
+            'csrfToken',
+            'logistics-status-batch',
+            'Prepare',
+            'Receive',
+        ]);
     }
 
     private function createOrder(int $storeId, int $userId, string $prefix, int $parentId, int $shipmentStatus, int $paymentStatus = Order::PAYMENT_STATUS_PAID): Order

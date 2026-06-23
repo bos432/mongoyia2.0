@@ -15,6 +15,8 @@ use yii\web\ForbiddenHttpException;
  */
 class OrderController extends BaseController
 {
+    public const LOGISTICS_WORKFLOW_POST_GUARD_VERSION = 'MONGOYIA_ORDER_LOGISTICS_WORKFLOW_POST_GUARD_V1';
+
     /**
       * @var Order
       */
@@ -44,6 +46,15 @@ class OrderController extends BaseController
         'name' => 'text',
         'type' => 'select',
     ];
+
+    public function behaviors()
+    {
+        $behaviors = parent::behaviors();
+        $behaviors['verbs']['actions']['logistics-status-batch'] = ['post'];
+        $behaviors['verbs']['actions']['logistics-review-batch'] = ['post'];
+
+        return $behaviors;
+    }
 
     public function actionIndex()
     {
@@ -138,9 +149,9 @@ class OrderController extends BaseController
 
     public function actionLogisticsStatusBatch()
     {
-        $ids = Yii::$app->request->get('ids', Yii::$app->request->post('ids', ''));
-        $targetStatus = (int)Yii::$app->request->get('target_status', Yii::$app->request->post('target_status', 0));
-        $apply = (bool)Yii::$app->request->get('apply', Yii::$app->request->post('apply', 1));
+        $ids = Yii::$app->request->post('ids', '');
+        $targetStatus = (int)Yii::$app->request->post('target_status', 0);
+        $apply = (bool)Yii::$app->request->post('apply', 1);
         $orderIds = is_array($ids) ? $ids : preg_split('/[,\s]+/', (string)$ids, -1, PREG_SPLIT_NO_EMPTY);
         if (!$orderIds || !$targetStatus) {
             return $this->redirectError(Yii::t('app', 'Invalid id'));
@@ -163,10 +174,10 @@ class OrderController extends BaseController
     public function actionLogisticsReviewBatch()
     {
         $this->assertCanManageOrders();
-        $ids = Yii::$app->request->get('ids', Yii::$app->request->post('ids', ''));
-        $reviewStatus = (int)Yii::$app->request->get('review_status', Yii::$app->request->post('review_status', 0));
-        $remark = (string)Yii::$app->request->get('remark', Yii::$app->request->post('remark', ''));
-        $apply = (bool)Yii::$app->request->get('apply', Yii::$app->request->post('apply', 1));
+        $ids = Yii::$app->request->post('ids', '');
+        $reviewStatus = (int)Yii::$app->request->post('review_status', 0);
+        $remark = (string)Yii::$app->request->post('remark', '');
+        $apply = (bool)Yii::$app->request->post('apply', 1);
         $orderIds = is_array($ids) ? $ids : preg_split('/[,\s]+/', (string)$ids, -1, PREG_SPLIT_NO_EMPTY);
         if (!$orderIds || !$reviewStatus) {
             return $this->redirectError(Yii::t('app', 'Invalid id'));

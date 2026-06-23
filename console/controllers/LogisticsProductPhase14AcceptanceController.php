@@ -198,6 +198,7 @@ class LogisticsProductPhase14AcceptanceController extends Controller
         ]);
         $this->requireFileContains('Favorite and review moderation readiness', 'console/controllers/FavoriteReviewPhase14ReadinessController.php', [
             'MONGOYIA_FAVORITE_REVIEW_PHASE14_READINESS_V1',
+            'MONGOYIA_REVIEW_MODERATION_ID_POST_GUARD_V1',
             'favorite-review-phase14-readiness/run',
             'Favorite/review fixture',
         ]);
@@ -208,7 +209,13 @@ class LogisticsProductPhase14AcceptanceController extends Controller
         ]);
         $this->requireFileContains('Review moderation backend UI', 'backend/modules/mall/views/review/index.php', [
             'data-mongoyia-phase14-review-moderation',
+            'data-mongoyia-review-moderation-post-guard',
             'mark-violation',
+            'name="id"',
+        ]);
+        $this->requireFileContains('Review moderation backend controller POST ids', 'backend/modules/mall/controllers/ReviewController.php', [
+            'MONGOYIA_REVIEW_MODERATION_ID_POST_GUARD_V1',
+            "post('id', 0)",
         ]);
     }
 

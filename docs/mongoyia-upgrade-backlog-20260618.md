@@ -433,6 +433,8 @@ Phase 14.1 logistics provider adapter contract is implemented through `Logistics
 
 Phase 14.8 order logistics workflow POST guard: backend order logistics status batch and platform logistics review batch now use `MONGOYIA_ORDER_LOGISTICS_WORKFLOW_POST_GUARD_V1`, POST-only verb filters, POST-only parameter reads, and CSRF POST forms on the order list. Logistics status/port-review readiness, PWA smoke, and Phase 14 aggregate acceptance check this guard so prepare/receive/review logistics writes cannot be triggered by plain GET links.
 
+Phase 14.9 review moderation POST id hardening: backend review approve/reject/mark-violation actions now use `MONGOYIA_REVIEW_MODERATION_ID_POST_GUARD_V1`, read review `id` only from POST, and render CSRF-protected moderation forms without URL id parameters. Favorite/review readiness and Phase 14 aggregate acceptance check the marker, POST id reads, UI form marker, and absence of the old URL-id action links.
+
 Phase 15 acceptance command:
 
 ```bash

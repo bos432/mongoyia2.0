@@ -6,6 +6,7 @@ use common\components\enums\YesNo;
 use common\models\mall\Review as ActiveModel;
 use yii\helpers\Inflector;
 use common\helpers\ArrayHelper;
+use yii\helpers\Url;
 
 /* @var $this yii\web\View */
 /* @var $dataProvider yii\data\ActiveDataProvider */
@@ -68,10 +69,19 @@ $hasReviewModeration = (new ActiveModel())->hasAttribute('moderation_status');
                             'format' => 'raw',
                             'visible' => $hasReviewModeration,
                             'value' => function ($model) {
+                                $csrf = '<input type="hidden" name="' . Html::encode(Yii::$app->request->csrfParam) . '" value="' . Html::encode(Yii::$app->request->csrfToken) . '">';
+                                $button = function (string $route, string $label, string $class) use ($model, $csrf) {
+                                    return '<form method="post" action="' . Html::encode(Url::to([$route])) . '" class="d-inline" data-mongoyia-review-moderation-post-guard="1">'
+                                        . $csrf
+                                        . '<input type="hidden" name="id" value="' . (int)$model->id . '">'
+                                        . '<button type="submit" class="' . Html::encode($class) . '" data-confirm="' . Html::encode(Yii::t('app', 'Are you sure?')) . '">' . Html::encode($label) . '</button>'
+                                        . '</form>';
+                                };
+
                                 return implode(' ', [
-                                    Html::a(Yii::t('app', 'Approve'), ['approve', 'id' => $model->id], ['class' => 'btn btn-success btn-sm', 'data-method' => 'post', 'data-confirm' => Yii::t('app', 'Are you sure?')]),
-                                    Html::a(Yii::t('app', 'Reject'), ['reject', 'id' => $model->id], ['class' => 'btn btn-warning btn-sm', 'data-method' => 'post', 'data-confirm' => Yii::t('app', 'Are you sure?')]),
-                                    Html::a(Yii::t('app', 'Violation'), ['mark-violation', 'id' => $model->id], ['class' => 'btn btn-danger btn-sm', 'data-method' => 'post', 'data-confirm' => Yii::t('app', 'Are you sure?')]),
+                                    $button('approve', Yii::t('app', 'Approve'), 'btn btn-success btn-sm'),
+                                    $button('reject', Yii::t('app', 'Reject'), 'btn btn-warning btn-sm'),
+                                    $button('mark-violation', Yii::t('app', 'Violation'), 'btn btn-danger btn-sm'),
                                 ]);
                             },
                         ],

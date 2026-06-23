@@ -7930,3 +7930,36 @@
   - Phase 10/11/12/14/15 external/provider/browser evidence gates remain pending; production remains `NO-GO`.
 - Next stage:
   - Commit and push this Phase 13 merchant coupon store selector hardening patch, then reread the plan/log and continue with the next plan-listed readiness item.
+
+## 2026-06-24 Phase 14 Review Moderation POST ID Hardening
+
+- Stage name: Phase 14 review moderation POST id hardening
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting the stage.
+  - Added `MONGOYIA_REVIEW_MODERATION_ID_POST_GUARD_V1` to the backend review controller.
+  - Hardened review approve/reject/mark-violation actions so review `id` is read only from POST form data.
+  - Replaced review moderation URL-id action links with CSRF-protected inline POST forms on the backend review list.
+  - Added stable `data-mongoyia-review-moderation-post-guard` UI markers.
+  - Added source coverage to favorite/review readiness and Phase 14 aggregate acceptance for POST id reads and absence of old URL-id action links.
+  - Updated the Phase 14 backlog notes to record this small stage as Phase 14.9.
+- Main files changed/added:
+  - `backend/modules/mall/controllers/ReviewController.php`
+  - `backend/modules/mall/views/review/index.php`
+  - `console/controllers/FavoriteReviewPhase14ReadinessController.php`
+  - `console/controllers/LogisticsProductPhase14AcceptanceController.php`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l backend/modules/mall/controllers/ReviewController.php` passed.
+  - `php -l backend/modules/mall/views/review/index.php` passed.
+  - `php -l console/controllers/FavoriteReviewPhase14ReadinessController.php` passed.
+  - `php -l console/controllers/LogisticsProductPhase14AcceptanceController.php` passed.
+  - Static marker checks confirmed `MONGOYIA_REVIEW_MODERATION_ID_POST_GUARD_V1`, `post('id', 0)`, `data-mongoyia-review-moderation-post-guard`, and `Phase 14.9`.
+  - Static stale-action checks found no remaining `function actionApprove($id)`, `function actionReject($id)`, `function actionMarkViolation($id)`, or old review moderation URL-id action links in the changed controller/view.
+  - `git diff --check` reported no whitespace errors, only existing Windows line-ending conversion warnings.
+  - Full Yii console execution remains BaoTa-only because this local checkout lacks `vendor/autoload.php`.
+- Remaining issues:
+  - Phase 14 browser role-flow evidence still requires BaoTa/test server deployment and verification of review moderation, store favorite, logistics, inventory, search, and product video flows.
+  - Phase 10/11/12/13/15 external/provider/browser evidence gates remain pending; production remains `NO-GO`.
+- Next stage:
+  - Commit and push this Phase 14 review moderation hardening patch, then reread the plan/log and continue with the next plan-listed readiness item.

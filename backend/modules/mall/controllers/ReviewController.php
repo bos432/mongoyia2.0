@@ -15,6 +15,7 @@ use common\models\ModelSearch;
 class ReviewController extends BaseController
 {
     public const MODERATION_VERB_GUARD_VERSION = 'MONGOYIA_REVIEW_MODERATION_POST_VERB_GUARD_V1';
+    public const MODERATION_ID_POST_GUARD_VERSION = 'MONGOYIA_REVIEW_MODERATION_ID_POST_GUARD_V1';
 
     /**
       * @var Review
@@ -55,19 +56,19 @@ class ReviewController extends BaseController
         return $behaviors;
     }
 
-    public function actionApprove($id)
+    public function actionApprove()
     {
-        return $this->moderateReview((int)$id, Review::MODERATION_APPROVED, Review::STATUS_ACTIVE, Yii::t('app', 'Approved'));
+        return $this->moderateReview((int)Yii::$app->request->post('id', 0), Review::MODERATION_APPROVED, Review::STATUS_ACTIVE, Yii::t('app', 'Approved'));
     }
 
-    public function actionReject($id)
+    public function actionReject()
     {
-        return $this->moderateReview((int)$id, Review::MODERATION_REJECTED, Review::STATUS_INACTIVE, Yii::t('app', 'Rejected'));
+        return $this->moderateReview((int)Yii::$app->request->post('id', 0), Review::MODERATION_REJECTED, Review::STATUS_INACTIVE, Yii::t('app', 'Rejected'));
     }
 
-    public function actionMarkViolation($id)
+    public function actionMarkViolation()
     {
-        return $this->moderateReview((int)$id, Review::MODERATION_VIOLATION, Review::STATUS_INACTIVE, Yii::t('app', 'Violation'));
+        return $this->moderateReview((int)Yii::$app->request->post('id', 0), Review::MODERATION_VIOLATION, Review::STATUS_INACTIVE, Yii::t('app', 'Violation'));
     }
 
     private function moderateReview(int $id, string $moderationStatus, int $status, string $defaultRemark)

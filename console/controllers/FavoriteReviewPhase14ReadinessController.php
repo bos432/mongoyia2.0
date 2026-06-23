@@ -126,6 +126,7 @@ class FavoriteReviewPhase14ReadinessController extends Controller
         ]);
         $this->requireFileContains('Backend review moderation actions', 'backend/modules/mall/controllers/ReviewController.php', [
             'MONGOYIA_REVIEW_MODERATION_POST_VERB_GUARD_V1',
+            'MONGOYIA_REVIEW_MODERATION_ID_POST_GUARD_V1',
             'behaviors',
             'actionApprove',
             'actionReject',
@@ -133,13 +134,28 @@ class FavoriteReviewPhase14ReadinessController extends Controller
             "'approve'] = ['post']",
             "'reject'] = ['post']",
             "'mark-violation'] = ['post']",
+            "post('id', 0)",
             'moderateReview',
+        ]);
+        $this->requireFileNotContains('Backend review moderation action ids are not URL parameters', 'backend/modules/mall/controllers/ReviewController.php', [
+            'function actionApprove($id)',
+            'function actionReject($id)',
+            'function actionMarkViolation($id)',
         ]);
         $this->requireFileContains('Backend review moderation UI', 'backend/modules/mall/views/review/index.php', [
             'data-mongoyia-phase14-review-moderation',
+            'data-mongoyia-review-moderation-post-guard',
             'data-mongoyia-phase14-review-sort',
             'moderation_status',
+            'Url::to([$route])',
+            "\$button('approve'",
             'mark-violation',
+            'name="id"',
+        ]);
+        $this->requireFileNotContains('Backend review moderation UI has no URL id actions', 'backend/modules/mall/views/review/index.php', [
+            "['approve', 'id' =>",
+            "['reject', 'id' =>",
+            "['mark-violation', 'id' =>",
         ]);
         $this->requireFileContains('Backend store favorite list', 'backend/modules/mall/views/store-favorite/index.php', [
             'data-mongoyia-phase14-store-favorite-backend',
@@ -260,6 +276,25 @@ class FavoriteReviewPhase14ReadinessController extends Controller
         }
 
         $this->addCheck($label, 'PASS', $path, 'Required favorite/review markers are present.');
+    }
+
+    private function requireFileNotContains(string $label, string $path, array $needles): void
+    {
+        $full = $this->resolvePath($path);
+        if (!is_file($full)) {
+            $this->addCheck($label, 'FAIL', $path, 'Required file is missing.');
+            return;
+        }
+
+        $content = (string)file_get_contents($full);
+        foreach ($needles as $needle) {
+            if (strpos($content, $needle) !== false) {
+                $this->addCheck($label, 'FAIL', $path, "Forbidden marker {$needle} is still present.");
+                return;
+            }
+        }
+
+        $this->addCheck($label, 'PASS', $path, 'Forbidden favorite/review markers are absent.');
     }
 
     private function section(string $name): void

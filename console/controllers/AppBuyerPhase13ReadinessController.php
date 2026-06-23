@@ -73,6 +73,16 @@ class AppBuyerPhase13ReadinessController extends Controller
             'MONGOYIA_APP_BUYER_CHECKOUT_WRITE_V1',
             'submitOrder',
         ]);
+        $this->requireFileContains('Buyer web cart stale-row guard', 'frontend/modules/mall/controllers/CartController.php', [
+            'MONGOYIA_CART_STALE_ROW_GUARD_V1',
+            'Unavailable product',
+            '/mall/cart/index',
+        ]);
+        $this->requireFileContains('Buyer cart guard smoke coverage', 'console/controllers/PwaSmokeTestController.php', [
+            'MONGOYIA_CART_STALE_ROW_GUARD_V1',
+            'Unavailable product',
+            '/mall/cart/index',
+        ]);
         $this->requireFileContains('Buyer APP API controller', 'api/modules/v1/controllers/AppBuyerController.php', [
             'MONGOYIA_APP_BUYER_CONTROLLER_V1',
             'actionHome',
@@ -129,6 +139,7 @@ class AppBuyerPhase13ReadinessController extends Controller
         $this->requireFileContains('Phase 13 acceptance tracks buyer API readiness', 'console/controllers/AppPhase13AcceptanceController.php', [
             'app-buyer-phase13-readiness/run',
             'Buyer APP JSON API readiness',
+            'Buyer web cart stale-row guard',
         ]);
         $this->requireFileContains('Phase 13 backlog command list', 'docs/mongoyia-upgrade-backlog-20260618.md', [
             'app-buyer-phase13-readiness/run',
@@ -172,8 +183,8 @@ class AppBuyerPhase13ReadinessController extends Controller
             '- Generated at: ' . date('Y-m-d H:i:s'),
             '- Failures: ' . $this->failures,
             '- Warnings: ' . $this->warnings,
-            '- Scope: buyer APP JSON APIs for home, categories, search, product detail, cart, checkout/order creation, coupons, favorites, reviews, notifications, and customer-service entry.',
-            '- Safety: checkout/order creation validates cart, stock, receiver address, parent/child order rows, order-product rows, and cart cleanup without marking online payments paid.',
+            '- Scope: buyer APP JSON APIs for home, categories, search, product detail, cart, checkout/order creation, coupons, favorites, reviews, notifications, customer-service entry, and buyer cart stale-row guard coverage.',
+            '- Safety: checkout/order creation validates cart, stock, receiver address, parent/child order rows, order-product rows, stale cart cleanup, and cart cleanup without marking online payments paid.',
             '',
             '## Checks',
             '',

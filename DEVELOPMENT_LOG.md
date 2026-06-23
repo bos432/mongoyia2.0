@@ -6417,3 +6417,29 @@
   - Phase 10/11/12/14/15 external evidence gates remain pending; production remains `NO-GO`.
 - Next stage:
   - Continue with plan-listed local readiness hardening that does not require the server to pull latest code, or resume browser role-flow after BaoTa deployment catches up.
+
+## 2026-06-23 Phase 13 Buyer Cart Guard Acceptance Coverage
+
+- Stage name: Phase 13 buyer cart guard acceptance coverage
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting the stage.
+  - Added the frontend cart stale-row guard marker to Phase 13 buyer readiness checks.
+  - Added the same guard and PWA smoke coverage markers to the Phase 13 aggregate APP acceptance command.
+  - Updated the Phase 13 acceptance report scope/boundary text so buyer cart stale-row cleanup is part of the documented APP/H5 checkout acceptance surface.
+  - Updated the development backlog to record that buyer cart stale-row guard coverage is tracked by Phase 13 readiness commands.
+- Main files changed/added:
+  - `console/controllers/AppBuyerPhase13ReadinessController.php`
+  - `console/controllers/AppPhase13AcceptanceController.php`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l console/controllers/AppPhase13AcceptanceController.php` passed.
+  - `php -l console/controllers/AppBuyerPhase13ReadinessController.php` passed.
+  - Static marker checks confirmed `MONGOYIA_CART_STALE_ROW_GUARD_V1`, `Buyer web cart stale-row guard`, and buyer cart stale-row backlog coverage.
+  - `git diff --check` reported no whitespace errors, only existing Windows line-ending conversion warnings.
+  - Full Yii console execution remains BaoTa-only because this local checkout lacks `vendor/autoload.php`.
+- Remaining issues:
+  - BaoTa/test server must pull the latest commits and clear runtime/PHP cache before buyer cart and checkout browser validation can continue.
+  - Phase 10/11/12/14/15 external provider, logistics, social-login, notification, production operations, and signoff evidence remain pending; production remains `NO-GO`.
+- Next stage:
+  - Run syntax/static verification, commit and push this coverage patch, then continue with BaoTa/browser validation after deployment catches up or another plan-listed local readiness item.

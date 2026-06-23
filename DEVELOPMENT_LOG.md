@@ -1,5 +1,27 @@
 # Development Log
 
+## 2026-06-24 Phase 13 Local H5 Browser Smoke Verification
+
+- Stage name: Phase 13 local H5 browser smoke verification
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting the stage.
+  - Started the uni-app/H5 dev server locally on `http://127.0.0.1:5177`.
+  - Used the right-side browser to open `/#/pages/buyer/home`, `/#/pages/auth/login`, `/#/pages/seller/dashboard`, and `/#/pages/chat/index`.
+  - Confirmed the buyer home, login, seller dashboard auth-gate, and customer-service chat entry all rendered with `#app` present.
+  - Confirmed browser console error log collection returned no errors for the smoke run.
+  - Stopped the local dev server after verification.
+- Main files changed/added:
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - Local H5 browser smoke passed for buyer home, auth login, seller dashboard, and chat entry.
+  - Seller dashboard correctly showed an invalid-credentials/auth-required state without crashing.
+  - No tracked APP package source files changed after the smoke run.
+- Remaining issues:
+  - Authenticated buyer/seller APP role-flow still requires BaoTa/test server to pull the latest code and clear caches, plus real test accounts.
+  - Phase 10/11/12/13/14/15 external/browser evidence remains incomplete; production remains `NO-GO`.
+- Next stage:
+  - Commit and push this browser smoke verification record, then continue with the next plan-listed local readiness item or BaoTa/browser validation after the server refreshes.
+
 ## 2026-06-24 Phase 13 H5 APP Build Verification
 
 - Stage name: Phase 13 uni-app/H5 build verification

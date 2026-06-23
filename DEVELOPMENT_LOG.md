@@ -5280,3 +5280,30 @@
 - Next stage:
   - Commit and push Phase 13.4, then on BaoTa pull and run Phase 13 readiness commands.
   - Continue authenticated H5/browser role-flow after BaoTa has the latest APP code and usable buyer/seller test accounts are available, then proceed to Phase 14 planned logistics/product/review completion if Phase 13 write gates remain blocked by external evidence.
+
+## 2026-06-23 Phase 14.0 Logistics/Product Acceptance Scaffold
+
+- Stage name: Phase 14.0 logistics/product acceptance scaffold
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting the stage.
+  - Added `logistics-product-phase14-acceptance/run` as the Phase 14 aggregate evidence gate.
+  - Registered Phase 14 scope checks for logistics provider adapters, tracking sync, SKU generation, shipping timeout/deposit deduction, inventory location, search filters, product video, store favorite, and review moderation.
+  - Added explicit manual/evidence gates for provider adapters, tracking sync, SKU/inventory/shipping behavior, search/video behavior, favorite/review moderation, and browser role-flow validation.
+  - Kept the command read-only: it does not call real providers, mutate logistics rows, deduct funds, change stock, alter reviews, or enable live credentials.
+  - Updated the Phase 14 backlog status and command list.
+- Main files changed/added:
+  - `console/controllers/LogisticsProductPhase14AcceptanceController.php`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l console/controllers/LogisticsProductPhase14AcceptanceController.php` passed.
+  - Static marker checks confirmed Phase 14 command, version marker, backlog command, and log markers.
+  - `git diff --check` reported no whitespace errors; only existing Windows line-ending conversion warnings.
+  - Full Yii console execution is not available locally because this patch checkout does not have `vendor/autoload.php`; run the Phase 14 acceptance command on BaoTa/full-vendor environment after pull.
+- Remaining issues:
+  - Phase 14.1 logistics provider adapter contract and simulated provider readiness are pending.
+  - Tracking sync, SKU/inventory/shipping timeout/deposit deduction, search/video, store favorite, review moderation, and browser role-flow evidence remain pending.
+  - Phase 10/11/12 external provider and production evidence remain incomplete; production remains `NO-GO`.
+- Next stage:
+  - Commit and push Phase 14.0 after local checks pass.
+  - Continue Phase 14.1 by adding logistics provider adapter contract, simulated provider, and readiness command without storing real provider secrets.

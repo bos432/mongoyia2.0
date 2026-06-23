@@ -191,7 +191,7 @@ class AppBuyerApiService
                 ->andWhere(['>', 'status', BaseModel::STATUS_DELETED])
                 ->orderBy(['sort' => SORT_ASC, 'id' => SORT_ASC])
                 ->all()),
-            'reviews' => $this->reviews($id, 1, 5)['items'],
+            'reviews' => $this->reviews($id, 1, 5, 'newest')['items'],
             'favorite' => $favorite,
             'store_favorite' => $storeFavorite,
             'store' => [
@@ -706,13 +706,14 @@ class AppBuyerApiService
         return ['version' => self::VERSION, 'favorite' => true];
     }
 
-    public function reviews(int $productId, int $page = 1, int $pageSize = 20): array
+    public function reviews(int $productId, int $page = 1, int $pageSize = 20, string $sort = 'newest'): array
     {
         $page = max(1, $page);
         $pageSize = max(1, min(50, $pageSize));
+        $sort = $this->normalizeReviewSort($sort);
         $query = Review::find()
             ->where(['product_id' => $productId, 'status' => BaseModel::STATUS_ACTIVE])
-            ->orderBy(['id' => SORT_DESC]);
+            ->orderBy($this->reviewSortOrder($sort));
         if ($this->hasColumn(Review::tableName(), 'moderation_status')) {
             $query->andWhere(['moderation_status' => Review::MODERATION_APPROVED]);
         }
@@ -737,6 +738,7 @@ class AppBuyerApiService
                 'total' => $total,
                 'page' => $page,
                 'page_size' => $pageSize,
+                'sort' => $sort,
             ],
         ];
     }
@@ -1111,6 +1113,26 @@ class AppBuyerApiService
             'moderation_status' => $review->hasAttribute('moderation_status') ? (string)$review->moderation_status : '',
             'created_at' => (int)$review->created_at,
         ];
+    }
+
+    private function normalizeReviewSort(string $sort): string
+    {
+        return in_array($sort, ['newest', 'highest', 'lowest', 'helpful'], true) ? $sort : 'newest';
+    }
+
+    private function reviewSortOrder(string $sort): array
+    {
+        switch ($this->normalizeReviewSort($sort)) {
+            case 'highest':
+                return ['star' => SORT_DESC, 'sort' => SORT_ASC, 'created_at' => SORT_DESC, 'id' => SORT_DESC];
+            case 'lowest':
+                return ['star' => SORT_ASC, 'sort' => SORT_ASC, 'created_at' => SORT_DESC, 'id' => SORT_DESC];
+            case 'helpful':
+                return ['like' => SORT_DESC, 'sort' => SORT_ASC, 'created_at' => SORT_DESC, 'id' => SORT_DESC];
+            case 'newest':
+            default:
+                return ['sort' => SORT_ASC, 'created_at' => SORT_DESC, 'id' => SORT_DESC];
+        }
     }
 
     private function saveCheckoutAddress(int $userId, int $storeId, array $payload): Address

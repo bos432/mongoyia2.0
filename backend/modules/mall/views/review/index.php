@@ -53,7 +53,7 @@ $hasReviewModeration = (new ActiveModel())->hasAttribute('moderation_status');
                         'point',
                         // 'like',
                         // ['attribute' => 'type', 'value' => function ($model) { return ActiveModel::getTypeLabels($model->type); }, 'filter' => Html::activeDropDownList($searchModel, 'type', ActiveModel::getTypeLabels(), ['class' => 'form-control', 'prompt' => Yii::t('app', 'Please Filter')]),],
-                        // ['attribute' => 'sort', 'format' => 'raw', 'value' => function ($model) { return Html::sort($model->sort); }, 'filter' => false,],
+                        ['attribute' => 'sort', 'format' => 'raw', 'value' => function ($model) { return Html::sort($model->sort); }, 'filter' => false, 'headerOptions' => ['data-mongoyia-phase14-review-sort' => 'MONGOYIA_FAVORITE_REVIEW_PHASE14_V1']],
                         ['attribute' => 'moderation_status', 'visible' => $hasReviewModeration, 'value' => function ($model) { return ActiveModel::getModerationStatusLabels($model->moderation_status, true); }, 'filter' => Html::activeDropDownList($searchModel, 'moderation_status', ActiveModel::getModerationStatusLabels(), ['class' => 'form-control', 'prompt' => Yii::t('app', 'Please Filter')]),],
                         ['attribute' => 'moderation_remark', 'visible' => $hasReviewModeration, 'contentOptions' => ['style' => 'max-width:220px;white-space:normal;']],
                         ['attribute' => 'moderated_at', 'visible' => $hasReviewModeration, 'format' => 'datetime', 'filter' => false],

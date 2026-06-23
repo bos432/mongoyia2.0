@@ -145,7 +145,8 @@ class AppBuyerController extends BaseController
             return $this->buyerService()->reviews(
                 (int)Yii::$app->request->get('product_id'),
                 (int)Yii::$app->request->get('page', 1),
-                (int)Yii::$app->request->get('page_size', 20)
+                (int)Yii::$app->request->get('page_size', 20),
+                (string)Yii::$app->request->get('review_sort', Yii::$app->request->get('sort', 'newest'))
             );
         } catch (\Throwable $e) {
             return $this->apiError($e->getMessage(), $this->isGuest() ? 401 : 422);

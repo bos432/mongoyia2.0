@@ -329,10 +329,12 @@ class ProductController extends BaseController
         if ($reviewSchema !== null && isset($reviewSchema->columns['moderation_status'])) {
             $query->andWhere(['moderation_status' => Review::MODERATION_APPROVED]);
         }
+        $reviewSort = (string)Yii::$app->request->get('review_sort', 'newest');
+        $sortOrder = $this->reviewSortOrder($reviewSort);
         $dataProvider = new ActiveDataProvider([
             'query' => $query,
             'pagination' => ['defaultPageSize' => Yii::$app->params['defaultPageSizeProductRank'] ?? 1],
-            'sort' => ['defaultOrder' => ['created_at' => SORT_DESC]],
+            'sort' => ['sortParam' => 'review_grid_sort', 'defaultOrder' => $sortOrder],
         ]);
 //        echo '<pre/>';
 //        var_dump($dataProvider->getModels());
@@ -343,5 +345,20 @@ class ProductController extends BaseController
             'pagination' => $dataProvider->pagination,
         ]));
 
+    }
+
+    private function reviewSortOrder(string $sort): array
+    {
+        switch ($sort) {
+            case 'highest':
+                return ['star' => SORT_DESC, 'sort' => SORT_ASC, 'created_at' => SORT_DESC, 'id' => SORT_DESC];
+            case 'lowest':
+                return ['star' => SORT_ASC, 'sort' => SORT_ASC, 'created_at' => SORT_DESC, 'id' => SORT_DESC];
+            case 'helpful':
+                return ['like' => SORT_DESC, 'sort' => SORT_ASC, 'created_at' => SORT_DESC, 'id' => SORT_DESC];
+            case 'newest':
+            default:
+                return ['sort' => SORT_ASC, 'created_at' => SORT_DESC, 'id' => SORT_DESC];
+        }
     }
 }

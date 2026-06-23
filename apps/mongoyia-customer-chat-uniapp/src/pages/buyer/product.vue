@@ -38,6 +38,32 @@
         <text class="band-title">商品信息</text>
         <text class="description">{{ product.brief || product.description || '' }}</text>
       </view>
+
+      <view class="detail-band" data-mongoyia-phase14-review-sort="MONGOYIA_FAVORITE_REVIEW_PHASE14_V1">
+        <view class="band-head">
+          <text class="band-title">评价</text>
+          <button size="mini" @tap="loadReviews">刷新</button>
+        </view>
+        <view class="review-sort-row">
+          <button
+            v-for="option in reviewSortOptions"
+            :key="option.value"
+            size="mini"
+            :type="reviewSort === option.value ? 'primary' : 'default'"
+            @tap="setReviewSort(option.value)"
+          >
+            {{ option.label }}
+          </button>
+        </view>
+        <view v-if="!reviews.length" class="empty-inline">暂无评价</view>
+        <view v-for="review in reviews" :key="review.id" class="review-row">
+          <view class="review-head">
+            <text class="review-name">{{ review.name || '用户评价' }}</text>
+            <text class="review-star">{{ review.star }}分</text>
+          </view>
+          <text class="review-content">{{ review.content }}</text>
+        </view>
+      </view>
     </view>
 
     <view class="bottom-actions">
@@ -70,6 +96,14 @@ export default {
       storeFavorite: false,
       skuList: [],
       selectedSku: null,
+      reviews: [],
+      reviewSort: 'newest',
+      reviewSortOptions: [
+        { label: '最新', value: 'newest' },
+        { label: '高分', value: 'highest' },
+        { label: '低分', value: 'lowest' },
+        { label: '有用', value: 'helpful' }
+      ],
       state: pageState()
     }
   },
@@ -96,12 +130,37 @@ export default {
         this.storeFavorite = Boolean(data.store_favorite)
         this.skuList = data.skus || data.sku_list || []
         this.selectedSku = this.skuList[0] || null
+        this.reviews = data.reviews || []
         this.state.loaded = true
+        this.loadReviews()
       } catch (error) {
         this.state.error = error.message || '数据暂不可用'
       } finally {
         this.state.loading = false
       }
+    },
+    async loadReviews() {
+      if (!this.productId) {
+        return
+      }
+      try {
+        const response = await appRequest({
+          baseUrl: this.baseUrl,
+          path: BUYER_ENDPOINTS.reviews,
+          query: {
+            product_id: this.productId,
+            page_size: 5,
+            sort: this.reviewSort
+          }
+        })
+        this.reviews = response.items || []
+      } catch (error) {
+        uni.showToast({ title: error.message || '评价暂不可用', icon: 'none' })
+      }
+    },
+    setReviewSort(sort) {
+      this.reviewSort = sort || 'newest'
+      this.loadReviews()
     },
     async addCart() {
       try {
@@ -232,10 +291,55 @@ export default {
   font-weight: 600;
 }
 
+.band-head,
+.review-head,
+.review-sort-row {
+  display: flex;
+  align-items: center;
+}
+
+.band-head,
+.review-head {
+  justify-content: space-between;
+}
+
 .sku-list {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
+}
+
+.review-sort-row {
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.review-row {
+  padding: 8px 0;
+  border-top: 1px solid #eef2f7;
+}
+
+.review-name {
+  color: #334155;
+  font-weight: 600;
+}
+
+.review-star {
+  color: #b45309;
+  font-size: 12px;
+}
+
+.review-content,
+.empty-inline {
+  display: block;
+  margin-top: 6px;
+  color: #475569;
+  line-height: 1.5;
+}
+
+.empty-inline {
+  color: #94a3b8;
 }
 
 .description {

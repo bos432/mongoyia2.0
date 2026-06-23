@@ -155,6 +155,12 @@ if (method_exists($model, 'hasAttribute') && $model->hasAttribute('video_url')) 
                         </div>
 
                         <div class="tab-pane fade" id="nav-review" role="tabpanel" aria-labelledby="nav-review-tab">
+                            <div class="review-sort-bar" data-mongoyia-phase14-review-sort="MONGOYIA_FAVORITE_REVIEW_PHASE14_V1">
+                                <button type="button" class="btn btn-sm btn-primary review-sort-btn active" data-sort="newest"><?= Yii::t('app', 'Newest') ?></button>
+                                <button type="button" class="btn btn-sm btn-outline-secondary review-sort-btn" data-sort="highest"><?= Yii::t('app', 'Highest Rating') ?></button>
+                                <button type="button" class="btn btn-sm btn-outline-secondary review-sort-btn" data-sort="lowest"><?= Yii::t('app', 'Lowest Rating') ?></button>
+                                <button type="button" class="btn btn-sm btn-outline-secondary review-sort-btn" data-sort="helpful"><?= Yii::t('app', 'Most Helpful') ?></button>
+                            </div>
                             <div class="review-list"></div>
                         </div>
 
@@ -206,6 +212,12 @@ if (method_exists($model, 'hasAttribute') && $model->hasAttribute('video_url')) 
     color: #d97706;
     border-color: #f59e0b;
 }
+.review-sort-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 12px;
+}
 </style>
 
 <?php sort($arrDefaultAttribute); ?>
@@ -214,6 +226,8 @@ if (method_exists($model, 'hasAttribute') && $model->hasAttribute('video_url')) 
 var strProductAttribute = '<?= $jsonProductAttribute ?>';
 var objProductAttribute = JSON.parse(strProductAttribute);
 var inStock = false;
+var reviewSort = 'newest';
+var reviewUrl = '<?= Url::to(['/mall/product/review', 'product_id' => $model->id]) ?>';
 
 var urlLogin = '<?= Url::to(['/mall/default/login', 'returnUrl' => Yii::$app->request->getUrl()]) ?>';
 var login = <?= Yii::$app->user->isGuest ? 'false' : 'true' ?>;
@@ -260,13 +274,7 @@ $(document).ready(function() {
         }
     }, "json")
 
-    $.get('<?= Url::to(['/mall/product/review', 'product_id' => $model->id]) ?>', function(data, status) {
-        if (data.code === 200) {
-            $(".review-list").html(data.data);
-        } else {
-            Swal.fire(data.msg);
-        }
-    }, "json")
+    loadReviews(reviewSort);
 
     $.get('<?= Url::to(['/mall/product/consultation', 'product_id' => $model->id]) ?>', function(data, status) {
         if (data.code === 200) {
@@ -366,13 +374,37 @@ $("#consultation-btn").click(function() {
 $('.review-list').on('click', '.pagination a', function(e){
     e.preventDefault();
     $.get({
-        url: $(this).attr('href'),
+        url: appendReviewSort($(this).attr('href')),
         success: function(data){
             $('.review-list').html(data.data);
         }
 
     }, "json");
 });
+
+$('.review-sort-btn').click(function() {
+    reviewSort = $(this).data('sort') || 'newest';
+    $('.review-sort-btn').removeClass('active btn-primary').addClass('btn-outline-secondary');
+    $(this).addClass('active btn-primary').removeClass('btn-outline-secondary');
+    loadReviews(reviewSort);
+});
+
+function loadReviews(sort) {
+    $.get(appendReviewSort(reviewUrl, sort), function(data, status) {
+        if (data.code === 200) {
+            $(".review-list").html(data.data);
+        } else {
+            Swal.fire(data.msg);
+        }
+    }, "json");
+}
+
+function appendReviewSort(url, sort) {
+    var currentSort = sort || reviewSort || 'newest';
+    url = url.replace(/([?&])review_sort=[^&]*/g, '$1').replace(/[?&]$/, '');
+    var glue = url.indexOf('?') === -1 ? '?' : '&';
+    return url + glue + 'review_sort=' + encodeURIComponent(currentSort);
+}
 
 $('.consultation-list').on('click', '.pagination a', function(e){
     e.preventDefault();

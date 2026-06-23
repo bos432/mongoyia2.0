@@ -80,6 +80,8 @@ class FavoriteReviewPhase14ReadinessController extends Controller
             'storeFavorites',
             'toggleStoreFavorite',
             'store_favorite',
+            'normalizeReviewSort',
+            'reviewSortOrder',
             'FavoriteReviewPhase14Service::VERSION',
         ]);
         $this->requireFileContains('Buyer API controller store favorites', 'api/modules/v1/controllers/AppBuyerController.php', [
@@ -93,13 +95,19 @@ class FavoriteReviewPhase14ReadinessController extends Controller
         ]);
         $this->requireFileContains('PC product store favorite UI', 'web/resources/mall/default/views/product/view.php', [
             'data-mongoyia-phase14-store-favorite',
+            'data-mongoyia-phase14-review-sort',
+            'review_sort',
+            'loadReviews',
             'store-heart-icon',
             '/mall/product/store-favorite',
         ]);
         $this->requireFileContains('APP product store favorite UI', 'apps/mongoyia-customer-chat-uniapp/src/pages/buyer/product.vue', [
             'data-mongoyia-phase14-store-favorite',
+            'data-mongoyia-phase14-review-sort',
+            'reviewSortOptions',
             'toggleStoreFavorite',
             'BUYER_ENDPOINTS.storeFavorites',
+            'BUYER_ENDPOINTS.reviews',
         ]);
         $this->requireFileContains('APP received-order review submission', 'common/services/mall/AppBuyerApiService.php', [
             'MONGOYIA_APP_BUYER_REVIEW_WRITE_V1',
@@ -124,6 +132,7 @@ class FavoriteReviewPhase14ReadinessController extends Controller
         ]);
         $this->requireFileContains('Backend review moderation UI', 'backend/modules/mall/views/review/index.php', [
             'data-mongoyia-phase14-review-moderation',
+            'data-mongoyia-phase14-review-sort',
             'moderation_status',
             'mark-violation',
         ]);

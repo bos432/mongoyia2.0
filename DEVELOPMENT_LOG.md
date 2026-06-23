@@ -6040,3 +6040,39 @@
 - Next stage:
   - After BaoTa pulls `55e215a` or newer and runs migrations, run the Phase 13/14/15 readiness commands and complete right-side browser role-flow validation.
   - If the server is still not updated, continue only with plan-listed local evidence/readiness work that does not require the deployed server or real provider credentials.
+
+## 2026-06-23 Phase 14.6 Review Sorting Experience
+
+- Stage name: Phase 14.6 public review sorting for PC/APP/API/backend
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting the stage.
+  - Added public review sorting to PC product reviews through `review_sort=newest/highest/lowest/helpful`.
+  - Kept public review visibility restricted to active and approved reviews when moderation fields exist.
+  - Added PC product review sort controls and AJAX reload/pagination handling while preserving the selected sort.
+  - Added buyer APP review sort options and public review list rendering on the product page.
+  - Extended `/api/v1/app-buyer/reviews` to accept `sort` or `review_sort` and return the normalized sort in `summary`.
+  - Restored the backend review `sort` column so operations staff can rank approved reviews without changing moderation status.
+  - Updated Phase 14 favorite/review readiness markers and the development backlog to record review sorting.
+- Main files changed/added:
+  - `frontend/modules/mall/controllers/ProductController.php`
+  - `web/resources/mall/default/views/product/view.php`
+  - `common/services/mall/AppBuyerApiService.php`
+  - `api/modules/v1/controllers/AppBuyerController.php`
+  - `apps/mongoyia-customer-chat-uniapp/src/pages/buyer/product.vue`
+  - `backend/modules/mall/views/review/index.php`
+  - `console/controllers/FavoriteReviewPhase14ReadinessController.php`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l` passed for `ProductController.php`, `AppBuyerApiService.php`, `AppBuyerController.php`, backend review view, and `FavoriteReviewPhase14ReadinessController.php`.
+  - Static marker checks confirmed `data-mongoyia-phase14-review-sort`, `review_sort`, `reviewSortOptions`, `normalizeReviewSort`, and `reviewSortOrder`.
+  - `node -e "JSON.parse(...pages.json...)"` passed.
+  - `npm run build:h5` passed in `apps/mongoyia-customer-chat-uniapp`; output contained only existing uni-app/Vite informational/deprecation warnings.
+  - `git diff --check` reported no whitespace errors; only existing Windows line-ending conversion warnings.
+  - Full Yii console execution was not run locally because this patch checkout does not have `vendor/autoload.php`; after BaoTa pull run `favorite-review-phase14-readiness/run --fixture=1` and `logistics-product-phase14-acceptance/run --fixture=1`.
+- Remaining issues:
+  - Phase 14 browser role-flow evidence remains pending until BaoTa pulls this commit and runs migrations/readiness in the full server environment.
+  - Real logistics provider evidence and Phase 10/11/12 external provider evidence remain incomplete; production remains `NO-GO`.
+- Next stage:
+  - Commit and push Phase 14.6.
+  - Re-read the development plan and this log, then continue with BaoTa/browser validation if the server has pulled latest code, otherwise advance the next plan-listed local readiness/evidence item.

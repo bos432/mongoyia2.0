@@ -378,7 +378,7 @@ These warnings must not remain on a test server running `profile=test --strict=1
 - Backup reference or backup artifact before restore apply.
 - Real PHP/Python IM `.env` values, payment sandbox credentials, and callback HMAC secrets must be provisioned outside the repository.
 
-The one local warning in P2 readiness is that historical backup file `frontend/modules/mall/controllers/PaymentController-0.php` still contains old hardcoded QPay URLs. Do not deploy or route that file as runtime code.
+The previous local P2 warning about historical backup file `frontend/modules/mall/controllers/PaymentController-0.php` has been closed by removing that non-runtime file from the tracked source tree. Payment provider credentials and callback URLs must continue to be provisioned through encrypted backend configuration or server environment, not committed source.
 
 ## Not Yet Production Ready
 

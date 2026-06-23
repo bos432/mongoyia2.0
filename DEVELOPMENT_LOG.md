@@ -1,5 +1,27 @@
 # Development Log
 
+## 2026-06-23 Phase 10/11 Historical Payment Backup Secret Cleanup
+
+- Stage name: Phase 10/11 historical payment backup secret cleanup
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting the stage.
+  - Confirmed `frontend/modules/mall/controllers/PaymentController-0.php` is a tracked historical backup file and is not referenced by runtime code.
+  - Removed the non-runtime backup file because it contained old hardcoded QPay endpoint/callback samples, a Basic Auth sample string, and an old `/mall/cart` short-route redirect.
+  - Updated `docs/mongoyia-delivery-status.md` so the old local P2 warning is closed and the remaining policy is explicit: payment provider credentials and callback URLs must come from encrypted backend configuration or server environment, not committed source.
+- Main files changed/added:
+  - Removed `frontend/modules/mall/controllers/PaymentController-0.php`
+  - `docs/mongoyia-delivery-status.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - Source reference search found no runtime include/require/reference to `PaymentController-0.php`.
+  - Static scan confirmed the removed backup file was the only tracked source hit for the literal old QPay Basic Auth sample `TU9UT...`.
+  - Full Yii console execution remains BaoTa-only because this local checkout lacks `vendor/autoload.php`.
+- Remaining issues:
+  - Official runtime payment configuration still depends on Phase 10/11 backend encrypted configuration and real/sandbox provider evidence.
+  - Production remains `NO-GO` until external payment, SMTP, translation, alert, logistics, social-login, notification, operations, and business/security signoff evidence is accepted.
+- Next stage:
+  - Verify source scans, commit and push this cleanup, then continue with the next plan-listed readiness or browser evidence item.
+
 ## 2026-06-23 Phase 13 Buyer Cart Browser Recheck After Hardening Push
 
 - Stage name: Phase 13 buyer cart browser recheck after hardening push

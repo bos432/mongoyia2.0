@@ -5809,3 +5809,36 @@
 - Next stage:
   - Commit and push Phase 13.8.
   - Re-read the development plan and this log, then continue with BaoTa/browser validation if the test server has pulled the latest commits, otherwise move to the next plan-listed Phase 14/15 browser evidence or production-readiness stage that can be advanced locally.
+
+## 2026-06-23 Phase 13.9 Seller APP Operations Overview
+
+- Stage name: Phase 13.9 seller APP store/logistics/deposit/statistics/distribution overview
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting the stage.
+  - Added `pages/seller/ops` to the uni-app route registry.
+  - Added the seller dashboard entry for the operations overview page.
+  - Added a read-only seller operations overview page that uses the existing seller APP APIs for dashboard/store profile, logistics fee methods, deposit logs, statistics, and distribution overview.
+  - Updated Phase 13 seller readiness and aggregate acceptance markers to cover the operations overview route.
+  - Updated the Phase 13 backlog text to record store/logistics/deposit/statistics/distribution APP coverage.
+- Main files changed/added:
+  - `apps/mongoyia-customer-chat-uniapp/src/pages.json`
+  - `apps/mongoyia-customer-chat-uniapp/src/pages/seller/dashboard.vue`
+  - `apps/mongoyia-customer-chat-uniapp/src/pages/seller/ops.vue`
+  - `console/controllers/AppSellerPhase13ReadinessController.php`
+  - `console/controllers/AppPhase13AcceptanceController.php`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l` passed for `AppSellerPhase13ReadinessController.php` and `AppPhase13AcceptanceController.php`.
+  - `node -e "JSON.parse(...pages.json...)"` passed.
+  - `npm run build:h5` passed in `apps/mongoyia-customer-chat-uniapp`; output contained only existing uni-app/Vite informational/deprecation warnings.
+  - Static marker checks confirmed `data-mongoyia-phase13-seller-ops`, `pages/seller/ops`, `goOps`, seller logistics/deposit/statistics/distribution endpoint usage, and Phase 13.9 backlog markers.
+  - `git diff --check` reported no whitespace errors; only existing Windows line-ending conversion warnings.
+  - Full Yii console execution was not run locally because this patch checkout does not have `vendor/autoload.php`; after BaoTa pull run `app-seller-phase13-readiness/run --fixture=1` and `app-phase13-acceptance/run --fixture=1`.
+- Remaining issues:
+  - Phase 13 authenticated H5/browser role-flow evidence remains pending until BaoTa pulls these commits and runs readiness commands with usable buyer/seller test accounts.
+  - Phase 14/15 browser evidence remains pending until BaoTa pulls latest code and migrations.
+  - Phase 10/11/12 external provider and production evidence remain incomplete; production remains `NO-GO`.
+- Next stage:
+  - Commit and push Phase 13.9.
+  - Re-read the development plan and this log, then continue with BaoTa/browser validation if the test server has pulled the latest commits, otherwise move to the next plan-listed Phase 14/15 browser evidence or production-readiness stage that can be advanced locally.

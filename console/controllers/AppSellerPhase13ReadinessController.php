@@ -115,6 +115,13 @@ class AppSellerPhase13ReadinessController extends Controller
             'participateCoupon',
             'platform_participation',
         ]);
+        $this->requireFileContains('Seller operations overview page reads store, logistics, deposit, statistics, and distribution APIs', 'apps/mongoyia-customer-chat-uniapp/src/pages/seller/ops.vue', [
+            'data-mongoyia-phase13-seller-ops',
+            'SELLER_ENDPOINTS.logistics',
+            'SELLER_ENDPOINTS.deposit',
+            'SELLER_ENDPOINTS.statistics',
+            'SELLER_ENDPOINTS.distribution',
+        ]);
         $this->requireFileContains('API URL manager supports APP controller ids', 'api/config/main.php', [
             '<modules:[\w-]+>/<controller:[\w-]+>/<action:[\w-]+>',
         ]);
@@ -162,7 +169,7 @@ class AppSellerPhase13ReadinessController extends Controller
             '- Generated at: ' . date('Y-m-d H:i:s'),
             '- Failures: ' . $this->failures,
             '- Warnings: ' . $this->warnings,
-            '- Scope: seller APP JSON APIs for dashboard, products, audited product create/edit, orders, shipment write, logistics fee, deposit, coupons, platform coupon participation join/leave, statistics, and distribution overview.',
+            '- Scope: seller APP JSON APIs and H5 pages for dashboard, products, audited product create/edit, orders, shipment write, logistics fee, deposit, coupons, platform coupon participation join/leave, statistics, and distribution overview.',
             '- Safety: seller APIs are store-scoped to the authenticated user store; shipment write uses existing paid/COD checks and idempotent shipment-fee deduction. Product writes force status inactive and audit_status=submitted, so sellers cannot list products without platform review. Coupon participation writes only join/leave platform coupon participation rows and do not issue coupons or mutate orders.',
             '',
             '## Checks',

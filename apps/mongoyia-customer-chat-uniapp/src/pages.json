@@ -81,6 +81,14 @@
       }
     },
     {
+      "path": "pages/seller/ops",
+      "style": {
+        "navigationBarTitleText": "经营概览",
+        "navigationBarBackgroundColor": "#334155",
+        "navigationBarTextStyle": "white"
+      }
+    },
+    {
       "path": "pages/auth/login",
       "style": {
         "navigationBarTitleText": "登录",

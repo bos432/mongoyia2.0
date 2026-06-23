@@ -94,6 +94,7 @@ class AppPhase13AcceptanceController extends Controller
             'pages/seller/products',
             'pages/seller/orders',
             'pages/seller/coupons',
+            'pages/seller/ops',
             'pages/chat/index',
             'tabBar',
         ]);
@@ -250,7 +251,7 @@ class AppPhase13AcceptanceController extends Controller
             ],
             'Seller dashboard route shell' => [
                 'path' => 'apps/mongoyia-customer-chat-uniapp/src/pages/seller/dashboard.vue',
-                'markers' => ['data-mongoyia-phase13-seller-dashboard', 'SELLER_ENDPOINTS.dashboard', 'goProducts', 'goOrders', 'goCoupons'],
+                'markers' => ['data-mongoyia-phase13-seller-dashboard', 'SELLER_ENDPOINTS.dashboard', 'goProducts', 'goOrders', 'goCoupons', 'goOps'],
                 'notes' => 'Seller dashboard shell is present.',
             ],
             'Seller products route shell' => [
@@ -267,6 +268,11 @@ class AppPhase13AcceptanceController extends Controller
                 'path' => 'apps/mongoyia-customer-chat-uniapp/src/pages/seller/coupons.vue',
                 'markers' => ['data-mongoyia-phase13-seller-coupons', 'data-mongoyia-phase13-seller-coupon-write', 'SELLER_ENDPOINTS.coupons', 'participateCoupon'],
                 'notes' => 'Seller coupon summary and platform participation join/leave shell is present.',
+            ],
+            'Seller operations route shell' => [
+                'path' => 'apps/mongoyia-customer-chat-uniapp/src/pages/seller/ops.vue',
+                'markers' => ['data-mongoyia-phase13-seller-ops', 'SELLER_ENDPOINTS.logistics', 'SELLER_ENDPOINTS.deposit', 'SELLER_ENDPOINTS.statistics', 'SELLER_ENDPOINTS.distribution'],
+                'notes' => 'Seller store profile, logistics fee, deposit, statistics, and distribution overview shell is present.',
             ],
         ];
     }
@@ -289,7 +295,7 @@ class AppPhase13AcceptanceController extends Controller
             '- Failures: ' . $this->failures,
             '- Warnings: ' . $this->warnings,
             '- Pending: ' . $this->pending,
-            '- Scope: buyer APP, seller APP workbench, audited seller product create/edit, seller coupon participation join/leave, shared backend APIs, customer-service entry, H5 development package, and role-flow evidence.',
+            '- Scope: buyer APP, seller APP workbench, audited seller product create/edit, seller coupon participation join/leave, seller store/logistics/deposit/statistics/distribution overview, shared backend APIs, customer-service entry, H5 development package, and role-flow evidence.',
             '- Safety: this command does not mutate orders, carts, products, shipment rows, funds, stock, or credentials.',
             '- Boundary: Phase 13 verifies the APP route shell, buyer checkout write, seller shipment write, seller product create/edit submission, and seller platform coupon participation join/leave. Seller product writes are forced inactive/submitted for platform review, and coupon participation writes do not issue coupons or mutate orders. Browser/APP role-flow evidence remains pending until later acceptance.',
             '',

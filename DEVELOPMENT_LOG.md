@@ -4699,3 +4699,29 @@
   - Run/review redacted export and confirm no secrets are exposed.
   - Record production operations evidence for scheduler, backup restore, load/security/business signoff, rollback owner, launch window, and launch signoff.
   - Rerun Phase 10 acceptance with the four manual accepted flags only after those records exist.
+
+## 2026-06-23 Phase 11.0 Payment Acceptance Command
+
+- Stage name: Phase 11.0 payment and merchant multi-merchant acceptance scaffold
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting Phase 11 work.
+  - Kept Phase 10 production readiness as `NO-GO`; no manual provider/production evidence was marked accepted and no live payment was enabled.
+  - Added `payment-phase11-acceptance/run` as the Phase 11 acceptance command.
+  - The command checks current source coverage for QPay, LianLian, PayPal, backend encrypted payment configuration, callback amount/duplicate safeguards, payment attempt audit, backend audit isolation, and the Phase 10 production-readiness boundary.
+  - The command records explicit pending gates for sandbox payment flow, merchant-owned encrypted payment configuration, payment statistics, callback/audit regression, and browser role-flow evidence.
+  - The optional child checks can run existing payment config, PayPal runtime, base mall payment, callback readiness, and PayPal final read-only go/no-go commands.
+  - Updated the backlog so Phase 11 is `In progress` with Phase 11.0 recorded.
+- Main files changed/added:
+  - `console/controllers/PaymentPhase11AcceptanceController.php`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l console/controllers/PaymentPhase11AcceptanceController.php` passed.
+  - Static marker checks confirmed the existing payment runtime has QPay, LianLian, PayPal, callback amount checks, duplicate-callback handling, and audit markers used by the new acceptance command.
+  - Full Yii command execution was not attempted locally because this patch checkout does not have Composer `vendor/autoload.php`; run it on BaoTa/full-vendor environment after pull.
+- Remaining issues:
+  - Phase 10 manual evidence remains incomplete, and production remains `NO-GO`.
+  - Phase 11 implementation gates are intentionally pending: sandbox provider evidence, merchant payment configuration, payment statistics, callback/audit regression, and browser payment role-flow.
+  - No real provider secrets, SMTP secrets, private keys, Basic Auth, HMAC secrets, or live payment credentials were added.
+- Next stage:
+  - Reread the development plan and this log, then continue Phase 11.1 by adding merchant-owned encrypted payment configuration foundation with platform-controlled enablement, redacted display, and store isolation while keeping live provider enablement blocked until required evidence exists.

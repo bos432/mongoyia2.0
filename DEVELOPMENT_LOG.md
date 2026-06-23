@@ -1,5 +1,30 @@
 # Development Log
 
+## 2026-06-24 Phase 11 PayPal Runtime Acceptance Boundary
+
+- Stage name: Phase 11 PayPal runtime acceptance boundary alignment
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting the stage.
+  - Removed the legacy Phase 6 PayPal pre-runtime/final no-go child checks from Phase 10 and Phase 11 child acceptance aggregation.
+  - Added `MONGOYIA_PAYPAL_PHASE11_RUNTIME_SUPERSEDES_PHASE6_NOGO_V1` source coverage so Phase 10/11 reports explicitly record that PayPal Orders/Webhook runtime acceptance has superseded the old "PayPal must stay disabled/hidden" child gate.
+  - Updated the Phase 10/11 backlog notes to keep production live-payment enablement blocked by provider, operations, and explicit accepted-evidence gates instead of the obsolete no-runtime gate.
+- Main files changed/added:
+  - `console/controllers/OperationalConfigPhase10AcceptanceController.php`
+  - `console/controllers/PaymentPhase11AcceptanceController.php`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l console/controllers/OperationalConfigPhase10AcceptanceController.php` passed.
+  - `php -l console/controllers/PaymentPhase11AcceptanceController.php` passed.
+  - Static marker scan confirmed `MONGOYIA_PAYPAL_PHASE11_RUNTIME_SUPERSEDES_PHASE6_NOGO_V1` and confirmed Phase 10/11 child command arrays no longer invoke `payment-provider-paypal-final-go-no-go-gate/run`.
+  - `git diff --check` reported no whitespace errors, only existing Windows line-ending conversion warnings.
+  - Full Yii console execution remains BaoTa-only because this local checkout lacks `vendor/autoload.php`.
+- Remaining issues:
+  - Real or sandbox QPay/LianLian/PayPal evidence, callback/audit evidence, merchant payment configuration browser evidence, and Phase 10 production evidence remain pending.
+  - Production remains `NO-GO`; this stage only removes an obsolete acceptance conflict and does not enable live payment.
+- Next stage:
+  - Commit and push this acceptance-boundary patch, then continue with BaoTa deployment refresh and browser role-flow validation or the next plan-listed local readiness item.
+
 ## 2026-06-24 Phase 10-15 Child Acceptance BaoTa Cache Refresh Guidance
 
 - Stage name: Phase 10-15 child acceptance BaoTa cache/opcache refresh guidance

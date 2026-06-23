@@ -211,6 +211,10 @@ class PaymentPhase11AcceptanceController extends Controller
             'providerEvidenceAccepted',
             'redactedExportAccepted',
         ]);
+        $this->requireFileContains('Phase 11 PayPal runtime supersedes Phase 6 no-go gate', 'console/controllers/PaymentPhase11AcceptanceController.php', [
+            'MONGOYIA_PAYPAL_PHASE11_RUNTIME_SUPERSEDES_PHASE6_NOGO_V1',
+            'PayPal final read-only go/no-go gate',
+        ]);
     }
 
     private function checkManualAcceptanceInputs(): void
@@ -285,7 +289,6 @@ class PaymentPhase11AcceptanceController extends Controller
             'Payment callback readiness' => ['route' => 'mongoyia-payment-callback-readiness/run', 'fixture' => false],
             'Payment statistics readiness' => ['route' => 'payment-stat-readiness/run', 'fixture' => true],
             'Payment callback regression readiness' => ['route' => 'payment-callback-regression-readiness/run', 'fixture' => true],
-            'PayPal final read-only go/no-go gate' => ['route' => 'payment-provider-paypal-final-go-no-go-gate/run', 'fixture' => true],
         ];
     }
 
@@ -310,6 +313,7 @@ class PaymentPhase11AcceptanceController extends Controller
             '- Scope: QPay, LianLian, PayPal sandbox flow, live enablement guard, merchant encrypted payment configuration, payment statistics, and callback/audit coverage.',
             '- Safety boundary: this acceptance command is read-only and must not enable live payment, call payment providers, mutate orders, mutate funds, or store secrets.',
             '- Production boundary: Phase 10 production readiness remains NO-GO until real provider and operations evidence are accepted.',
+            '- MONGOYIA_PAYPAL_PHASE11_RUNTIME_SUPERSEDES_PHASE6_NOGO_V1: Phase 11 PayPal Orders/Webhook runtime acceptance supersedes the old Phase 6 PayPal final read-only go/no-go gate as a child check; production live enablement still remains blocked by Phase 10 evidence and explicit accepted flags.',
             '',
             '## Checks',
             '',

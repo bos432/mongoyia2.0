@@ -158,6 +158,10 @@ class OperationalConfigPhase10AcceptanceController extends Controller
             'production_go_live_read_only_no_traffic_switch',
             'This gate is read-only',
         ]);
+        $this->requireFileContains('Phase 11 PayPal runtime supersedes Phase 6 no-go child gates', 'console/controllers/PaymentPhase11AcceptanceController.php', [
+            'MONGOYIA_PAYPAL_PHASE11_RUNTIME_SUPERSEDES_PHASE6_NOGO_V1',
+            'PayPal final read-only go/no-go gate',
+        ]);
     }
 
     private function checkManualEvidenceInputs(): void
@@ -227,30 +231,6 @@ class OperationalConfigPhase10AcceptanceController extends Controller
             'Phase 7 launch signoff center' => ['route' => 'operational-config-launch-test/run', 'fixture' => true],
             'Phase 10 provider evidence records' => ['route' => 'operational-config-provider-evidence-test/run', 'fixture' => true],
             'Phase 7 redacted export' => ['route' => 'operational-config-export/run', 'fixture' => false],
-            'PayPal route skeleton evidence' => ['route' => 'payment-provider-route-skeleton-gate/run', 'fixture' => true],
-            'PayPal webhook dry-run evidence' => ['route' => 'payment-provider-webhook-dry-run-gate/run', 'fixture' => true],
-            'PayPal webhook verification dry-run evidence' => ['route' => 'payment-provider-webhook-verification-dry-run-gate/run', 'fixture' => true],
-            'PayPal webhook audit dry-run evidence' => ['route' => 'payment-provider-webhook-audit-dry-run/run', 'fixture' => true],
-            'PayPal sandbox evidence gate' => ['route' => 'payment-provider-paypal-sandbox-evidence-gate/run', 'fixture' => true],
-            'PayPal live audit write implementation gate' => ['route' => 'payment-provider-paypal-live-audit-write-implementation-gate/run', 'fixture' => true],
-            'PayPal sandbox evidence signoff gate' => ['route' => 'payment-provider-paypal-sandbox-evidence-signoff-gate/run', 'fixture' => true],
-            'PayPal sandbox evidence manifest validator' => ['route' => 'payment-provider-paypal-sandbox-evidence-manifest-validator/run', 'fixture' => true],
-            'PayPal sandbox evidence redaction checklist' => ['route' => 'payment-provider-paypal-sandbox-evidence-redaction-checklist/run', 'fixture' => true],
-            'PayPal sandbox evidence bundle review readiness' => ['route' => 'payment-provider-paypal-sandbox-evidence-bundle-review-readiness/run', 'fixture' => true],
-            'PayPal sandbox evidence bundle review signoff gate' => ['route' => 'payment-provider-paypal-sandbox-evidence-bundle-review-signoff-gate/run', 'fixture' => true],
-            'PayPal sandbox evidence signoff import dry-run' => ['route' => 'payment-provider-paypal-sandbox-evidence-signoff-import-dry-run/run', 'fixture' => true],
-            'PayPal sandbox evidence review-result apply gate' => ['route' => 'payment-provider-paypal-sandbox-evidence-review-result-apply-gate/run', 'fixture' => true],
-            'PayPal external evidence collection gate' => ['route' => 'payment-provider-paypal-external-evidence-collection-gate/run', 'fixture' => true],
-            'PayPal external evidence manifest import dry-run' => ['route' => 'payment-provider-paypal-external-evidence-manifest-import-dry-run/run', 'fixture' => true],
-            'PayPal external evidence manifest review readiness' => ['route' => 'payment-provider-paypal-external-evidence-manifest-review-readiness/run', 'fixture' => true],
-            'PayPal external evidence manifest review signoff import dry-run' => ['route' => 'payment-provider-paypal-external-evidence-manifest-review-signoff-import-dry-run/run', 'fixture' => true],
-            'PayPal external evidence manifest review-result apply gate' => ['route' => 'payment-provider-paypal-external-evidence-manifest-review-result-apply-gate/run', 'fixture' => true],
-            'PayPal live provider implementation evidence dry-run' => ['route' => 'payment-provider-paypal-live-provider-implementation-evidence-dry-run/run', 'fixture' => true],
-            'PayPal live provider implementation evidence signoff gate' => ['route' => 'payment-provider-paypal-live-provider-implementation-evidence-signoff-gate/run', 'fixture' => true],
-            'PayPal live execution evidence readiness gate' => ['route' => 'payment-provider-paypal-live-execution-evidence-readiness-gate/run', 'fixture' => true],
-            'PayPal live execution evidence signoff import dry-run' => ['route' => 'payment-provider-paypal-live-execution-evidence-signoff-import-dry-run/run', 'fixture' => true],
-            'PayPal live verification enablement gate' => ['route' => 'payment-provider-live-verification-enablement-gate/run', 'fixture' => true],
-            'PayPal final go/no-go gate' => ['route' => 'payment-provider-paypal-final-go-no-go-gate/run', 'fixture' => true],
             'Production health evidence' => ['route' => 'mongoyia-production-health/run', 'fixture' => true],
             'Production monitor evidence' => ['route' => 'mongoyia-production-monitor/run', 'fixture' => true],
             'Production backup evidence' => ['route' => 'mongoyia-production-backup-verify-evidence/run', 'fixture' => true],

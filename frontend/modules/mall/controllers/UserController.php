@@ -14,6 +14,7 @@ use common\models\mall\ProductSku;
 use common\models\mall\ProductVisit;
 use common\services\mall\DistributionCommissionService;
 use common\services\mall\DistributionInviteService;
+use common\services\mall\DistributionMaterialPhase15Service;
 use common\services\mall\DistributionProfileService;
 use common\services\mall\DistributionSupportContentService;
 use common\services\mall\DistributionWithdrawService;
@@ -168,6 +169,7 @@ class UserController extends BaseController
         $profileService = new DistributionProfileService();
         $inviteService = new DistributionInviteService();
         $withdrawService = new DistributionWithdrawService();
+        $materialService = new DistributionMaterialPhase15Service();
         $supportService = new DistributionSupportContentService();
         $supportLanguage = $supportService->normalizeLanguage((string)Yii::$app->request->get('language', Yii::$app->language));
         $statusLabels = [
@@ -213,7 +215,8 @@ class UserController extends BaseController
             'withdrawRows' => $this->distributionWithdrawRows($userId),
             'withdrawStatusLabels' => $withdrawStatusLabels,
             'profile' => $profileService->profile($userId),
-            'materials' => $profileService->materials(10),
+            'materials' => $materialService->visibleMaterials($supportLanguage, 20),
+            'materialLanguageLabels' => $supportService->languageLabels(),
             'supportLanguage' => $supportLanguage,
             'supportLanguages' => $supportService->languageLabels(),
             'supportContents' => $supportService->visibleForDistributor($supportLanguage, 50),
@@ -231,6 +234,31 @@ class UserController extends BaseController
         $result = (new DistributionProfileService())->saveProfile($userId, Yii::$app->request->post(), true);
         if ($result['skippedReason'] !== '') {
             return $this->redirectError($result['skippedReason'], ['/mall/user/distribution']);
+        }
+
+        return $this->redirectSuccess(['/mall/user/distribution']);
+    }
+
+    public function actionDistributionMaterialTrack()
+    {
+        $userId = (int)Yii::$app->user->id;
+        $id = (int)Yii::$app->request->get('id', 0);
+        $actionType = (string)Yii::$app->request->get('action_type', DistributionMaterialPhase15Service::ACTION_COPY);
+        $result = (new DistributionMaterialPhase15Service())->recordAction(
+            $id,
+            $userId,
+            $actionType,
+            'frontend-distributor-center',
+            (string)Yii::$app->request->getUserAgent(),
+            true
+        );
+        if ((int)$result['created'] <= 0) {
+            return $this->redirectError($result['skippedReason'] ?: Yii::t('app', 'No eligible records'), ['/mall/user/distribution']);
+        }
+
+        $url = (string)$result['redirectUrl'];
+        if ($url !== '' && (strpos($url, 'http://') === 0 || strpos($url, 'https://') === 0 || strpos($url, '/') === 0)) {
+            return $this->redirect($url);
         }
 
         return $this->redirectSuccess(['/mall/user/distribution']);

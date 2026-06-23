@@ -13,6 +13,7 @@ use yii\helpers\Url;
 /* @var $withdrawStatusLabels array */
 /* @var $profile array|null */
 /* @var $materials array */
+/* @var $materialLanguageLabels array */
 /* @var $supportLanguage string */
 /* @var $supportLanguages array */
 /* @var $supportContents array */
@@ -103,28 +104,43 @@ $this->params['breadcrumbs'][] = $this->title;
                             <?php endforeach; ?>
                         </div>
 
-                        <div class="mb-5">
+                        <div class="mb-5" data-mongoyia-phase15-promotion-materials>
                             <h5>Promotion Materials</h5>
                             <div class="table-responsive">
                                 <table class="table table-hover">
                                     <thead>
                                     <tr>
                                         <th>Title</th>
-                                        <th>Type</th>
+                                        <th>Type / Language</th>
                                         <th>Content</th>
-                                        <th>Target</th>
+                                        <th>Resources</th>
+                                        <th>Stats</th>
                                     </tr>
                                     </thead>
                                     <tbody>
                                     <?php if (empty($materials)): ?>
-                                        <tr><td colspan="4" class="text-muted text-center">No promotion materials yet.</td></tr>
+                                        <tr><td colspan="5" class="text-muted text-center">No promotion materials yet.</td></tr>
                                     <?php endif; ?>
                                     <?php foreach ($materials as $row): ?>
                                         <tr>
                                             <td><?= Html::encode($row['title']) ?></td>
-                                            <td><?= Html::encode($row['material_type']) ?></td>
+                                            <td><?= Html::encode($row['material_type']) ?><br><small><?= Html::encode($materialLanguageLabels[$row['language'] ?? ''] ?? ($row['language'] ?? '')) ?></small></td>
                                             <td><?= Html::encode($row['content']) ?></td>
-                                            <td><small><?= Html::encode($row['target_url']) ?></small></td>
+                                            <td>
+                                                <?php if ((string)$row['target_url'] !== ''): ?>
+                                                    <a class="btn btn-outline-primary btn-sm mb-1" href="<?= Html::encode(Url::to(['/mall/user/distribution-material-track', 'id' => (int)$row['id'], 'action_type' => 'copy'])) ?>" target="_blank" rel="noopener">Open Link</a>
+                                                <?php endif; ?>
+                                                <?php if ((string)($row['asset_url'] ?? '') !== '' && (int)($row['download_enabled'] ?? 1) > 0): ?>
+                                                    <a class="btn btn-outline-secondary btn-sm mb-1" href="<?= Html::encode(Url::to(['/mall/user/distribution-material-track', 'id' => (int)$row['id'], 'action_type' => 'download'])) ?>" target="_blank" rel="noopener">Download</a>
+                                                <?php endif; ?>
+                                                <?php if ((string)($row['qr_code_url'] ?? '') !== ''): ?>
+                                                    <div><img src="<?= Html::encode($row['qr_code_url']) ?>" alt="QR" style="max-width:72px;max-height:72px;"></div>
+                                                <?php endif; ?>
+                                            </td>
+                                            <td>
+                                                <small>Open: <?= (int)($row['copy_count'] ?? 0) ?></small><br>
+                                                <small>Download: <?= (int)($row['download_count'] ?? 0) ?></small>
+                                            </td>
                                         </tr>
                                     <?php endforeach; ?>
                                     </tbody>

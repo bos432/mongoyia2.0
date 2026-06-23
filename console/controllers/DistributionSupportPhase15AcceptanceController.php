@@ -138,6 +138,33 @@ class DistributionSupportPhase15AcceptanceController extends Controller
             'data-mongoyia-phase15-support-content',
             '分销培训/FAQ/规则',
         ]);
+        $this->requireFileContains('Distributor material phase 15 service', 'common/services/mall/DistributionMaterialPhase15Service.php', [
+            'MONGOYIA_DISTRIBUTION_MATERIAL_PHASE15_V1',
+            'visibleMaterials',
+            'saveMaterial',
+            'recordAction',
+        ]);
+        $this->requireFileContains('Distributor material phase 15 readiness', 'console/controllers/DistributionMaterialPhase15ReadinessController.php', [
+            'MONGOYIA_DISTRIBUTION_MATERIAL_PHASE15_READINESS_V1',
+            'Distributor material fixture',
+            'download_count',
+        ]);
+        $this->requireFileContains('Distributor material phase 15 migration', 'console/migrations/m260623_210000_mongoyia_distribution_material_phase15.php', [
+            'mall_distribution_material_download_log',
+            'asset_url',
+            'qr_code_url',
+            'copy_count',
+        ]);
+        $this->requireFileContains('Distributor-facing material tracking UI', 'web/resources/mall/default/views/user/distribution.php', [
+            'data-mongoyia-phase15-promotion-materials',
+            'distribution-material-track',
+            'Download',
+        ]);
+        $this->requireFileContains('Backend material management UI', 'backend/modules/mall/views/distribution-distributor/index.php', [
+            'data-mongoyia-phase15-material-management',
+            'material-save',
+            'material-disable',
+        ]);
     }
 
     private function checkPlannedScopeMatrix(): void
@@ -235,6 +262,7 @@ class DistributionSupportPhase15AcceptanceController extends Controller
             'git pull',
             '/www/server/php/83/bin/php yii migrate/up --interactive=0',
             '/www/server/php/83/bin/php yii distribution-support-content-phase15-readiness/run --fixture=1 --interactive=0',
+            '/www/server/php/83/bin/php yii distribution-material-phase15-readiness/run --fixture=1 --interactive=0',
             '/www/server/php/83/bin/php yii distribution-support-phase15-acceptance/run --fixture=1 --interactive=0',
             '```',
             '',

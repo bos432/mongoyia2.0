@@ -5572,3 +5572,41 @@
 - Next stage:
   - Commit and push Phase 15.1 after local checks pass.
   - Continue Phase 15.2 by enhancing promotion materials with language/link/QR fields and adding material download/copy tracking evidence.
+
+## 2026-06-23 Phase 15.2 Promotion Materials And Download Tracking
+
+- Stage name: Phase 15.2 multilingual promotion materials and download/copy tracking
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting the stage.
+  - Extended `mall_distribution_material` with language, asset URL, QR code URL, download-enabled flag, download count, and copy/open count.
+  - Added `mall_distribution_material_download_log` to record distributor material copy/open and download actions with user, language, channel, and user-agent hash evidence.
+  - Added `DistributionMaterialPhase15Service` for multilingual material listing, backend save/disable, frontend action tracking, redirect URL resolution, and counter updates.
+  - Extended backend `/backend/mall/distribution-distributor/index` with platform-only material creation, multilingual fields, file/QR links, counters, and disable action.
+  - Extended frontend `/mall/user/distribution` with tracked promotion links, download links, QR display, language-aware material selection, and action counters.
+  - Added `distribution-material-phase15-readiness/run` with schema/source checks and rollback fixture coverage for save, visible listing, copy/download logging, counters, and disable workflow.
+  - Wired Phase 15 aggregate acceptance to detect the Phase 15.2 service, migration, readiness command, backend UI, and distributor-facing UI.
+  - Updated the Phase 15 backlog status and command list.
+- Main files changed/added:
+  - `console/migrations/m260623_210000_mongoyia_distribution_material_phase15.php`
+  - `common/services/mall/DistributionMaterialPhase15Service.php`
+  - `backend/modules/mall/controllers/DistributionDistributorController.php`
+  - `backend/modules/mall/views/distribution-distributor/index.php`
+  - `frontend/modules/mall/controllers/UserController.php`
+  - `web/resources/mall/default/views/user/distribution.php`
+  - `console/controllers/DistributionMaterialPhase15ReadinessController.php`
+  - `console/controllers/DistributionSupportPhase15AcceptanceController.php`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l` passed for the new migration, material service, backend controller/view, frontend controller/view, Phase 15.2 readiness command, and Phase 15 aggregate acceptance command.
+  - Static marker checks confirmed Phase 15.2 service/readiness/UI markers and backlog command markers.
+  - Pure PHP language normalization check passed for the material service.
+  - `git diff --check` reported no whitespace errors; only existing Windows line-ending conversion warnings.
+  - Full Yii console execution is not available locally because this patch checkout does not have `vendor/autoload.php`; after BaoTa pull run `migrate/up`, `distribution-material-phase15-readiness/run --fixture=1`, and `distribution-support-phase15-acceptance/run --fixture=1`.
+- Remaining issues:
+  - Phase 15.3 payout/invite reward signoff evidence remains pending.
+  - Phase 15 browser role-flow evidence remains pending until BaoTa pulls this stage and migrations run.
+  - Phase 10/11/12 external provider and production evidence remain incomplete; production remains `NO-GO`.
+- Next stage:
+  - Commit and push Phase 15.2 after local checks pass.
+  - Continue Phase 15.3 by adding distributor payout/invite reward signoff evidence for offline review without triggering real payouts.

@@ -11,6 +11,7 @@ use yii\helpers\Url;
 /* @var $limit int */
 /* @var $profiles array */
 /* @var $materials array */
+/* @var $materialLanguageLabels array */
 /* @var $risks array */
 /* @var $supportType string */
 /* @var $supportLanguage string */
@@ -252,32 +253,94 @@ $this->params['breadcrumbs'][] = $this->title;
             </div>
         </div>
 
-        <div class="card">
+        <div class="card" data-mongoyia-phase15-material-management>
             <div class="card-header">
                 <h3 class="card-title">推广素材</h3>
+            </div>
+            <div class="card-body">
+                <form method="post" action="<?= Html::encode(Url::to(['material-save'])) ?>">
+                    <input type="hidden" name="<?= Html::encode(Yii::$app->request->csrfParam) ?>" value="<?= Html::encode(Yii::$app->request->csrfToken) ?>">
+                    <input type="hidden" name="download_enabled" value="0">
+                    <div class="row">
+                        <div class="col-md-2 mb-2">
+                            <select name="language" class="form-control form-control-sm">
+                                <?php foreach ($materialLanguageLabels as $key => $label): ?>
+                                    <option value="<?= Html::encode($key) ?>"><?= Html::encode($label) ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                        <div class="col-md-2 mb-2">
+                            <input name="material_type" maxlength="32" value="text" class="form-control form-control-sm" placeholder="类型">
+                        </div>
+                        <div class="col-md-3 mb-2">
+                            <input name="title" maxlength="128" class="form-control form-control-sm" placeholder="素材标题">
+                        </div>
+                        <div class="col-md-3 mb-2">
+                            <input name="target_url" maxlength="255" class="form-control form-control-sm" placeholder="推广链接">
+                        </div>
+                        <div class="col-md-2 mb-2">
+                            <input name="sort" type="number" min="0" max="9999" value="50" class="form-control form-control-sm">
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4 mb-2">
+                            <input name="asset_url" maxlength="255" class="form-control form-control-sm" placeholder="素材文件/下载链接">
+                        </div>
+                        <div class="col-md-4 mb-2">
+                            <input name="qr_code_url" maxlength="255" class="form-control form-control-sm" placeholder="二维码图片链接">
+                        </div>
+                        <div class="col-md-4 mb-2">
+                            <input name="remark" maxlength="255" class="form-control form-control-sm" placeholder="运营备注">
+                        </div>
+                    </div>
+                    <textarea name="content" rows="2" class="form-control form-control-sm mb-2" placeholder="素材文案，多语言内容可分别新增"></textarea>
+                    <label class="mr-3"><input type="checkbox" name="download_enabled" value="1" checked> 允许下载</label>
+                    <button type="submit" class="btn btn-primary btn-sm">保存素材</button>
+                </form>
             </div>
             <div class="card-body p-0">
                 <table class="table table-hover mb-0">
                     <thead>
                     <tr>
                         <th>素材</th>
-                        <th>类型</th>
+                        <th>类型/语言</th>
                         <th>内容</th>
-                        <th>目标链接</th>
+                        <th>链接</th>
+                        <th>统计</th>
                         <th>状态</th>
+                        <th>操作</th>
                     </tr>
                     </thead>
                     <tbody>
                     <?php if (empty($materials)): ?>
-                        <tr><td colspan="5" class="text-muted text-center">暂无推广素材</td></tr>
+                        <tr><td colspan="7" class="text-muted text-center">暂无推广素材</td></tr>
                     <?php endif; ?>
                     <?php foreach ($materials as $row): ?>
                         <tr>
                             <td>#<?= (int)$row['id'] ?><br><small><?= Html::encode($row['title']) ?></small></td>
-                            <td><?= Html::encode($row['material_type']) ?></td>
+                            <td><?= Html::encode($row['material_type']) ?><br><small><?= Html::encode($materialLanguageLabels[$row['language'] ?? ''] ?? ($row['language'] ?? '')) ?></small></td>
                             <td><?= Html::encode($row['content']) ?></td>
-                            <td><small><?= Html::encode($row['target_url']) ?></small></td>
+                            <td>
+                                <small>推广：<?= Html::encode($row['target_url']) ?></small><br>
+                                <small>文件：<?= Html::encode($row['asset_url'] ?? '') ?></small><br>
+                                <small>二维码：<?= Html::encode($row['qr_code_url'] ?? '') ?></small>
+                            </td>
+                            <td>
+                                <small>复制/打开：<?= (int)($row['copy_count'] ?? 0) ?></small><br>
+                                <small>下载：<?= (int)($row['download_count'] ?? 0) ?></small>
+                            </td>
                             <td><?= Html::encode($row['material_status']) ?></td>
+                            <td>
+                                <?php if ((string)$row['material_status'] !== 'disabled'): ?>
+                                    <form method="post" action="<?= Html::encode(Url::to(['material-disable'])) ?>" class="d-inline">
+                                        <input type="hidden" name="<?= Html::encode(Yii::$app->request->csrfParam) ?>" value="<?= Html::encode(Yii::$app->request->csrfToken) ?>">
+                                        <input type="hidden" name="id" value="<?= (int)$row['id'] ?>">
+                                        <button type="submit" class="btn btn-outline-warning btn-sm">停用</button>
+                                    </form>
+                                <?php else: ?>
+                                    <span class="text-muted">无操作</span>
+                                <?php endif; ?>
+                            </td>
                         </tr>
                     <?php endforeach; ?>
                     </tbody>

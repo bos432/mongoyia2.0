@@ -5,6 +5,7 @@ namespace backend\modules\mall\controllers;
 use common\services\mall\DistributionProfileService;
 use common\services\mall\DistributionAnalyticsService;
 use common\services\mall\DistributionInviteRewardWorkflowService;
+use common\services\mall\DistributionMaterialPhase15Service;
 use common\services\mall\DistributionSupportContentService;
 use Yii;
 use yii\web\ForbiddenHttpException;
@@ -20,6 +21,7 @@ class DistributionDistributorController extends BaseController
         $profileStatus = (string)Yii::$app->request->get('profile_status', '');
         $limit = max(1, min(500, (int)Yii::$app->request->get('limit', 100)));
         $service = new DistributionProfileService();
+        $materialService = new DistributionMaterialPhase15Service();
         $supportService = new DistributionSupportContentService();
         $analyticsService = new DistributionAnalyticsService();
         $supportType = (string)Yii::$app->request->get('support_type', '');
@@ -29,7 +31,8 @@ class DistributionDistributorController extends BaseController
             'profileStatus' => $profileStatus,
             'limit' => $limit,
             'profiles' => $this->profileRows($profileStatus, $limit),
-            'materials' => $service->materials(50),
+            'materials' => $materialService->materials('', '', false, 50),
+            'materialLanguageLabels' => $supportService->languageLabels(),
             'risks' => $service->risks(0, $limit),
             'supportType' => $supportType,
             'supportLanguage' => $supportLanguage,
@@ -114,6 +117,35 @@ class DistributionDistributorController extends BaseController
 
         $id = (int)Yii::$app->request->post('id', Yii::$app->request->get('id', 0));
         $result = (new DistributionSupportContentService())->disableContent($id, true, (int)Yii::$app->user->id);
+        if ((int)$result['updated'] <= 0) {
+            return $this->redirectError($result['skippedReason'] ?: Yii::t('app', 'No eligible records'), ['index']);
+        }
+
+        return $this->redirectSuccess(['index']);
+    }
+
+    public function actionMaterialSave()
+    {
+        if (!$this->isMallPlatformOperator()) {
+            throw new ForbiddenHttpException(Yii::t('app', 'No Auth'));
+        }
+
+        $result = (new DistributionMaterialPhase15Service())->saveMaterial(Yii::$app->request->post(), true, (int)Yii::$app->user->id);
+        if ($result['skippedReason'] !== '') {
+            return $this->redirectError($result['skippedReason'], ['index']);
+        }
+
+        return $this->redirectSuccess(['index']);
+    }
+
+    public function actionMaterialDisable()
+    {
+        if (!$this->isMallPlatformOperator()) {
+            throw new ForbiddenHttpException(Yii::t('app', 'No Auth'));
+        }
+
+        $id = (int)Yii::$app->request->post('id', Yii::$app->request->get('id', 0));
+        $result = (new DistributionMaterialPhase15Service())->disableMaterial($id, true, (int)Yii::$app->user->id);
         if ((int)$result['updated'] <= 0) {
             return $this->redirectError($result['skippedReason'] ?: Yii::t('app', 'No eligible records'), ['index']);
         }

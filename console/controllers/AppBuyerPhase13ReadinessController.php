@@ -85,6 +85,10 @@ class AppBuyerPhase13ReadinessController extends Controller
             'Unavailable product',
             '/mall/cart/index',
         ]);
+        $this->requireFileContains('Buyer web cart link normalizer', 'web/resources/mall/default/js/main.js', [
+            'MONGOYIA_CART_LINK_NORMALIZER_V1',
+            '/mall/cart/index',
+        ]);
         $this->requireFileContains('Buyer APP API controller', 'api/modules/v1/controllers/AppBuyerController.php', [
             'MONGOYIA_APP_BUYER_CONTROLLER_V1',
             'actionHome',

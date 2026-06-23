@@ -66,6 +66,16 @@ $(document).ready(function () {
 
     // nice select
     $('select').niceSelect();
+
+    // MONGOYIA_CART_LINK_NORMALIZER_V1: tolerate stale cached header fragments.
+    $('a[href="/mall/cart"], a[href$="/mall/cart"]').each(function () {
+        var href = $(this).attr('href') || '';
+        if (href === '/mall/cart') {
+            $(this).attr('href', '/mall/cart/index');
+        } else if (href.slice(-10) === '/mall/cart') {
+            $(this).attr('href', href + '/index');
+        }
+    });
 });
 
 function changeURLArg(url, arg, argVal){

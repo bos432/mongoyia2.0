@@ -1,5 +1,30 @@
 # Development Log
 
+## 2026-06-23 Phase 13 Cached Cart Link Normalizer
+
+- Stage name: Phase 13 cached cart link normalizer
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting the stage.
+  - Added a narrow frontend normalizer in the mall public `main.js` that rewrites stale cached links exactly matching `/mall/cart` to `/mall/cart/index`.
+  - Kept `/mall/cart/update-ajax`, `/mall/cart/checkout`, and other cart action routes untouched.
+  - Added the cart-link normalizer marker to Phase 13 buyer readiness and aggregate APP acceptance coverage.
+  - Updated the Phase 13 backlog row to record cached cart-link normalizer coverage.
+- Main files changed/added:
+  - `web/resources/mall/default/js/main.js`
+  - `console/controllers/AppBuyerPhase13ReadinessController.php`
+  - `console/controllers/AppPhase13AcceptanceController.php`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - Static marker scan confirmed `MONGOYIA_CART_LINK_NORMALIZER_V1` and `/mall/cart/index` coverage in the frontend script and Phase 13 readiness files.
+  - Full Yii console execution remains BaoTa-only because this local checkout lacks `vendor/autoload.php`.
+- Remaining issues:
+  - BaoTa/test server must pull this commit, refresh frontend asset/version output or clear page/opcache, then recheck product header links in the browser.
+  - `/mall/cart/index` browser validation still depends on deploying the preceding cart-index fallback guard and clearing server caches.
+  - Phase 10/11/12/13/14/15 external and browser evidence remain incomplete; production remains `NO-GO`.
+- Next stage:
+  - Run syntax/static checks, commit and push this link normalizer, then continue with BaoTa/browser validation or another plan-listed local readiness item.
+
 ## 2026-06-23 Phase 13 Buyer Cart Index Fallback Guard
 
 - Stage name: Phase 13 buyer cart index fallback guard

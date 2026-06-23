@@ -427,6 +427,8 @@ Phase 13.20 buyer received-order POST id hardening: PC/H5 buyer confirm-received
 
 Phase 13.21 backend seller shipment POST id hardening: backend/seller shipment modal GET remains available for opening the form, but shipment submit and Ajax validation post to `/backend/mall/order/fh-ajax` without a query-string id. The form carries a hidden POST `id` and `data-mongoyia-order-shipment-post-id-guard`; `OrderController::actionFhAjax()` reads the order id from POST for write requests through `MONGOYIA_BACKEND_ORDER_SHIPMENT_POST_ID_GUARD_V1`. Phase 13 seller readiness and aggregate acceptance cover the guard.
 
+Phase 13.22 buyer product consultation POST id hardening: PC/H5 product consultation submission now reads `product_id` from POST body data only, while GET/Ajax remains read-only for consultation list loading. `ProductController::actionConsultation()` carries `MONGOYIA_PRODUCT_CONSULTATION_POST_ID_GUARD_V1`; Phase 13 buyer readiness and aggregate acceptance reject the old GET-to-POST fallback.
+
 Phase 14 acceptance command:
 
 ```bash
@@ -447,6 +449,8 @@ Phase 14.9 review moderation POST id hardening: backend review approve/reject/ma
 Phase 14.10 buyer received-order POST id hardening: the PC/H5 confirm-received precondition for review submission now uses POST body ids and stable `data-mongoyia-buyer-received-post-guard` form markers on both order list and detail pages. Favorite/review readiness and Phase 14 aggregate acceptance cover the guard so the received-order write cannot be triggered with a query-string order id.
 
 Phase 14.11 backend seller shipment POST id hardening: the logistics shipment form now posts hidden order ids and removes query-string ids from shipment write submissions while keeping modal GET open behavior. Logistics basic, PWA smoke, Phase 13 seller, and Phase 14 aggregate readiness cover `MONGOYIA_BACKEND_ORDER_SHIPMENT_POST_ID_GUARD_V1`.
+
+Phase 14.12 product consultation POST id hardening: product consultation writes now use POST body `product_id` only and keep GET query parameters limited to read-only consultation list loading. Favorite/review readiness and Phase 14 aggregate acceptance cover `MONGOYIA_PRODUCT_CONSULTATION_POST_ID_GUARD_V1` and the absence of the previous GET/POST fallback.
 
 Phase 15 acceptance command:
 

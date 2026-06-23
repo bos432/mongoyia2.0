@@ -25,6 +25,8 @@ use yii\data\ActiveDataProvider;
  */
 class ProductController extends BaseController
 {
+    public const CONSULTATION_POST_ID_GUARD_VERSION = 'MONGOYIA_PRODUCT_CONSULTATION_POST_ID_GUARD_V1';
+
     public function actionIndex()
     {
         return $this->goHome();
@@ -263,7 +265,9 @@ class ProductController extends BaseController
             return $this->error();
         }
 
-        $productId = Yii::$app->request->get('product_id', Yii::$app->request->post('product_id'));
+        $productId = (int)(Yii::$app->request->isPost
+            ? Yii::$app->request->post('product_id', 0)
+            : Yii::$app->request->get('product_id', 0));
         if (!$productId) {
             return $this->error(-1);
         }

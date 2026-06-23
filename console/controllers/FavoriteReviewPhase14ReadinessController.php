@@ -93,6 +93,15 @@ class FavoriteReviewPhase14ReadinessController extends Controller
             'StoreFavorite',
             'store_id',
         ]);
+        $this->requireFileContains('Frontend product consultation POST id guard', 'frontend/modules/mall/controllers/ProductController.php', [
+            'MONGOYIA_PRODUCT_CONSULTATION_POST_ID_GUARD_V1',
+            'function actionConsultation',
+            "post('product_id', 0)",
+            "get('product_id', 0)",
+        ]);
+        $this->requireFileNotContains('Frontend product consultation has no GET/POST fallback', 'frontend/modules/mall/controllers/ProductController.php', [
+            "get('product_id', Yii::\$app->request->post('product_id'))",
+        ]);
         $this->requireFileContains('PC product store favorite UI', 'web/resources/mall/default/views/product/view.php', [
             'data-mongoyia-phase14-store-favorite',
             'data-mongoyia-phase14-review-sort',

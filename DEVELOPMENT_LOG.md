@@ -8172,3 +8172,40 @@
   - Real/sandbox payment provider evidence, callback/audit evidence, and production evidence remain pending; production remains `NO-GO`.
 - Next stage:
   - Commit and push this backend order refund POST guard patch, then reread the plan/log and continue with the next plan-listed readiness item.
+
+## 2026-06-24 Phase 13/14 Product Consultation POST ID Hardening
+
+- Stage name: Phase 13.22 / Phase 14.12 product consultation POST id hardening
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting the stage.
+  - Added `MONGOYIA_PRODUCT_CONSULTATION_POST_ID_GUARD_V1` to the frontend mall product controller.
+  - Hardened `/mall/product/consultation` so consultation writes read `product_id` only from POST body data.
+  - Preserved GET/Ajax `product_id` usage for read-only consultation list loading and pagination.
+  - Added source coverage to favorite/review closure, Phase 13 buyer/aggregate, and Phase 14 favorite-review/aggregate readiness checks.
+  - Updated the Phase 13 and Phase 14 backlog notes as Phase 13.22 and Phase 14.12.
+- Main files changed/added:
+  - `frontend/modules/mall/controllers/ProductController.php`
+  - `console/controllers/MongoyiaFavoriteReviewTestController.php`
+  - `console/controllers/AppBuyerPhase13ReadinessController.php`
+  - `console/controllers/AppPhase13AcceptanceController.php`
+  - `console/controllers/FavoriteReviewPhase14ReadinessController.php`
+  - `console/controllers/LogisticsProductPhase14AcceptanceController.php`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l frontend/modules/mall/controllers/ProductController.php` passed.
+  - `php -l console/controllers/MongoyiaFavoriteReviewTestController.php` passed.
+  - `php -l console/controllers/AppBuyerPhase13ReadinessController.php` passed.
+  - `php -l console/controllers/AppPhase13AcceptanceController.php` passed.
+  - `php -l console/controllers/FavoriteReviewPhase14ReadinessController.php` passed.
+  - `php -l console/controllers/LogisticsProductPhase14AcceptanceController.php` passed.
+  - Static marker checks confirmed `MONGOYIA_PRODUCT_CONSULTATION_POST_ID_GUARD_V1`, `post('product_id', 0)`, read-only `get('product_id', 0)`, and `Phase 13.22` / `Phase 14.12` backlog entries.
+  - Static stale-fallback check found no remaining `get('product_id', Yii::$app->request->post('product_id'))` or POST/GET fallback pattern in the product controller/readiness coverage.
+  - `git diff --check` reported no whitespace errors, only existing Windows line-ending conversion warnings.
+  - Full Yii console execution remains BaoTa-only because this local checkout lacks `vendor/autoload.php`.
+- Remaining issues:
+  - BaoTa/test server must rerun favorite/review, Phase 13, Phase 14, and total requirements closure acceptance after deployment.
+  - Phase 13 authenticated H5/APP buyer/seller role-flow evidence and Phase 14 logistics/product/favorite/review browser evidence remain pending.
+  - Phase 10/11/12/15 external/provider/browser evidence gates remain pending; production remains `NO-GO`.
+- Next stage:
+  - Commit and push this product consultation POST id hardening patch, then reread the plan/log and continue with the next plan-listed readiness item.

@@ -65,7 +65,13 @@ class MongoyiaFavoriteReviewTestController extends Controller
     private function checkEntrances()
     {
         $this->section('Entrances');
-        $this->requireFileContains('@app/../frontend/modules/mall/controllers/ProductController.php', ['function actionFavorite', 'function actionReview']);
+        $this->requireFileContains('@app/../frontend/modules/mall/controllers/ProductController.php', [
+            'function actionFavorite',
+            'function actionConsultation',
+            'function actionReview',
+            'MONGOYIA_PRODUCT_CONSULTATION_POST_ID_GUARD_V1',
+            "post('product_id', 0)",
+        ]);
         $this->requireFileContains('@app/../frontend/modules/mall/controllers/OrderController.php', [
             'function actionView',
             'Review submitted',
@@ -94,7 +100,7 @@ class MongoyiaFavoriteReviewTestController extends Controller
             $this->fail("Product page expected HTTP 2xx/3xx, got {$response['status']}.");
             return;
         }
-        foreach (['/mall/product/favorite', '/mall/product/review', 'review-list'] as $needle) {
+        foreach (['/mall/product/favorite', '/mall/product/consultation', '/mall/product/review', 'review-list'] as $needle) {
             if (strpos($response['body'], $needle) === false) {
                 $this->fail("Product page missing favorite/review marker '{$needle}'.");
                 return;

@@ -6610,3 +6610,28 @@
   - Production remains `NO-GO` until the evidence is real, reviewed, and downstream production go-live gates pass.
 - Next stage:
   - Commit and push this Phase 10 checklist patch, then re-read the development plan and this log before continuing with BaoTa/browser validation or the next plan-listed readiness item.
+
+## 2026-06-23 Phase 13 Buyer Cart Browser Deployment Blocker Recheck
+
+- Stage name: Phase 13 buyer cart browser deployment blocker recheck
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting the stage.
+  - Used the right-side browser automation to open `https://demo2026.mongoyia.com/product-codex-test-product-1781945133`.
+  - Confirmed the product page opens and still shows a logged-in buyer session, but the rendered header still contains old `/mall/cart` short links alongside newer `/mall/cart/index` links.
+  - Opened `https://demo2026.mongoyia.com/mall/cart/index` in the browser; the page still fails with `ERR_HTTP_RESPONSE_CODE_FAILURE`.
+  - Checked the same route from the command line as a guest-like request with a browser user agent; it redirects to the home page and returns HTTP 200, which means the blocker is tied to deployed browser/session/cart state rather than total site outage.
+  - Rechecked local source and confirmed frontend mall views/controllers now use `/mall/cart/index`; no active local header/cart view source still emits `/mall/cart` short links.
+  - Did not submit checkout/payment forms, mutate cart/order/payment/fund data, or enter credentials.
+- Main files changed/added:
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - Browser product page: opens successfully.
+  - Browser cart page: still blocked with `ERR_HTTP_RESPONSE_CODE_FAILURE`.
+  - `curl.exe -i -L -A "Mozilla/5.0" https://demo2026.mongoyia.com/mall/cart/index` returned a 302 to `/` followed by 200 for a non-session request.
+  - Static source search confirmed local `web/resources/mall/default/views/layouts/nav.php`, product view, cart view, and payment redirect use `/mall/cart/index`.
+- Remaining issues:
+  - BaoTa/test server appears to be serving stale PHP/view output or stale opcache/page cache for header cart links; it must pull latest commits and clear PHP/opcache/runtime/page cache before buyer cart/checkout browser validation can continue.
+  - The latest pushed code includes Phase 10/11/12 browser evidence report updates plus previous cart hardening; server should pull `3291f91` or newer.
+  - Production remains `NO-GO` until external provider, logistics, social-login, notification, operations, and business/security signoff evidence is accepted.
+- Next stage:
+  - After BaoTa pulls latest code, runs migrations/readiness, and clears cache, rerun browser cart/checkout validation and the aggregate acceptance command.

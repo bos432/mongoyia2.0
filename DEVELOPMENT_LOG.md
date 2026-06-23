@@ -7704,3 +7704,32 @@
   - Phase 10/11/12/14/15 external/provider/browser evidence gates remain pending; production remains `NO-GO`.
 - Next stage:
   - Commit and push this Phase 13 product audit guard patch, then reread the plan/log and continue with the next plan-listed readiness item.
+
+## 2026-06-24 Phase 13 Seller APP Shipment POST Guard
+
+- Stage name: Phase 13 seller APP shipment POST guard
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting the stage.
+  - Added `MONGOYIA_APP_SELLER_SHIPMENT_POST_GUARD_V1` to the seller APP API controller.
+  - Restricted the dedicated `/api/v1/app-seller/shipment` write endpoint so non-POST requests return `SHIPMENT_REQUIRES_POST` before entering the store-scoped shipment workflow.
+  - Kept the existing mixed list/write `/api/v1/app-seller/orders` behavior unchanged to avoid breaking seller order-list reads.
+  - Added source coverage to the Phase 13 seller readiness command and Phase 13 aggregate acceptance command.
+  - Updated the Phase 13 backlog notes to record this small stage as Phase 13.17.
+- Main files changed/added:
+  - `api/modules/v1/controllers/AppSellerController.php`
+  - `console/controllers/AppSellerPhase13ReadinessController.php`
+  - `console/controllers/AppPhase13AcceptanceController.php`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l api/modules/v1/controllers/AppSellerController.php` passed.
+  - `php -l console/controllers/AppSellerPhase13ReadinessController.php` passed.
+  - `php -l console/controllers/AppPhase13AcceptanceController.php` passed.
+  - Static marker checks confirmed `MONGOYIA_APP_SELLER_SHIPMENT_POST_GUARD_V1`, `SHIPMENT_REQUIRES_POST`, and `Phase 13.17`.
+  - `git diff --check` reported no whitespace errors, only existing Windows line-ending conversion warnings.
+  - Full Yii console execution remains BaoTa-only because this local checkout lacks `vendor/autoload.php`.
+- Remaining issues:
+  - Phase 13 authenticated H5/APP browser role-flow evidence still requires BaoTa/test server deployment and real buyer/seller test-account validation.
+  - Phase 10/11/12/14/15 external/provider/browser evidence gates remain pending; production remains `NO-GO`.
+- Next stage:
+  - Commit and push this Phase 13 seller shipment guard patch, then reread the plan/log and continue with the next plan-listed readiness item.

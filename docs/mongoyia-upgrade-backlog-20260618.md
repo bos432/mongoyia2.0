@@ -412,6 +412,8 @@ Phase 13.15 merchant coupon backend POST guard: the backend merchant-coupon part
 
 Phase 13.16 product audit backend POST guard: backend product audit approve/reject actions now use `MONGOYIA_PRODUCT_AUDIT_POST_VERB_GUARD_V1`, POST-only verb filters, CSRF-protected inline forms, and POST-only `id`/`remark` reads. Product audit and Phase 13 seller readiness checks cover this guard so platform product approval/rejection cannot be triggered by plain GET links.
 
+Phase 13.17 seller APP shipment POST guard: `/api/v1/app-seller/shipment` now uses `MONGOYIA_APP_SELLER_SHIPMENT_POST_GUARD_V1` and rejects non-POST requests with `SHIPMENT_REQUIRES_POST` before running the store-scoped shipment workflow. Phase 13 seller readiness and aggregate acceptance check the guard so APP shipment writes cannot be triggered by plain GET requests.
+
 Phase 14 acceptance command:
 
 ```bash

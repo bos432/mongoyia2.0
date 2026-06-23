@@ -10,6 +10,7 @@ use Yii;
 class AppSellerController extends BaseController
 {
     public const VERSION = 'MONGOYIA_APP_SELLER_CONTROLLER_V1';
+    public const SHIPMENT_POST_GUARD = 'MONGOYIA_APP_SELLER_SHIPMENT_POST_GUARD_V1';
 
     public $modelClass = Product::class;
     public $skipModelClass = '*';
@@ -52,6 +53,10 @@ class AppSellerController extends BaseController
 
     public function actionShipment()
     {
+        if (!Yii::$app->request->isPost) {
+            return $this->apiError('SHIPMENT_REQUIRES_POST', 405);
+        }
+
         return $this->runSellerAction(function (int $storeId) {
             return $this->sellerService()->shipOrder($storeId, Yii::$app->request->post());
         });

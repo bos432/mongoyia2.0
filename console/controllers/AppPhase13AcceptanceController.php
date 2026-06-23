@@ -219,10 +219,12 @@ class AppPhase13AcceptanceController extends Controller
         ]);
         $this->requireFileContains('Seller APP JSON API controller', 'api/modules/v1/controllers/AppSellerController.php', [
             'MONGOYIA_APP_SELLER_CONTROLLER_V1',
+            'MONGOYIA_APP_SELLER_SHIPMENT_POST_GUARD_V1',
             'actionDashboard',
             'actionProducts',
             'actionOrders',
             'actionShipment',
+            'SHIPMENT_REQUIRES_POST',
             'sellerStoreId',
             'shipOrder',
             'saveProduct',
@@ -230,6 +232,7 @@ class AppPhase13AcceptanceController extends Controller
         ]);
         $this->requireFileContains('Seller APP JSON API readiness', 'console/controllers/AppSellerPhase13ReadinessController.php', [
             'MONGOYIA_APP_SELLER_PHASE13_READINESS_V1',
+            'MONGOYIA_APP_SELLER_SHIPMENT_POST_GUARD_V1',
             'MONGOYIA_PRODUCT_AUDIT_POST_VERB_GUARD_V1',
             'MONGOYIA_MERCHANT_COUPON_POST_VERB_GUARD_V1',
             'app-seller-phase13-readiness/run',

@@ -73,10 +73,13 @@ class AppSellerPhase13ReadinessController extends Controller
         ]);
         $this->requireFileContains('Seller APP API controller', 'api/modules/v1/controllers/AppSellerController.php', [
             'MONGOYIA_APP_SELLER_CONTROLLER_V1',
+            'MONGOYIA_APP_SELLER_SHIPMENT_POST_GUARD_V1',
             'actionDashboard',
             'actionProducts',
             'actionOrders',
             'actionShipment',
+            'SHIPMENT_REQUIRES_POST',
+            'isPost',
             'actionLogistics',
             'actionDeposit',
             'actionCoupons',
@@ -194,7 +197,7 @@ class AppSellerPhase13ReadinessController extends Controller
             '- Failures: ' . $this->failures,
             '- Warnings: ' . $this->warnings,
             '- Scope: seller APP JSON APIs and H5 pages for dashboard, products, audited product create/edit, orders, shipment write, logistics fee, deposit, coupons, platform coupon participation join/leave, statistics, and distribution overview.',
-            '- Safety: seller APIs are store-scoped to the authenticated user store; shipment write uses existing paid/COD checks and idempotent shipment-fee deduction. Product writes force status inactive and audit_status=submitted, so sellers cannot list products without platform review. Coupon participation writes only join/leave platform coupon participation rows and do not issue coupons or mutate orders.',
+            '- Safety: seller APIs are store-scoped to the authenticated user store; shipment write uses existing paid/COD checks, explicit POST-only API guarding, and idempotent shipment-fee deduction. Product writes force status inactive and audit_status=submitted, so sellers cannot list products without platform review. Coupon participation writes only join/leave platform coupon participation rows and do not issue coupons or mutate orders.',
             '',
             '## Checks',
             '',

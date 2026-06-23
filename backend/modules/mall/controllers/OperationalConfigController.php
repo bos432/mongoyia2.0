@@ -5,6 +5,7 @@ namespace backend\modules\mall\controllers;
 use common\services\mall\OperationalConfigService;
 use common\services\mall\CustomerServiceTranslationService;
 use common\services\mall\MerchantPaymentConfigService;
+use common\services\mall\OperationalIdentityConfigService;
 use common\services\mall\OperationalLaunchSignoffService;
 use common\services\mall\OperationalMailConfigService;
 use common\services\mall\OperationalOpsAlertService;
@@ -93,6 +94,62 @@ class OperationalConfigController extends BaseController
             'paymentEnvironments' => (new OperationalPaymentConfigService())->environments(),
             'isPlatformOperator' => $this->isMallPlatformOperator(),
         ]);
+    }
+
+    public function actionIdentityConfig()
+    {
+        if (!$this->isMallPlatformOperator()) {
+            throw new ForbiddenHttpException(Yii::t('app', 'No Auth'));
+        }
+
+        $environment = (string)Yii::$app->request->get('environment', 'test');
+
+        return $this->render('identity-config', [
+            'snapshot' => (new OperationalIdentityConfigService())->snapshot($environment),
+            'identityEnvironments' => (new OperationalIdentityConfigService())->environments(),
+        ]);
+    }
+
+    public function actionSaveIdentityConfig()
+    {
+        if (!$this->isMallPlatformOperator()) {
+            throw new ForbiddenHttpException(Yii::t('app', 'No Auth'));
+        }
+
+        $request = Yii::$app->request;
+        $provider = (string)$request->post('provider', '');
+        $environment = (string)$request->post('environment', 'test');
+        try {
+            $result = (new OperationalIdentityConfigService())->saveProvider(
+                $provider,
+                $environment,
+                (array)$request->post('config', [])
+            );
+            Yii::$app->session->setFlash('success', '第三方登录配置已保存，检测结果：' . $result['result'] . ' - ' . $result['message']);
+        } catch (\Throwable $e) {
+            Yii::$app->session->setFlash('error', '第三方登录配置保存失败：' . $e->getMessage());
+        }
+
+        return $this->redirect(['identity-config', 'environment' => $environment]);
+    }
+
+    public function actionCheckIdentityConfig()
+    {
+        if (!$this->isMallPlatformOperator()) {
+            throw new ForbiddenHttpException(Yii::t('app', 'No Auth'));
+        }
+
+        $request = Yii::$app->request;
+        $provider = (string)$request->post('provider', '');
+        $environment = (string)$request->post('environment', 'test');
+        try {
+            $result = (new OperationalIdentityConfigService())->checkProvider($provider, $environment, true);
+            Yii::$app->session->setFlash('success', '第三方登录配置检测完成：' . $result['result'] . ' - ' . $result['message']);
+        } catch (\Throwable $e) {
+            Yii::$app->session->setFlash('error', '第三方登录配置检测失败：' . $e->getMessage());
+        }
+
+        return $this->redirect(['identity-config', 'environment' => $environment]);
     }
 
     public function actionSaveMerchantPaymentPermission()

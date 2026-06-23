@@ -4850,3 +4850,42 @@
   - Phase 10/11 external evidence remains incomplete, and production remains `NO-GO`.
 - Next stage:
   - Commit and push Phase 12.0, then continue Phase 12.1 by adding Facebook/Google login configuration foundation with encrypted provider settings, callback route skeletons, bind/unbind boundaries, and provider-secret redaction.
+
+## 2026-06-23 Phase 12.1 Facebook/Google Identity Config Foundation
+
+- Stage name: Phase 12.1 third-party login encrypted configuration foundation
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting the stage.
+  - Added `OperationalIdentityConfigService` for Google/Facebook provider definitions, encrypted Client Secret/App Secret storage, callback URL helpers, readiness checks, runtime config lookup, and redacted form snapshots.
+  - Added backend platform-only actions and page for `/backend/mall/operational-config/identity-config`, including save/check actions and an operations-center shortcut.
+  - Added frontend `SocialAuthController` route boundary for redirect/callback/bind/unbind. It stays disabled or evidence-gated and does not call providers or create account bindings yet.
+  - Added permission migration for identity config view/save/check routes.
+  - Added `identity-config-readiness/run` and wired it into `account-notification-phase12-acceptance/run --runChildChecks=1`.
+  - Updated the Phase 12 backlog status to record the identity-provider config foundation.
+- Main files changed/added:
+  - `common/services/mall/OperationalIdentityConfigService.php`
+  - `frontend/controllers/SocialAuthController.php`
+  - `backend/modules/mall/controllers/OperationalConfigController.php`
+  - `backend/modules/mall/views/operational-config/index.php`
+  - `backend/modules/mall/views/operational-config/identity-config.php`
+  - `console/migrations/m260623_162000_mongoyia_identity_config_permission.php`
+  - `console/controllers/IdentityConfigReadinessController.php`
+  - `console/controllers/AccountNotificationPhase12AcceptanceController.php`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l common/services/mall/OperationalIdentityConfigService.php` passed.
+  - `php -l frontend/controllers/SocialAuthController.php` passed.
+  - `php -l backend/modules/mall/controllers/OperationalConfigController.php` passed.
+  - `php -l backend/modules/mall/views/operational-config/identity-config.php` passed.
+  - `php -l console/migrations/m260623_162000_mongoyia_identity_config_permission.php` passed.
+  - `php -l console/controllers/IdentityConfigReadinessController.php` passed.
+  - `php -l console/controllers/AccountNotificationPhase12AcceptanceController.php` passed.
+  - Static marker checks confirmed encrypted identity config, frontend route boundary, backend UI markers, and Phase 12 acceptance child wiring.
+  - Full Yii command execution is still expected on BaoTa/full-vendor environment because this patch checkout does not have Composer `vendor/autoload.php`.
+- Remaining issues:
+  - Real Google/Facebook provider callbacks, profile fetch, account bind/unbind persistence, conflict handling, and operation logs are still pending.
+  - No Google/Facebook secrets were added; provider credentials must be entered through the encrypted backend page after deployment.
+  - Phase 10/11 external evidence remains incomplete, and production remains `NO-GO`.
+- Next stage:
+  - Commit and push Phase 12.1, then continue Phase 12.2 by adding password recovery/security-code login policy foundation with backend switches and operation-log/readiness coverage.

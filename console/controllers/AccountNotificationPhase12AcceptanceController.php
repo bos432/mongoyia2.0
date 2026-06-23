@@ -120,6 +120,30 @@ class AccountNotificationPhase12AcceptanceController extends Controller
             'ClientRepository',
             'ScopeRepository',
         ]);
+        $this->requireFileContains('Encrypted third-party login config service', 'common/services/mall/OperationalIdentityConfigService.php', [
+            'MONGOYIA_OPERATIONAL_IDENTITY_CONFIG_V1',
+            'google',
+            'facebook',
+            'client_secret',
+            'runtimeConfig',
+        ]);
+        $this->requireFileContains('Third-party login backend config page', 'backend/modules/mall/views/operational-config/identity-config.php', [
+            'data-mongoyia-identity-config',
+            'data-mongoyia-identity-provider-cards',
+            'data-mongoyia-identity-callback-urls',
+        ]);
+        $this->requireFileContains('Third-party login frontend boundary', 'frontend/controllers/SocialAuthController.php', [
+            'MONGOYIA_SOCIAL_AUTH_BOUNDARY_V1',
+            'actionRedirect',
+            'actionCallback',
+            'actionBind',
+            'actionUnbind',
+        ]);
+        $this->requireFileContains('Third-party login readiness command', 'console/controllers/IdentityConfigReadinessController.php', [
+            'MONGOYIA_IDENTITY_CONFIG_READINESS_V1',
+            'identity-config-readiness',
+            'Frontend social auth boundary controller',
+        ]);
         $this->requireFileContains('Site message foundation', 'common/components/base/MessageSystem.php', [
             'sendMessageType',
             'MessageType::SEND_TARGET_ALL',
@@ -243,6 +267,7 @@ class AccountNotificationPhase12AcceptanceController extends Controller
     private function childCommands(): array
     {
         return [
+            'Identity provider config readiness' => ['route' => 'identity-config-readiness/run', 'fixture' => true],
             'Operational mail config readiness' => ['route' => 'operational-config-mail-test/run', 'fixture' => true],
         ];
     }

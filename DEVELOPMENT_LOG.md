@@ -7431,3 +7431,29 @@
   - Phase 10/11/12/14/15 external/provider/browser evidence gates remain pending; production remains `NO-GO`.
 - Next stage:
   - Run final diff checks, commit and push this Phase 13 category-scope patch, then continue with the next plan-listed readiness item.
+
+## 2026-06-24 Phase 14 Review Moderation POST Verb Guard
+
+- Stage name: Phase 14 review moderation POST verb guard
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting the stage.
+  - Added explicit POST-only verb protection for backend review moderation actions: approve, reject, and mark violation.
+  - Added readiness source coverage marker `MONGOYIA_REVIEW_MODERATION_POST_VERB_GUARD_V1` so Phase 14 checks verify the moderation actions cannot be triggered by plain GET links.
+  - Updated the Phase 14 backlog note to record this small stage as Phase 14.7.
+- Main files changed/added:
+  - `backend/modules/mall/controllers/ReviewController.php`
+  - `console/controllers/FavoriteReviewPhase14ReadinessController.php`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l backend/modules/mall/controllers/ReviewController.php` passed.
+  - `php -l console/controllers/FavoriteReviewPhase14ReadinessController.php` passed.
+  - Static marker check for `MONGOYIA_REVIEW_MODERATION_POST_VERB_GUARD_V1`, POST verb guards, and `Phase 14.7` passed.
+  - `git diff --check` reported no whitespace errors, only existing Windows line-ending conversion warnings.
+  - Full Yii console execution remains BaoTa-only because this local checkout lacks `vendor/autoload.php`.
+- Remaining issues:
+  - Phase 14 browser role-flow evidence still requires the BaoTa/test server to pull the latest code, run migrations/readiness, and verify review moderation in the backend browser.
+  - Real logistics provider evidence remains external; provider secrets must not be committed.
+  - Phase 10/11/12/13/15 external/provider/browser evidence gates remain pending; production remains `NO-GO`.
+- Next stage:
+  - Commit and push this Phase 14 moderation guard patch, then reread the plan/log and continue with the next plan-listed local readiness item or BaoTa/browser validation.

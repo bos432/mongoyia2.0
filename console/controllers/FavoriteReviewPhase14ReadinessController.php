@@ -125,9 +125,14 @@ class FavoriteReviewPhase14ReadinessController extends Controller
             'Review submitted, waiting for moderation',
         ]);
         $this->requireFileContains('Backend review moderation actions', 'backend/modules/mall/controllers/ReviewController.php', [
+            'MONGOYIA_REVIEW_MODERATION_POST_VERB_GUARD_V1',
+            'behaviors',
             'actionApprove',
             'actionReject',
             'actionMarkViolation',
+            "'approve'] = ['post']",
+            "'reject'] = ['post']",
+            "'mark-violation'] = ['post']",
             'moderateReview',
         ]);
         $this->requireFileContains('Backend review moderation UI', 'backend/modules/mall/views/review/index.php', [

@@ -14,6 +14,8 @@ use common\models\ModelSearch;
  */
 class ReviewController extends BaseController
 {
+    public const MODERATION_VERB_GUARD_VERSION = 'MONGOYIA_REVIEW_MODERATION_POST_VERB_GUARD_V1';
+
     /**
       * @var Review
       */
@@ -42,6 +44,16 @@ class ReviewController extends BaseController
         'name' => 'text',
         'type' => 'select',
     ];
+
+    public function behaviors()
+    {
+        $behaviors = parent::behaviors();
+        $behaviors['verbs']['actions']['approve'] = ['post'];
+        $behaviors['verbs']['actions']['reject'] = ['post'];
+        $behaviors['verbs']['actions']['mark-violation'] = ['post'];
+
+        return $behaviors;
+    }
 
     public function actionApprove($id)
     {

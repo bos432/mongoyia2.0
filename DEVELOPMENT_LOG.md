@@ -5664,3 +5664,40 @@
 - Next stage:
   - On BaoTa run `git pull`, `migrate/up`, Phase 14 readiness, and Phase 15 readiness commands.
   - After BaoTa deployment succeeds, complete right-side browser role-flow evidence for distributor training, materials, tracking, signoff evidence, and review actions.
+
+## 2026-06-23 Phase 13.5 Buyer APP Checkout Write
+
+- Stage name: Phase 13.5 buyer APP checkout/order write path
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting the stage.
+  - Rechecked the right-side browser deployment state and confirmed the test server still lacks Phase 15 markers, so Phase 14/15 browser evidence remains blocked until BaoTa pulls and migrates.
+  - Replaced the buyer APP orders POST reservation with a real checkout writer in `AppBuyerApiService`.
+  - Added cart validation, product/SKU stock validation, positive-price validation, receiver address save/update, parent order creation, per-store child order creation, order-product rows, order logs, COD stock deduction, and cart cleanup.
+  - Kept online payment success unchanged: APP checkout returns an unpaid parent order and payment URL, and the existing payment page/callback flow remains responsible for marking orders paid.
+  - Updated the uni-app buyer order page with complete receiver fields, online/COD payment picker, payment-link handoff, clearer order detail display, and product-aware customer-service entry.
+  - Updated APP request error handling so API `message` errors are shown instead of collapsing to a generic request failure.
+  - Updated Phase 13 readiness and acceptance source markers plus the development backlog to record buyer checkout write as implemented.
+- Main files changed/added:
+  - `common/services/mall/AppBuyerApiService.php`
+  - `api/modules/v1/controllers/AppBuyerController.php`
+  - `apps/mongoyia-customer-chat-uniapp/src/pages/buyer/orders.vue`
+  - `apps/mongoyia-customer-chat-uniapp/src/utils/api.js`
+  - `console/controllers/AppBuyerPhase13ReadinessController.php`
+  - `console/controllers/AppPhase13AcceptanceController.php`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l` passed for `AppBuyerApiService.php`, `AppBuyerController.php`, `AppBuyerPhase13ReadinessController.php`, and `AppPhase13AcceptanceController.php`.
+  - `node -e "JSON.parse(...pages.json...)"` passed.
+  - `npm run build:h5` passed in `apps/mongoyia-customer-chat-uniapp`; output contained only existing uni-app/Vite informational/deprecation warnings.
+  - Static marker checks confirmed `MONGOYIA_APP_BUYER_CHECKOUT_WRITE_V1`, `submitOrder`, APP `payment_url`, and Phase 13.5 backlog markers.
+  - `git diff --check` reported no whitespace errors; only existing Windows line-ending conversion warnings.
+  - Full Yii console execution was not run locally because this patch checkout does not have `vendor/autoload.php`; after BaoTa pull run `app-buyer-phase13-readiness/run --fixture=1` and `app-phase13-acceptance/run --fixture=1`.
+- Remaining issues:
+  - Phase 13 authenticated browser/H5 role-flow evidence remains pending until BaoTa pulls this commit and usable buyer/seller APP test accounts are available in the browser session.
+  - Seller APP shipment/product/coupon write paths remain gated by the existing Phase 13/14 safety notes.
+  - Phase 14/15 browser evidence remains blocked because the test server page still shows pre-Phase-15 code.
+  - Phase 10/11/12 external provider and production evidence remain incomplete; production remains `NO-GO`.
+- Next stage:
+  - Commit and push Phase 13.5.
+  - Continue with the next plan-listed small stage: seller APP shipment write path, while keeping product/coupon writes gated until audit/browser evidence is available.

@@ -8,7 +8,14 @@
     <view v-if="mode === 'checkout'" class="checkout-form">
       <input v-model="address.name" class="form-input" placeholder="收件人" />
       <input v-model="address.mobile" class="form-input" placeholder="手机号" />
+      <input v-model="address.email" class="form-input" placeholder="邮箱（可选）" />
+      <input v-model="address.country" class="form-input" placeholder="国家/地区" />
+      <input v-model="address.city" class="form-input" placeholder="城市" />
       <textarea v-model="address.address" class="form-input textarea" placeholder="收货地址" />
+      <input v-model="address.postcode" class="form-input" placeholder="邮编（可选）" />
+      <picker mode="selector" :range="paymentOptions" range-key="label" @change="onPaymentChange">
+        <view class="picker-row">支付方式：{{ currentPayment.label }}</view>
+      </picker>
       <button type="primary" @tap="submitOrder">提交订单</button>
     </view>
 
@@ -25,6 +32,7 @@
         </view>
         <text class="order-amount">{{ item.amount || item.total || '' }}</text>
         <view class="order-actions">
+          <button v-if="item.payment_url" size="mini" type="primary" @tap="openPayment(item)">去支付</button>
           <button size="mini" @tap="openChat(item)">客服</button>
           <button size="mini" @tap="viewOrder(item)">详情</button>
         </view>
@@ -46,9 +54,23 @@ export default {
       address: {
         name: '',
         mobile: '',
+        email: '',
+        country: '',
+        city: '',
+        postcode: '',
         address: ''
       },
+      paymentMethod: 1,
+      paymentOptions: [
+        { label: '在线支付', value: 1 },
+        { label: '货到付款', value: 2 }
+      ],
       state: pageState()
+    }
+  },
+  computed: {
+    currentPayment() {
+      return this.paymentOptions.find((item) => item.value === this.paymentMethod) || this.paymentOptions[0]
     }
   },
   onLoad(options = {}) {
@@ -75,24 +97,38 @@ export default {
       }
     },
     async submitOrder() {
+      if (!this.address.name || !this.address.mobile || !this.address.address) {
+        uni.showToast({ title: '请填写收件人、手机号和地址', icon: 'none' })
+        return
+      }
       try {
-        await appRequest({
+        const response = await appRequest({
           baseUrl: this.baseUrl,
           path: BUYER_ENDPOINTS.orders,
           method: 'POST',
           data: {
-            address: this.address
+            address: this.address,
+            payment_method: this.paymentMethod
           }
         })
         uni.showToast({ title: '订单已提交' })
         this.mode = ''
-        this.loadOrders()
+        await this.loadOrders()
+        const paymentUrl = response && response.payment && response.payment.payment_url
+        if (paymentUrl && response.payment.requires_online_payment) {
+          this.openPayment({ payment_url: paymentUrl })
+        }
       } catch (error) {
         uni.showToast({ title: error.message || '提交失败', icon: 'none' })
       }
     },
+    onPaymentChange(event) {
+      const index = Number(event.detail.value || 0)
+      this.paymentMethod = this.paymentOptions[index] ? this.paymentOptions[index].value : 1
+    },
     openChat(item) {
-      const productId = Number(item.product_id || item.gid || 0)
+      const firstItem = item.items && item.items.length ? item.items[0] : {}
+      const productId = Number(item.product_id || item.gid || firstItem.product_id || 0)
       uni.navigateTo({
         url: '/pages/chat/index?gid=' + productId
           + '&baseUrl=' + encodeURIComponent(this.baseUrl)
@@ -100,9 +136,30 @@ export default {
       })
     },
     viewOrder(item) {
+      const firstItem = item.items && item.items.length ? item.items[0] : {}
       uni.showModal({
         title: item.sn || item.order_sn || '订单',
-        content: item.status_label || item.status || '',
+        content: [
+          '状态：' + (item.status_label || item.status || ''),
+          '金额：' + (item.amount || item.total || ''),
+          firstItem.name ? '商品：' + firstItem.name : ''
+        ].filter(Boolean).join('\n'),
+        showCancel: false
+      })
+    },
+    openPayment(item) {
+      const url = String(item.payment_url || '')
+      if (!url) {
+        return
+      }
+      const target = url.indexOf('http') === 0 ? url : this.baseUrl.replace(/\/$/, '') + url
+      if (typeof window !== 'undefined' && window.location) {
+        window.location.href = target
+        return
+      }
+      uni.showModal({
+        title: '支付链接',
+        content: target,
         showCancel: false
       })
     },

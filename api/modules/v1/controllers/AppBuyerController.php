@@ -82,8 +82,11 @@ class AppBuyerController extends BaseController
         try {
             if (Yii::$app->request->isPost) {
                 $this->requireLogin();
-                Yii::$app->response->statusCode = 409;
-                return $this->buyerService()->checkoutReserved();
+                return $this->buyerService()->submitOrder(
+                    $this->currentUserId(),
+                    Yii::$app->request->post(),
+                    (int)$this->getStoreId()
+                );
             }
 
             return $this->buyerService()->orders($this->currentUserId());

@@ -64,7 +64,8 @@ class AppBuyerPhase13ReadinessController extends Controller
             'coupons',
             'favorites',
             'reviews',
-            'checkout_write_requires_payment_address_stock_safety_acceptance',
+            'MONGOYIA_APP_BUYER_CHECKOUT_WRITE_V1',
+            'submitOrder',
         ]);
         $this->requireFileContains('Buyer APP API controller', 'api/modules/v1/controllers/AppBuyerController.php', [
             'MONGOYIA_APP_BUYER_CONTROLLER_V1',
@@ -77,7 +78,7 @@ class AppBuyerPhase13ReadinessController extends Controller
             'actionCoupons',
             'actionFavorites',
             'actionReviews',
-            'checkoutReserved',
+            'submitOrder',
         ]);
         $this->requireFileContains('APP shared API helper uses buyer endpoints', 'apps/mongoyia-customer-chat-uniapp/src/utils/appApi.js', [
             '/api/v1/app-buyer/home',
@@ -110,7 +111,7 @@ class AppBuyerPhase13ReadinessController extends Controller
             '/api/v1/app-buyer/search' => 'public product search/filter',
             '/api/v1/app-buyer/product' => 'public product detail/SKU/review/customer-service context',
             '/api/v1/app-buyer/cart' => 'authenticated cart list/add',
-            '/api/v1/app-buyer/orders' => 'authenticated order list plus checkout write gate',
+            '/api/v1/app-buyer/orders' => 'authenticated order list plus checkout write',
             '/api/v1/app-buyer/coupons' => 'authenticated coupon list',
             '/api/v1/app-buyer/favorites' => 'authenticated favorite list/toggle',
             '/api/v1/app-buyer/reviews' => 'public product review list',
@@ -135,8 +136,8 @@ class AppBuyerPhase13ReadinessController extends Controller
             '- Generated at: ' . date('Y-m-d H:i:s'),
             '- Failures: ' . $this->failures,
             '- Warnings: ' . $this->warnings,
-            '- Scope: buyer APP JSON APIs for home, categories, search, product detail, cart, orders, coupons, favorites, reviews, and customer-service entry.',
-            '- Safety: checkout/order write remains gated until payment, address, stock, and browser role-flow acceptance are complete.',
+            '- Scope: buyer APP JSON APIs for home, categories, search, product detail, cart, checkout/order creation, coupons, favorites, reviews, and customer-service entry.',
+            '- Safety: checkout/order creation validates cart, stock, receiver address, parent/child order rows, order-product rows, and cart cleanup without marking online payments paid.',
             '',
             '## Checks',
             '',

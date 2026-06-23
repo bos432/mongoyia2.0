@@ -104,12 +104,13 @@ class AppPhase13AcceptanceController extends Controller
         ]);
         $this->requireFileContains('Buyer APP JSON API service', 'common/services/mall/AppBuyerApiService.php', [
             'MONGOYIA_APP_BUYER_API_V1',
+            'MONGOYIA_APP_BUYER_CHECKOUT_WRITE_V1',
             'home',
             'categories',
             'search',
             'product',
             'addCart',
-            'checkout_write_requires_payment_address_stock_safety_acceptance',
+            'submitOrder',
         ]);
         $this->requireFileContains('Buyer APP JSON API controller', 'api/modules/v1/controllers/AppBuyerController.php', [
             'MONGOYIA_APP_BUYER_CONTROLLER_V1',
@@ -119,11 +120,12 @@ class AppPhase13AcceptanceController extends Controller
             'actionProduct',
             'actionCart',
             'actionOrders',
+            'submitOrder',
         ]);
         $this->requireFileContains('Buyer APP JSON API readiness', 'console/controllers/AppBuyerPhase13ReadinessController.php', [
             'MONGOYIA_APP_BUYER_PHASE13_READINESS_V1',
             'app-buyer-phase13-readiness/run',
-            'checkout/order write remains gated',
+            'checkout/order creation validates cart',
         ]);
         $this->requireFileContains('Seller APP JSON API service', 'common/services/mall/AppSellerApiService.php', [
             'MONGOYIA_APP_SELLER_API_V1',
@@ -179,7 +181,7 @@ class AppPhase13AcceptanceController extends Controller
             $this->buyerApiAccepted,
             $this->buyerEvidencePath,
             'Buyer APP home/category/search/product/cart/order APIs were accepted.',
-            'Implement and validate buyer APP JSON APIs for home, category, search, product detail, cart, checkout, coupons, favorites, reviews, and customer-service entry.'
+            'Validate buyer APP JSON APIs for home, category, search, product detail, cart, checkout order creation, coupons, favorites, reviews, and customer-service entry.'
         );
         $this->manualFlag(
             'Seller APP JSON API acceptance',

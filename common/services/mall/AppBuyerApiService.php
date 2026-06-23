@@ -3,11 +3,13 @@
 namespace common\services\mall;
 
 use common\models\BaseModel;
+use common\models\mall\Address;
 use common\models\mall\Cart;
 use common\models\mall\Category;
 use common\models\mall\CouponType;
 use common\models\mall\Favorite;
 use common\models\mall\Order;
+use common\models\mall\OrderLog;
 use common\models\mall\OrderProduct;
 use common\models\mall\Product;
 use common\models\mall\ProductSku;
@@ -19,7 +21,7 @@ use Yii;
 class AppBuyerApiService
 {
     public const VERSION = 'MONGOYIA_APP_BUYER_API_V1';
-    public const CHECKOUT_WRITE_GATE = 'checkout_write_requires_payment_address_stock_safety_acceptance';
+    public const CHECKOUT_WRITE_VERSION = 'MONGOYIA_APP_BUYER_CHECKOUT_WRITE_V1';
 
     private $searchVideoService;
 
@@ -318,18 +320,203 @@ class AppBuyerApiService
             'version' => self::VERSION,
             'items' => array_map([$this, 'orderSummary'], $orders),
             'summary' => [
-                'checkout_write_gate' => self::CHECKOUT_WRITE_GATE,
+                'checkout_write_version' => self::CHECKOUT_WRITE_VERSION,
             ],
         ];
     }
 
-    public function checkoutReserved(): array
+    public function submitOrder(int $userId, array $input, int $storeId = 0): array
     {
+        if ($userId <= 0) {
+            return $this->authRequiredPayload();
+        }
+
+        $carts = Cart::find()
+            ->where(['user_id' => $userId])
+            ->andWhere(['>', 'status', BaseModel::STATUS_DELETED])
+            ->orderBy(['id' => SORT_ASC])
+            ->all();
+        if (!$carts) {
+            throw new \RuntimeException('Cart is empty.');
+        }
+
+        $cartProducts = [];
+        $groups = [];
+        $productAmount = 0.0;
+        $number = 0;
+        foreach ($carts as $cart) {
+            $product = $this->publicProductQuery(0)->andWhere(['id' => (int)$cart->product_id])->one();
+            if (!$product) {
+                throw new \RuntimeException('Product not found.');
+            }
+
+            $sku = null;
+            if ((string)$cart->product_attribute_value !== '') {
+                $sku = ProductSku::find()
+                    ->where(['product_id' => (int)$cart->product_id, 'attribute_value' => (string)$cart->product_attribute_value])
+                    ->andWhere(['>', 'status', BaseModel::STATUS_DELETED])
+                    ->one();
+                if (!$sku) {
+                    throw new \RuntimeException('Product SKU not found.');
+                }
+            }
+
+            $stock = $sku ? (int)$sku->stock : (int)$product->stock;
+            if ((int)$cart->number <= 0 || (int)$cart->number > $stock) {
+                throw new \RuntimeException('Stock is less than required.');
+            }
+            if ((float)$cart->price <= 0) {
+                throw new \RuntimeException('Product price is not available.');
+            }
+
+            $sellerStoreId = (int)$product->store_id;
+            if ($sellerStoreId <= 0) {
+                throw new \RuntimeException('Product store is not available.');
+            }
+
+            $cartProducts[(int)$cart->id] = $product;
+            if (!isset($groups[$sellerStoreId])) {
+                $groups[$sellerStoreId] = [
+                    'product_amount' => 0.0,
+                    'number' => 0,
+                    'carts' => [],
+                ];
+            }
+            $lineAmount = (float)$cart->price * (int)$cart->number;
+            $groups[$sellerStoreId]['product_amount'] += $lineAmount;
+            $groups[$sellerStoreId]['number'] += (int)$cart->number;
+            $groups[$sellerStoreId]['carts'][] = $cart;
+            $productAmount += $lineAmount;
+            $number += (int)$cart->number;
+        }
+
+        $parentStoreId = $storeId > 0 ? $storeId : (int)array_key_first($groups);
+        $paymentMethod = (int)($input['payment_method'] ?? Order::PAYMENT_METHOD_PAY);
+        if (!in_array($paymentMethod, [Order::PAYMENT_METHOD_PAY, Order::PAYMENT_METHOD_COD], true)) {
+            $paymentMethod = Order::PAYMENT_METHOD_PAY;
+        }
+
+        $transaction = Yii::$app->db->beginTransaction();
+        try {
+            $address = $this->saveCheckoutAddress($userId, $parentStoreId, (array)($input['address'] ?? []));
+            $remark = mb_substr(trim((string)($input['remark'] ?? '')), 0, 255, 'UTF-8');
+            $discount = 0.0;
+            $sn = 'APP' . date('YmdHis') . random_int(1000, 9999);
+
+            $parent = new Order();
+            $this->fillOrderAddress($parent, $address);
+            $parent->user_id = $userId;
+            $parent->store_id = $parentStoreId;
+            $parent->parent_id = 0;
+            $parent->sn = $sn;
+            $parent->remark = $remark;
+            $parent->payment_method = $paymentMethod;
+            $parent->payment_status = $paymentMethod === Order::PAYMENT_METHOD_COD
+                ? Order::PAYMENT_STATUS_COD
+                : Order::PAYMENT_STATUS_UNPAID;
+            $parent->status = $parent->payment_status;
+            $parent->shipment_status = Order::SHIPMENT_STATUS_UNSHIPPED;
+            $parent->product_amount = round($productAmount, 2);
+            $parent->discount = $discount;
+            $parent->amount = round($productAmount + $discount, 2);
+            $parent->number = $number;
+            $parent->created_by = $userId;
+            $parent->updated_by = $userId;
+            if (!$parent->save()) {
+                throw new \RuntimeException('Order save failed: ' . json_encode($parent->errors, JSON_UNESCAPED_UNICODE));
+            }
+
+            $allocatedDiscount = 0.0;
+            $groupIndex = 0;
+            $groupCount = count($groups);
+            $childOrders = [];
+            foreach ($groups as $sellerStoreId => $group) {
+                $groupIndex++;
+                if ($productAmount > 0 && $groupIndex < $groupCount) {
+                    $childDiscount = round($discount * ((float)$group['product_amount'] / $productAmount), 2);
+                    $allocatedDiscount += $childDiscount;
+                } else {
+                    $childDiscount = round($discount - $allocatedDiscount, 2);
+                }
+
+                $child = new Order();
+                $this->fillOrderAddress($child, $address);
+                $child->user_id = $userId;
+                $child->store_id = (int)$sellerStoreId;
+                $child->parent_id = (int)$parent->id;
+                $child->sn = $sn . '-' . $groupIndex;
+                $child->remark = $remark;
+                $child->payment_method = $parent->payment_method;
+                $child->payment_status = $parent->payment_status;
+                $child->status = $parent->status;
+                $child->shipment_status = Order::SHIPMENT_STATUS_UNSHIPPED;
+                $child->product_amount = round((float)$group['product_amount'], 2);
+                $child->discount = $childDiscount;
+                $child->amount = round((float)$group['product_amount'] + $childDiscount, 2);
+                $child->number = (int)$group['number'];
+                $child->created_by = $userId;
+                $child->updated_by = $userId;
+                if (!$child->save()) {
+                    throw new \RuntimeException('Child order save failed: ' . json_encode($child->errors, JSON_UNESCAPED_UNICODE));
+                }
+
+                foreach ($group['carts'] as $cart) {
+                    $product = $cartProducts[(int)$cart->id] ?? null;
+                    if (!$product) {
+                        throw new \RuntimeException('Product not found.');
+                    }
+
+                    $orderProduct = new OrderProduct();
+                    $orderProduct->store_id = (int)$sellerStoreId;
+                    $orderProduct->parent_id = (int)$parent->id;
+                    $orderProduct->user_id = $userId;
+                    $orderProduct->order_id = (int)$child->id;
+                    $orderProduct->product_id = (int)$cart->product_id;
+                    $orderProduct->product_attribute_value = (string)$cart->product_attribute_value;
+                    $orderProduct->sku = (string)$cart->sku;
+                    $orderProduct->name = (string)$cart->name;
+                    $orderProduct->number = (int)$cart->number;
+                    $orderProduct->market_price = (float)$cart->market_price;
+                    $orderProduct->price = (float)$cart->price;
+                    $orderProduct->thumb = (string)$cart->thumb;
+                    $orderProduct->type = (int)$cart->type;
+                    $orderProduct->cart_id = (int)$cart->id;
+                    $orderProduct->created_by = $userId;
+                    $orderProduct->updated_by = $userId;
+                    if (!$orderProduct->save()) {
+                        throw new \RuntimeException('Order product save failed: ' . json_encode($orderProduct->errors, JSON_UNESCAPED_UNICODE));
+                    }
+                }
+
+                OrderLog::create((int)$child->id, (int)$child->status, 'APP checkout', null, $userId);
+                $childOrders[] = $child;
+            }
+
+            if ($paymentMethod === Order::PAYMENT_METHOD_COD) {
+                $parent->deductStockIfNeeded();
+            }
+
+            Cart::deleteAll(['id' => array_map(static function (Cart $cart): int {
+                return (int)$cart->id;
+            }, $carts)]);
+            OrderLog::create((int)$parent->id, (int)$parent->status, 'APP checkout', null, $userId);
+
+            $transaction->commit();
+        } catch (\Throwable $e) {
+            $transaction->rollBack();
+            throw $e;
+        }
+
         return [
             'version' => self::VERSION,
-            'checkout_reserved' => true,
-            'message' => 'Checkout write API is reserved until Phase 13 payment/address/stock safety acceptance is complete.',
-            'gate' => self::CHECKOUT_WRITE_GATE,
+            'checkout_write_version' => self::CHECKOUT_WRITE_VERSION,
+            'order' => $this->orderSummary($parent),
+            'children' => array_map([$this, 'orderSummary'], $childOrders),
+            'payment' => [
+                'method' => $paymentMethod,
+                'payment_url' => '/mall/payment/index?id=' . (int)$parent->id,
+                'requires_online_payment' => $paymentMethod === Order::PAYMENT_METHOD_PAY,
+            ],
         ];
     }
 
@@ -653,6 +840,9 @@ class AppBuyerApiService
             'status' => (int)$order->status,
             'status_label' => Order::getStatusLabels((int)$order->status, true),
             'created_at' => (int)$order->created_at,
+            'payment_url' => (int)$order->parent_id === 0 && (int)$order->payment_status === Order::PAYMENT_STATUS_UNPAID
+                ? '/mall/payment/index?id=' . (int)$order->id
+                : '',
             'items' => array_map(function (OrderProduct $item): array {
                 return [
                     'id' => (int)$item->id,
@@ -665,6 +855,74 @@ class AppBuyerApiService
                 ];
             }, $products),
         ];
+    }
+
+    private function saveCheckoutAddress(int $userId, int $storeId, array $payload): Address
+    {
+        $addressId = (int)($payload['id'] ?? $payload['address_id'] ?? 0);
+        $address = null;
+        if ($addressId > 0) {
+            $address = Address::find()
+                ->where(['id' => $addressId, 'user_id' => $userId])
+                ->andWhere(['>', 'status', BaseModel::STATUS_DELETED])
+                ->one();
+        }
+        if (!$address) {
+            $address = new Address();
+        }
+
+        $name = trim((string)($payload['name'] ?? ''));
+        $firstName = trim((string)($payload['first_name'] ?? ''));
+        $lastName = trim((string)($payload['last_name'] ?? ''));
+        if ($firstName === '' && $name !== '') {
+            $parts = preg_split('/\s+/u', $name, 2);
+            $firstName = (string)($parts[0] ?? $name);
+            $lastName = (string)($parts[1] ?? '');
+        }
+
+        $address->store_id = $storeId;
+        $address->user_id = $userId;
+        $address->name = $name !== '' ? $name : trim($firstName . ' ' . $lastName);
+        $address->first_name = $firstName;
+        $address->last_name = $lastName;
+        $address->country = mb_substr(trim((string)($payload['country'] ?? '')), 0, 255, 'UTF-8');
+        $address->province = mb_substr(trim((string)($payload['province'] ?? '')), 0, 255, 'UTF-8');
+        $address->city = mb_substr(trim((string)($payload['city'] ?? '')), 0, 255, 'UTF-8');
+        $address->district = mb_substr(trim((string)($payload['district'] ?? '')), 0, 255, 'UTF-8');
+        $address->address = mb_substr(trim((string)($payload['address'] ?? '')), 0, 255, 'UTF-8');
+        $address->address2 = mb_substr(trim((string)($payload['address2'] ?? '')), 0, 255, 'UTF-8');
+        $address->postcode = mb_substr(trim((string)($payload['postcode'] ?? '')), 0, 255, 'UTF-8');
+        $address->mobile = mb_substr(trim((string)($payload['mobile'] ?? '')), 0, 255, 'UTF-8');
+        $address->email = mb_substr(trim((string)($payload['email'] ?? '')), 0, 255, 'UTF-8');
+        $address->status = BaseModel::STATUS_ACTIVE;
+        $address->created_by = $address->created_by ?: $userId;
+        $address->updated_by = $userId;
+
+        if ($address->first_name === '' || $address->address === '' || ($address->mobile === '' && $address->email === '')) {
+            throw new \RuntimeException('Receiver name, address, and mobile or email are required.');
+        }
+        if (!$address->save()) {
+            throw new \RuntimeException('Address save failed: ' . json_encode($address->errors, JSON_UNESCAPED_UNICODE));
+        }
+
+        return $address;
+    }
+
+    private function fillOrderAddress(Order $order, Address $address): void
+    {
+        $order->address_id = (int)$address->id;
+        $order->first_name = (string)$address->first_name;
+        $order->last_name = (string)$address->last_name;
+        $order->country = (string)$address->country;
+        $order->province = (string)$address->province;
+        $order->city = (string)$address->city;
+        $order->district = (string)$address->district;
+        $order->address = (string)$address->address;
+        $order->address2 = (string)$address->address2;
+        $order->postcode = (string)$address->postcode;
+        $order->mobile = (string)$address->mobile;
+        $order->email = (string)$address->email;
+        $order->name = trim((string)$address->first_name . ' ' . (string)$address->last_name);
     }
 
     private function authRequiredPayload(): array

@@ -69,7 +69,7 @@ export function requestJson({ baseUrl, path, query = {}, data = {}, method = 'GE
       success(response) {
         const body = response.data || {}
         if (response.statusCode >= 400 || body.code >= 400) {
-          reject(new Error(body.msg || 'Request failed'))
+          reject(new Error(body.msg || body.message || 'Request failed'))
           return
         }
         resolve(body)

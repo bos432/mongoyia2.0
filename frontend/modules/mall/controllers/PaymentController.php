@@ -6,6 +6,7 @@ use common\models\BaseModel;
 use common\models\mall\Order;
 use common\models\mall\OrderLog;
 use common\models\mall\PaymentAttempt;
+use common\services\mall\MerchantPaymentConfigService;
 use common\services\mall\OperationalPaymentConfigService;
 use lianlianpay\v3sdk\model\Address;
 use lianlianpay\v3sdk\model\Card;
@@ -36,6 +37,7 @@ class PaymentController extends BaseController
     public const MONGOYIA_PAYPAL_CANCEL_ROUTE_V1 = 'MONGOYIA_PAYPAL_CANCEL_ROUTE_V1';
     public const MONGOYIA_PAYPAL_WEBHOOK_ROUTE_V1 = 'MONGOYIA_PAYPAL_WEBHOOK_ROUTE_V1';
     public const MONGOYIA_PAYMENT_CHANNEL_SELECTOR_V1 = 'MONGOYIA_PAYMENT_CHANNEL_SELECTOR_V1';
+    public const MONGOYIA_MERCHANT_PAYMENT_RUNTIME_SCOPE_V1 = 'MONGOYIA_MERCHANT_PAYMENT_RUNTIME_SCOPE_V1';
 
     public $modelClass = Order::class;
 
@@ -74,11 +76,11 @@ class PaymentController extends BaseController
         return $this->paymentProviderEnabled($this->paymentProviderConfig('paypal'));
     }
 
-    protected function paymentChannels(): array
+    protected function paymentChannels(Order $model): array
     {
         $channels = [];
 
-        $qpayConfig = $this->paymentProviderConfig('qpay');
+        $qpayConfig = $this->paymentProviderConfigForOrder('qpay', $model);
         if ($this->paymentProviderEnabled($qpayConfig)
             && (string)($qpayConfig['auth_basic'] ?? '') !== ''
             && (string)($qpayConfig['invoice_code'] ?? '') !== ''
@@ -88,38 +90,105 @@ class PaymentController extends BaseController
                 'label' => 'QPay',
                 'route' => '/mall/payment/qpay',
                 'class' => 'btn btn-primary control-full',
+                'store_id' => (int)($qpayConfig['store_id'] ?? 0),
             ];
         }
 
-        $lianlianConfig = $this->paymentProviderConfig('lianlian');
+        $lianlianConfig = $this->paymentProviderConfigForOrder('lianlian', $model);
         if ($this->paymentProviderEnabled($lianlianConfig) && PayConstant::isConfigured($lianlianConfig)) {
             $channels[] = [
                 'provider' => 'lianlian',
                 'label' => 'LianLian',
                 'route' => '/mall/payment/lianlian',
                 'class' => 'btn btn-success control-full',
+                'store_id' => (int)($lianlianConfig['store_id'] ?? 0),
             ];
         }
 
-        $paypalConfig = $this->paymentProviderConfig('paypal');
+        $paypalConfig = $this->paymentProviderConfigForOrder('paypal', $model);
         if ($this->isPaypalConfigReady($paypalConfig)) {
             $channels[] = [
                 'provider' => 'paypal',
                 'label' => 'PayPal',
                 'route' => '/mall/payment/paypal',
                 'class' => 'btn btn-info control-full',
+                'store_id' => (int)($paypalConfig['store_id'] ?? 0),
             ];
         }
 
         return $channels;
     }
 
-    protected function paymentProviderConfig($provider)
+    protected function paymentProviderConfigForOrder($provider, Order $model): array
+    {
+        return $this->paymentProviderConfig($provider, $this->paymentProviderStoreId($provider, $model));
+    }
+
+    protected function paymentProviderStoreId($provider, Order $model): int
+    {
+        $storeId = $this->singleOrderStoreId($model);
+        if ($storeId <= 0) {
+            return 0;
+        }
+
+        try {
+            $merchantService = new MerchantPaymentConfigService();
+            if (!$merchantService->isAllowed($storeId)) {
+                return 0;
+            }
+
+            $paymentService = new OperationalPaymentConfigService();
+            $config = $paymentService->runtimeConfig($provider, [], '', $storeId);
+            $check = $paymentService->checkProvider(
+                $provider,
+                (string)($config['environment'] ?? 'test'),
+                false,
+                $storeId
+            );
+            $details = (array)($check['details'] ?? []);
+            if ((int)($details['enabled'] ?? 0) === 1 && empty($details['missing'])) {
+                return $storeId;
+            }
+        } catch (\Throwable $e) {
+            Yii::warning([
+                'provider' => $provider,
+                'store_id' => $storeId,
+                'error' => $e->getMessage(),
+            ], 'mall.payment.merchant_config_scope_failed');
+        }
+
+        return 0;
+    }
+
+    protected function singleOrderStoreId(Order $model): int
+    {
+        if ((int)$model->parent_id !== 0) {
+            return (int)$model->store_id;
+        }
+
+        $storeIds = Order::find()
+            ->select('store_id')
+            ->where(['parent_id' => $model->id])
+            ->andWhere(['>', 'store_id', 0])
+            ->distinct()
+            ->column();
+
+        if (!$storeIds && (int)$model->store_id > 0) {
+            $storeIds = [(int)$model->store_id];
+        }
+
+        $storeIds = array_values(array_unique(array_map('intval', $storeIds)));
+        return count($storeIds) === 1 ? (int)$storeIds[0] : 0;
+    }
+
+    protected function paymentProviderConfig($provider, int $storeId = 0)
     {
         static $cache = [];
         $provider = strtolower((string)$provider);
-        if (isset($cache[$provider])) {
-            return $cache[$provider];
+        $storeId = max(0, $storeId);
+        $cacheKey = $provider . ':' . $storeId;
+        if (isset($cache[$cacheKey])) {
+            return $cache[$cacheKey];
         }
 
         if ($provider === 'paypal') {
@@ -130,15 +199,16 @@ class PaymentController extends BaseController
             $fallbacks = $this->qpayEnvFallbacks();
         }
         try {
-            $cache[$provider] = (new OperationalPaymentConfigService())->runtimeConfig($provider, $fallbacks);
+            $cache[$cacheKey] = (new OperationalPaymentConfigService())->runtimeConfig($provider, $fallbacks, '', $storeId);
         } catch (\Throwable $e) {
             Yii::warning($e->getMessage(), 'mall.payment.operational_config_fallback');
             $fallbacks['provider'] = $provider;
+            $fallbacks['store_id'] = $storeId;
             $fallbacks['environment'] = 'test';
-            $cache[$provider] = $fallbacks;
+            $cache[$cacheKey] = $fallbacks;
         }
 
-        return $cache[$provider];
+        return $cache[$cacheKey];
     }
 
     protected function qpayEnvFallbacks()
@@ -1163,7 +1233,7 @@ class PaymentController extends BaseController
             return $this->redirect(['/mall/payment/succeeded', 'id' => $id]);
         }
 
-        $config = $this->paymentProviderConfig('paypal');
+        $config = $this->paymentProviderConfigForOrder('paypal', $model);
         if (!$this->isPaypalConfigReady($config)) {
             $this->logPaymentAttempt($model, 'paypal', 'create', [
                 'result' => PaymentAttempt::RESULT_FAILED,
@@ -1235,7 +1305,7 @@ class PaymentController extends BaseController
             return $this->redirectError('PayPal return token missing', ['/mall/payment/index', 'id' => $id]);
         }
 
-        $config = $this->paymentProviderConfig('paypal');
+        $config = $this->paymentProviderConfigForOrder('paypal', $model);
         try {
             $response = $this->paypalRequest($config, 'POST', '/v2/checkout/orders/' . rawurlencode($token) . '/capture', []);
             $paidAmount = $this->paypalCaptureAmount($response);
@@ -1280,7 +1350,6 @@ class PaymentController extends BaseController
     public function actionPaypalWebhook()
     {
         Yii::$app->response->format = Response::FORMAT_JSON;
-        $config = $this->paymentProviderConfig('paypal');
         $payload = json_decode(Yii::$app->request->rawBody, true);
         if (!is_array($payload)) {
             Yii::$app->response->statusCode = 400;
@@ -1298,13 +1367,14 @@ class PaymentController extends BaseController
         }
 
         try {
-            if (!$this->verifyPaypalWebhook($config, $payload)) {
-                throw new BadRequestHttpException('Invalid PayPal webhook signature');
-            }
             $orderId = $this->paypalOrderIdFromPayload($payload);
             $model = $orderId ? $this->findPaymentOrder($orderId, false) : null;
             if (!$model) {
                 throw new BadRequestHttpException('PayPal webhook order not found');
+            }
+            $config = $this->paymentProviderConfigForOrder('paypal', $model);
+            if (!$this->verifyPaypalWebhook($config, $payload)) {
+                throw new BadRequestHttpException('Invalid PayPal webhook signature');
             }
             $attempt = $this->logPaymentAttempt($model, 'paypal', 'webhook', [
                 'merchant_transaction_id' => $this->paypalMerchantTransactionId($payload),
@@ -1360,7 +1430,7 @@ class PaymentController extends BaseController
         }
 
         $merchantTransactionId = '1234567' . $id;
-        $qpayConfig = $this->paymentProviderConfig('qpay');
+        $qpayConfig = $this->paymentProviderConfigForOrder('qpay', $model);
         $authBasic = (string)($qpayConfig['auth_basic'] ?? '');
         $invoiceCode = (string)($qpayConfig['invoice_code'] ?? '');
         if (!$this->paymentProviderEnabled($qpayConfig) || $authBasic === '' || $invoiceCode === '') {
@@ -1456,7 +1526,7 @@ class PaymentController extends BaseController
             'result' => Yii::$app->request->isPost ? PaymentAttempt::RESULT_PENDING : PaymentAttempt::RESULT_DISPLAY,
         ]);
         if (Yii::$app->request->isPost) {
-            $qpayConfig = $this->paymentProviderConfig('qpay');
+            $qpayConfig = $this->paymentProviderConfigForOrder('qpay', $model);
             $callbackMerchantTransactionId = $attempt instanceof PaymentAttempt && $attempt->merchant_transaction_id ? $attempt->merchant_transaction_id : ('1234567' . $id);
             $lockName = $this->paymentCallbackLockName('qpay', $model, $callbackMerchantTransactionId);
             if (!$this->acquirePaymentCallbackLock($lockName)) {
@@ -1514,7 +1584,7 @@ class PaymentController extends BaseController
         }
 
         $merchant_transaction_id = 'Test-pay'.$id;
-        $lianlianConfig = $this->paymentProviderConfig('lianlian');
+        $lianlianConfig = $this->paymentProviderConfigForOrder('lianlian', $model);
         if (!$this->paymentProviderEnabled($lianlianConfig) || !PayConstant::isConfigured($lianlianConfig)) {
             $this->logPaymentAttempt($model, 'lianlian', 'create', [
                 'merchant_transaction_id' => $merchant_transaction_id,
@@ -1619,7 +1689,7 @@ class PaymentController extends BaseController
         }
 
         $merchant_transaction_id = 'Test-pay'.$id;
-        $lianlianConfig = $this->paymentProviderConfig('lianlian');
+        $lianlianConfig = $this->paymentProviderConfigForOrder('lianlian', $model);
         if (!$this->paymentProviderEnabled($lianlianConfig) || !PayConstant::isConfigured($lianlianConfig)) {
             $this->logPaymentAttempt($model, 'lianlian', 'query', [
                 'merchant_transaction_id' => $merchant_transaction_id,
@@ -1677,7 +1747,7 @@ class PaymentController extends BaseController
 
         return $this->render($this->action->id, [
             'model' => $model,
-            'paymentChannels' => $this->paymentChannels(),
+            'paymentChannels' => $this->paymentChannels($model),
         ]);
     }
 
@@ -1701,7 +1771,7 @@ class PaymentController extends BaseController
             'result' => Yii::$app->request->isPost ? PaymentAttempt::RESULT_PENDING : PaymentAttempt::RESULT_DISPLAY,
         ]);
         if (Yii::$app->request->isPost) {
-            $lianlianConfig = $this->paymentProviderConfig('lianlian');
+            $lianlianConfig = $this->paymentProviderConfigForOrder('lianlian', $model);
             $callbackMerchantTransactionId = $attempt instanceof PaymentAttempt && $attempt->merchant_transaction_id ? $attempt->merchant_transaction_id : ('Test-pay' . $id);
             $lockName = $this->paymentCallbackLockName('lianlian', $model, $callbackMerchantTransactionId);
             if (!$this->acquirePaymentCallbackLock($lockName)) {

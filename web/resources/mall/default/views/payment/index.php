@@ -32,6 +32,7 @@ $paymentChannels = $paymentChannels ?? [];
                                         [
                                             'class' => $channel['class'],
                                             'data-mongoyia-phase11-payment-channel' => $channel['provider'],
+                                            'data-mongoyia-phase11-payment-store-id' => (int)($channel['store_id'] ?? 0),
                                         ]
                                     ) ?>
                                 <?php endforeach; ?>

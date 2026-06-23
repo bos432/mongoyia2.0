@@ -107,7 +107,12 @@ class PaymentPhase11AcceptanceController extends Controller
         ]);
         $this->requireFileContains('Frontend payment channel selector', 'frontend/modules/mall/controllers/PaymentController.php', [
             'MONGOYIA_PAYMENT_CHANNEL_SELECTOR_V1',
+            'MONGOYIA_MERCHANT_PAYMENT_RUNTIME_SCOPE_V1',
             'paymentChannels',
+            'paymentProviderConfigForOrder',
+            'paymentProviderStoreId',
+            'singleOrderStoreId',
+            'MerchantPaymentConfigService',
             "'provider' => 'qpay'",
             "'provider' => 'lianlian'",
             "'provider' => 'paypal'",
@@ -116,6 +121,7 @@ class PaymentPhase11AcceptanceController extends Controller
         $this->requireFileContains('Frontend payment dynamic channel UI', 'web/resources/mall/default/views/payment/index.php', [
             'data-mongoyia-phase11-payment-channel-list',
             'data-mongoyia-phase11-payment-channel',
+            'data-mongoyia-phase11-payment-store-id',
             'data-mongoyia-phase11-payment-no-channel',
             'Pay with {provider}',
         ]);

@@ -6184,3 +6184,35 @@
 - Next stage:
   - Commit and push Phase 11.4.
   - Re-read the development plan and this log, then continue with the next plan-listed local closure item or BaoTa/browser validation after the server pulls latest code.
+
+## 2026-06-23 Phase 11.5 Merchant Payment Runtime Scope
+
+- Stage name: Phase 11.5 merchant payment runtime scope
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting the stage.
+  - Added `MONGOYIA_MERCHANT_PAYMENT_RUNTIME_SCOPE_V1` to the frontend payment controller.
+  - Added order-aware payment config lookup: single-store parent orders can use that store's merchant payment config, while multi-store orders continue to use platform config.
+  - Added merchant permission and completeness guard before switching runtime to store-scoped payment config; incomplete, disabled, or unauthorized merchant config falls back to platform config.
+  - Updated QPay, LianLian, and PayPal create/return/callback paths to read the same order-aware config used by the payment page.
+  - Adjusted PayPal webhook verification to resolve the order first, then verify against that order's platform-or-merchant config.
+  - Added non-sensitive `data-mongoyia-phase11-payment-store-id` marker on payment-channel buttons for browser evidence.
+  - Updated Phase 11 acceptance source checks and the development backlog.
+- Main files changed/added:
+  - `frontend/modules/mall/controllers/PaymentController.php`
+  - `web/resources/mall/default/views/payment/index.php`
+  - `console/controllers/PaymentPhase11AcceptanceController.php`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l` passed for `PaymentController.php`, `payment/index.php`, and `PaymentPhase11AcceptanceController.php`.
+  - Static marker checks confirmed `MONGOYIA_MERCHANT_PAYMENT_RUNTIME_SCOPE_V1`, `paymentProviderConfigForOrder`, `paymentProviderStoreId`, `singleOrderStoreId`, `MerchantPaymentConfigService`, and `data-mongoyia-phase11-payment-store-id`.
+  - Static compatibility check confirmed the payment view source still does not hardcode `/mall/payment/paypal`, `Pay with PayPal`, or `PAYPAL_CLIENT_ID`; PayPal remains runtime-gated.
+  - `git diff --check` reported no whitespace errors; only existing Windows line-ending conversion warnings.
+  - Full Yii console execution was not run locally because this patch checkout does not have `vendor/autoload.php`; after BaoTa pull run `payment-phase11-acceptance/run --runChildChecks=1 --fixture=1` and `mongoyia-requirements-closure-acceptance/run --fixture=1 --runChildChecks=1`.
+- Remaining issues:
+  - Merchant runtime switching still needs BaoTa/browser evidence with a real single-store order and a merchant test payment config.
+  - Real QPay/LianLian/PayPal sandbox evidence, callback/audit browser evidence, and payment manual acceptance flags remain external and pending.
+  - Phase 10 provider/production evidence remains incomplete; production remains `NO-GO`.
+- Next stage:
+  - Commit and push Phase 11.5.
+  - Re-read the development plan and this log, then continue with the next plan-listed local closure item or BaoTa/browser validation after the server pulls latest code.

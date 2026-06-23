@@ -102,6 +102,32 @@ class AppPhase13AcceptanceController extends Controller
             'SELLER_ENDPOINTS',
             'normalizeListPayload',
         ]);
+        $this->requireFileContains('Buyer APP JSON API service', 'common/services/mall/AppBuyerApiService.php', [
+            'MONGOYIA_APP_BUYER_API_V1',
+            'home',
+            'categories',
+            'search',
+            'product',
+            'addCart',
+            'checkout_write_requires_payment_address_stock_safety_acceptance',
+        ]);
+        $this->requireFileContains('Buyer APP JSON API controller', 'api/modules/v1/controllers/AppBuyerController.php', [
+            'MONGOYIA_APP_BUYER_CONTROLLER_V1',
+            'actionHome',
+            'actionCategories',
+            'actionSearch',
+            'actionProduct',
+            'actionCart',
+            'actionOrders',
+        ]);
+        $this->requireFileContains('Buyer APP JSON API readiness', 'console/controllers/AppBuyerPhase13ReadinessController.php', [
+            'MONGOYIA_APP_BUYER_PHASE13_READINESS_V1',
+            'app-buyer-phase13-readiness/run',
+            'checkout/order write remains gated',
+        ]);
+        $this->requireFileContains('APP API URL manager hyphen route support', 'api/config/main.php', [
+            '<modules:[\w-]+>/<controller:[\w-]+>/<action:[\w-]+>',
+        ]);
         foreach ($this->pageMarkers() as $label => $config) {
             $this->requireFileContains($label, $config['path'], $config['markers']);
         }
@@ -246,6 +272,7 @@ class AppPhase13AcceptanceController extends Controller
             '```bash',
             'cd /www/wwwroot/demo2026.mongoyia.com',
             'git pull',
+            '/www/server/php/83/bin/php yii app-buyer-phase13-readiness/run --fixture=1 --interactive=0',
             '/www/server/php/83/bin/php yii app-phase13-acceptance/run --fixture=1 --interactive=0',
             '```',
             '',

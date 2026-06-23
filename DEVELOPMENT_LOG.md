@@ -5129,3 +5129,40 @@
 - Next stage:
   - Commit and push Phase 13.0, then on BaoTa run `app-phase13-acceptance/run --fixture=1`.
   - Continue Phase 13.1 by adding buyer APP JSON APIs for home/category/search/product detail/cart/checkout using existing backend models and preserving checkout/payment safety gates.
+
+## 2026-06-23 Phase 13.1 Buyer APP JSON API Foundation
+
+- Stage name: Phase 13.1 buyer APP JSON API foundation
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before continuing the stage.
+  - Added buyer APP JSON API service for home, categories, product search/filter, product detail, SKU/review/customer-service context, authenticated cart list/add, order list, coupons, favorites, and review list.
+  - Added `/api/v1/app-buyer/*` controller actions with public read endpoints and authenticated cart/favorite/order access; checkout/order write remains gated by `checkout_write_requires_payment_address_stock_safety_acceptance`.
+  - Updated API URL rules to allow hyphenated APP controller IDs such as `app-buyer`, matching the APP helper endpoints.
+  - Added `app-buyer-phase13-readiness/run` and wired buyer API source/route coverage into the Phase 13 aggregate acceptance command.
+  - Updated the Phase 13 backlog status and command list to record the buyer API foundation.
+- Main files changed/added:
+  - `common/services/mall/AppBuyerApiService.php`
+  - `api/modules/v1/controllers/AppBuyerController.php`
+  - `api/config/main.php`
+  - `console/controllers/AppBuyerPhase13ReadinessController.php`
+  - `console/controllers/AppPhase13AcceptanceController.php`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l common/services/mall/AppBuyerApiService.php` passed.
+  - `php -l api/modules/v1/controllers/AppBuyerController.php` passed.
+  - `php -l console/controllers/AppBuyerPhase13ReadinessController.php` passed.
+  - `php -l console/controllers/AppPhase13AcceptanceController.php` passed.
+  - `php -l api/config/main.php` passed.
+  - `npm run build:h5` passed in `apps/mongoyia-customer-chat-uniapp`; output contained only uni-app/Vite informational/deprecation warnings.
+  - Static marker checks confirmed buyer API service/controller/readiness markers, checkout write gate marker, Phase 13 aggregate wiring, backlog command markers, and hyphenated API URL rule support.
+  - `git diff --check` reported no whitespace errors; only existing Windows line-ending conversion warnings.
+  - Full Yii console execution was not run locally because this patch checkout does not have `vendor/autoload.php`; run buyer readiness and Phase 13 aggregate commands on BaoTa/full-vendor environment after pull.
+- Remaining issues:
+  - Buyer checkout/order creation remains intentionally gated until payment, address, stock, and browser role-flow safety evidence is accepted.
+  - Seller APP JSON APIs for dashboard, products, orders, shipment, logistics fee, deposit, coupons, statistics, and distribution overview remain pending.
+  - H5 browser role-flow and APP development package evidence remain pending.
+  - Phase 10/11/12 external provider and production evidence remain incomplete; production remains `NO-GO`.
+- Next stage:
+  - Commit and push Phase 13.1, then on BaoTa run `app-buyer-phase13-readiness/run --fixture=1` and `app-phase13-acceptance/run --fixture=1`.
+  - Continue Phase 13.2 by adding seller APP JSON APIs for dashboard, products, orders, shipment, logistics fee, deposit, coupons, statistics, and distribution overview while preserving store isolation and high-risk write gates.

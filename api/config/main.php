@@ -100,8 +100,8 @@ return [
                         'v1/user',
                     ]
                 ],
-                '<modules:\w+>/<controller:\w+>/<action:\w+>'=>'<modules>/<controller>/<action>',
-                '<controller:\w+>/<action:\w+>' => '<controller>/<action>',
+                '<modules:[\w-]+>/<controller:[\w-]+>/<action:[\w-]+>'=>'<modules>/<controller>/<action>',
+                '<controller:[\w-]+>/<action:[\w-]+>' => '<controller>/<action>',
             ],
         ],
     ],

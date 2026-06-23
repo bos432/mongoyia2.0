@@ -164,8 +164,12 @@ class CustomerServiceMediaService
     private function buildViewUrl(string $mediaId): string
     {
         $path = '/mall/chat/media-view';
-        if (Yii::$app->has('urlManager')) {
-            $path = Yii::$app->urlManager->createUrl(['/mall/chat/media-view']);
+        try {
+            if (!Yii::$app instanceof \yii\console\Application && Yii::$app->has('urlManager')) {
+                $path = Yii::$app->urlManager->createUrl(['/mall/chat/media-view']);
+            }
+        } catch (\Throwable $e) {
+            Yii::warning($e->getMessage(), 'mall.customer_service_media.url_fallback');
         }
         $separator = str_contains($path, '?') ? '&' : '?';
         return $path . $separator . http_build_query([

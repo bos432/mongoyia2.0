@@ -4303,3 +4303,26 @@
 - Next stage:
   - Push this fix, then on BaoTa run `git pull`, `yii migrate/up`, and `customer-service-phase9-acceptance/run --runChildChecks=1 --fixture=1`.
   - After child checks pass, continue Phase 9.7 browser role-flow and uni-app/H5 acceptance, then rerun strict with `--browserAccepted=1 --appAccepted=1` plus evidence paths.
+
+## 2026-06-23 Phase 9.7 Media Fixture Console URL Fix
+
+- Stage name: Phase 9.7 media fixture console-safe URL generation
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting this fix stage.
+  - Reviewed the latest BaoTa Phase 9 acceptance result: source coverage, translation, assistance, complaint-loop, analytics, and uni-app checks passed; only `customer-service-media-test/run --fixture=1` failed.
+  - Fixed `CustomerServiceMediaService::buildViewUrl()` so console fixtures fall back to `/mall/chat/media-view` instead of calling Yii URL manager in a console application without `scriptUrl`.
+  - Preserved web/runtime behavior by still using `urlManager->createUrl()` for non-console applications, with a guarded fallback if URL generation throws.
+  - Updated the Phase 9 backlog row to record the console-safe media URL fallback.
+- Main files changed/added:
+  - `common/services/mall/CustomerServiceMediaService.php`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l common/services/mall/CustomerServiceMediaService.php` passed.
+  - Local Yii command execution remains unavailable in this patch checkout because `vendor/autoload.php` is absent; rerun `customer-service-phase9-acceptance/run --runChildChecks=1 --fixture=1` on BaoTa/full-vendor environment.
+- Remaining issues:
+  - BaoTa must pull this fix and rerun Phase 9 child checks.
+  - Browser role-flow acceptance and uni-app/H5 acceptance evidence are still pending after automated child checks pass.
+- Next stage:
+  - Push this fix, then on BaoTa run `git pull`, `yii migrate/up`, and `customer-service-phase9-acceptance/run --runChildChecks=1 --fixture=1`.
+  - If child checks pass with only manual acceptance pending, continue Phase 9.7 browser role-flow and uni-app/H5 validation, then rerun strict with accepted evidence flags.

@@ -1,5 +1,25 @@
 # Development Log
 
+## 2026-06-24 Phase 13 Browser Deployment Freshness Recheck After PayPal Boundary Push
+
+- Stage name: Phase 13 browser deployment freshness recheck after PayPal boundary push
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting the stage.
+  - Rechecked `https://demo2026.mongoyia.com/product-codex-test-product-1781945133` in the right-side browser after pushing commit `f6db36b`.
+  - Confirmed the deployed product page still serves `/resources/mall/default/js/main.js?v=1.1.3`, still renders two exact `/mall/cart` short links, and only partially contains `/mall/cart/index` links.
+  - Did not submit forms, create orders, mutate cart/payment/fund data, enter credentials, or mark any browser evidence as accepted.
+- Main files changed/added:
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - Browser product detail page opens.
+  - Deployment freshness remains failed: the test server is still serving stale frontend assets and stale cart links.
+  - Buyer cart/checkout role-flow validation remains blocked until BaoTa pulls `f6db36b` or newer and clears Yii/runtime/PHP-FPM/opcache/page caches.
+- Remaining issues:
+  - BaoTa/test server must run the refreshed command sequence from the acceptance reports before full browser role-flow validation can continue.
+  - Phase 10/11/12/13/14/15 external/browser evidence remains incomplete; production remains `NO-GO`.
+- Next stage:
+  - Commit and push this browser freshness record, then continue with the next plan-listed local readiness hardening item while waiting for deployed server refresh.
+
 ## 2026-06-24 Phase 11 PayPal Runtime Acceptance Boundary
 
 - Stage name: Phase 11 PayPal runtime acceptance boundary alignment

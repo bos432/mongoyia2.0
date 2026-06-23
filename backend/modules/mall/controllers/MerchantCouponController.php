@@ -10,6 +10,17 @@ use yii\db\Query;
 
 class MerchantCouponController extends BaseController
 {
+    public const BACKEND_PARTICIPATION_VERB_GUARD_VERSION = 'MONGOYIA_MERCHANT_COUPON_POST_VERB_GUARD_V1';
+
+    public function behaviors()
+    {
+        $behaviors = parent::behaviors();
+        $behaviors['verbs']['actions']['join'] = ['post'];
+        $behaviors['verbs']['actions']['leave'] = ['post'];
+
+        return $behaviors;
+    }
+
     public function actionIndex()
     {
         $storeId = $this->resolveStoreId();
@@ -37,7 +48,7 @@ class MerchantCouponController extends BaseController
     private function setParticipation(string $status)
     {
         $storeId = $this->resolveStoreId();
-        $couponTypeId = (int)Yii::$app->request->get('coupon_type_id');
+        $couponTypeId = (int)Yii::$app->request->post('coupon_type_id', 0);
         $couponType = CouponType::find()
             ->where(['id' => $couponTypeId, 'store_id' => $this->platformStoreIds()])
             ->andWhere(['>', 'status', BaseModel::STATUS_DELETED])
@@ -75,7 +86,7 @@ class MerchantCouponController extends BaseController
     private function resolveStoreId(): int
     {
         if ($this->isMallPlatformOperator()) {
-            $requested = (int)Yii::$app->request->get('store_id', 0);
+            $requested = (int)Yii::$app->request->post('store_id', Yii::$app->request->get('store_id', 0));
             if ($requested > 0) {
                 return $requested;
             }

@@ -115,6 +115,18 @@ class AppSellerPhase13ReadinessController extends Controller
             'participateCoupon',
             'platform_participation',
         ]);
+        $this->requireFileContains('Seller backend merchant coupon participation uses POST forms', 'backend/modules/mall/controllers/MerchantCouponController.php', [
+            'MONGOYIA_MERCHANT_COUPON_POST_VERB_GUARD_V1',
+            "'join'] = ['post']",
+            "'leave'] = ['post']",
+            "post('coupon_type_id', 0)",
+        ]);
+        $this->requireFileContains('Seller backend merchant coupon UI posts CSRF forms', 'backend/modules/mall/views/merchant-coupon/index.php', [
+            'data-mongoyia-merchant-coupon-post-guard',
+            'csrfToken',
+            'coupon_type_id',
+            'store_id',
+        ]);
         $this->requireFileContains('Seller operations overview page reads store, logistics, deposit, statistics, and distribution APIs', 'apps/mongoyia-customer-chat-uniapp/src/pages/seller/ops.vue', [
             'data-mongoyia-phase13-seller-ops',
             'SELLER_ENDPOINTS.logistics',

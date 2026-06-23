@@ -3,6 +3,7 @@
 use common\helpers\Html;
 use common\models\mall\Coupon;
 use common\models\mall\StoreCouponParticipation;
+use yii\helpers\Url;
 
 /* @var $this yii\web\View */
 /* @var $storeId int */
@@ -108,9 +109,19 @@ $this->params['breadcrumbs'][] = $this->title;
                                     </td>
                                     <td>
                                         <?php if ($joined): ?>
-                                            <?= Html::edit(['leave', 'coupon_type_id' => $coupon['id'], 'store_id' => $storeId], '退出', ['class' => 'btn btn-warning btn-sm']) ?>
+                                            <form method="post" action="<?= Html::encode(Url::to(['leave'])) ?>" class="d-inline" data-mongoyia-merchant-coupon-post-guard="1">
+                                                <input type="hidden" name="<?= Html::encode(Yii::$app->request->csrfParam) ?>" value="<?= Html::encode(Yii::$app->request->csrfToken) ?>">
+                                                <input type="hidden" name="coupon_type_id" value="<?= (int)$coupon['id'] ?>">
+                                                <input type="hidden" name="store_id" value="<?= (int)$storeId ?>">
+                                                <button type="submit" class="btn btn-warning btn-sm">退出</button>
+                                            </form>
                                         <?php else: ?>
-                                            <?= Html::edit(['join', 'coupon_type_id' => $coupon['id'], 'store_id' => $storeId], '参与', ['class' => 'btn btn-success btn-sm']) ?>
+                                            <form method="post" action="<?= Html::encode(Url::to(['join'])) ?>" class="d-inline" data-mongoyia-merchant-coupon-post-guard="1">
+                                                <input type="hidden" name="<?= Html::encode(Yii::$app->request->csrfParam) ?>" value="<?= Html::encode(Yii::$app->request->csrfToken) ?>">
+                                                <input type="hidden" name="coupon_type_id" value="<?= (int)$coupon['id'] ?>">
+                                                <input type="hidden" name="store_id" value="<?= (int)$storeId ?>">
+                                                <button type="submit" class="btn btn-success btn-sm">参与</button>
+                                            </form>
                                         <?php endif; ?>
                                     </td>
                                 </tr>

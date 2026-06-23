@@ -7644,3 +7644,33 @@
   - Phase 10/11/12/13/14 external/provider/browser evidence gates remain pending; production remains `NO-GO`.
 - Next stage:
   - Commit and push this Phase 15 distributor workflow guard patch, then reread the plan/log and continue with the next plan-listed readiness item.
+
+## 2026-06-24 Phase 13 Merchant Coupon POST Verb Guard
+
+- Stage name: Phase 13 merchant coupon POST verb guard
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting the stage.
+  - Added `MONGOYIA_MERCHANT_COUPON_POST_VERB_GUARD_V1` to the backend merchant coupon controller.
+  - Restricted merchant platform-coupon join/leave actions to POST.
+  - Changed the backend merchant coupon participation UI from GET links to CSRF-protected inline POST forms.
+  - Updated controller participation handling to read `coupon_type_id` from POST only while preserving normal GET filtering on the index page.
+  - Added source coverage to the coupon closure test plus Phase 13 seller readiness and aggregate acceptance checks.
+  - Updated the Phase 13 backlog notes to record this small stage as Phase 13.15.
+- Main files changed/added:
+  - `backend/modules/mall/controllers/MerchantCouponController.php`
+  - `backend/modules/mall/views/merchant-coupon/index.php`
+  - `console/controllers/MongoyiaCouponTestController.php`
+  - `console/controllers/AppSellerPhase13ReadinessController.php`
+  - `console/controllers/AppPhase13AcceptanceController.php`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l` passed for all changed PHP files.
+  - Static marker checks confirmed `MONGOYIA_MERCHANT_COUPON_POST_VERB_GUARD_V1`, POST-only join/leave verb guards, CSRF form markers, POST-only `coupon_type_id`, and `Phase 13.15`.
+  - `git diff --check` reported no whitespace errors, only existing Windows line-ending conversion warnings.
+  - Full Yii console execution remains BaoTa-only because this local checkout lacks `vendor/autoload.php`.
+- Remaining issues:
+  - Phase 13 authenticated browser/APP role-flow evidence still requires BaoTa/test server to pull latest code, run migrations/readiness, and verify buyer/seller flows.
+  - Phase 10/11/12/14/15 external/provider/browser evidence gates remain pending; production remains `NO-GO`.
+- Next stage:
+  - Commit and push this Phase 13 merchant coupon guard patch, then reread the plan/log and continue with the next plan-listed readiness item.

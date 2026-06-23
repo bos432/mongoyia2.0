@@ -86,8 +86,23 @@ class MongoyiaCouponTestController extends Controller
         $this->section('Backend entrances');
         $this->requireFileContains('@app/../backend/modules/mall/controllers/CouponTypeController.php', ['actionFhAjax', 'fb_mall_user_coupon']);
         $this->requireFileContains('@app/../backend/modules/mall/views/coupon-type/index.php', ['Coupon']);
-        $this->requireFileContains('@app/../backend/modules/mall/controllers/MerchantCouponController.php', ['actionIndex', 'actionJoin', 'actionLeave', 'StoreCouponParticipation']);
-        $this->requireFileContains('@app/../backend/modules/mall/views/merchant-coupon/index.php', ['商家优惠券', '平台券参与', '领取/使用记录']);
+        $this->requireFileContains('@app/../backend/modules/mall/controllers/MerchantCouponController.php', [
+            'MONGOYIA_MERCHANT_COUPON_POST_VERB_GUARD_V1',
+            "'join'] = ['post']",
+            "'leave'] = ['post']",
+            "post('coupon_type_id', 0)",
+            'actionIndex',
+            'actionJoin',
+            'actionLeave',
+            'StoreCouponParticipation',
+        ]);
+        $this->requireFileContains('@app/../backend/modules/mall/views/merchant-coupon/index.php', [
+            '商家优惠券',
+            '平台券参与',
+            '领取/使用记录',
+            'data-mongoyia-merchant-coupon-post-guard',
+            'csrfToken',
+        ]);
     }
 
     private function checkMerchantCouponClosure()

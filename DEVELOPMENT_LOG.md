@@ -5411,3 +5411,50 @@
 - Next stage:
   - Commit and push Phase 14.3, then on BaoTa run `migrate/up`, `product-inventory-phase14-readiness/run --fixture=1`, and `logistics-product-phase14-acceptance/run --fixture=1`.
   - Continue Phase 14.4 by adding SKU/keyword suggestions, brand/price/sales filters, and product video readiness.
+
+## 2026-06-23 Phase 14.4 Product Search Filters And Video
+
+- Stage name: Phase 14.4 SKU/keyword suggestions, brand/price/sales filters, and product video behavior
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting the stage.
+  - Added a product video URL migration and wired `video_url` into the product model, backend product edit/view pages, PC product detail page, buyer APP product detail page, and buyer APP product API response.
+  - Added `ProductSearchVideoPhase14Service` for search sort mapping, keyword/SKU suggestions, fixture search filtering, and video URL normalization.
+  - Extended buyer APP APIs with `/api/v1/app-buyer/suggestions`, search sorting support, `has_video`, and product `video_url` payloads.
+  - Updated the buyer APP search page with keyword/SKU suggestions, brand/price inputs, sales/price/newest sorting, sales display, and video availability marker.
+  - Fixed PC category sort selected-state checks for best-selling and price sorting.
+  - Added `product-search-video-phase14-readiness/run` and wired it into the Phase 14 aggregate acceptance command.
+  - Updated the Phase 14 backlog status and command list.
+- Main files changed/added:
+  - `console/migrations/m260623_180000_mongoyia_product_video_url.php`
+  - `common/models/mall/Product.php`
+  - `common/models/mall/ProductBase.php`
+  - `common/services/mall/ProductSearchVideoPhase14Service.php`
+  - `common/services/mall/AppBuyerApiService.php`
+  - `api/modules/v1/controllers/AppBuyerController.php`
+  - `console/controllers/ProductSearchVideoPhase14ReadinessController.php`
+  - `console/controllers/LogisticsProductPhase14AcceptanceController.php`
+  - `backend/modules/mall/views/product/edit.php`
+  - `backend/modules/mall/views/product/edit-ajax.php`
+  - `backend/modules/mall/views/product/view.php`
+  - `backend/modules/mall/views/product/view-ajax.php`
+  - `web/resources/mall/default/views/product/view.php`
+  - `web/resources/mall/default/views/category/view.php`
+  - `apps/mongoyia-customer-chat-uniapp/src/utils/appApi.js`
+  - `apps/mongoyia-customer-chat-uniapp/src/pages/buyer/search.vue`
+  - `apps/mongoyia-customer-chat-uniapp/src/pages/buyer/product.vue`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l` passed for the new migration, product search/video service, buyer API service/controller, Phase 14.4 readiness command, Phase 14 aggregate command, updated product models, backend product views, PC category view, and PC product view.
+  - Pure PHP fixture passed for SKU/keyword suggestions, brand/price/sales filtering, and safe video URL normalization.
+  - `node -e "JSON.parse(...pages.json...)"` passed.
+  - `npm run build:h5` passed in `apps/mongoyia-customer-chat-uniapp`; output contained only uni-app/Vite informational/deprecation warnings.
+  - Static marker checks confirmed the Phase 14.4 readiness markers, backlog command marker, PC category filter markers, APP search/product video markers, and backend video field markers.
+  - `git diff --check` reported no whitespace errors; only existing Windows line-ending conversion warnings.
+  - Full Yii console execution was not run locally because this patch checkout does not have `vendor/autoload.php`; after BaoTa pull run `migrate/up`, `product-search-video-phase14-readiness/run --fixture=1`, and `logistics-product-phase14-acceptance/run --fixture=1`.
+- Remaining issues:
+  - Store favorite and review moderation behavior are still pending for Phase 14.5.
+  - Phase 14 browser role-flow evidence remains pending until the server pulls this stage and migrations run.
+  - Phase 10/11/12 external provider and production evidence remain incomplete; production remains `NO-GO`.
+- Next stage:
+  - Commit and push Phase 14.4, then continue Phase 14.5 store favorite and review moderation behavior.

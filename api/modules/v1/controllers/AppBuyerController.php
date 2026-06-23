@@ -17,6 +17,7 @@ class AppBuyerController extends BaseController
         'home',
         'categories',
         'search',
+        'suggestions',
         'product',
         'cart',
         'orders',
@@ -45,6 +46,11 @@ class AppBuyerController extends BaseController
     public function actionSearch()
     {
         return $this->buyerService()->search(Yii::$app->request->get(), (int)$this->getStoreId());
+    }
+
+    public function actionSuggestions()
+    {
+        return $this->buyerService()->suggestions(Yii::$app->request->get(), (int)$this->getStoreId());
     }
 
     public function actionProduct()

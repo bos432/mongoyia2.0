@@ -2,6 +2,14 @@
   <view class="app-page" data-mongoyia-phase13-buyer-product="MONGOYIA_PHASE13_APP_SHELL_V1">
     <view v-if="state.error" class="notice">{{ state.error }}</view>
     <view v-else class="product-detail">
+      <video
+        v-if="product.video_url"
+        class="hero-video"
+        :src="product.video_url"
+        controls
+        object-fit="contain"
+        data-mongoyia-phase14-product-video="MONGOYIA_PRODUCT_SEARCH_VIDEO_PHASE14_V1"
+      />
       <image class="hero-image" :src="product.thumb || product.image || ''" mode="aspectFill" />
       <view class="detail-band">
         <text class="product-title">{{ product.name || product.title || '商品' }}</text>
@@ -129,6 +137,12 @@ export default {
   width: 100%;
   height: 260px;
   background: #e9eef4;
+}
+
+.hero-video {
+  width: 100%;
+  height: 240px;
+  background: #000000;
 }
 
 .detail-band {

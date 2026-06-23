@@ -28,6 +28,7 @@ use common\models\Store;
  * @property string $thumb 缩略图
  * @property string $image 图片
  * @property string|null $images 图集
+ * @property string $video_url 商品视频URL
  * @property string|null $tags 标签
  * @property string|null $brief 简介
  * @property string|null $content 内容
@@ -73,6 +74,7 @@ class Product extends ProductBase
             [['images', 'tags'], 'safe'],
             [['brief', 'content', 'seo_description'], 'string'],
             [['name', 'sku', 'stock_code', 'thumb', 'image', 'seo_url', 'seo_title', 'seo_keywords', 'audit_remark'], 'string', 'max' => 255],
+            [['video_url'], 'string', 'max' => 1024],
             [['audit_status'], 'string', 'max' => 32],
         ]);
     }
@@ -103,6 +105,7 @@ class Product extends ProductBase
                 'thumb' => '缩略图',
                 'image' => '图片',
                 'images' => '图集',
+                'video_url' => '商品视频URL',
                 'tags' => '标签',
                 'brief' => '简介',
                 'content' => '内容',
@@ -152,6 +155,7 @@ class Product extends ProductBase
                 'thumb' => Yii::t('app', 'Thumb'),
                 'image' => Yii::t('app', 'Image'),
                 'images' => Yii::t('app', 'Images'),
+                'video_url' => Yii::t('app', 'Product Video URL'),
                 'tags' => Yii::t('app', 'Tags'),
                 'brief' => Yii::t('app', 'Brief'),
                 'content' => Yii::t('app', 'Content'),

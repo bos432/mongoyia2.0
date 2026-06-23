@@ -154,6 +154,30 @@ class LogisticsProductPhase14AcceptanceController extends Controller
             'shipment_timeout_deduct_fee',
             'inventory_location',
         ]);
+        $this->requireFileContains('Search and product video service', 'common/services/mall/ProductSearchVideoPhase14Service.php', [
+            'MONGOYIA_PRODUCT_SEARCH_VIDEO_PHASE14_V1',
+            'buildSuggestions',
+            'filterFixtureProducts',
+            'videoPayload',
+        ]);
+        $this->requireFileContains('Search and product video readiness', 'console/controllers/ProductSearchVideoPhase14ReadinessController.php', [
+            'MONGOYIA_PRODUCT_SEARCH_VIDEO_PHASE14_READINESS_V1',
+            'product-search-video-phase14-readiness/run',
+            'Search/video fixture',
+        ]);
+        $this->requireFileContains('Product video migration', 'console/migrations/m260623_180000_mongoyia_product_video_url.php', [
+            'video_url',
+            '商品视频URL',
+        ]);
+        $this->requireFileContains('APP search and product video UI', 'apps/mongoyia-customer-chat-uniapp/src/pages/buyer/search.vue', [
+            'data-mongoyia-phase14-search-suggestions',
+            'data-mongoyia-phase14-search-sort',
+            'sales_desc',
+        ]);
+        $this->requireFileContains('PC product video UI', 'web/resources/mall/default/views/product/view.php', [
+            'data-mongoyia-phase14-product-video',
+            'product-details-video',
+        ]);
     }
 
     private function checkPlannedScopeMatrix(): void
@@ -256,6 +280,8 @@ class LogisticsProductPhase14AcceptanceController extends Controller
             '```bash',
             'cd /www/wwwroot/demo2026.mongoyia.com',
             'git pull',
+            '/www/server/php/83/bin/php yii migrate/up --interactive=0',
+            '/www/server/php/83/bin/php yii product-search-video-phase14-readiness/run --fixture=1 --interactive=0',
             '/www/server/php/83/bin/php yii logistics-product-phase14-acceptance/run --fixture=1 --interactive=0',
             '```',
             '',

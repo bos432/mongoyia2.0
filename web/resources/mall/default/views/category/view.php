@@ -123,9 +123,9 @@ $pageSize = Yii::$app->request->get('page-size');
                                 <div class="product-bar-single">
                                     <select id="product-sort">
                                         <option value=""><?= Yii::t('mall', 'Sort By') ?></option>
-                                        <option value="<?= Url::current(['sort' => '-sales']) ?>" <?= $sort == '-id' ? 'selected="selected"' : '' ?>><?= Yii::t('mall', 'Best Selling') ?></option>
-                                        <option value="<?= Url::current(['sort' => 'price']) ?>" <?= $sort == '-id' ? 'selected="selected"' : '' ?>><?= Yii::t('mall', 'Price, low to high') ?></option>
-                                        <option value="<?= Url::current(['sort' => '-price']) ?>" <?= $sort == 'id' ? 'selected="selected"' : '' ?>><?= Yii::t('mall', 'Price, high to low') ?></option>
+                                        <option value="<?= Url::current(['sort' => '-sales']) ?>" <?= $sort == '-sales' ? 'selected="selected"' : '' ?>><?= Yii::t('mall', 'Best Selling') ?></option>
+                                        <option value="<?= Url::current(['sort' => 'price']) ?>" <?= $sort == 'price' ? 'selected="selected"' : '' ?>><?= Yii::t('mall', 'Price, low to high') ?></option>
+                                        <option value="<?= Url::current(['sort' => '-price']) ?>" <?= $sort == '-price' ? 'selected="selected"' : '' ?>><?= Yii::t('mall', 'Price, high to low') ?></option>
                                         <option value="<?= Url::current(['sort' => '-id']) ?>" <?= $sort == '-id' ? 'selected="selected"' : '' ?>><?= Yii::t('mall', 'Date, new to old') ?></option>
                                         <option value="<?= Url::current(['sort' => 'id']) ?>" <?= $sort == 'id' ? 'selected="selected"' : '' ?>><?= Yii::t('mall', 'Date, old to new') ?></option>
                                     </select>

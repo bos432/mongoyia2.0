@@ -20,6 +20,8 @@ class AppBuyerApiService
     public const VERSION = 'MONGOYIA_APP_BUYER_API_V1';
     public const CHECKOUT_WRITE_GATE = 'checkout_write_requires_payment_address_stock_safety_acceptance';
 
+    private $searchVideoService;
+
     public function home(int $storeId = 0): array
     {
         $products = $this->publicProductQuery($storeId)
@@ -97,7 +99,7 @@ class AppBuyerApiService
         $pageSize = max(1, min(50, (int)($params['page_size'] ?? 20)));
         $total = (int)$query->count();
         $products = $query
-            ->orderBy(['sort' => SORT_ASC, 'id' => SORT_DESC])
+            ->orderBy($this->searchVideoService()->sortOrder((string)($params['sort'] ?? '')))
             ->offset(($page - 1) * $pageSize)
             ->limit($pageSize)
             ->all();
@@ -109,6 +111,45 @@ class AppBuyerApiService
                 'total' => $total,
                 'page' => $page,
                 'page_size' => $pageSize,
+                'sort' => (string)($params['sort'] ?? ''),
+                'search_video_version' => ProductSearchVideoPhase14Service::VERSION,
+            ],
+        ];
+    }
+
+    public function suggestions(array $params, int $storeId = 0): array
+    {
+        $keyword = trim((string)($params['keyword'] ?? ''));
+        $limit = max(1, min(20, (int)($params['limit'] ?? 8)));
+        $query = $this->publicProductQuery($storeId);
+        if ($keyword !== '') {
+            $query->andWhere(['or',
+                ['like', 'name', $keyword],
+                ['like', 'sku', $keyword],
+                ['like', 'brief', $keyword],
+            ]);
+        }
+
+        $products = $query
+            ->orderBy(['sales' => SORT_DESC, 'id' => SORT_DESC])
+            ->limit(50)
+            ->all();
+
+        $rows = array_map(function (Product $product): array {
+            return [
+                'id' => (int)$product->id,
+                'name' => (string)$product->name,
+                'sku' => (string)$product->sku,
+            ];
+        }, $products);
+
+        return [
+            'version' => self::VERSION,
+            'items' => $this->searchVideoService()->buildSuggestions($rows, $keyword, $limit),
+            'summary' => [
+                'keyword' => $keyword,
+                'limit' => $limit,
+                'search_video_version' => ProductSearchVideoPhase14Service::VERSION,
             ],
         ];
     }
@@ -436,6 +477,7 @@ class AppBuyerApiService
             'product_id' => (int)$product->id,
             'store_id' => (int)$product->store_id,
             'category_id' => (int)$product->category_id,
+            'brand_id' => (int)$product->brand_id,
             'name' => (string)$product->name,
             'sku' => (string)$product->sku,
             'thumb' => (string)$product->thumb,
@@ -446,6 +488,7 @@ class AppBuyerApiService
             'sales' => (int)$product->sales,
             'reviews' => (int)$product->reviews,
             'star' => (float)$product->star,
+            'has_video' => $this->productVideoUrl($product) !== '',
         ];
     }
 
@@ -455,6 +498,8 @@ class AppBuyerApiService
             'brief' => (string)$product->brief,
             'description' => strip_tags((string)$product->content),
             'images' => $this->decodeImages($product->images),
+            'video_url' => $this->productVideoUrl($product),
+            'video' => $this->searchVideoService()->videoPayload($this->productVideoUrl($product)),
             'seo_url' => (string)$product->seo_url,
             'brand_id' => (int)$product->brand_id,
         ]);
@@ -568,5 +613,24 @@ class AppBuyerApiService
         } catch (\Throwable $e) {
             return false;
         }
+    }
+
+    private function productVideoUrl(Product $product): string
+    {
+        if (!$this->hasColumn(Product::tableName(), 'video_url') ||
+            (method_exists($product, 'hasAttribute') && !$product->hasAttribute('video_url'))) {
+            return '';
+        }
+
+        return $this->searchVideoService()->normalizeVideoUrl((string)$product->getAttribute('video_url'));
+    }
+
+    private function searchVideoService(): ProductSearchVideoPhase14Service
+    {
+        if (!$this->searchVideoService) {
+            $this->searchVideoService = new ProductSearchVideoPhase14Service();
+        }
+
+        return $this->searchVideoService;
     }
 }

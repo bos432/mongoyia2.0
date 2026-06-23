@@ -19,6 +19,7 @@ $form = ActiveForm::begin([
         'template' => "<div class='col-sm-2 text-sm-right'>{label}</div><div class='col-sm-10'>{input}\n{hint}\n{error}</div>",
     ],
 ]);
+$hasProductVideoField = method_exists($model, 'hasAttribute') && $model->hasAttribute('video_url');
 ?>
     <div class="modal-header">
         <h4 class="modal-title"><?= $model->name ?: Yii::t('app', 'Basic info') ?></h4>
@@ -61,6 +62,13 @@ $form = ActiveForm::begin([
                 ],
             ]
         ]); ?>
+        <?php if ($hasProductVideoField) { ?>
+            <?= $form->field($model, 'video_url')->textInput([
+                'maxlength' => true,
+                'placeholder' => 'https://example.com/product-video.mp4',
+                'data-mongoyia-phase14-product-video-admin' => 'MONGOYIA_PRODUCT_SEARCH_VIDEO_PHASE14_V1',
+            ])->hint(Yii::t('app', 'Use an HTTPS or site-relative video URL.')) ?>
+        <?php } ?>
         <?= $form->field($model, 'brief')->textarea(['rows' => 6]) ?>
         <?= $form->field($model, 'content')->textarea(['rows' => 6]) ?>
         <?= $form->field($model, 'seo_url')->textInput(['maxlength' => true]) ?>

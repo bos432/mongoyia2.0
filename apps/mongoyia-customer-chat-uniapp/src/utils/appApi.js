@@ -6,6 +6,7 @@ export const BUYER_ENDPOINTS = {
   home: '/api/v1/app-buyer/home',
   category: '/api/v1/app-buyer/categories',
   search: '/api/v1/app-buyer/search',
+  suggestions: '/api/v1/app-buyer/suggestions',
   product: '/api/v1/app-buyer/product',
   cart: '/api/v1/app-buyer/cart',
   orders: '/api/v1/app-buyer/orders'

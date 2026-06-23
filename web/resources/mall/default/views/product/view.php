@@ -26,6 +26,13 @@ $this->registerMetaTag(['name' => 'keywords', 'content' => Html::encode($model->
 $this->registerMetaTag(['name' => 'description', 'content' => Html::encode($model->seo_description ?: $this->title)]);
 
 $arrDefaultAttribute = $defaultAttributeIds ?? [];
+$productVideoUrl = '';
+if (method_exists($model, 'hasAttribute') && $model->hasAttribute('video_url')) {
+    $productVideoUrl = trim((string)$model->getAttribute('video_url'));
+    if ($productVideoUrl !== '' && !preg_match('/^(https?:\/\/|\/)/i', $productVideoUrl)) {
+        $productVideoUrl = '';
+    }
+}
 ?>
 
 <section class="page-section product-details" data-mongoyia-mobile-ui="product">
@@ -36,6 +43,11 @@ $arrDefaultAttribute = $defaultAttributeIds ?? [];
                     <div class="product-details-pic-item">
                         <img class="product-details-pic-item-large" src="<?= $this->context->getImage($model->image) ?>">
                     </div>
+                    <?php if ($productVideoUrl !== '') { ?>
+                    <div class="product-details-video" data-mongoyia-phase14-product-video="MONGOYIA_PRODUCT_SEARCH_VIDEO_PHASE14_V1">
+                        <video controls preload="metadata" src="<?= Html::encode($productVideoUrl) ?>"></video>
+                    </div>
+                    <?php } ?>
                     <div class="product-details-pic-slider owl-carousel">
                         <img data-imgbigurl="<?= $this->context->getImage($model->image) ?>" src="<?= $this->context->getImage($model->thumb) ?>">
                         <?php if (is_array($model->images)) { foreach ($model->images as $item) { ?>
@@ -165,6 +177,19 @@ $arrDefaultAttribute = $defaultAttributeIds ?? [];
     </div>
 </div>
 </section>
+
+<style>
+.product-details-video {
+    margin-top: 12px;
+}
+.product-details-video video {
+    width: 100%;
+    max-height: 360px;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    background: #000;
+}
+</style>
 
 <?php sort($arrDefaultAttribute); ?>
 

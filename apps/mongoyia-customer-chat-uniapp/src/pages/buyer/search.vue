@@ -1,13 +1,23 @@
 <template>
   <view class="app-page" data-mongoyia-phase13-buyer-search="MONGOYIA_PHASE13_APP_SHELL_V1">
     <view class="search-row">
-      <input v-model="keyword" class="search-input" placeholder="关键词/SKU" confirm-type="search" @confirm="searchProducts" />
+      <input v-model="keyword" class="search-input" placeholder="关键词/SKU" confirm-type="search" @input="onKeywordInput" @confirm="searchProducts" />
       <button class="search-btn" size="mini" type="primary" @tap="searchProducts">搜索</button>
+    </view>
+    <view v-if="suggestions.length" class="suggestion-row" data-mongoyia-phase14-search-suggestions="MONGOYIA_PRODUCT_SEARCH_VIDEO_PHASE14_V1">
+      <button v-for="item in suggestions" :key="item.type + item.value" class="suggestion-chip" size="mini" @tap="selectSuggestion(item)">
+        {{ item.label || item.value }}
+      </button>
     </view>
     <view class="filter-row">
       <input v-model="filters.brand" class="filter-input" placeholder="品牌" />
       <input v-model="filters.min_price" class="filter-input" type="digit" placeholder="最低价" />
       <input v-model="filters.max_price" class="filter-input" type="digit" placeholder="最高价" />
+    </view>
+    <view class="sort-row" data-mongoyia-phase14-search-sort="MONGOYIA_PRODUCT_SEARCH_VIDEO_PHASE14_V1">
+      <picker class="sort-picker" :range="sortOptions" range-key="label" :value="selectedSortIndex" @change="changeSort">
+        <view class="sort-picker-inner">{{ sortOptions[selectedSortIndex].label }}</view>
+      </picker>
     </view>
 
     <view v-if="state.error" class="notice">{{ state.error }}</view>
@@ -18,6 +28,7 @@
         <view class="result-body">
           <text class="result-title">{{ item.name || item.title }}</text>
           <text class="result-meta">{{ item.sku || item.brand || '' }}</text>
+          <text class="result-meta">销量 {{ item.sales || 0 }}{{ item.has_video ? ' · 视频' : '' }}</text>
           <text class="result-price">{{ item.price || item.amount || '' }}</text>
         </view>
       </view>
@@ -38,8 +49,19 @@ export default {
       filters: {
         brand: '',
         min_price: '',
-        max_price: ''
+        max_price: '',
+        sort: ''
       },
+      suggestions: [],
+      suggestionTimer: null,
+      selectedSortIndex: 0,
+      sortOptions: [
+        { label: '综合排序', value: '' },
+        { label: '销量优先', value: 'sales_desc' },
+        { label: '价格低到高', value: 'price_asc' },
+        { label: '价格高到低', value: 'price_desc' },
+        { label: '最新上架', value: 'newest' }
+      ],
       state: pageState()
     }
   },
@@ -71,6 +93,43 @@ export default {
         this.state.loading = false
       }
     },
+    onKeywordInput(event) {
+      if (event && event.detail && typeof event.detail.value === 'string') {
+        this.keyword = event.detail.value
+      }
+      clearTimeout(this.suggestionTimer)
+      this.suggestionTimer = setTimeout(() => this.loadSuggestions(), 250)
+    },
+    async loadSuggestions() {
+      if (!this.keyword || this.keyword.trim().length < 1) {
+        this.suggestions = []
+        return
+      }
+      try {
+        const response = await appRequest({
+          baseUrl: this.baseUrl,
+          path: BUYER_ENDPOINTS.suggestions,
+          query: {
+            keyword: this.keyword,
+            limit: 8
+          }
+        })
+        this.suggestions = normalizeListPayload(response)
+      } catch (error) {
+        this.suggestions = []
+      }
+    },
+    selectSuggestion(item) {
+      this.keyword = item.value || item.label || ''
+      this.suggestions = []
+      this.searchProducts()
+    },
+    changeSort(event) {
+      const index = Number(event.detail.value || 0)
+      this.selectedSortIndex = index >= 0 && index < this.sortOptions.length ? index : 0
+      this.filters.sort = this.sortOptions[this.selectedSortIndex].value
+      this.searchProducts()
+    },
     openProduct(item) {
       const id = Number(item.id || item.product_id || 0)
       if (id > 0) {
@@ -100,8 +159,39 @@ export default {
   align-items: center;
 }
 
+.suggestion-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.suggestion-chip {
+  max-width: 100%;
+  border-radius: 6px;
+  font-size: 12px;
+}
+
 .filter-row {
   margin: 10px 0;
+}
+
+.sort-row {
+  margin-bottom: 10px;
+}
+
+.sort-picker {
+  height: 38px;
+  border: 1px solid #d8dee8;
+  border-radius: 6px;
+  background: #ffffff;
+}
+
+.sort-picker-inner {
+  height: 38px;
+  padding: 0 10px;
+  color: #334155;
+  line-height: 38px;
 }
 
 .search-input,

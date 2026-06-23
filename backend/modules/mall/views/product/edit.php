@@ -15,6 +15,7 @@ use common\models\base\Lang;
 $this->title = ($model->id ? Yii::t('app', 'Edit ') : Yii::t('app', 'Create ')) . Yii::t('app', 'Product');
 $this->params['breadcrumbs'][] = ['label' => Yii::t('app', 'Products'), 'url' => ['index']];
 $this->params['breadcrumbs'][] = $this->title;
+$hasProductVideoField = method_exists($model, 'hasAttribute') && $model->hasAttribute('video_url');
 ?>
 
 <style>
@@ -179,6 +180,13 @@ $this->params['breadcrumbs'][] = $this->title;
                                 ],
                             ]
                         ]); ?>
+                        <?php if ($hasProductVideoField) { ?>
+                            <?= $form->field($model, 'video_url')->textInput([
+                                'maxlength' => true,
+                                'placeholder' => 'https://example.com/product-video.mp4',
+                                'data-mongoyia-phase14-product-video-admin' => 'MONGOYIA_PRODUCT_SEARCH_VIDEO_PHASE14_V1',
+                            ])->hint(Yii::t('app', 'Use an HTTPS or site-relative video URL.')) ?>
+                        <?php } ?>
                         <?= $form->field($model, 'brief')->textarea(['rows' => 4]) ?>
                         <?= $form->field($model, 'content')->widget(\common\components\ueditor\Ueditor::class, []) ?>
                         <?= $form->field($model, 'seo_title')->textInput(['maxlength' => true]) ?>

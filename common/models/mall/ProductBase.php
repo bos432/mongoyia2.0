@@ -91,6 +91,7 @@ class ProductBase extends BaseModel
             'thumb' => Yii::t('app', 'Thumb'),
             'image' => Yii::t('app', 'Image'),
             'images' => Yii::t('app', 'Images'),
+            'video_url' => Yii::t('app', 'Product Video URL'),
             'tags' => Yii::t('app', 'Tags'),
             'brief' => Yii::t('app', 'Brief'),
             'content' => Yii::t('app', 'Content'),

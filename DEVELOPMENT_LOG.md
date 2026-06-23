@@ -6395,3 +6395,25 @@
 - Next stage:
   - Commit and push this acceptance-coverage patch.
   - Resume browser role-flow validation once BaoTa pulls `a94a11d` or newer plus this coverage commit.
+
+## 2026-06-23 Phase 13 Buyer Cart Browser Deployment Recheck
+
+- Stage name: Phase 13 buyer cart browser deployment recheck
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting the stage.
+  - Reopened the right-side browser session on `https://demo2026.mongoyia.com/product-codex-test-product-1781945133`.
+  - Confirmed the buyer test session is still logged in, the product page opens, the customer-service entry is present, and the Phase 14 review-sort marker is present.
+  - Checked the deployed product page links and found two remaining `/mall/cart` short links, while the local pushed source has already normalized cart links to `/mall/cart/index`.
+  - Tried opening `https://demo2026.mongoyia.com/mall/cart/index`; the browser still reports `net::ERR_HTTP_RESPONSE_CODE_FAILURE`.
+  - Did not submit checkout/payment forms or mutate order/payment/fund data.
+- Main files changed/added:
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - Browser product page: opens successfully.
+  - Browser cart page: still blocked on deployed server with HTTP response failure.
+  - Local source check: no remaining `Url::to(['/mall/cart'])` usage in frontend mall views/controllers.
+- Remaining issues:
+  - BaoTa/server must pull the latest `f827db2` (or newer), run migrations/readiness, and clear PHP/opcache/page cache before buyer cart/checkout browser validation can continue.
+  - Phase 10/11/12/14/15 external evidence gates remain pending; production remains `NO-GO`.
+- Next stage:
+  - Continue with plan-listed local readiness hardening that does not require the server to pull latest code, or resume browser role-flow after BaoTa deployment catches up.

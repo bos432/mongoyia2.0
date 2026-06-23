@@ -6293,3 +6293,24 @@
 - Next stage:
   - Commit and push this aggregate passthrough stage.
   - Re-read the development plan and this log, then continue with BaoTa/browser validation after the server pulls latest code, or another plan-listed local evidence/readiness item that does not require provider credentials.
+
+## 2026-06-23 Phase 14 Acceptance Command Coverage Alignment
+
+- Stage name: Phase 14 BaoTa verification command coverage alignment
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting the stage.
+  - Aligned the Phase 14 acceptance report's BaoTa verification command with the Phase 14 development-plan command list.
+  - Added the missing logistics provider adapter, tracking sync, and product inventory readiness commands before the product search/video, favorite/review, and aggregate Phase 14 acceptance commands.
+  - Kept the command report read-only; this stage does not call logistics providers, mutate logistics rows, deduct funds, change stock, or approve reviews.
+- Main files changed/added:
+  - `console/controllers/LogisticsProductPhase14AcceptanceController.php`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l console/controllers/LogisticsProductPhase14AcceptanceController.php` passed.
+  - Static marker checks confirmed the Phase 14 report now lists `logistics-provider-phase14-readiness/run`, `logistics-tracking-phase14-readiness/run`, `product-inventory-phase14-readiness/run`, `product-search-video-phase14-readiness/run`, and `favorite-review-phase14-readiness/run`.
+- Remaining issues:
+  - Full Yii console execution was not run locally because this patch checkout does not have `vendor/autoload.php`; run the Phase 14 command list after BaoTa pulls latest code.
+  - Phase 14 browser role-flow and real logistics provider evidence remain pending; production remains `NO-GO`.
+- Next stage:
+  - Commit and push this Phase 14 acceptance command alignment.
+  - Re-read the development plan and this log, then continue with BaoTa/browser validation after server pull, or another plan-listed local readiness item.

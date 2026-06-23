@@ -6216,3 +6216,28 @@
 - Next stage:
   - Commit and push Phase 11.5.
   - Re-read the development plan and this log, then continue with the next plan-listed local closure item or BaoTa/browser validation after the server pulls latest code.
+
+## 2026-06-23 Phase 11/13/15 Browser Deployment Recheck After Payment Runtime Scope
+
+- Stage name: Phase 11/13/15 browser deployment recheck after payment runtime scope
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting the stage.
+  - Reused the right-side browser tab on `https://demo2026.mongoyia.com/backend/mall/distribution-distributor/index`.
+  - Checked whether the deployed page contains Phase 15 distributor support/material/signoff markers.
+  - Checked whether the deployed page contains the latest Phase 11 payment-channel markers.
+  - Checked browser console errors.
+  - Did not submit forms, change data, or enter credentials.
+- Main files changed/added:
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - Browser URL checked: `https://demo2026.mongoyia.com/backend/mall/distribution-distributor/index`.
+  - Browser page title: `分销员运营`.
+  - Marker check result: `phase15Support=false`, `phase15Materials=false`, `phase15Signoff=false`, `phase11PaymentList=false`, `phase11PaymentStore=false`.
+  - Aggregate command text marker on page: `false`.
+  - Browser console error result: none captured.
+- Remaining issues:
+  - BaoTa/test server is still running an older deployment, so Phase 11 payment browser evidence and Phase 13/14/15 role-flow evidence remain blocked until the server pulls `50f491f` or newer and runs migrations/readiness commands.
+  - Phase 10/11/12 external provider and production evidence remain incomplete; production remains `NO-GO`.
+- Next stage:
+  - Commit and push this browser deployment recheck log entry.
+  - Continue only with plan-listed local readiness/evidence work that does not require deployed server updates, real provider credentials, or production signoff.

@@ -1,5 +1,28 @@
 # Development Log
 
+## 2026-06-24 Phase 10-15 Aggregate Phase 13 Asset Freshness Coverage
+
+- Stage name: Phase 10-15 aggregate Phase 13 asset freshness coverage
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting the stage.
+  - Extended `mongoyia-requirements-closure-acceptance/run` source coverage so the Phase 13 child acceptance command must contain the deployed H5 asset freshness check.
+  - Required the aggregate gate to find `MONGOYIA_PHASE13_DEPLOYED_ASSET_FRESHNESS_V1`, `checkDeployedAssetFreshness`, and `MONGOYIA_CART_LINK_NORMALIZER_V1` in `AppPhase13AcceptanceController`.
+  - Updated the Phase 10-15 backlog text to state that stale deployed `main.js` coverage is part of the aggregate acceptance gate.
+- Main files changed/added:
+  - `console/controllers/MongoyiaRequirementsClosureAcceptanceController.php`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l console/controllers/MongoyiaRequirementsClosureAcceptanceController.php` passed.
+  - Static marker scan confirmed `requiredMarkers`, `MONGOYIA_PHASE13_DEPLOYED_ASSET_FRESHNESS_V1`, `checkDeployedAssetFreshness`, and Phase 10-15 backlog coverage.
+  - `git diff --check` reported no whitespace errors, only existing Windows line-ending conversion warnings.
+  - Full Yii console execution remains BaoTa-only because this local checkout lacks `vendor/autoload.php`.
+- Remaining issues:
+  - BaoTa/test server still must pull the latest commit and clear caches before the right-side browser Phase 13 cart/checkout flow can be trusted.
+  - Phase 10/11/12/13/14/15 external and browser evidence remain incomplete; production remains `NO-GO`.
+- Next stage:
+  - Run syntax/static checks, commit and push this aggregate coverage update, then continue with browser/deployment validation or another plan-listed local readiness item.
+
 ## 2026-06-23 Phase 13 Deployed Asset Freshness Acceptance Check
 
 - Stage name: Phase 13 deployed asset freshness acceptance check

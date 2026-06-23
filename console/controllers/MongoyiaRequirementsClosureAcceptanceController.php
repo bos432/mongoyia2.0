@@ -181,11 +181,12 @@ class MongoyiaRequirementsClosureAcceptanceController extends Controller
         ]);
 
         foreach ($this->phaseCommands() as $phase => $config) {
-            $this->requireFileContains($phase . ' acceptance command', $config['file'], [
+            $needles = array_merge([
                 $config['version'],
                 $config['route'],
                 'Pending',
-            ]);
+            ], $config['requiredMarkers'] ?? []);
+            $this->requireFileContains($phase . ' acceptance command', $config['file'], $needles);
         }
     }
 
@@ -316,6 +317,11 @@ class MongoyiaRequirementsClosureAcceptanceController extends Controller
                 'baseUrl' => true,
                 'fixture' => true,
                 'runChildChecks' => false,
+                'requiredMarkers' => [
+                    'MONGOYIA_PHASE13_DEPLOYED_ASSET_FRESHNESS_V1',
+                    'checkDeployedAssetFreshness',
+                    'MONGOYIA_CART_LINK_NORMALIZER_V1',
+                ],
                 'passthrough' => [
                     'phase13BuyerApiAccepted' => 'buyerApiAccepted',
                     'phase13SellerApiAccepted' => 'sellerApiAccepted',

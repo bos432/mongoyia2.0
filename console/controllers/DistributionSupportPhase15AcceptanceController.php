@@ -113,6 +113,15 @@ class DistributionSupportPhase15AcceptanceController extends Controller
             'WITHDRAW_STATUS_PENDING',
             'requestWithdraw',
         ]);
+        $this->requireFileContains('Distributor backend POST verb guard', 'backend/modules/mall/controllers/DistributionDistributorController.php', [
+            'MONGOYIA_DISTRIBUTION_PHASE15_BACKEND_POST_VERB_GUARD_V1',
+            'behaviors',
+            "'profile-workflow'",
+            "'support-content-save'",
+            "'material-save'",
+            "'signoff-evidence-review'",
+            "['post']",
+        ]);
         $this->requireFileContains('Distributor support content service', 'common/services/mall/DistributionSupportContentService.php', [
             'MONGOYIA_DISTRIBUTION_SUPPORT_CONTENT_PHASE15_V1',
             'visibleForDistributor',

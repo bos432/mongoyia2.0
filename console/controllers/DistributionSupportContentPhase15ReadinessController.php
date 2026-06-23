@@ -55,9 +55,13 @@ class DistributionSupportContentPhase15ReadinessController extends Controller
             'support_url',
         ]);
         $this->requireFileContains('backend/modules/mall/controllers/DistributionDistributorController.php', [
+            'MONGOYIA_DISTRIBUTION_PHASE15_BACKEND_POST_VERB_GUARD_V1',
+            'behaviors',
             'DistributionSupportContentService',
             'actionSupportContentSave',
             'actionSupportContentDisable',
+            "'support-content-save'",
+            "'support-content-disable'",
         ]);
         $this->requireFileContains('backend/modules/mall/views/distribution-distributor/index.php', [
             'data-mongoyia-phase15-support-content',

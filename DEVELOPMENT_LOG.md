@@ -7549,3 +7549,35 @@
   - Phase 10/11/12/13/14 external/provider/browser evidence gates remain pending; production remains `NO-GO`.
 - Next stage:
   - Commit and push this Phase 15 safe URL guard patch, then reread the plan/log and continue with the next plan-listed readiness item.
+
+## 2026-06-24 Phase 15 Distributor Backend POST Verb Guard
+
+- Stage name: Phase 15 distributor backend POST verb guard
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting the stage.
+  - Added `MONGOYIA_DISTRIBUTION_PHASE15_BACKEND_POST_VERB_GUARD_V1` to the backend distributor operations controller.
+  - Restricted distributor profile/risk/invite-reward workflows, support content saves/disables, material saves/disables, and signoff evidence save/review actions to POST.
+  - Added source coverage to the Phase 15 support content, material, signoff, and aggregate acceptance readiness controllers.
+  - Updated the Phase 15 backlog notes to record this small stage as Phase 15.5.
+- Main files changed/added:
+  - `backend/modules/mall/controllers/DistributionDistributorController.php`
+  - `console/controllers/DistributionSupportContentPhase15ReadinessController.php`
+  - `console/controllers/DistributionMaterialPhase15ReadinessController.php`
+  - `console/controllers/DistributionSignoffPhase15ReadinessController.php`
+  - `console/controllers/DistributionSupportPhase15AcceptanceController.php`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l backend/modules/mall/controllers/DistributionDistributorController.php` passed.
+  - `php -l console/controllers/DistributionSupportContentPhase15ReadinessController.php` passed.
+  - `php -l console/controllers/DistributionMaterialPhase15ReadinessController.php` passed.
+  - `php -l console/controllers/DistributionSignoffPhase15ReadinessController.php` passed.
+  - `php -l console/controllers/DistributionSupportPhase15AcceptanceController.php` passed.
+  - Static marker checks confirmed `MONGOYIA_DISTRIBUTION_PHASE15_BACKEND_POST_VERB_GUARD_V1`, representative guarded action IDs, and `Phase 15.5`.
+  - `git diff --check` reported no whitespace errors, only existing Windows line-ending conversion warnings.
+  - Full Yii acceptance remains BaoTa-only because this local checkout lacks `vendor/autoload.php`.
+- Remaining issues:
+  - Phase 15 browser role-flow evidence still requires the BaoTa/test server to pull the latest code, run migrations/readiness, and verify distributor materials/training/signoff flows.
+  - Phase 10/11/12/13/14 external/provider/browser evidence gates remain pending; production remains `NO-GO`.
+- Next stage:
+  - Commit and push this Phase 15 POST verb guard patch, then reread the plan/log and continue with the next plan-listed readiness item.

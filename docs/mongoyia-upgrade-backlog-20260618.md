@@ -432,6 +432,8 @@ Phase 15.0 adds the aggregate distributor support acceptance gate. Phase 15.1 is
 
 Phase 15.4 distributor material safe URL guard: promotion material target, asset, and QR-code URLs are normalized to safe HTTP/HTTPS or single-slash site paths, dangerous schemes and protocol-relative URLs are stripped, and material click/download tracking skips rows without a safe redirect URL. Readiness checks cover `MONGOYIA_DISTRIBUTION_MATERIAL_SAFE_URL_V1`.
 
+Phase 15.5 distributor backend POST verb guard: distributor profile/risk/invite-reward workflows, support content saves/disables, material saves/disables, and signoff evidence save/review actions are explicitly restricted to POST in the backend controller. Readiness checks cover `MONGOYIA_DISTRIBUTION_PHASE15_BACKEND_POST_VERB_GUARD_V1`.
+
 ## Phase 1 Backlog
 
 | Priority | Work | Status | Verification |

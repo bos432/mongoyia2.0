@@ -13,6 +13,28 @@ use yii\web\ForbiddenHttpException;
 
 class DistributionDistributorController extends BaseController
 {
+    public const BACKEND_VERB_GUARD_VERSION = 'MONGOYIA_DISTRIBUTION_PHASE15_BACKEND_POST_VERB_GUARD_V1';
+
+    public function behaviors()
+    {
+        $behaviors = parent::behaviors();
+        foreach ([
+            'profile-workflow',
+            'risk-workflow',
+            'invite-reward-workflow',
+            'support-content-save',
+            'support-content-disable',
+            'material-save',
+            'material-disable',
+            'signoff-evidence-save',
+            'signoff-evidence-review',
+        ] as $action) {
+            $behaviors['verbs']['actions'][$action] = ['post'];
+        }
+
+        return $behaviors;
+    }
+
     public function actionIndex()
     {
         if (!$this->isMallPlatformOperator()) {

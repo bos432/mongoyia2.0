@@ -61,9 +61,13 @@ class DistributionMaterialPhase15ReadinessController extends Controller
             'download_count',
         ]);
         $this->requireFileContains('backend/modules/mall/controllers/DistributionDistributorController.php', [
+            'MONGOYIA_DISTRIBUTION_PHASE15_BACKEND_POST_VERB_GUARD_V1',
+            'behaviors',
             'DistributionMaterialPhase15Service',
             'actionMaterialSave',
             'actionMaterialDisable',
+            "'material-save'",
+            "'material-disable'",
         ]);
         $this->requireFileContains('backend/modules/mall/views/distribution-distributor/index.php', [
             'data-mongoyia-phase15-material-management',

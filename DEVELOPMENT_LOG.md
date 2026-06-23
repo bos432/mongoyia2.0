@@ -4438,3 +4438,34 @@
 - Next stage:
   - Push this log/backlog update, then run final BaoTa strict acceptance:
     `/www/server/php/83/bin/php yii customer-service-phase9-acceptance/run --baseUrl=https://demo2026.mongoyia.com --productId=2 --runChildChecks=1 --fixture=1 --browserAccepted=1 --browserEvidencePath=DEVELOPMENT_LOG.md#2026-06-23-Phase-9.7-Final-Browser-And-APP-H5-Acceptance-Evidence --appAccepted=1 --appEvidencePath=DEVELOPMENT_LOG.md#2026-06-23-Phase-9.7-Final-Browser-And-APP-H5-Acceptance-Evidence --strict=1 --interactive=0`.
+
+## 2026-06-23 Phase 9.7 Final Strict Acceptance Passed
+
+- Stage name: Phase 9.7 final strict accepted-gate closure
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before recording the final Phase 9 strict result.
+  - Reviewed the BaoTa terminal output after pulling `22ab223 Record Phase 9 final app acceptance evidence`.
+  - Confirmed final strict command was run with both manual evidence flags:
+    - `--browserAccepted=1 --browserEvidencePath=DEVELOPMENT_LOG.md`
+    - `--appAccepted=1 --appEvidencePath=DEVELOPMENT_LOG.md`
+  - Confirmed Phase 9 source coverage passed for translation, full-media IM, assistance, complaint loop, analytics, uni-app package/chat page, and token handoff.
+  - Confirmed manual browser/app evidence gates both changed to PASS:
+    - `Browser role-flow acceptance`
+    - `uni-app customer chat acceptance`
+  - Confirmed child readiness commands passed for Phase 9.1 translation, Phase 9.2 full media, Phase 9.3 assistance, Phase 9.4 complaint loop, Phase 9.5 analytics, and Phase 9.6 uni-app.
+  - Updated the Phase 9 backlog row from in-progress pending strict acceptance to accepted.
+- Main files changed/added:
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - BaoTa command:
+    `/www/server/php/83/bin/php yii customer-service-phase9-acceptance/run --baseUrl=https://demo2026.mongoyia.com --productId=2 --runChildChecks=1 --fixture=1 --browserAccepted=1 --browserEvidencePath=DEVELOPMENT_LOG.md --appAccepted=1 --appEvidencePath=DEVELOPMENT_LOG.md --strict=1 --interactive=0`
+  - Final report:
+    `/www/wwwroot/demo2026.mongoyia.com/runtime/handover/mongoyia-customer-service-phase9-acceptance-20260623-062735.md`
+  - Summary:
+    `0 failure(s), 0 warning(s), 0 pending.`
+- Remaining issues:
+  - Phase 9 customer-service complete-requirements closure is accepted on the test server.
+  - Overall production go-live is still separate and remains blocked until the global gates are complete: real payment credentials/sandbox-live evidence, SMTP/mail evidence, scheduler/backup/alert evidence, load/security/business signoff, and any Phase 7 production-readiness artifacts required by the launch gate.
+- Next stage:
+  - Continue plan-listed global production-readiness work outside Phase 9, starting with Phase 7 real operational configuration evidence or whichever existing backlog item has the next available external inputs.

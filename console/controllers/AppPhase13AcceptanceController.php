@@ -53,6 +53,7 @@ class AppPhase13AcceptanceController extends Controller
         $this->stdout("Mongoyia Phase 13 APP acceptance\n");
 
         $this->checkSourceCoverage();
+        $this->checkDeployedAssetFreshness();
         if ($this->fixture) {
             $this->checkRouteMatrix();
         }
@@ -219,6 +220,41 @@ class AppPhase13AcceptanceController extends Controller
         }
     }
 
+    private function checkDeployedAssetFreshness(): void
+    {
+        $this->section('Deployed H5 asset freshness');
+
+        $version = $this->systemVersion();
+        $assetUrl = $this->baseUrl . '/resources/mall/default/js/main.js?v=' . rawurlencode($version) . '&codexFresh=' . date('YmdHis');
+        $body = $this->fetchText($assetUrl);
+        if ($body === null) {
+            $this->addCheck(
+                'Deployed mall main.js freshness',
+                'PENDING',
+                $assetUrl,
+                'Could not fetch deployed mall main.js. Re-run after BaoTa deployment/network is reachable before accepting Phase 13 browser evidence.'
+            );
+            return;
+        }
+
+        if (strpos($body, 'MONGOYIA_CART_LINK_NORMALIZER_V1') !== false) {
+            $this->addCheck(
+                'Deployed mall main.js freshness',
+                'PASS',
+                $assetUrl,
+                'MONGOYIA_PHASE13_DEPLOYED_ASSET_FRESHNESS_V1: deployed mall main.js contains the cart-link normalizer marker.'
+            );
+            return;
+        }
+
+        $this->addCheck(
+            'Deployed mall main.js freshness',
+            'PENDING',
+            $assetUrl,
+            'MONGOYIA_PHASE13_DEPLOYED_ASSET_FRESHNESS_V1: deployed mall main.js is stale or missing the cart-link normalizer marker. Pull latest code and clear PHP/opcache/runtime/page/static caches before browser role-flow acceptance.'
+        );
+    }
+
     private function checkManualAcceptanceInputs(): void
     {
         $this->section('Phase 13 implementation and external evidence');
@@ -341,7 +377,7 @@ class AppPhase13AcceptanceController extends Controller
             '- Failures: ' . $this->failures,
             '- Warnings: ' . $this->warnings,
             '- Pending: ' . $this->pending,
-            '- Scope: buyer APP, seller APP workbench, buyer cart stale-row guard, cart-index fallback guard, cached cart-link normalizer, buyer received-order review submission, audited seller product create/edit, seller coupon participation join/leave, seller store/logistics/deposit/statistics/distribution overview, shared backend APIs, customer-service entry, H5 development package, and role-flow evidence.',
+            '- Scope: buyer APP, seller APP workbench, buyer cart stale-row guard, cart-index fallback guard, cached cart-link normalizer, deployed H5 asset freshness, buyer received-order review submission, audited seller product create/edit, seller coupon participation join/leave, seller store/logistics/deposit/statistics/distribution overview, shared backend APIs, customer-service entry, H5 development package, and role-flow evidence.',
             '- Safety: this command does not mutate orders, carts, products, shipment rows, funds, stock, or credentials.',
             '- Boundary: Phase 13 verifies the APP route shell, buyer cart stale-row cleanup before checkout/rendering, buyer checkout write, buyer received-order review submit with pending moderation, seller shipment write, seller product create/edit submission, and seller platform coupon participation join/leave. Seller product writes are forced inactive/submitted for platform review, review submissions are not public until backend approval, and coupon participation writes do not issue coupons or mutate orders. Browser/APP role-flow evidence remains pending until later acceptance.',
             '',
@@ -369,7 +405,7 @@ class AppPhase13AcceptanceController extends Controller
             '/www/server/php/83/bin/php yii app-buyer-phase13-readiness/run --fixture=1 --interactive=0',
             '/www/server/php/83/bin/php yii app-seller-phase13-readiness/run --fixture=1 --interactive=0',
             '/www/server/php/83/bin/php yii app-auth-phase13-readiness/run --fixture=1 --interactive=0',
-            '/www/server/php/83/bin/php yii app-phase13-acceptance/run --fixture=1 --interactive=0',
+            '/www/server/php/83/bin/php yii app-phase13-acceptance/run --baseUrl=' . $this->baseUrl . ' --fixture=1 --interactive=0',
             '```',
             '',
             '## Browser Role-Flow Checklist',
@@ -433,6 +469,47 @@ class AppPhase13AcceptanceController extends Controller
         }
 
         $this->addCheck($label, 'PASS', $path, 'Required Phase 13 markers are present.');
+    }
+
+    private function systemVersion(): string
+    {
+        $params = require $this->resolvePath('common/config/params.php');
+        return (string)($params['system_version'] ?? '1.1.4');
+    }
+
+    private function fetchText(string $url): ?string
+    {
+        if (function_exists('curl_init')) {
+            $ch = curl_init($url);
+            curl_setopt_array($ch, [
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_FOLLOWLOCATION => true,
+                CURLOPT_CONNECTTIMEOUT => 5,
+                CURLOPT_TIMEOUT => 12,
+                CURLOPT_SSL_VERIFYPEER => false,
+                CURLOPT_SSL_VERIFYHOST => false,
+                CURLOPT_USERAGENT => 'Mongoyia Phase13 acceptance',
+            ]);
+            $body = curl_exec($ch);
+            $code = (int)curl_getinfo($ch, CURLINFO_RESPONSE_CODE);
+            curl_close($ch);
+            return ($body !== false && $code >= 200 && $code < 400) ? (string)$body : null;
+        }
+
+        $context = stream_context_create([
+            'http' => [
+                'method' => 'GET',
+                'timeout' => 12,
+                'ignore_errors' => true,
+                'header' => "User-Agent: Mongoyia Phase13 acceptance\r\n",
+            ],
+            'ssl' => [
+                'verify_peer' => false,
+                'verify_peer_name' => false,
+            ],
+        ]);
+        $body = @file_get_contents($url, false, $context);
+        return $body === false ? null : (string)$body;
     }
 
     private function section(string $name): void

@@ -1,5 +1,29 @@
 # Development Log
 
+## 2026-06-23 Phase 13 Deployed Asset Freshness Acceptance Check
+
+- Stage name: Phase 13 deployed asset freshness acceptance check
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting the stage.
+  - Extended `app-phase13-acceptance/run` so it fetches the deployed mall `main.js` from `--baseUrl` using the current `system_version`.
+  - Added `MONGOYIA_PHASE13_DEPLOYED_ASSET_FRESHNESS_V1` report coverage: if the deployed script contains `MONGOYIA_CART_LINK_NORMALIZER_V1`, the check passes; if the deployed script cannot be fetched or is stale, the report marks it pending.
+  - Kept the check read-only and non-mutating; strict acceptance will fail while this freshness evidence remains pending.
+  - Updated the Phase 13 backlog rows to record deployed asset freshness acceptance coverage.
+- Main files changed/added:
+  - `console/controllers/AppPhase13AcceptanceController.php`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l console/controllers/AppPhase13AcceptanceController.php` passed.
+  - Static marker scan confirmed `checkDeployedAssetFreshness`, `MONGOYIA_PHASE13_DEPLOYED_ASSET_FRESHNESS_V1`, `MONGOYIA_CART_LINK_NORMALIZER_V1`, `codexFresh`, and Phase 13 backlog coverage.
+  - `git diff --check` reported no whitespace errors, only existing Windows line-ending conversion warnings.
+  - Full Yii console execution remains BaoTa-only because this local checkout lacks `vendor/autoload.php`.
+- Remaining issues:
+  - BaoTa/test server must pull the latest commit and clear caches before the deployed asset freshness check can pass against `https://demo2026.mongoyia.com`.
+  - Phase 10/11/12/13/14/15 external and browser evidence remain incomplete; production remains `NO-GO`.
+- Next stage:
+  - Run syntax/static checks, commit and push this acceptance enhancement, then continue with BaoTa/browser validation or another plan-listed local readiness item.
+
 ## 2026-06-23 Phase 13 H5 Asset Cache-Bust Version
 
 - Stage name: Phase 13 H5 asset cache-bust version

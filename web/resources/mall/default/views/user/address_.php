@@ -12,7 +12,10 @@ use yii\helpers\Html;
         <p class="info-box-text small m-0"><?= $model->address ?> <?= $model->address2 ?> <?= $model->city ?> <?= $model->province ?> <?= $model->country ?> <?= $model->postcode ?></p>
         <span class="info-box-text text-right">
             <?= Html::a(Yii::t('app', 'Edit'), ['/mall/address/edit', 'id' => $model->id], ['class' => 'btn btn-sm btn-primary px-3']) ?>
-            <?= Html::a(Yii::t('app', 'Delete'), ['/mall/address/delete', 'id' => $model->id], ['class' => 'btn btn-sm btn-danger ml-3']) ?>
+            <?= Html::beginForm(['/mall/address/delete'], 'post', ['class' => 'd-inline', 'data-mongoyia-address-delete-post-guard' => '1']) ?>
+                <?= Html::hiddenInput('id', (int)$model->id) ?>
+                <?= Html::submitButton(Yii::t('app', 'Delete'), ['class' => 'btn btn-sm btn-danger ml-3']) ?>
+            <?= Html::endForm() ?>
         </span>
     </div>
 </div>

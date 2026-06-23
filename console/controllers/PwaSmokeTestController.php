@@ -141,6 +141,16 @@ class PwaSmokeTestController extends Controller
         ] as $path => $marker) {
             $this->requireFileContains($path, [$marker]);
         }
+        $this->requireFileContains('frontend/modules/mall/controllers/AddressController.php', [
+            'MONGOYIA_BUYER_ADDRESS_DELETE_POST_GUARD_V1',
+            "'delete' => ['POST']",
+            "post('id', 0)",
+        ]);
+        $this->requireFileContains('web/resources/mall/default/views/user/address_.php', [
+            'data-mongoyia-address-delete-post-guard',
+            "Html::beginForm(['/mall/address/delete'], 'post'",
+            "hiddenInput('id'",
+        ]);
         $this->requireFileContains('frontend/modules/mall/controllers/CartController.php', [
             'MONGOYIA_CART_STALE_ROW_GUARD_V1',
             'Unavailable product',

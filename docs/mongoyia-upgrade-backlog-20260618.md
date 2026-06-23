@@ -429,6 +429,8 @@ Phase 13.21 backend seller shipment POST id hardening: backend/seller shipment m
 
 Phase 13.22 buyer product consultation POST id hardening: PC/H5 product consultation submission now reads `product_id` from POST body data only, while GET/Ajax remains read-only for consultation list loading. `ProductController::actionConsultation()` carries `MONGOYIA_PRODUCT_CONSULTATION_POST_ID_GUARD_V1`; Phase 13 buyer readiness and aggregate acceptance reject the old GET-to-POST fallback.
 
+Phase 13.23 buyer address delete POST guard: PC/H5 buyer address deletion now uses `MONGOYIA_BUYER_ADDRESS_DELETE_POST_GUARD_V1`, explicitly restricts `/mall/address/delete` to POST, and reads the address `id` only from POST body data. The user address list renders a CSRF POST form with hidden `id` and `data-mongoyia-address-delete-post-guard` instead of a URL-id delete link; PWA smoke, Phase 13 buyer readiness, and aggregate acceptance cover the guard.
+
 Phase 14 acceptance command:
 
 ```bash

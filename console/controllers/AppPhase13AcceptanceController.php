@@ -215,6 +215,19 @@ class AppPhase13AcceptanceController extends Controller
         $this->requireFileNotContains('Buyer web order-detail has no URL id write form', 'web/resources/mall/default/views/order/view.php', [
             "Html::beginForm(['/mall/order/review', 'id' =>",
         ]);
+        $this->requireFileContains('Buyer web address delete POST guard', 'frontend/modules/mall/controllers/AddressController.php', [
+            'MONGOYIA_BUYER_ADDRESS_DELETE_POST_GUARD_V1',
+            "'delete' => ['POST']",
+            "post('id', 0)",
+        ]);
+        $this->requireFileContains('Buyer web address delete form uses hidden POST id', 'web/resources/mall/default/views/user/address_.php', [
+            'data-mongoyia-address-delete-post-guard',
+            "Html::beginForm(['/mall/address/delete'], 'post'",
+            "hiddenInput('id'",
+        ]);
+        $this->requireFileNotContains('Buyer web address delete has no URL id write link', 'web/resources/mall/default/views/user/address_.php', [
+            "Html::a(Yii::t('app', 'Delete'), ['/mall/address/delete', 'id' =>",
+        ]);
         $this->requireFileContains('Buyer web cart link normalizer', 'web/resources/mall/default/js/main.js', [
             'MONGOYIA_CART_LINK_NORMALIZER_V1',
             '/mall/cart/index',

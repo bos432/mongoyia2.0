@@ -7,6 +7,7 @@ use common\models\mall\Address;
 use kartik\select2\Select2;
 use yii\db\ActiveRecord;
 use yii\filters\AccessControl;
+use yii\filters\VerbFilter;
 use Yii;
 
 /**
@@ -16,6 +17,8 @@ use Yii;
  */
 class AddressController extends BaseController
 {
+    public const ADDRESS_DELETE_POST_GUARD_VERSION = 'MONGOYIA_BUYER_ADDRESS_DELETE_POST_GUARD_V1';
+
     public $modelClass = Address::class;
 
     /**
@@ -31,6 +34,12 @@ class AddressController extends BaseController
                         'allow' => true,
                         'roles' => ['@'],
                     ],
+                ],
+            ],
+            'verbs' => [
+                'class' => VerbFilter::className(),
+                'actions' => [
+                    'delete' => ['POST'],
                 ],
             ],
         ];
@@ -71,7 +80,7 @@ class AddressController extends BaseController
      */
     public function actionDelete()
     {
-        $id = Yii::$app->request->get('id');
+        $id = (int)Yii::$app->request->post('id', 0);
         if (!$id) {
             return $this->goBack();
         }

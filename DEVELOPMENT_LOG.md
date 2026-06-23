@@ -8241,3 +8241,39 @@
   - Phase 10/11/12/13/14/15 external/provider/browser evidence gates remain pending; production remains `NO-GO`.
 - Next stage:
   - Commit and push this merchant deposit adjustment POST guard patch, then reread the plan/log and continue with the next plan-listed readiness item.
+
+## 2026-06-24 Phase 13 Buyer Address Delete POST Guard
+
+- Stage name: Phase 13.23 buyer address delete POST guard
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting the stage.
+  - Added `MONGOYIA_BUYER_ADDRESS_DELETE_POST_GUARD_V1` to the frontend mall address controller.
+  - Restricted `/mall/address/delete` to POST with a frontend verb filter.
+  - Changed address deletion to read `id` only from POST body data while keeping address edit/view routes as GET where appropriate.
+  - Replaced the user address delete URL link with a CSRF-protected POST form carrying a hidden `id`.
+  - Added `data-mongoyia-address-delete-post-guard` and readiness coverage in PWA smoke, Phase 13 buyer readiness, and Phase 13 aggregate acceptance.
+  - Updated the Phase 13 backlog notes as Phase 13.23.
+- Main files changed/added:
+  - `frontend/modules/mall/controllers/AddressController.php`
+  - `web/resources/mall/default/views/user/address_.php`
+  - `console/controllers/PwaSmokeTestController.php`
+  - `console/controllers/AppBuyerPhase13ReadinessController.php`
+  - `console/controllers/AppPhase13AcceptanceController.php`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l frontend/modules/mall/controllers/AddressController.php` passed.
+  - `php -l web/resources/mall/default/views/user/address_.php` passed.
+  - `php -l console/controllers/PwaSmokeTestController.php` passed.
+  - `php -l console/controllers/AppBuyerPhase13ReadinessController.php` passed.
+  - `php -l console/controllers/AppPhase13AcceptanceController.php` passed.
+  - Static marker checks confirmed `MONGOYIA_BUYER_ADDRESS_DELETE_POST_GUARD_V1`, `data-mongoyia-address-delete-post-guard`, POST body `id`, hidden POST `id`, and `Phase 13.23`.
+  - Static stale-link check found no remaining `Html::a(... ['/mall/address/delete', 'id' => ...])` URL-id delete link in the address item view.
+  - `git diff --check` reported no whitespace errors, only existing Windows line-ending conversion warnings.
+  - Full Yii console execution remains BaoTa-only because this local checkout lacks `vendor/autoload.php`.
+- Remaining issues:
+  - Address edit/update still uses the existing edit route shape and should be reviewed as a separate plan-scoped hardening stage if needed.
+  - BaoTa/test server must rerun PWA smoke and Phase 13 buyer/aggregate acceptance after deployment.
+  - Phase 10/11/12/13/14/15 external/provider/browser evidence gates remain pending; production remains `NO-GO`.
+- Next stage:
+  - Commit and push this buyer address delete POST guard patch, then reread the plan/log and continue with the next plan-listed readiness item.

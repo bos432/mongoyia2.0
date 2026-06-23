@@ -1,5 +1,27 @@
 # Development Log
 
+## 2026-06-23 Phase 13 Buyer Cart Browser Recheck After Hardening Push
+
+- Stage name: Phase 13 buyer cart browser recheck after hardening push
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting the stage.
+  - Used the right-side in-app browser to open `https://demo2026.mongoyia.com/product-codex-test-product-1781945133` after pushing cart hardening commit `4d86cb8`.
+  - Confirmed the product page opens, but the deployed HTML still contains old `/mall/cart` short links alongside `/mall/cart/index`.
+  - Opened `https://demo2026.mongoyia.com/mall/cart/index` and confirmed the browser still reports `net::ERR_HTTP_RESPONSE_CODE_FAILURE`.
+  - Did not submit forms, create orders, mutate cart/order/payment/fund data, or enter credentials.
+- Main files changed/added:
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - Browser product page: opens successfully.
+  - Browser cart page: still blocked with HTTP response failure.
+  - Browser evidence indicates the test server has not yet pulled `4d86cb8` or is still serving stale PHP/opcache/page-cache output.
+- Remaining issues:
+  - BaoTa/test server must pull `4d86cb8` or newer, run migrations/readiness as needed, and clear PHP/opcache/runtime/page cache before Phase 13 buyer cart/checkout browser validation can continue.
+  - If the cart still fails after the deployed code is fresh, inspect the server PHP exception log because the local cart controller now handles stale product/SKU/price/coupon states defensively.
+  - Phase 10/11/12/14/15 external provider, logistics, social-login, notification, production operations, and signoff evidence remain pending; production remains `NO-GO`.
+- Next stage:
+  - Commit and push this browser recheck log entry, then continue with the next plan-listed local readiness item that does not depend on deployed server freshness.
+
 ## 2026-06-23 Phase 13 Buyer Cart Coupon/SKU Defensive Hardening
 
 - Stage name: Phase 13 buyer cart coupon/SKU defensive hardening

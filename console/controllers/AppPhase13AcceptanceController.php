@@ -10,6 +10,8 @@ class AppPhase13AcceptanceController extends Controller
     public const VERSION = 'MONGOYIA_APP_PHASE13_ACCEPTANCE_V1';
 
     public $baseUrl = 'https://demo2026.mongoyia.com';
+    public $productPath = '/product-codex-test-product-1781945133';
+    public $cartPath = '/mall/cart/index';
     public $handoverDir = 'runtime/handover';
     public $outputPath = '';
     public $fixture = false;
@@ -32,6 +34,8 @@ class AppPhase13AcceptanceController extends Controller
     {
         return array_merge(parent::options($actionID), [
             'baseUrl',
+            'productPath',
+            'cartPath',
             'handoverDir',
             'outputPath',
             'fixture',
@@ -54,6 +58,8 @@ class AppPhase13AcceptanceController extends Controller
 
         $this->checkSourceCoverage();
         $this->checkDeployedAssetFreshness();
+        $this->checkDeployedProductCartLinks();
+        $this->checkDeployedCartRoute();
         if ($this->fixture) {
             $this->checkRouteMatrix();
         }
@@ -284,6 +290,82 @@ class AppPhase13AcceptanceController extends Controller
         );
     }
 
+    private function checkDeployedProductCartLinks(): void
+    {
+        $this->section('Deployed product cart-link freshness');
+
+        $productUrl = $this->absoluteUrl($this->productPath);
+        $body = $this->fetchText($productUrl);
+        if ($body === null) {
+            $this->addCheck(
+                'Deployed product cart links',
+                'PENDING',
+                $productUrl,
+                'MONGOYIA_PHASE13_DEPLOYED_PRODUCT_CART_LINKS_V1: could not fetch deployed product page. Re-run after BaoTa deployment/network is reachable before accepting Phase 13 browser evidence.'
+            );
+            return;
+        }
+
+        $version = $this->systemVersion();
+        $usesCurrentAssetVersion = strpos($body, '/resources/mall/default/js/main.js?v=' . $version) !== false;
+        $hasCartIndexLink = strpos($body, '/mall/cart/index') !== false;
+        $hasStaleShortCartHref = (bool)preg_match('/href=["\'](?:https?:\/\/[^"\']+)?\/mall\/cart["\']/', $body);
+
+        if ($usesCurrentAssetVersion && $hasCartIndexLink && !$hasStaleShortCartHref) {
+            $this->addCheck(
+                'Deployed product cart links',
+                'PASS',
+                $productUrl,
+                'MONGOYIA_PHASE13_DEPLOYED_PRODUCT_CART_LINKS_V1: deployed product HTML uses current mall asset version and cart-index links without stale short cart hrefs.'
+            );
+            return;
+        }
+
+        $notes = [];
+        if (!$usesCurrentAssetVersion) {
+            $notes[] = 'product HTML is not using main.js?v=' . $version;
+        }
+        if (!$hasCartIndexLink) {
+            $notes[] = 'product HTML has no /mall/cart/index link';
+        }
+        if ($hasStaleShortCartHref) {
+            $notes[] = 'product HTML still contains exact /mall/cart hrefs';
+        }
+
+        $this->addCheck(
+            'Deployed product cart links',
+            'PENDING',
+            $productUrl,
+            'MONGOYIA_PHASE13_DEPLOYED_PRODUCT_CART_LINKS_V1: ' . implode('; ', $notes) . '. Pull latest code and clear PHP/opcache/runtime/page/static caches before browser role-flow acceptance.'
+        );
+    }
+
+    private function checkDeployedCartRoute(): void
+    {
+        $this->section('Deployed cart route freshness');
+
+        $cartUrl = $this->absoluteUrl($this->cartPath);
+        $response = $this->fetchResponse($cartUrl);
+        $status = (int)$response['status'];
+        $body = (string)$response['body'];
+        if ($status >= 200 && $status < 400 && $body !== '') {
+            $this->addCheck(
+                'Deployed cart route',
+                'PASS',
+                $cartUrl,
+                'MONGOYIA_PHASE13_DEPLOYED_CART_ROUTE_V1: cart route returned HTTP ' . $status . ' for read-only acceptance probe.'
+            );
+            return;
+        }
+
+        $this->addCheck(
+            'Deployed cart route',
+            'PENDING',
+            $cartUrl,
+            'MONGOYIA_PHASE13_DEPLOYED_CART_ROUTE_V1: cart route returned HTTP ' . ($status > 0 ? $status : 'unreachable') . '. Pull latest code, clear caches, and retry before accepting Phase 13 browser evidence.'
+        );
+    }
+
     private function checkManualAcceptanceInputs(): void
     {
         $this->section('Phase 13 implementation and external evidence');
@@ -406,7 +488,7 @@ class AppPhase13AcceptanceController extends Controller
             '- Failures: ' . $this->failures,
             '- Warnings: ' . $this->warnings,
             '- Pending: ' . $this->pending,
-            '- Scope: buyer APP, seller APP workbench, buyer cart stale-row guard, cart-index fallback guard, cart checkout URL parameter builder, cached cart-link normalizer, deployed H5 asset freshness, buyer received-order review submission, audited seller product create/edit, seller coupon participation join/leave, seller store/logistics/deposit/statistics/distribution overview, shared backend APIs, customer-service entry, H5 development package, and role-flow evidence.',
+            '- Scope: buyer APP, seller APP workbench, buyer cart stale-row guard, cart-index fallback guard, cart checkout URL parameter builder, cached cart-link normalizer, deployed H5 asset/product/cart-route freshness, buyer received-order review submission, audited seller product create/edit, seller coupon participation join/leave, seller store/logistics/deposit/statistics/distribution overview, shared backend APIs, customer-service entry, H5 development package, and role-flow evidence.',
             '- Safety: this command does not mutate orders, carts, products, shipment rows, funds, stock, or credentials.',
             '- Boundary: Phase 13 verifies the APP route shell, buyer cart stale-row cleanup before checkout/rendering, buyer checkout URL parameter generation, buyer checkout write, buyer received-order review submit with pending moderation, seller shipment write, seller product create/edit submission, and seller platform coupon participation join/leave. Seller product writes are forced inactive/submitted for platform review, review submissions are not public until backend approval, and coupon participation writes do not issue coupons or mutate orders. Browser/APP role-flow evidence remains pending until later acceptance.',
             '',
@@ -431,6 +513,7 @@ class AppPhase13AcceptanceController extends Controller
             'cd /www/wwwroot/demo2026.mongoyia.com',
             'git pull',
             '/www/server/php/83/bin/php yii migrate/up --interactive=0',
+            '/www/server/php/83/bin/php yii cache/flush-all --interactive=0',
             '/www/server/php/83/bin/php yii app-buyer-phase13-readiness/run --fixture=1 --interactive=0',
             '/www/server/php/83/bin/php yii app-seller-phase13-readiness/run --fixture=1 --interactive=0',
             '/www/server/php/83/bin/php yii app-auth-phase13-readiness/run --fixture=1 --interactive=0',
@@ -527,6 +610,13 @@ class AppPhase13AcceptanceController extends Controller
 
     private function fetchText(string $url): ?string
     {
+        $response = $this->fetchResponse($url);
+        $code = (int)$response['status'];
+        return ($response['body'] !== null && $code >= 200 && $code < 400) ? (string)$response['body'] : null;
+    }
+
+    private function fetchResponse(string $url): array
+    {
         if (function_exists('curl_init')) {
             $ch = curl_init($url);
             curl_setopt_array($ch, [
@@ -541,7 +631,10 @@ class AppPhase13AcceptanceController extends Controller
             $body = curl_exec($ch);
             $code = (int)curl_getinfo($ch, CURLINFO_RESPONSE_CODE);
             curl_close($ch);
-            return ($body !== false && $code >= 200 && $code < 400) ? (string)$body : null;
+            return [
+                'status' => $code,
+                'body' => $body === false ? null : (string)$body,
+            ];
         }
 
         $context = stream_context_create([
@@ -557,7 +650,30 @@ class AppPhase13AcceptanceController extends Controller
             ],
         ]);
         $body = @file_get_contents($url, false, $context);
-        return $body === false ? null : (string)$body;
+        $status = 0;
+        if (isset($http_response_header) && is_array($http_response_header)) {
+            foreach ($http_response_header as $header) {
+                if (preg_match('/^HTTP\/\S+\s+(\d{3})\b/', $header, $matches)) {
+                    $status = (int)$matches[1];
+                }
+            }
+        }
+        return [
+            'status' => $status,
+            'body' => $body === false ? null : (string)$body,
+        ];
+    }
+
+    private function absoluteUrl(string $path): string
+    {
+        $path = trim($path);
+        if (preg_match('/^https?:\/\//i', $path)) {
+            return $path;
+        }
+        if ($path === '') {
+            return $this->baseUrl . '/';
+        }
+        return $this->baseUrl . '/' . ltrim($path, '/');
     }
 
     private function section(string $name): void

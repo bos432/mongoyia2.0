@@ -322,6 +322,10 @@ class MongoyiaRequirementsClosureAcceptanceController extends Controller
                     'checkDeployedAssetFreshness',
                     'MONGOYIA_CART_LINK_NORMALIZER_V1',
                     'MONGOYIA_CART_CHECKOUT_URL_PARAMS_V1',
+                    'MONGOYIA_PHASE13_DEPLOYED_PRODUCT_CART_LINKS_V1',
+                    'checkDeployedProductCartLinks',
+                    'MONGOYIA_PHASE13_DEPLOYED_CART_ROUTE_V1',
+                    'checkDeployedCartRoute',
                 ],
                 'passthrough' => [
                     'phase13BuyerApiAccepted' => 'buyerApiAccepted',

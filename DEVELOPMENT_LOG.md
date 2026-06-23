@@ -1,5 +1,33 @@
 # Development Log
 
+## 2026-06-24 Phase 13 Deployed Product/Cart Route Freshness Gates
+
+- Stage name: Phase 13 deployed product/cart route freshness gates
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting the stage.
+  - Added `productPath` and `cartPath` options to `app-phase13-acceptance/run` so BaoTa can run read-only probes against the deployed product detail and cart index URLs used in browser role-flow validation.
+  - Added `checkDeployedProductCartLinks()` to fetch the deployed product page and mark Phase 13 pending if it is not using the current mall asset version, has no `/mall/cart/index` link, or still contains exact `/mall/cart` short hrefs.
+  - Added `checkDeployedCartRoute()` to fetch the deployed `/mall/cart/index` route and mark Phase 13 pending if it returns an unreachable, 444, or 5xx-style response.
+  - Added the new product/cart deployed freshness markers to the Phase 10-15 aggregate required-marker list.
+  - Updated the Phase 13 BaoTa verification command in the generated report to run `yii cache/flush-all` before Phase 13 readiness/acceptance.
+  - Updated the Phase 10-15 backlog rows to record deployed asset/product/cart-route freshness coverage.
+- Main files changed/added:
+  - `console/controllers/AppPhase13AcceptanceController.php`
+  - `console/controllers/MongoyiaRequirementsClosureAcceptanceController.php`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l console/controllers/AppPhase13AcceptanceController.php` passed.
+  - `php -l console/controllers/MongoyiaRequirementsClosureAcceptanceController.php` passed.
+  - Static marker scan confirmed `MONGOYIA_PHASE13_DEPLOYED_PRODUCT_CART_LINKS_V1`, `checkDeployedProductCartLinks`, `MONGOYIA_PHASE13_DEPLOYED_CART_ROUTE_V1`, `checkDeployedCartRoute`, and backlog coverage.
+  - `git diff --check` reported no whitespace errors, only existing Windows line-ending conversion warnings.
+  - Full Yii console execution remains BaoTa-only because this local checkout lacks `vendor/autoload.php`.
+- Remaining issues:
+  - BaoTa/test server must pull this commit, clear caches, and run the Phase 13 acceptance command before the new deployed freshness probes can confirm server state.
+  - Phase 10/11/12/13/14/15 external and browser evidence remain incomplete; production remains `NO-GO`.
+- Next stage:
+  - Commit and push this deployed freshness gate, then continue with BaoTa/browser validation after the test server is refreshed or another plan-listed local readiness item.
+
 ## 2026-06-24 Phase 13 Browser Deployment Freshness Recheck After Checkout Guards
 
 - Stage name: Phase 13 browser deployment freshness recheck after checkout guards

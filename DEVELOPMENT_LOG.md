@@ -1,5 +1,24 @@
 # Development Log
 
+## 2026-06-24 Phase 13 H5 APP Build Verification
+
+- Stage name: Phase 13 uni-app/H5 build verification
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting the stage.
+  - Ran the Phase 13 APP development package H5 production build from `apps/mongoyia-customer-chat-uniapp`.
+  - Confirmed the build completed successfully and did not create tracked source changes.
+- Main files changed/added:
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `npm run build:h5` passed.
+  - Build output included the standard Vite CJS deprecation notice and a uni-app `NODE_ENV=production` notice, but exited successfully.
+  - `git status --short -- apps/mongoyia-customer-chat-uniapp` showed no tracked changes.
+- Remaining issues:
+  - Authenticated buyer/seller H5 browser role-flow still requires BaoTa/test server to pull the latest code and clear caches.
+  - Phase 10/11/12/13/14/15 external/browser evidence remains incomplete; production remains `NO-GO`.
+- Next stage:
+  - Commit and push this build verification record, then continue with the next plan-listed local readiness item or BaoTa/browser validation after the server refreshes.
+
 ## 2026-06-24 Phase 12 OAuth Token Scope Storage Normalization
 
 - Stage name: Phase 12 OAuth token scope storage normalization

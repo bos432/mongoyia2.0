@@ -4576,3 +4576,31 @@
   - GO-READY will remain NO-GO until provider evidence, launch signoff, redacted export, and production go-live gate all pass in the full environment.
 - Next stage:
   - On BaoTa/full-vendor environment, run Phase 10 automated acceptance. After it passes with only manual evidence pending, validate `/backend/mall/operational-config/index` in the browser and record provider/production evidence references.
+
+## 2026-06-23 Phase 10.4 Acceptance Dependency Ordering Fix
+
+- Stage name: Phase 10.4 operational acceptance prerequisite sequencing
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before continuing Phase 10.
+  - Reviewed the BaoTa output for `operational-config-phase10-acceptance/run --runChildChecks=1 --fixture=1 --strict=1`, where Phase 7/10 source and provider evidence checks passed but the final production go-live child gate failed because prerequisite evidence reports were still indexed as `PENDING`.
+  - Updated the Phase 10 aggregate child-command order so it now generates the PayPal NO-GO dependency chain before `payment-provider-paypal-final-go-no-go-gate/run`.
+  - Updated the Phase 10 aggregate child-command order so it now generates production external evidence import/review/apply/final/signoff prerequisite reports before `mongoyia-production-go-live-gate/run`.
+  - Added production monitor evidence into the Phase 10 child-command sequence so scheduled and summary evidence can index the runtime-monitor report as part of the same aggregate run.
+  - Updated the Phase 10 backlog row to record the dependency-ordering fix.
+- Main files changed/added:
+  - `console/controllers/OperationalConfigPhase10AcceptanceController.php`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l console/controllers/OperationalConfigPhase10AcceptanceController.php` passed.
+  - Static route marker check confirmed the Phase 10 aggregate command now includes PayPal live-execution signoff import, PayPal final go/no-go, production external evidence review readiness, and production launch signoff readiness routes.
+  - Local Yii command execution was not attempted because this patch checkout does not have Composer `vendor/autoload.php`; rerun the full command on BaoTa/full-vendor environment.
+- Remaining issues:
+  - The local checkout still has unrelated untracked `docs/mongoyia-operational-config-provider-setup-guide.md`; it was left untouched.
+  - Phase 10 strict acceptance will still fail until the four manual evidence flags are accepted: backend browser acceptance, provider evidence acceptance, production operations evidence acceptance, and redacted export review acceptance.
+  - Production launch remains `NO-GO`; these fixture gates generate read-only prerequisite evidence and do not approve live payment or production launch.
+- Next stage:
+  - Commit and push this Phase 10.4 fix.
+  - On BaoTa, run `git pull`, then rerun:
+    `/www/server/php/83/bin/php yii operational-config-phase10-acceptance/run --baseUrl=https://demo2026.mongoyia.com --runChildChecks=1 --fixture=1 --strict=1 --interactive=0`.
+  - If the automated prerequisite failure is gone, continue Phase 10 browser/provider evidence collection and rerun with the four accepted evidence flags only after those checks are honestly completed.

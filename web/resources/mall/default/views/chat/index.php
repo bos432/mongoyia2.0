@@ -22,6 +22,9 @@ $chatTextMap = [
         'connecting' => '连接中...',
         'emoji' => '表情',
         'image' => '图片',
+        'file' => '文件',
+        'video' => '视频',
+        'voice' => '语音',
         'messagePlaceholder' => '输入消息...',
         'product' => '商品',
         'store' => '店铺',
@@ -42,6 +45,11 @@ $chatTextMap = [
         'missingImageUrl' => '上传返回缺少图片地址',
         'imageUploaded' => '图片上传成功',
         'imageUploadFailedRetry' => '图片上传失败，请重试',
+        'mediaUploaded' => '媒体发送成功',
+        'mediaUploadFailedRetry' => '媒体发送失败，请重试',
+        'voiceRecording' => '正在录音，再次点击发送',
+        'voiceUnsupported' => '当前浏览器不支持录音',
+        'openMedia' => '打开文件',
         'errorPrefix' => '错误',
         'unknownError' => '未知错误',
         'ratingTitle' => '服务评价',
@@ -54,6 +62,7 @@ $chatTextMap = [
         'ratingSubmitting' => '提交中...',
         'ratingSubmitted' => '评价已提交',
         'ratingSubmitFailed' => '提交失败',
+        'originalLabel' => '原文',
     ],
     'en' => [
         'title' => 'Customer Service',
@@ -61,6 +70,9 @@ $chatTextMap = [
         'connecting' => 'Connecting...',
         'emoji' => 'Emoji',
         'image' => 'Image',
+        'file' => 'File',
+        'video' => 'Video',
+        'voice' => 'Voice',
         'messagePlaceholder' => 'Type a message...',
         'product' => 'Product',
         'store' => 'Store',
@@ -81,6 +93,11 @@ $chatTextMap = [
         'missingImageUrl' => 'Upload response did not include an image URL',
         'imageUploaded' => 'Image uploaded',
         'imageUploadFailedRetry' => 'Image upload failed. Please try again.',
+        'mediaUploaded' => 'Media sent',
+        'mediaUploadFailedRetry' => 'Media upload failed. Please try again.',
+        'voiceRecording' => 'Recording. Tap again to send.',
+        'voiceUnsupported' => 'Voice recording is not supported in this browser',
+        'openMedia' => 'Open file',
         'errorPrefix' => 'Error',
         'unknownError' => 'Unknown error',
         'ratingTitle' => 'Service Rating',
@@ -93,6 +110,7 @@ $chatTextMap = [
         'ratingSubmitting' => 'Submitting...',
         'ratingSubmitted' => 'Rating submitted',
         'ratingSubmitFailed' => 'Submit failed',
+        'originalLabel' => 'Original',
     ],
     'mn' => [
         'title' => 'Хэрэглэгчийн үйлчилгээ',
@@ -100,6 +118,9 @@ $chatTextMap = [
         'connecting' => 'Холбогдож байна...',
         'emoji' => 'Эможи',
         'image' => 'Зураг',
+        'file' => 'Файл',
+        'video' => 'Видео',
+        'voice' => 'Дуу',
         'messagePlaceholder' => 'Мессеж бичих...',
         'product' => 'Бүтээгдэхүүн',
         'store' => 'Дэлгүүр',
@@ -120,6 +141,11 @@ $chatTextMap = [
         'missingImageUrl' => 'Байршуулалтын хариунд зургийн холбоос алга',
         'imageUploaded' => 'Зураг байршууллаа',
         'imageUploadFailedRetry' => 'Зураг байршуулж чадсангүй. Дахин оролдоно уу.',
+        'mediaUploaded' => 'Медиа илгээгдлээ',
+        'mediaUploadFailedRetry' => 'Медиа байршуулж чадсангүй. Дахин оролдоно уу.',
+        'voiceRecording' => 'Бичиж байна. Дахин дарж илгээнэ.',
+        'voiceUnsupported' => 'Энэ хөтөч дуу бичлэг дэмжихгүй',
+        'openMedia' => 'Файл нээх',
         'errorPrefix' => 'Алдаа',
         'unknownError' => 'Тодорхойгүй алдаа',
         'ratingTitle' => 'Үйлчилгээний үнэлгээ',
@@ -132,6 +158,7 @@ $chatTextMap = [
         'ratingSubmitting' => 'Илгээж байна...',
         'ratingSubmitted' => 'Үнэлгээ илгээгдлээ',
         'ratingSubmitFailed' => 'Илгээж чадсангүй',
+        'originalLabel' => 'Эх текст',
     ],
 ];
 $chatTexts = $chatTextMap[$locale];
@@ -269,6 +296,15 @@ $this->params['breadcrumbs'][] = $this->title;
             background: white;
             color: #333;
             border: 1px solid #e0e0e0;
+        }
+
+        .message-original {
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px solid rgba(0, 0, 0, .08);
+            color: #777;
+            font-size: 12px;
+            line-height: 1.45;
         }
 
         .message-time {
@@ -462,7 +498,9 @@ $this->params['breadcrumbs'][] = $this->title;
         }
 
         /* 隐藏的文件输入 */
-        #imageInput {
+        #imageInput,
+        #fileInput,
+        #videoInput {
             display: none;
         }
 
@@ -591,6 +629,11 @@ $this->params['breadcrumbs'][] = $this->title;
                 </div>
                 <button class="tool-btn" id="imageBtn">📷 <?= Html::encode($chatText('image')) ?></button>
                 <input type="file" id="imageInput" accept="image/*">
+                <button class="tool-btn" id="fileBtn"><?= Html::encode($chatText('file')) ?></button>
+                <input type="file" id="fileInput" accept=".pdf,.doc,.docx,.xls,.xlsx,.txt,.csv,.zip">
+                <button class="tool-btn" id="videoBtn"><?= Html::encode($chatText('video')) ?></button>
+                <input type="file" id="videoInput" accept="video/mp4,video/webm">
+                <button class="tool-btn" id="voiceBtn"><?= Html::encode($chatText('voice')) ?></button>
             </div>
             <div class="input-wrapper">
                 <textarea class="message-input" id="messageInput" placeholder="<?= Html::encode($chatText('messagePlaceholder')) ?>" rows="1"></textarea>
@@ -632,8 +675,13 @@ $this->params['breadcrumbs'][] = $this->title;
             wsAddress: <?= json_encode(Yii::$app->params['imWebsocketUrl'] ?? 'ws://127.0.0.1:8767') ?>,
             tokenUrl: <?= json_encode($chatTokenUrl) ?>,
             uploadUrl: <?= json_encode($chatUploadUrl) ?>,
+            mediaUploadUrl: <?= json_encode(Url::to(['/mall/chat/media-upload', 'lang' => $locale])) ?>,
+            translationUrl: <?= json_encode(Url::to(['/mall/chat/translate', 'lang' => $locale])) ?>,
             ratingUrl: <?= json_encode(Url::to(['/mall/chat/rating-submit', 'lang' => $locale])) ?>,
-            lang: <?= json_encode($locale) ?>
+            lang: <?= json_encode($locale) ?>,
+            staffWorkLanguage: <?= json_encode($staffWorkLanguage ?? 'en') ?>,
+            csrfParam: <?= json_encode(Yii::$app->request->csrfParam) ?>,
+            csrfToken: <?= json_encode(Yii::$app->request->csrfToken) ?>
         };
         const TEXT = <?= json_encode($chatTexts, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?>;
 
@@ -651,6 +699,9 @@ $this->params['breadcrumbs'][] = $this->title;
         let ws = null;
         let uniqueId = null;
         let isConnected = false;
+        let mediaRecorder = null;
+        let voiceChunks = [];
+        let voiceStartAt = 0;
 
         // DOM元素
         const elements = {
@@ -662,6 +713,11 @@ $this->params['breadcrumbs'][] = $this->title;
             emojiGrid: document.getElementById('emojiGrid'),
             imageBtn: document.getElementById('imageBtn'),
             imageInput: document.getElementById('imageInput'),
+            fileBtn: document.getElementById('fileBtn'),
+            fileInput: document.getElementById('fileInput'),
+            videoBtn: document.getElementById('videoBtn'),
+            videoInput: document.getElementById('videoInput'),
+            voiceBtn: document.getElementById('voiceBtn'),
             imagePreview: document.getElementById('imagePreview'),
             previewImg: document.getElementById('previewImg'),
             statusDot: document.getElementById('statusDot'),
@@ -897,8 +953,27 @@ $this->params['breadcrumbs'][] = $this->title;
                 } else {
                     bubble.textContent = TEXT.invalidImage;
                 }
+            } else if (msg.msg_type == 3 || msg.msg_type == '3') {
+                const link = document.createElement('a');
+                link.href = normalizeMediaUrl(msg.content);
+                link.target = '_blank';
+                link.rel = 'noopener';
+                link.textContent = TEXT.openMedia;
+                bubble.appendChild(link);
+            } else if (msg.msg_type == 4 || msg.msg_type == '4') {
+                const video = document.createElement('video');
+                video.controls = true;
+                video.src = normalizeMediaUrl(msg.content);
+                video.style.maxWidth = '220px';
+                bubble.appendChild(video);
+            } else if (msg.msg_type == 5 || msg.msg_type == '5') {
+                const audio = document.createElement('audio');
+                audio.controls = true;
+                audio.src = normalizeMediaUrl(msg.content);
+                bubble.appendChild(audio);
             } else {
-                bubble.textContent = msg.content || '';
+                bubble.textContent = displayText(msg, isSent);
+                appendOriginalText(bubble, msg, isSent);
             }
 
             const time = document.createElement('div');
@@ -914,6 +989,25 @@ $this->params['breadcrumbs'][] = $this->title;
             }
         }
 
+        function displayText(msg, isSent) {
+            if (!isSent && msg.translation_status === 'translated' && msg.translated_content) {
+                return msg.translated_content;
+            }
+
+            return msg.content || '';
+        }
+
+        function appendOriginalText(bubble, msg, isSent) {
+            if (isSent || msg.translation_status !== 'translated' || !msg.translated_content || !msg.content || msg.translated_content === msg.content) {
+                return;
+            }
+
+            const original = document.createElement('div');
+            original.className = 'message-original';
+            original.textContent = TEXT.originalLabel + ': ' + msg.content;
+            bubble.appendChild(original);
+        }
+
         // 添加系统消息
         function addSystemMessage(text) {
             const systemDiv = document.createElement('div');
@@ -924,9 +1018,10 @@ $this->params['breadcrumbs'][] = $this->title;
         }
 
         // 发送文字消息
-        function sendMessage() {
+        async function sendMessage() {
             const content = elements.messageInput.value.trim();
             if (!content || !isConnected) return;
+            const translation = await translateMessage(content, 'user_to_staff', CONFIG.lang, CONFIG.staffWorkLanguage);
 
             const data = {
                 type: 'chat',
@@ -934,12 +1029,58 @@ $this->params['breadcrumbs'][] = $this->title;
                 content: content,
                 msg_type: 1,
                 product_id: CONFIG.productId,
-                store_id: CONFIG.storeId
+                store_id: CONFIG.storeId,
+                ...translation
             };
 
             ws.send(JSON.stringify(data));
             elements.messageInput.value = '';
             toggleSendButton();
+        }
+
+        async function translateMessage(content, direction, sourceLanguage, targetLanguage) {
+            const fallback = {
+                original_content: content,
+                source_language: sourceLanguage || '',
+                target_language: targetLanguage || '',
+                translated_content: '',
+                translation_status: 'none',
+                translation_provider: '',
+                translation_error: '',
+                translated_at: 0
+            };
+
+            if (!CONFIG.translationUrl) {
+                return fallback;
+            }
+
+            try {
+                const formData = new FormData();
+                formData.append(CONFIG.csrfParam, CONFIG.csrfToken);
+                formData.append('content', content);
+                formData.append('direction', direction);
+                formData.append('source_language', sourceLanguage || '');
+                formData.append('target_language', targetLanguage || '');
+
+                const response = await fetch(CONFIG.translationUrl, {
+                    method: 'POST',
+                    body: formData
+                });
+                if (!response.ok) {
+                    throw new Error('translation HTTP ' + response.status);
+                }
+
+                const result = await response.json();
+                if (!result || result.code != 200 || !result.data || !result.data.metadata) {
+                    throw new Error(result && result.msg ? result.msg : 'translation failed');
+                }
+
+                return result.data.metadata;
+            } catch (error) {
+                fallback.translation_status = 'failed';
+                fallback.translation_error = String(error && error.message ? error.message : error).slice(0, 255);
+                return fallback;
+            }
         }
 
         // 发送图片消息
@@ -1000,6 +1141,50 @@ $this->params['breadcrumbs'][] = $this->title;
             }
         }
 
+        async function sendMedia(file, media, duration = 0) {
+            if (!isConnected) {
+                addSystemMessage(TEXT.disconnectedCannotSend);
+                return;
+            }
+
+            try {
+                const formData = new FormData();
+                formData.append('file', file);
+                formData.append('media', media);
+                formData.append('duration', String(duration || 0));
+                if (CONFIG.csrfParam && CONFIG.csrfToken) {
+                    formData.append(CONFIG.csrfParam, CONFIG.csrfToken);
+                }
+
+                const response = await fetch(CONFIG.mediaUploadUrl, {
+                    method: 'POST',
+                    body: formData
+                });
+                const result = await response.json();
+                if (!response.ok || !result || result.code != 200 || !result.data) {
+                    throw new Error(result && result.msg ? result.msg : TEXT.mediaUploadFailedRetry);
+                }
+
+                const mediaUrl = normalizeMediaUrl(result.data.url || '');
+                if (!mediaUrl) {
+                    throw new Error(TEXT.missingImageUrl);
+                }
+
+                ws.send(JSON.stringify({
+                    type: 'chat',
+                    target_uid: CONFIG.merchantId,
+                    content: mediaUrl,
+                    msg_type: result.data.msg_type,
+                    product_id: CONFIG.productId,
+                    store_id: CONFIG.storeId
+                }));
+                addSystemMessage(TEXT.mediaUploaded);
+            } catch (error) {
+                console.error('Media upload failed:', error);
+                addSystemMessage(error.message || TEXT.mediaUploadFailedRetry);
+            }
+        }
+
         function normalizeUploadUrl(result) {
             if (typeof result === 'string') {
                 return result;
@@ -1037,6 +1222,28 @@ $this->params['breadcrumbs'][] = $this->title;
             try {
                 const parsed = new URL(value, window.location.origin);
                 if ((parsed.protocol === 'http:' || parsed.protocol === 'https:') && parsed.host === window.location.host) {
+                    return parsed.href;
+                }
+            } catch (error) {
+                return '';
+            }
+
+            return '';
+        }
+
+        function normalizeMediaUrl(url) {
+            if (!url || typeof url !== 'string') {
+                return '';
+            }
+
+            const value = url.trim();
+            if (value.startsWith('/mall/chat/media-view?')) {
+                return value;
+            }
+
+            try {
+                const parsed = new URL(value, window.location.origin);
+                if ((parsed.protocol === 'http:' || parsed.protocol === 'https:') && parsed.host === window.location.host && parsed.pathname === '/mall/chat/media-view') {
                     return parsed.href;
                 }
             } catch (error) {
@@ -1117,6 +1324,72 @@ $this->params['breadcrumbs'][] = $this->title;
                 sendImage(file);
             }
             e.target.value = '';
+        };
+
+        elements.fileBtn.onclick = () => {
+            elements.fileInput.click();
+        };
+
+        elements.fileInput.onchange = (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                sendMedia(file, 'file');
+            }
+            e.target.value = '';
+        };
+
+        elements.videoBtn.onclick = () => {
+            elements.videoInput.click();
+        };
+
+        elements.videoInput.onchange = (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                sendMedia(file, 'video');
+            }
+            e.target.value = '';
+        };
+
+        elements.voiceBtn.onclick = async () => {
+            if (mediaRecorder && mediaRecorder.state === 'recording') {
+                mediaRecorder.stop();
+                elements.voiceBtn.textContent = TEXT.voice;
+                return;
+            }
+
+            if (!navigator.mediaDevices || !window.MediaRecorder) {
+                addSystemMessage(TEXT.voiceUnsupported);
+                return;
+            }
+
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({audio: true});
+                voiceChunks = [];
+                voiceStartAt = Date.now();
+                const mimeType = MediaRecorder.isTypeSupported('audio/webm') ? 'audio/webm' : '';
+                mediaRecorder = new MediaRecorder(stream, mimeType ? {mimeType} : undefined);
+                mediaRecorder.ondataavailable = (event) => {
+                    if (event.data && event.data.size > 0) {
+                        voiceChunks.push(event.data);
+                    }
+                };
+                mediaRecorder.onstop = () => {
+                    stream.getTracks().forEach(track => track.stop());
+                    const duration = Math.ceil((Date.now() - voiceStartAt) / 1000);
+                    if (voiceChunks.length > 0) {
+                        const blob = new Blob(voiceChunks, {type: mediaRecorder.mimeType || 'audio/webm'});
+                        const file = new File([blob], `voice-${Date.now()}.webm`, {type: blob.type || 'audio/webm'});
+                        sendMedia(file, 'voice', duration);
+                    }
+                    mediaRecorder = null;
+                    voiceChunks = [];
+                };
+                mediaRecorder.start();
+                elements.voiceBtn.textContent = TEXT.voiceRecording;
+            } catch (error) {
+                console.error('Voice recording failed:', error);
+                addSystemMessage(TEXT.voiceUnsupported);
+            }
         };
 
         elements.imagePreview.onclick = () => {

@@ -3892,3 +3892,359 @@
   - If the command reports `Summary: 0 failure(s)`, the backend platform/seller客服 readiness portion can be recorded as passed; otherwise the next fix should target the remaining failed check.
 - Next stage:
   - Review the pasted BaoTa readiness output or a controllable browser session, then complete the Phase 8 role-flow validation record.
+
+## 2026-06-23 Phase 9 Plan Registration
+
+- Stage name: Phase 9.0 customer-service complete requirements closure plan registration
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting Phase 9 work.
+  - Added Phase 9 to the backlog phase status table as an in-progress customer-service complete requirements closure phase.
+  - Updated the app-route baseline to state that Phase 9 includes a first runnable uni-app customer-chat client.
+  - Added the Phase 9 task table for translation, full-media IM, order/product assistance, complaint loop, deep analytics, uni-app client, and final role-flow acceptance.
+  - Locked the customer-service safety boundary: service staff may view context and create assistance/complaint/after-sale workflow records, but must not directly mutate orders, payments, funds, stock, refunds, settlements, or inventory.
+- Main files changed/added:
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - Documentation-only phase registration; no database migration or runtime command was required.
+- Remaining issues:
+  - Phase 8.8 browser role-flow acceptance is still pending external browser/readiness confirmation, but Phase 9 has been explicitly approved as the next development plan.
+  - Phase 9.1 still needs implementation of the pluggable translation foundation and a readiness command.
+- Next stage:
+  - Reread the development plan and this log, then start Phase 9.1 with the smallest safe increment: translation schema/service/config checks before wiring message-send behavior.
+
+## 2026-06-23 Phase 9.1 Translation Foundation
+
+- Stage name: Phase 9.1 pluggable customer-service translation foundation
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting Phase 9.1.
+  - Added a non-destructive chat translation migration for `{{%chat}}` metadata: original content, source/target language, translated content, translation status, provider, error summary, and translated time.
+  - Added `CustomerServiceTranslationService` with OpenAI-compatible and Google-compatible provider definitions, encrypted operational config reads/writes, provider readiness checks, test-translation entry, zh-CN/en/mn normalization, simple language detection, and graceful failure that preserves original text.
+  - Added backend operational-config actions and UI cards for saving, checking, and testing customer-service translation providers.
+  - Added `customer-service-translation-test/run` to verify schema, source markers, encrypted API Key storage, metadata mapping, and disabled-provider fallback in a rollback transaction.
+  - Updated the Phase 9 backlog row to mark the translation foundation as added while keeping runtime chat-send wiring pending.
+- Main files changed/added:
+  - `console/migrations/m260623_090100_mongoyia_customer_service_translation.php`
+  - `common/services/mall/CustomerServiceTranslationService.php`
+  - `backend/modules/mall/controllers/OperationalConfigController.php`
+  - `backend/modules/mall/views/operational-config/index.php`
+  - `console/controllers/CustomerServiceTranslationTestController.php`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l console/migrations/m260623_090100_mongoyia_customer_service_translation.php` passed.
+  - `php -l common/services/mall/CustomerServiceTranslationService.php` passed.
+  - `php -l backend/modules/mall/controllers/OperationalConfigController.php` passed.
+  - `php -l backend/modules/mall/views/operational-config/index.php` passed.
+  - `php -l console/controllers/CustomerServiceTranslationTestController.php` passed.
+  - `php yii customer-service-translation-test/run --fixture=1 --interactive=0` could not run in this local patch checkout because `vendor/autoload.php` is absent; run it on BaoTa or a full dependency checkout after applying the migration.
+- Remaining issues:
+  - Chat send/store paths do not yet populate the new translation metadata columns; that is the next Phase 9.1 increment.
+  - Real provider network tests require actual encrypted API keys and reachable OpenAI-compatible or Google-compatible endpoints.
+- Next stage:
+  - Reread the development plan and this log, then wire translation metadata into the customer-service message flow without blocking message send when translation is unavailable.
+
+## 2026-06-23 Phase 9.1 Translation Message Flow Wiring
+
+- Stage name: Phase 9.1 customer-service translation message-flow wiring
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before continuing Phase 9.1.
+  - Added frontend `/mall/chat/translate` and backend `/backend/mall/kf/translate` JSON endpoints that use `CustomerServiceTranslationService` and return chat-table metadata while preserving original text on failure.
+  - Added buyer PC/H5 chat auto-translation before sending text messages, CSRF-protected translation requests, translated-message display for received messages, and original-text display under translated bubbles.
+  - Added backend客服工作台 auto-translation before staff replies, customer-language inference from recent user messages, translated-message display for received user messages, and original-text display under translated bubbles.
+  - Extended the Python IM service to detect translation columns, validate translation metadata, persist translation fields when available, return them in chat history, and include them in real-time broadcasts.
+  - Extended `customer-service-translation-test/run` source checks to cover frontend/backend translate endpoints, PC/H5/workbench JS wiring, and Python IM metadata persistence markers.
+  - Updated the Phase 9 backlog row to mark translation message-flow wiring as added while DB/vendor acceptance remains pending.
+- Main files changed/added:
+  - `frontend/modules/mall/controllers/ChatController.php`
+  - `web/resources/mall/default/views/chat/index.php`
+  - `backend/modules/mall/controllers/KfController.php`
+  - `backend/modules/mall/views/kf/index.php`
+  - `deploy/im-backend/main.py`
+  - `console/controllers/CustomerServiceTranslationTestController.php`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l frontend/modules/mall/controllers/ChatController.php` passed.
+  - `php -l backend/modules/mall/controllers/KfController.php` passed.
+  - `php -l web/resources/mall/default/views/chat/index.php` passed.
+  - `php -l backend/modules/mall/views/kf/index.php` passed.
+  - `php -l common/services/mall/CustomerServiceTranslationService.php` passed.
+  - `php -l console/controllers/CustomerServiceTranslationTestController.php` passed.
+  - `python -m py_compile deploy/im-backend/main.py` passed.
+  - `php yii customer-service-translation-test/run --fixture=1 --interactive=0` is still not runnable in this local patch checkout because `vendor/autoload.php` is absent.
+- Remaining issues:
+  - Need run `yii migrate/up` for `m260623_090100_mongoyia_customer_service_translation` and then `customer-service-translation-test/run --fixture=1` on BaoTa or a full dependency checkout.
+  - Real automatic translation quality and provider network checks require encrypted provider credentials in the backend translation config.
+- Next stage:
+  - Reread the development plan and this log, then start Phase 9.2 full-media IM with schema/storage policy and upload validation as the first small increment.
+
+## 2026-06-23 Phase 9.2 Media Upload Storage Foundation
+
+- Stage name: Phase 9.2 full-media IM upload and signed-view foundation
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting Phase 9.2.
+  - Added `CustomerServiceMediaService` for file/video/voice media definitions, size/MIME/extension/body-signature validation, non-public `runtime/mongoyia-im-media` storage, signed `media_id` tokens, and permissioned preview/download resolution.
+  - Reused the existing Phase 6 media policy validation rules instead of inventing a parallel allowlist.
+  - Changed frontend `/mall/chat/media-upload` from disabled skeleton response to real upload validation/storage and added `/mall/chat/media-view` signed preview/download.
+  - Added backend `/backend/mall/kf/media-upload` and `/backend/mall/kf/media-view` for logged-in客服 workbench media uploads.
+  - Added `customer-service-media-test/run` with source checks and a fixture path that writes a smoke PDF to non-public storage, verifies signed view, rejects a bad token, rejects invalid file content, and cleans up the fixture file.
+  - Updated the Phase 9.2 backlog row to mark non-public upload/view foundation as added while Python `msg_type=3/4/5` and UI controls remain pending.
+- Main files changed/added:
+  - `common/services/mall/CustomerServiceMediaService.php`
+  - `frontend/modules/mall/controllers/ChatController.php`
+  - `backend/modules/mall/controllers/KfController.php`
+  - `console/controllers/CustomerServiceMediaTestController.php`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l common/services/mall/CustomerServiceMediaService.php` passed.
+  - `php -l console/controllers/CustomerServiceMediaTestController.php` passed.
+  - `php -l frontend/modules/mall/controllers/ChatController.php` passed.
+  - `php -l backend/modules/mall/controllers/KfController.php` passed.
+  - `php yii customer-service-media-test/run --fixture=1 --interactive=0` is not runnable in this local patch checkout because `vendor/autoload.php` is absent.
+- Remaining issues:
+  - Python IM still rejects `msg_type=3/4/5`; UI controls are not yet exposed.
+  - Need run the fixture command in BaoTa or a full dependency checkout after deployment.
+- Next stage:
+  - Reread the development plan and this log, then enable Python IM payload guards and PC/H5/workbench file/video/voice controls.
+
+## 2026-06-23 Phase 9.2 Full-Media IM Controls And Guards
+
+- Stage name: Phase 9.2 Python IM guards plus PC/H5/backend media controls
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before continuing Phase 9.2.
+  - Extended the Python IM service to accept and validate `msg_type=3/4/5` for signed `/mall/chat/media-view` URLs with `media_id` and `token`, while retaining text/image validation and media preview labels for session lists.
+  - Added PC/H5 buyer chat controls and event handlers for file upload, video upload, and browser voice recording with `MediaRecorder`; uploads use the non-public media upload service and then send the signed media URL over WSS.
+  - Added backend客服工作台 controls and event handlers for file upload, video upload, and browser voice recording; backend media uploads include CSRF and send WSS messages with current chat, product, and store context.
+  - Added media rendering for file links, inline videos, and inline audio playback in both PC/H5 and backend workbench chat histories.
+  - Extended `customer-service-media-test/run` source-marker checks to cover Python `msg_type=1-5` guards plus PC/H5/backend `fileBtn`, `videoBtn`, `voiceBtn`, `sendMedia`, and `mediaUploadUrl` wiring.
+  - Updated the Phase 9 backlog row to record that the source implementation is added and full DB/browser acceptance remains pending.
+- Main files changed/added:
+  - `deploy/im-backend/main.py`
+  - `web/resources/mall/default/views/chat/index.php`
+  - `backend/modules/mall/views/kf/index.php`
+  - `console/controllers/CustomerServiceMediaTestController.php`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l web/resources/mall/default/views/chat/index.php` passed.
+  - `php -l backend/modules/mall/views/kf/index.php` passed.
+  - `php -l console/controllers/CustomerServiceMediaTestController.php` passed.
+  - `php -l frontend/modules/mall/controllers/ChatController.php` passed.
+  - `php -l backend/modules/mall/controllers/KfController.php` passed.
+  - `php -l common/services/mall/CustomerServiceMediaService.php` passed.
+  - `python -m py_compile deploy/im-backend/main.py` passed; generated `deploy/im-backend/__pycache__` was removed.
+  - `php yii customer-service-media-test/run --fixture=1 --interactive=0` could not run in this local patch checkout because `vendor/autoload.php` is absent; run it on BaoTa or a full dependency checkout.
+- Remaining issues:
+  - Need run `customer-service-media-test/run --fixture=1` and a real WSS browser flow in a DB/vendor environment after deployment.
+  - Browser microphone recording requires HTTPS and user permission; unsupported browsers fall back with a visible message and do not block text/image/file/video.
+  - Phase 9.2 still needs acceptance evidence for real upload, playback/download, and refresh persistence across buyer and客服 roles.
+- Next stage:
+  - Reread the development plan and this log, then start Phase 9.3 complete order/product assistance with order/product search and read-only assistance workflow foundation.
+
+## 2026-06-23 Phase 9.3 Order/Product Assistance Foundation
+
+- Stage name: Phase 9.3 read-only order/product search and approval-only assistance request foundation
+- Completed:
+  - Reread the Phase 9 plan section in `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting Phase 9.3.
+  - Added `CustomerServiceAssistanceService` for read-only order search, product search, order detail, product detail, order-item display, payment-attempt display, logistics summary, and assistance request creation.
+  - Added assistance types for payment guidance, logistics query, merchant material request, exchange suggestion, refund suggestion, and compensation suggestion.
+  - Kept the safety boundary explicit: assistance search is read-only, and assistance requests create客服工单 only; they do not mutate order, payment, fund, stock, refund, settlement, or inventory rows.
+  - Extended ticket creation event metadata to record `assistance_type`, `risk_action`, and `approval_required` as redacted workflow context.
+  - Added backend JSON actions for `/backend/mall/kf/assistance-search`, `/backend/mall/kf/assistance-detail`, and `/backend/mall/kf/assistance-request`.
+  - Added the backend workbench right-panel UI for order/product query, detail loading, payment/logistics/order-item context display, and assistance request creation.
+  - Added a Phase 9.3 permission migration for the three new backend AJAX routes and granted them to existing customer-service role ranges.
+  - Added `customer-service-assistance-test/run` source-marker and dry-run readiness command.
+  - Updated the Phase 9 backlog row to record Phase 9.3 foundation implementation while DB/browser acceptance remains pending.
+- Main files changed/added:
+  - `common/services/mall/CustomerServiceAssistanceService.php`
+  - `common/services/mall/CustomerServiceTicketCreateService.php`
+  - `backend/modules/mall/controllers/KfController.php`
+  - `backend/modules/mall/views/kf/index.php`
+  - `console/controllers/CustomerServiceAssistanceTestController.php`
+  - `console/migrations/m260623_093000_mongoyia_customer_service_assistance_permission.php`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l common/services/mall/CustomerServiceAssistanceService.php` passed.
+  - `php -l common/services/mall/CustomerServiceTicketCreateService.php` passed.
+  - `php -l backend/modules/mall/controllers/KfController.php` passed.
+  - `php -l backend/modules/mall/views/kf/index.php` passed.
+  - `php -l console/controllers/CustomerServiceAssistanceTestController.php` passed.
+  - `php -l console/migrations/m260623_093000_mongoyia_customer_service_assistance_permission.php` passed.
+  - `php yii customer-service-assistance-test/run --fixture=1 --interactive=0` could not run in this local patch checkout because `vendor/autoload.php` is absent; run it on BaoTa or a full dependency checkout after migrations.
+- Remaining issues:
+  - Need run `yii migrate/up` for the Phase 9.1 translation metadata migration and the Phase 9.3 assistance permission migration on BaoTa/full DB.
+  - Need run `customer-service-assistance-test/run --fixture=1` in a full vendor/DB environment.
+  - Need browser acceptance for platform and merchant客服 roles: search order/product, open details, create assistance request, refresh, and confirm the ticket/event audit exists.
+- Next stage:
+  - Reread the development plan and this log, then start Phase 9.4 complaint full loop with categories, seller proof, platform review, conclusion, feedback, and complaint-to-assistance link.
+
+## 2026-06-23 Phase 9.4 Complaint Full Loop Foundation
+
+- Stage name: Phase 9.4 complaint category/proof/review/conclusion workflow foundation
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before continuing Phase 9.4.
+  - Extended customer-service ticket statuses to include seller proof, platform review, and rejected, with guarded status transitions.
+  - Added `CustomerServiceComplaintLoopService` for complaint categories, user/service/seller/platform proof roles, loop summaries, dry-run plans, complaint step recording, and complaint-to-assistance link recording.
+  - Added backend ticket-detail UI for complaint classification, evidence/proof notes, status transition, processing conclusion, user feedback, proof timeline, and linked assistance-ticket display.
+  - Added backend actions `/backend/mall/kf/complaint-loop-step` and `/backend/mall/kf/complaint-link-assistance`; linked assistance creates or reuses an approval-only assistance ticket and records the link back on the complaint.
+  - Added a Phase 9.4 permission migration for the two new complaint-loop backend routes and granted them to existing customer-service role ranges.
+  - Updated `customer-service-complaint-loop-test/run` source-marker checks and fixture dry-run coverage.
+  - Updated the Phase 9 backlog row to record Phase 9.4 implementation while DB/browser acceptance remains pending.
+- Main files changed/added:
+  - `common/services/mall/CustomerServiceAdvancedService.php`
+  - `common/services/mall/CustomerServiceComplaintLoopService.php`
+  - `backend/modules/mall/controllers/KfController.php`
+  - `backend/modules/mall/views/kf/ticket-view.php`
+  - `backend/modules/mall/views/kf/tickets.php`
+  - `console/controllers/CustomerServiceComplaintLoopTestController.php`
+  - `console/migrations/m260623_094000_mongoyia_customer_service_complaint_loop_permission.php`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l common/services/mall/CustomerServiceAdvancedService.php` passed.
+  - `php -l common/services/mall/CustomerServiceComplaintLoopService.php` passed.
+  - `php -l backend/modules/mall/controllers/KfController.php` passed.
+  - `php -l backend/modules/mall/views/kf/ticket-view.php` passed.
+  - `php -l backend/modules/mall/views/kf/tickets.php` passed.
+  - `php -l console/controllers/CustomerServiceComplaintLoopTestController.php` passed.
+  - `php -l console/migrations/m260623_094000_mongoyia_customer_service_complaint_loop_permission.php` passed.
+  - `php yii customer-service-complaint-loop-test/run --fixture=1 --interactive=0` could not run in this local patch checkout because `vendor/autoload.php` is absent; run it on BaoTa or a full dependency checkout after migrations.
+- Remaining issues:
+  - Need run the Phase 9.4 permission migration and `customer-service-complaint-loop-test/run --fixture=1` in a full vendor/DB environment.
+  - Need browser acceptance for platform and merchant客服 roles: create/open a complaint, record classification/proof, move to seller proof/platform review, record conclusion and user feedback, create linked assistance, refresh, and confirm evidence/event persistence.
+- Next stage:
+  - Reread the development plan and this log, then start Phase 9.5 deep statistics with read-only analytics service, dashboard/chart data, filters, CSV export, and scheduled aggregation readiness.
+
+## 2026-06-23 Phase 9.5 Deep Statistics Analytics Foundation
+
+- Stage name: Phase 9.5 read-only客服深度统计、CSV导出、聚合/告警准备
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting Phase 9.5.
+  - Added `CustomerServiceAnalyticsService` for staff/store/language/channel/hour/media/ticket/complaint dimensions using existing chat, ticket, rating, and daily-stat sources.
+  - Added KPI calculations for consultation/message/media/ticket/complaint/resolved totals, average first response, average resolution, timeout rate, satisfaction score, translation failure rate, media-send failure placeholder, and peak hour.
+  - Added backend `/backend/mall/kf/analytics` dashboard with filters, KPI cards, distribution tables with chart bars, staff/store/hour rankings, dry-run scheduled aggregation plan, and Phase 7 alert signal handoff.
+  - Added `/backend/mall/kf/analytics-export` CSV export and linked the deep-statistics page from the existing客服工单 page.
+  - Added a Phase 9.5 permission migration for analytics dashboard/export routes and granted them to existing customer-service role ranges.
+  - Added `customer-service-analytics-test/run` source-marker and dry-run readiness command.
+  - Kept analytics read-only: no order/payment/fund/stock changes, no backend stat overwrite, and scheduled aggregation remains audit/CLI-gated.
+  - Updated the Phase 9 backlog row to record Phase 9.5 implementation while DB/browser acceptance remains pending.
+- Main files changed/added:
+  - `common/services/mall/CustomerServiceAnalyticsService.php`
+  - `backend/modules/mall/controllers/KfController.php`
+  - `backend/modules/mall/views/kf/analytics.php`
+  - `backend/modules/mall/views/kf/tickets.php`
+  - `console/controllers/CustomerServiceAnalyticsTestController.php`
+  - `console/migrations/m260623_095000_mongoyia_customer_service_analytics_permission.php`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l common/services/mall/CustomerServiceAnalyticsService.php` passed.
+  - `php -l backend/modules/mall/controllers/KfController.php` passed.
+  - `php -l backend/modules/mall/views/kf/analytics.php` passed.
+  - `php -l backend/modules/mall/views/kf/tickets.php` passed.
+  - `php -l console/controllers/CustomerServiceAnalyticsTestController.php` passed.
+  - `php -l console/migrations/m260623_095000_mongoyia_customer_service_analytics_permission.php` passed.
+  - `php yii customer-service-analytics-test/run --fixture=1 --interactive=0` could not run in this local patch checkout because `vendor/autoload.php` is absent; run it on BaoTa or a full dependency checkout after migrations.
+- Remaining issues:
+  - Need run the Phase 9.5 permission migration and `customer-service-analytics-test/run --fixture=1` in a full vendor/DB environment.
+  - Need browser acceptance for platform and merchant客服 roles: open deep statistics, filter by store/language/channel/media/ticket/complaint, export CSV, and confirm no permission越权.
+  - Persisted chat rows do not record failed client uploads, so media-send failure rate is a placeholder until a later client-error log source is added in a planned stage.
+- Next stage:
+  - Reread the development plan and this log, then start Phase 9.6 uni-app customer chat client with a runnable development package and shared客服 API usage.
+
+## 2026-06-23 Phase 9.6 uni-app Customer Chat Client Foundation
+
+- Stage name: Phase 9.6 first runnable uni-app客服聊天端开发包
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting Phase 9.6.
+  - Added `apps/mongoyia-customer-chat-uniapp` as a uni-app/Vite development package with `manifest.json`, `pages.json`, `App.vue`, `main.js`, `vite.config.js`, H5 entry, shared API helpers, and README.
+  - Added a customer chat page supporting product-entry parameters, backend/WSS configuration, token handoff, WSS connect/history, text send, image/file/video/voice upload and send, translated-message display, media preview/playback/download, and satisfaction rating submission.
+  - Reused existing frontend客服 APIs: `/mall/chat/token`, `/mall/chat/translate`, `/mall/chat/media-upload`, `/mall/chat/rating-submit`, and the Python IM WSS protocol.
+  - Extended `/mall/chat/token` response with `uid`, `product_id`, and `store_id` so APP clients can enter by product ID without duplicating product/support lookup logic.
+  - Added `customer-service-uniapp-test/run` source-marker and dry-run readiness command.
+  - Kept APP scope limited to客服 chat client; it does not copy order, payment, refund, stock, or complaint business logic.
+  - Updated the Phase 9 backlog row to record Phase 9.6 implementation while manual dev-client validation remains pending.
+- Main files changed/added:
+  - `apps/mongoyia-customer-chat-uniapp/package.json`
+  - `apps/mongoyia-customer-chat-uniapp/manifest.json`
+  - `apps/mongoyia-customer-chat-uniapp/pages.json`
+  - `apps/mongoyia-customer-chat-uniapp/App.vue`
+  - `apps/mongoyia-customer-chat-uniapp/main.js`
+  - `apps/mongoyia-customer-chat-uniapp/vite.config.js`
+  - `apps/mongoyia-customer-chat-uniapp/index.html`
+  - `apps/mongoyia-customer-chat-uniapp/uni.scss`
+  - `apps/mongoyia-customer-chat-uniapp/utils/config.js`
+  - `apps/mongoyia-customer-chat-uniapp/utils/api.js`
+  - `apps/mongoyia-customer-chat-uniapp/pages/chat/index.vue`
+  - `apps/mongoyia-customer-chat-uniapp/README.md`
+  - `frontend/modules/mall/controllers/ChatController.php`
+  - `console/controllers/CustomerServiceUniappTestController.php`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l frontend/modules/mall/controllers/ChatController.php` passed.
+  - `php -l console/controllers/CustomerServiceUniappTestController.php` passed.
+  - `node --check apps/mongoyia-customer-chat-uniapp/utils/config.js` passed.
+  - `node --check apps/mongoyia-customer-chat-uniapp/utils/api.js` passed.
+  - `node --check apps/mongoyia-customer-chat-uniapp/vite.config.js` passed.
+  - JSON parse check passed for `package.json`, `manifest.json`, and `pages.json`.
+  - `php yii customer-service-uniapp-test/run --fixture=1 --interactive=0` could not run in this local patch checkout because `vendor/autoload.php` is absent; run it on BaoTa or a full dependency checkout.
+- Remaining issues:
+  - Need run `customer-service-uniapp-test/run --fixture=1` in a full vendor environment.
+  - Need run HBuilderX or `npm install && npm run dev:h5` from `apps/mongoyia-customer-chat-uniapp`, then manually validate APP/H5 chat against test-server WSS.
+  - App-store packaging, push certificates, and store submission remain outside this Phase 9.6 development package scope.
+- Next stage:
+  - Reread the development plan and this log, then start Phase 9.7 final browser/app acceptance planning and evidence command coverage for buyer PC/H5/APP, merchant客服, platform客服, translation, full media, ticket/complaint/analytics persistence.
+
+## 2026-06-23 Phase 9.7 Final Acceptance Command And Checklist
+
+- Stage name: Phase 9.7 customer-service complete-requirements acceptance evidence command
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting Phase 9.7.
+  - Added a read-only `customer-service-phase9-acceptance/run` command that verifies Phase 9.1-9.6 source coverage for translation, full-media IM, assistance, complaint loop, analytics, and uni-app chat.
+  - Added optional `--runChildChecks=1 --fixture=1` support so BaoTa/full-vendor environments can run all Phase 9 child readiness commands from one acceptance entry point.
+  - Added Markdown evidence output under `runtime/handover` with the buyer PC/H5, merchant客服, platform客服, full-media, translation, complaint, analytics, refresh-persistence, and uni-app manual acceptance checklist.
+  - Added explicit `--browserAccepted=1` and `--appAccepted=1` evidence flags so the final report can distinguish code readiness from completed browser/APP validation.
+  - Updated the Phase 9 backlog row to mark Phase 9.7 acceptance command/checklist as added while DB/browser/APP evidence remains pending.
+- Main files changed/added:
+  - `console/controllers/CustomerServicePhase9AcceptanceController.php`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l console/controllers/CustomerServicePhase9AcceptanceController.php` passed.
+  - `php -l` passed for `CustomerServiceTranslationTestController.php`, `CustomerServiceMediaTestController.php`, `CustomerServiceAssistanceTestController.php`, `CustomerServiceComplaintLoopTestController.php`, `CustomerServiceAnalyticsTestController.php`, and `CustomerServiceUniappTestController.php`.
+  - `php yii customer-service-phase9-acceptance/run --baseUrl=https://demo2026.mongoyia.com --productId=2 --interactive=0` could not boot in this local patch checkout because `vendor/autoload.php` is absent.
+- Remaining issues:
+  - Need deploy/pull the Phase 9 code to BaoTa or another full dependency checkout, run migrations, and run `customer-service-phase9-acceptance/run --runChildChecks=1 --fixture=1 --strict=1`.
+  - Need complete the manual browser role-flow and uni-app/H5 development-client validation, then rerun the Phase 9 acceptance command with `--browserAccepted=1 --appAccepted=1` and evidence paths.
+  - Local checkout still cannot run Yii/DB/browser acceptance because Composer vendor dependencies are not present.
+- Next stage:
+  - Reread the development plan and this log. If the Phase 9 code has been deployed to the full BaoTa environment, run the Phase 9 migrations, run the Phase 9 acceptance command with child checks, complete browser/APP role-flow validation, and write the final acceptance result to this log.
+
+## 2026-06-23 Phase 9.7 Browser Deployment Probe
+
+- Stage name: Phase 9.7 test-server deployment readiness probe before role-flow acceptance
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before attempting Phase 9.7 browser validation.
+  - Used the in-app browser to open the test-server backend客服 workbench at `https://demo2026.mongoyia.com/backend/mall/kf/index`.
+  - Confirmed the backend session is authenticated and the existing客服工作台 page loads.
+  - Checked for Phase 9 browser markers before creating any new test data.
+  - Stopped before role-flow mutation because the server page still appears to be the Phase 8客服 UI.
+- Main files changed/added:
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - Browser probe for `/backend/mall/kf/index` loaded the客服 workbench, but did not show Phase 9 file/video/voice controls, order/product assistance search panel, or Phase 9 analytics markers.
+  - Browser probe for `/backend/mall/kf/analytics` failed with an HTTP response-code error, consistent with the Phase 9.5 analytics page not being deployed/enabled on the test server yet.
+  - No browser test records, chat messages, media uploads, tickets, complaints, ratings, or analytics exports were created in this probe.
+- Remaining issues:
+  - Test server must pull/deploy the Phase 9 code, run migrations, and run the Phase 9 child readiness commands before browser/APP role-flow acceptance is meaningful.
+  - Local patch checkout still cannot run Yii commands because `vendor/autoload.php` is absent.
+- Next stage:
+  - After deployment to BaoTa/full dependency environment, run:
+    `/www/server/php/83/bin/php yii migrate/up --interactive=0`
+    and
+    `/www/server/php/83/bin/php yii customer-service-phase9-acceptance/run --baseUrl=https://demo2026.mongoyia.com --productId=2 --runChildChecks=1 --fixture=1 --strict=1 --interactive=0`.
+  - If that passes, continue Phase 9.7 browser/APP role-flow acceptance and rerun the acceptance command with `--browserAccepted=1 --appAccepted=1` plus evidence paths.

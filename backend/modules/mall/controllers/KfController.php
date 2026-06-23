@@ -4,7 +4,10 @@ namespace backend\modules\mall\controllers;
 
 use common\models\Store;
 use common\services\mall\CustomerServiceAdvancedService;
+use common\services\mall\CustomerServiceAnalyticsService;
+use common\services\mall\CustomerServiceAssistanceService;
 use common\services\mall\CustomerServiceComplaintEvidenceService;
+use common\services\mall\CustomerServiceComplaintLoopService;
 use common\services\mall\CustomerServiceQuickReplyService;
 use common\services\mall\CustomerServiceRatingService;
 use common\services\mall\CustomerServiceTicketAssignService;
@@ -12,6 +15,8 @@ use common\services\mall\CustomerServiceTicketCreateService;
 use common\services\mall\CustomerServiceTicketNoteService;
 use common\services\mall\CustomerServiceTicketResultService;
 use common\services\mall\CustomerServiceTicketWorkflowService;
+use common\services\mall\CustomerServiceTranslationService;
+use common\services\mall\CustomerServiceMediaService;
 use common\services\mall\CustomerServiceComplaintExportService;
 use common\services\mall\CustomerServiceResultSignoffService;
 use common\services\mall\CustomerServiceSessionContextService;
@@ -56,11 +61,14 @@ class KfController extends BaseController
             }
         }
 
+        $translationService = new CustomerServiceTranslationService();
+
         return $this->render($this->action->id, [
             'uid' => $uid,
             'isPlatformOperator' => $isPlatformOperator,
             'storeMap' => $storeMap,
             'quickReplies' => (new CustomerServiceQuickReplyService())->workbenchRows($isPlatformOperator ? 0 : (int)$this->getStoreId()),
+            'staffWorkLanguage' => $translationService->defaultStaffWorkLanguage(),
             'imAuthToken' => $this->createImAuthToken([
                 'type' => $isPlatformOperator ? 'platform' : 'merchant',
                 'user_id' => (string)$uid,
@@ -130,6 +138,9 @@ class KfController extends BaseController
             throw new NotFoundHttpException(Yii::t('app', 'No results found.'));
         }
 
+        $complaintLoopService = new CustomerServiceComplaintLoopService();
+        $assistanceService = new CustomerServiceAssistanceService();
+
         return $this->render('ticket-view', [
             'isPlatformOperator' => $isPlatformOperator,
             'ticket' => $ticket,
@@ -137,6 +148,11 @@ class KfController extends BaseController
             'evidenceFiles' => (new CustomerServiceComplaintEvidenceService())->evidenceList($ticket),
             'ratingRows' => (new CustomerServiceRatingService())->rowsForTicket($ticket),
             'workflowTargets' => $service->supportedTransitions()[(string)$ticket['ticket_status']] ?? [],
+            'complaintLoopSummary' => (string)$ticket['ticket_type'] === CustomerServiceAdvancedService::TICKET_TYPE_COMPLAINT ? $complaintLoopService->loopSummary($ticket) : [],
+            'complaintCategories' => $complaintLoopService->categories(),
+            'complaintEvidenceRoles' => $complaintLoopService->evidenceRoles(),
+            'complaintStatusLabels' => $complaintLoopService->statusLabels(),
+            'assistanceTypes' => $assistanceService->assistanceTypes(),
         ]);
     }
 
@@ -152,6 +168,197 @@ class KfController extends BaseController
         }
 
         return $result;
+    }
+
+    public function actionAssistanceSearch()
+    {
+        Yii::$app->response->format = Response::FORMAT_JSON;
+
+        $isPlatformOperator = $this->isMallPlatformOperator();
+        $scopeStoreId = $this->readableStoreId($isPlatformOperator);
+        $request = Yii::$app->request;
+        $kind = strtolower(trim((string)$request->get('kind', 'order')));
+        $service = new CustomerServiceAssistanceService();
+        $items = $kind === 'product'
+            ? $service->searchProducts($request->get(), $scopeStoreId, (int)$request->get('limit', 20))
+            : $service->searchOrders($request->get(), $scopeStoreId, (int)$request->get('limit', 20));
+
+        return [
+            'code' => 200,
+            'msg' => 'ok',
+            'data' => [
+                'version' => CustomerServiceAssistanceService::VERSION,
+                'kind' => $kind === 'product' ? 'product' : 'order',
+                'items' => $items,
+                'assistance_types' => $service->assistanceTypes(),
+                'boundaries' => $service->boundaries(),
+            ],
+        ];
+    }
+
+    public function actionAssistanceDetail()
+    {
+        Yii::$app->response->format = Response::FORMAT_JSON;
+
+        $isPlatformOperator = $this->isMallPlatformOperator();
+        $scopeStoreId = $this->readableStoreId($isPlatformOperator);
+        $request = Yii::$app->request;
+        $kind = strtolower(trim((string)$request->get('kind', 'order')));
+        $id = (int)$request->get('id', 0);
+        $service = new CustomerServiceAssistanceService();
+        $detail = $kind === 'product'
+            ? $service->productDetail($id, $scopeStoreId)
+            : $service->orderDetail($id, $scopeStoreId);
+        if (!$detail) {
+            Yii::$app->response->statusCode = 404;
+            return ['code' => 404, 'msg' => Yii::t('app', 'No results found.')];
+        }
+
+        return [
+            'code' => 200,
+            'msg' => 'ok',
+            'data' => $detail + [
+                'kind' => $kind === 'product' ? 'product' : 'order',
+                'assistance_types' => $service->assistanceTypes(),
+            ],
+        ];
+    }
+
+    public function actionAssistanceRequest()
+    {
+        Yii::$app->response->format = Response::FORMAT_JSON;
+        if (!Yii::$app->request->isPost) {
+            Yii::$app->response->statusCode = 405;
+            return ['code' => 405, 'msg' => Yii::t('app', 'Invalid request method.')];
+        }
+
+        $request = Yii::$app->request;
+        $isPlatformOperator = $this->isMallPlatformOperator();
+        $scopeStoreId = $this->readableStoreId($isPlatformOperator);
+        $operatorType = $isPlatformOperator
+            ? CustomerServiceAdvancedService::OPERATOR_TYPE_PLATFORM
+            : CustomerServiceAdvancedService::OPERATOR_TYPE_MERCHANT;
+        $storeId = $isPlatformOperator ? (int)$request->post('store_id', 0) : $scopeStoreId;
+
+        try {
+            $result = (new CustomerServiceAssistanceService())->createAssistanceRequest([
+                'store_id' => $storeId,
+                'product_id' => (int)$request->post('product_id', 0),
+                'order_id' => (int)$request->post('order_id', 0),
+                'order_sn' => (string)$request->post('order_sn', ''),
+                'customer_user_id' => (int)$request->post('customer_user_id', 0),
+                'customer_uuid' => (string)$request->post('customer_uuid', ''),
+                'merchant_user_id' => $isPlatformOperator ? (int)$request->post('merchant_user_id', 0) : (int)Yii::$app->user->id,
+                'platform_user_id' => $isPlatformOperator ? (int)Yii::$app->user->id : 0,
+                'chat_uuid' => (string)$request->post('chat_uuid', ''),
+                'title' => (string)$request->post('title', ''),
+                'content' => (string)$request->post('content', ''),
+                'remark' => 'backend customer-service assistance request',
+            ], (string)$request->post('assistance_type', ''), true, (int)Yii::$app->user->id, $operatorType, $scopeStoreId);
+
+            if ((int)$result['created'] <= 0) {
+                Yii::$app->response->statusCode = 409;
+                return [
+                    'code' => 409,
+                    'success' => false,
+                    'msg' => $result['skipped'][0]['reason'] ?? Yii::t('app', 'No eligible records'),
+                    'ticket_id' => (int)($result['skipped'][0]['ticketId'] ?? 0),
+                ];
+            }
+
+            $this->clearCache();
+            return [
+                'code' => 200,
+                'success' => true,
+                'msg' => Yii::t('app', 'Operate Successfully'),
+                'data' => [
+                    'ticket_id' => (int)$result['ticketId'],
+                    'ticket_sn' => (string)$result['ticketSn'],
+                    'assistance_type' => (string)$result['assistanceType'],
+                    'approval_required' => !empty($result['approvalRequired']),
+                    'risk_action' => (string)$result['riskAction'],
+                    'boundaries' => $result['boundaries'],
+                ],
+            ];
+        } catch (\Throwable $e) {
+            Yii::$app->response->statusCode = 400;
+            return ['code' => 400, 'success' => false, 'msg' => $e->getMessage()];
+        }
+    }
+
+    public function actionTranslate()
+    {
+        Yii::$app->response->format = Response::FORMAT_JSON;
+        if (!Yii::$app->request->isPost) {
+            Yii::$app->response->statusCode = 405;
+            return ['code' => 405, 'msg' => Yii::t('app', 'Invalid request method.')];
+        }
+
+        $request = Yii::$app->request;
+        $service = new CustomerServiceTranslationService();
+        $targetLanguage = (string)$request->post('target_language', '');
+        if ($targetLanguage === '' && (string)$request->post('direction', '') === 'user_to_staff') {
+            $targetLanguage = $service->defaultStaffWorkLanguage();
+        }
+
+        $translation = $service->translate(
+            (string)$request->post('content', ''),
+            (string)$request->post('source_language', ''),
+            $targetLanguage !== '' ? $targetLanguage : 'en'
+        );
+
+        return [
+            'code' => 200,
+            'msg' => 'ok',
+            'data' => $translation + [
+                'metadata' => $service->messageMetadata($translation),
+            ],
+        ];
+    }
+
+    public function actionMediaUpload()
+    {
+        Yii::$app->response->format = Response::FORMAT_JSON;
+        if (!Yii::$app->request->isPost) {
+            Yii::$app->response->statusCode = 405;
+            return ['code' => 405, 'msg' => Yii::t('app', 'Invalid request method.')];
+        }
+
+        try {
+            $file = UploadedFile::getInstanceByName('file');
+            if (!$file) {
+                Yii::$app->response->statusCode = 400;
+                return ['code' => 400, 'msg' => '上传文件为空'];
+            }
+
+            $service = new CustomerServiceMediaService();
+            $stored = $service->upload($file, (string)Yii::$app->request->post('media', ''), [
+                'duration' => (int)Yii::$app->request->post('duration', 0),
+                'smoke' => Yii::$app->request->post('smoke') === '1',
+            ]);
+            return [
+                'code' => 200,
+                'msg' => 'ok',
+                'data' => $service->responseData($stored),
+            ];
+        } catch (\Throwable $e) {
+            Yii::$app->response->statusCode = 400;
+            return ['code' => 400, 'msg' => $e->getMessage()];
+        }
+    }
+
+    public function actionMediaView($media_id, $token)
+    {
+        try {
+            $file = (new CustomerServiceMediaService())->viewFile((string)$media_id, (string)$token);
+        } catch (\Throwable $e) {
+            throw new NotFoundHttpException($e->getMessage());
+        }
+
+        return Yii::$app->response->sendFile($file['path'], $file['name'], [
+            'mimeType' => $file['mime'],
+            'inline' => in_array($file['media'], ['video', 'voice'], true),
+        ]);
     }
 
     public function actionTicketCreateFromSession()
@@ -382,6 +589,66 @@ class KfController extends BaseController
         ]);
     }
 
+    public function actionAnalytics()
+    {
+        $isPlatformOperator = $this->isMallPlatformOperator();
+        $storeId = $this->readableStoreId($isPlatformOperator);
+        $request = Yii::$app->request;
+        $filters = [
+            'date_from' => (string)$request->get('date_from', ''),
+            'date_to' => (string)$request->get('date_to', ''),
+            'service_user_id' => (int)$request->get('service_user_id', 0),
+            'language' => (string)$request->get('language', ''),
+            'channel' => (string)$request->get('channel', ''),
+            'msg_type' => (int)$request->get('msg_type', 0),
+            'ticket_type' => (string)$request->get('ticket_type', ''),
+            'complaint_category' => (string)$request->get('complaint_category', ''),
+            'first_response_seconds' => (int)$request->get('first_response_seconds', 1800),
+            'resolution_seconds' => (int)$request->get('resolution_seconds', 86400),
+        ];
+        $limit = max(1, min(5000, (int)$request->get('limit', 1000)));
+        $service = new CustomerServiceAnalyticsService();
+
+        return $this->render('analytics', [
+            'isPlatformOperator' => $isPlatformOperator,
+            'storeId' => $storeId,
+            'stores' => $this->getStoresIdName(),
+            'filters' => $filters,
+            'limit' => $limit,
+            'report' => $service->run($storeId, $filters, $limit),
+            'dimensions' => $service->dimensions(),
+            'ticketTypes' => (new CustomerServiceAdvancedService())->supportedTicketTypes(),
+            'complaintCategories' => (new CustomerServiceComplaintLoopService())->categories(),
+        ]);
+    }
+
+    public function actionAnalyticsExport()
+    {
+        $isPlatformOperator = $this->isMallPlatformOperator();
+        $storeId = $this->readableStoreId($isPlatformOperator);
+        $request = Yii::$app->request;
+        $service = new CustomerServiceAnalyticsService();
+        $report = $service->run($storeId, [
+            'date_from' => (string)$request->get('date_from', ''),
+            'date_to' => (string)$request->get('date_to', ''),
+            'service_user_id' => (int)$request->get('service_user_id', 0),
+            'language' => (string)$request->get('language', ''),
+            'channel' => (string)$request->get('channel', ''),
+            'msg_type' => (int)$request->get('msg_type', 0),
+            'ticket_type' => (string)$request->get('ticket_type', ''),
+            'complaint_category' => (string)$request->get('complaint_category', ''),
+            'first_response_seconds' => (int)$request->get('first_response_seconds', 1800),
+            'resolution_seconds' => (int)$request->get('resolution_seconds', 86400),
+        ], (int)$request->get('limit', 1000));
+        $content = implode("\n", $service->csvLines($report)) . "\n";
+
+        return Yii::$app->response->sendContentAsFile(
+            $content,
+            'mongoyia-customer-service-analytics-' . date('Ymd-His') . '.csv',
+            ['mimeType' => 'text/csv', 'inline' => false]
+        );
+    }
+
     public function actionQuickReplies()
     {
         $service = new CustomerServiceQuickReplyService();
@@ -575,6 +842,120 @@ class KfController extends BaseController
             'mimeType' => $file['mime'],
             'inline' => true,
         ]);
+    }
+
+    public function actionComplaintLoopStep()
+    {
+        if (!Yii::$app->request->isPost) {
+            throw new BadRequestHttpException(Yii::t('app', 'Invalid request method.'));
+        }
+
+        $request = Yii::$app->request;
+        $id = (int)$request->post('id', 0);
+        if ($id <= 0) {
+            return $this->redirectError(Yii::t('app', 'Invalid id'), ['tickets']);
+        }
+
+        $isPlatformOperator = $this->isMallPlatformOperator();
+        $storeId = $this->readableStoreId($isPlatformOperator);
+        $operatorType = $isPlatformOperator
+            ? CustomerServiceAdvancedService::OPERATOR_TYPE_PLATFORM
+            : CustomerServiceAdvancedService::OPERATOR_TYPE_MERCHANT;
+
+        try {
+            (new CustomerServiceComplaintLoopService())->recordStep(
+                $id,
+                $request->post(),
+                true,
+                (int)Yii::$app->user->id,
+                $operatorType,
+                $storeId
+            );
+            $this->clearCache();
+            return $this->redirectSuccess(['ticket-view', 'id' => $id], Yii::t('app', 'Operate Successfully'));
+        } catch (\Throwable $e) {
+            return $this->redirectError($e->getMessage(), ['ticket-view', 'id' => $id]);
+        }
+    }
+
+    public function actionComplaintLinkAssistance()
+    {
+        if (!Yii::$app->request->isPost) {
+            throw new BadRequestHttpException(Yii::t('app', 'Invalid request method.'));
+        }
+
+        $request = Yii::$app->request;
+        $id = (int)$request->post('id', 0);
+        if ($id <= 0) {
+            return $this->redirectError(Yii::t('app', 'Invalid id'), ['tickets']);
+        }
+
+        $isPlatformOperator = $this->isMallPlatformOperator();
+        $scopeStoreId = $this->readableStoreId($isPlatformOperator);
+        $operatorType = $isPlatformOperator
+            ? CustomerServiceAdvancedService::OPERATOR_TYPE_PLATFORM
+            : CustomerServiceAdvancedService::OPERATOR_TYPE_MERCHANT;
+        $advancedService = new CustomerServiceAdvancedService();
+        $ticket = $advancedService->ticketRow($id, $scopeStoreId);
+        if (!$ticket || (string)$ticket['ticket_type'] !== CustomerServiceAdvancedService::TICKET_TYPE_COMPLAINT) {
+            return $this->redirectError('Only complaint tickets can link assistance requests.', ['ticket-view', 'id' => $id]);
+        }
+
+        $assistanceType = (string)$request->post('assistance_type', '');
+        $assistanceService = new CustomerServiceAssistanceService();
+        $assistanceTypes = $assistanceService->assistanceTypes();
+        $definition = $assistanceTypes[$assistanceType] ?? null;
+        if ($definition === null) {
+            return $this->redirectError('Unsupported assistance type.', ['ticket-view', 'id' => $id]);
+        }
+
+        try {
+            $result = $assistanceService->createAssistanceRequest([
+                'store_id' => (int)$ticket['store_id'],
+                'product_id' => (int)$ticket['product_id'],
+                'order_id' => (int)$ticket['order_id'],
+                'order_sn' => (string)($ticket['order_sn'] ?? ''),
+                'customer_user_id' => (int)$ticket['customer_user_id'],
+                'customer_uuid' => (string)($ticket['customer_uuid'] ?? ''),
+                'merchant_user_id' => (int)$ticket['merchant_user_id'],
+                'platform_user_id' => $isPlatformOperator ? (int)Yii::$app->user->id : (int)$ticket['platform_user_id'],
+                'chat_uuid' => (string)($ticket['chat_uuid'] ?? ''),
+                'title' => '投诉后续协助：' . (string)$definition['label'],
+                'content' => (string)$request->post('content', ''),
+                'remark' => 'backend complaint linked assistance request',
+                'source' => CustomerServiceComplaintLoopService::SOURCE_ASSISTANCE_LINK,
+            ], $assistanceType, true, (int)Yii::$app->user->id, $operatorType, $scopeStoreId);
+
+            $linkedTicketId = (int)$result['ticketId'];
+            $created = (int)$result['created'] > 0;
+            if (!$created) {
+                $linkedTicketId = (int)($result['skipped'][0]['ticketId'] ?? 0);
+                if ($linkedTicketId <= 0) {
+                    $reason = $result['skipped'][0]['reason'] ?? Yii::t('app', 'No eligible records');
+                    return $this->redirectError($reason, ['ticket-view', 'id' => $id]);
+                }
+            }
+
+            $linkedTicket = $advancedService->ticketRow($linkedTicketId, $scopeStoreId);
+            (new CustomerServiceComplaintLoopService())->recordAssistanceLink(
+                $id,
+                [
+                    'assistance_type' => $assistanceType,
+                    'linked_ticket_id' => $linkedTicketId,
+                    'linked_ticket_sn' => (string)($linkedTicket['ticket_sn'] ?? $result['ticketSn'] ?? ''),
+                    'created' => $created ? 1 : 0,
+                    'note' => (string)$request->post('content', ''),
+                ],
+                true,
+                (int)Yii::$app->user->id,
+                $operatorType,
+                $scopeStoreId
+            );
+            $this->clearCache();
+            return $this->redirectSuccess(['ticket-view', 'id' => $id], Yii::t('app', 'Operate Successfully'));
+        } catch (\Throwable $e) {
+            return $this->redirectError($e->getMessage(), ['ticket-view', 'id' => $id]);
+        }
     }
 
     public function actionTicketCreate()

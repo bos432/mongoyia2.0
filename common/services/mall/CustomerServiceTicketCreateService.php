@@ -150,6 +150,9 @@ class CustomerServiceTicketCreateService
                 'order_id' => $context['order_id'],
                 'product_id' => $context['product_id'],
                 'chat_uuid' => $context['chat_uuid'],
+                'assistance_type' => $context['assistance_type'],
+                'risk_action' => $context['risk_action'],
+                'approval_required' => (int)$context['approval_required'],
             ], JSON_UNESCAPED_SLASHES),
             'remark' => 'customer-service ticket create',
             'status' => 1,
@@ -176,6 +179,9 @@ class CustomerServiceTicketCreateService
             'content' => trim((string)($context['content'] ?? '')),
             'remark' => $this->shortText((string)($context['remark'] ?? ''), 255),
             'source' => $this->shortText((string)($context['source'] ?? ''), 64),
+            'assistance_type' => $this->shortText((string)($context['assistance_type'] ?? ''), 64),
+            'risk_action' => $this->shortText((string)($context['risk_action'] ?? ''), 64),
+            'approval_required' => !empty($context['approval_required']) ? 1 : 0,
         ];
     }
 

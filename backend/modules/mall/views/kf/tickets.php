@@ -27,10 +27,13 @@ $typeLabels = [
     'complaint' => '投诉',
 ];
 $statusLabels = [
-    'pending' => '待处理',
+    'pending' => '待受理',
     'in_progress' => '处理中',
+    'seller_proof' => '待商家举证',
+    'platform_review' => '待平台复核',
     'resolved' => '已解决',
     'closed' => '已关闭',
+    'rejected' => '驳回',
 ];
 $slaActionLabels = [
     'first_response_overdue' => '首响超时',
@@ -312,6 +315,11 @@ $resolvedRate = $resolvedBase > 0 ? round(((int)($statTotals['resolved_count'] ?
             <div class="card-header">
                 <h3 class="card-title">客服日统计预览</h3>
                 <div class="card-tools">
+                    <a
+                        class="btn btn-outline-secondary btn-sm"
+                        data-mongoyia-customer-service-analytics-link="phase9"
+                        href="<?= Html::encode(Url::to(['analytics', 'store_id' => (int)$storeId, 'ticket_type' => (string)$filters['ticket_type'], 'limit' => 1000])) ?>"
+                    >深度统计</a>
                     <a
                         class="btn btn-outline-secondary btn-sm"
                         data-mongoyia-customer-service-export-stat="csv"

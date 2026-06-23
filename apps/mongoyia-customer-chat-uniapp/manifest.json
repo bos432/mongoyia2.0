@@ -1,0 +1,28 @@
+{
+  "name": "Mongoyia客服",
+  "appid": "__UNI__MONGOYIA_CS",
+  "description": "Mongoyia customer-service chat client",
+  "versionName": "0.1.0",
+  "versionCode": "10",
+  "transformPx": false,
+  "app-plus": {
+    "usingComponents": true,
+    "nvueCompiler": "uni-app",
+    "splashscreen": {
+      "alwaysShowBeforeRender": false,
+      "waiting": false,
+      "autoclose": true
+    },
+    "modules": {},
+    "distribute": {
+      "android": {},
+      "ios": {}
+    }
+  },
+  "h5": {
+    "title": "Mongoyia客服",
+    "router": {
+      "mode": "hash"
+    }
+  }
+}

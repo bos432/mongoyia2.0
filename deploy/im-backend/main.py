@@ -41,6 +41,7 @@ CHAT_TABLE = os.getenv('IM_CHAT_TABLE', f'{DB_TABLE_PREFIX}chat')
 IM_AUTH_SECRET = os.getenv('IM_AUTH_SECRET', '')
 MAX_TEXT_MESSAGE_LENGTH = int(os.getenv('IM_MAX_TEXT_MESSAGE_LENGTH', '2000'))
 MAX_IMAGE_MESSAGE_LENGTH = int(os.getenv('IM_MAX_IMAGE_MESSAGE_LENGTH', '2048'))
+MAX_MEDIA_MESSAGE_LENGTH = int(os.getenv('IM_MAX_MEDIA_MESSAGE_LENGTH', '4096'))
 
 def quote_identifier(name):
     if not name.replace('_', '').isalnum():
@@ -157,7 +158,7 @@ def validate_chat_payload(content, msg_type):
     except (TypeError, ValueError):
         raise ValueError("Invalid msg_type")
 
-    if normalized_type not in (1, 2):
+    if normalized_type not in (1, 2, 3, 4, 5):
         raise ValueError("Invalid msg_type")
 
     if not isinstance(content, str):
@@ -173,12 +174,23 @@ def validate_chat_payload(content, msg_type):
 
     if not normalized_content:
         raise ValueError("Empty image message")
-    if len(normalized_content) > MAX_IMAGE_MESSAGE_LENGTH:
-        raise ValueError("Image message too long")
-    if not normalized_content.startswith('/attachment/'):
-        raise ValueError("Invalid image message URL")
+    if normalized_type == 2:
+        if len(normalized_content) > MAX_IMAGE_MESSAGE_LENGTH:
+            raise ValueError("Image message too long")
+        if not normalized_content.startswith('/attachment/'):
+            raise ValueError("Invalid image message URL")
+        if '\\' in normalized_content or '..' in normalized_content or any(ord(ch) < 32 for ch in normalized_content):
+            raise ValueError("Invalid image message URL")
+        return normalized_content, normalized_type
+
+    if len(normalized_content) > MAX_MEDIA_MESSAGE_LENGTH:
+        raise ValueError("Media message too long")
+    if not normalized_content.startswith('/mall/chat/media-view?'):
+        raise ValueError("Invalid media message URL")
     if '\\' in normalized_content or '..' in normalized_content or any(ord(ch) < 32 for ch in normalized_content):
-        raise ValueError("Invalid image message URL")
+        raise ValueError("Invalid media message URL")
+    if 'media_id=' not in normalized_content or 'token=' not in normalized_content:
+        raise ValueError("Invalid media message URL")
 
     return normalized_content, normalized_type
 
@@ -200,6 +212,105 @@ def chat_read_select(prefix=''):
     if has_chat_read_columns():
         return f", {prefix}user_read_at, {prefix}merchant_read_at"
     return ", 0 AS user_read_at, 0 AS merchant_read_at"
+
+def has_chat_translation_columns():
+    return {
+        'original_content',
+        'source_language',
+        'target_language',
+        'translated_content',
+        'translation_status',
+        'translation_provider',
+        'translation_error',
+        'translated_at',
+    }.issubset(CHAT_CONTEXT_COLUMNS)
+
+def chat_translation_select(prefix=''):
+    if has_chat_translation_columns():
+        return (
+            f", {prefix}original_content, {prefix}source_language, {prefix}target_language"
+            f", {prefix}translated_content, {prefix}translation_status, {prefix}translation_provider"
+            f", {prefix}translation_error, {prefix}translated_at"
+        )
+    return (
+        ", '' AS original_content, '' AS source_language, '' AS target_language"
+        ", '' AS translated_content, 'none' AS translation_status, '' AS translation_provider"
+        ", '' AS translation_error, 0 AS translated_at"
+    )
+
+def normalize_language(value):
+    value = str(value or '').strip().replace('_', '-').lower()
+    if value.startswith('zh'):
+        return 'zh-CN'
+    if value.startswith('mn'):
+        return 'mn'
+    if value.startswith('en'):
+        return 'en'
+    return ''
+
+def clean_short_text(value, max_length):
+    value = str(value or '').strip()
+    value = ''.join(ch for ch in value if ord(ch) >= 32 or ch in '\r\n\t')
+    return value[:max_length]
+
+def validate_translation_metadata(msg_data, content, msg_type):
+    metadata = {
+        'original_content': '',
+        'source_language': '',
+        'target_language': '',
+        'translated_content': '',
+        'translation_status': 'none',
+        'translation_provider': '',
+        'translation_error': '',
+        'translated_at': 0,
+    }
+
+    if msg_type != 1:
+        return metadata
+
+    status = str(msg_data.get('translation_status', 'none') or 'none').strip().lower()
+    if status not in ('none', 'translated', 'failed', 'skipped'):
+        status = 'none'
+
+    original_content = clean_short_text(msg_data.get('original_content') or content, MAX_TEXT_MESSAGE_LENGTH)
+    translated_content = clean_short_text(msg_data.get('translated_content'), MAX_TEXT_MESSAGE_LENGTH)
+    source_language = normalize_language(msg_data.get('source_language'))
+    target_language = normalize_language(msg_data.get('target_language'))
+    provider = clean_short_text(msg_data.get('translation_provider'), 32)
+    error = clean_short_text(msg_data.get('translation_error'), 255)
+
+    if status == 'translated' and not translated_content:
+        status = 'failed'
+        error = error or 'Translated content is empty'
+    if status in ('failed', 'skipped') and not translated_content:
+        translated_content = ''
+
+    translated_at = 0
+    if status in ('translated', 'failed'):
+        translated_at = normalize_positive_int(msg_data.get('translated_at')) or int(time.time())
+
+    metadata.update({
+        'original_content': original_content,
+        'source_language': source_language,
+        'target_language': target_language,
+        'translated_content': translated_content,
+        'translation_status': status,
+        'translation_provider': provider,
+        'translation_error': error,
+        'translated_at': translated_at,
+    })
+    return metadata
+
+def media_preview_label(msg_type):
+    if msg_type == 2:
+        return '[图片]'
+    if msg_type == 3:
+        return '[文件]'
+    if msg_type == 4:
+        return '[视频]'
+    if msg_type == 5:
+        return '[语音]'
+    return ''
 
 def unread_count_select(role):
     if not has_chat_read_columns():
@@ -226,14 +337,14 @@ def unread_count_select(role):
                       AND unread.user_read_at = 0
                 ) AS unread_count"""
 
-async def save_message(from_type, uid, content, msg_type, uuid, product_id=0, store_id=0):
+async def save_message(from_type, uid, content, msg_type, uuid, product_id=0, store_id=0, translation_metadata=None):
     """保存消息到数据库
     
     Args:
         from_type: 发送方类型，1为用户，2为商家
         uid: 商家id
         content: 消息内容
-        msg_type: 消息类型，1为文字，2为图片
+        msg_type: 消息类型，1文字，2图片，3文件，4视频，5语音
         uuid: 用户unique_id
     
     Returns:
@@ -261,6 +372,29 @@ async def save_message(from_type, uid, content, msg_type, uuid, product_id=0, st
                     values.extend([now_ts, 0])
                 else:
                     values.extend([0, now_ts])
+
+            if has_chat_translation_columns():
+                translation_metadata = translation_metadata or {}
+                columns.extend([
+                    'original_content',
+                    'source_language',
+                    'target_language',
+                    'translated_content',
+                    'translation_status',
+                    'translation_provider',
+                    'translation_error',
+                    'translated_at',
+                ])
+                values.extend([
+                    translation_metadata.get('original_content', ''),
+                    translation_metadata.get('source_language', ''),
+                    translation_metadata.get('target_language', ''),
+                    translation_metadata.get('translated_content', ''),
+                    translation_metadata.get('translation_status', 'none'),
+                    translation_metadata.get('translation_provider', ''),
+                    translation_metadata.get('translation_error', ''),
+                    normalize_positive_int(translation_metadata.get('translated_at')),
+                ])
 
             placeholders = ['%s'] * len(columns)
             if not chat_time_uses_unix_timestamp():
@@ -327,7 +461,7 @@ async def get_chat_history(uuid, uid, limit=50):
     async with db_pool.acquire() as conn:
         async with conn.cursor(aiomysql.DictCursor) as cur:
             await cur.execute(f"""
-                SELECT id, `from`, uid, content, `type` as msg_type, time, uuid {chat_context_select()} {chat_read_select()}
+                SELECT id, `from`, uid, content, `type` as msg_type, time, uuid {chat_context_select()} {chat_read_select()} {chat_translation_select()}
                 FROM {CHAT_TABLE_SQL}
                 WHERE uuid = %s AND uid = %s
                 ORDER BY id DESC
@@ -372,8 +506,9 @@ async def get_user_chat_list(uuid):
                     chat['time'] = chat['time'].strftime('%Y-%m-%d %H:%M:%S')
                 
                 # 消息类型显示处理
-                if chat['msg_type'] == 2:
-                    chat['content'] = '[图片]'
+                label = media_preview_label(chat['msg_type'])
+                if label:
+                    chat['content'] = label
             
             return chat_list
 
@@ -407,8 +542,9 @@ async def get_merchant_chat_list(uid):
                 if isinstance(chat['time'], datetime):
                     chat['time'] = chat['time'].strftime('%Y-%m-%d %H:%M:%S')
                 
-                if chat['msg_type'] == 2:
-                    chat['content'] = '[图片]'
+                label = media_preview_label(chat['msg_type'])
+                if label:
+                    chat['content'] = label
             
             return chat_list
 
@@ -433,8 +569,9 @@ async def get_platform_chat_list():
                 if isinstance(chat['time'], datetime):
                     chat['time'] = chat['time'].strftime('%Y-%m-%d %H:%M:%S')
 
-                if chat['msg_type'] == 2:
-                    chat['content'] = '[图片]'
+                label = media_preview_label(chat['msg_type'])
+                if label:
+                    chat['content'] = label
 
             return chat_list
 
@@ -583,6 +720,7 @@ async def handle_client_inner(websocket, path=None):
                     )
                     product_id = normalize_positive_int(msg_data.get("product_id", 0))
                     store_id = normalize_positive_int(msg_data.get("store_id", 0))
+                    translation_metadata = validate_translation_metadata(msg_data, content, msg_type)
                     
                     if user_type == "user":
                         # 用户发消息给商家
@@ -592,10 +730,10 @@ async def handle_client_inner(websocket, path=None):
                         uuid = client_key
                         
                         # 保存消息
-                        message_id = await save_message(from_type, target_uid, content, msg_type, uuid, product_id, store_id)
+                        message_id = await save_message(from_type, target_uid, content, msg_type, uuid, product_id, store_id, translation_metadata)
                         
                         # 构造广播消息
-                        broadcast_msg = json.dumps({
+                        broadcast_data = {
                             "type": "chat",
                             "message_id": str(message_id),
                             "from": from_type,
@@ -606,7 +744,9 @@ async def handle_client_inner(websocket, path=None):
                             "product_id": product_id,
                             "store_id": store_id,
                             "timestamp": time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())
-                        })
+                        }
+                        broadcast_data.update(translation_metadata)
+                        broadcast_msg = json.dumps(broadcast_data)
                         
                         # 发送给商家
                         await send_to_merchant(target_uid, broadcast_msg)
@@ -626,10 +766,10 @@ async def handle_client_inner(websocket, path=None):
                             product_id, store_id = await get_latest_chat_context(target_uuid, uid)
                         
                         # 保存消息
-                        message_id = await save_message(from_type, uid, content, msg_type, target_uuid, product_id, store_id)
+                        message_id = await save_message(from_type, uid, content, msg_type, target_uuid, product_id, store_id, translation_metadata)
                         
                         # 构造广播消息
-                        broadcast_msg = json.dumps({
+                        broadcast_data = {
                             "type": "chat",
                             "message_id": str(message_id),
                             "from": from_type,
@@ -640,7 +780,9 @@ async def handle_client_inner(websocket, path=None):
                             "product_id": product_id,
                             "store_id": store_id,
                             "timestamp": time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())
-                        })
+                        }
+                        broadcast_data.update(translation_metadata)
+                        broadcast_msg = json.dumps(broadcast_data)
                         
                         # 发送给用户
                         await send_to_user(target_uuid, broadcast_msg)

@@ -9,8 +9,11 @@ class CustomerServiceAdvancedService
 
     const TICKET_STATUS_PENDING = 'pending';
     const TICKET_STATUS_IN_PROGRESS = 'in_progress';
+    const TICKET_STATUS_SELLER_PROOF = 'seller_proof';
+    const TICKET_STATUS_PLATFORM_REVIEW = 'platform_review';
     const TICKET_STATUS_RESOLVED = 'resolved';
     const TICKET_STATUS_CLOSED = 'closed';
+    const TICKET_STATUS_REJECTED = 'rejected';
 
     const PRIORITY_NORMAL = 'normal';
     const PRIORITY_HIGH = 'high';
@@ -146,17 +149,23 @@ class CustomerServiceAdvancedService
         return [
             self::TICKET_STATUS_PENDING,
             self::TICKET_STATUS_IN_PROGRESS,
+            self::TICKET_STATUS_SELLER_PROOF,
+            self::TICKET_STATUS_PLATFORM_REVIEW,
             self::TICKET_STATUS_RESOLVED,
             self::TICKET_STATUS_CLOSED,
+            self::TICKET_STATUS_REJECTED,
         ];
     }
 
     public function supportedTransitions(): array
     {
         return [
-            self::TICKET_STATUS_PENDING => [self::TICKET_STATUS_IN_PROGRESS, self::TICKET_STATUS_CLOSED],
-            self::TICKET_STATUS_IN_PROGRESS => [self::TICKET_STATUS_RESOLVED, self::TICKET_STATUS_CLOSED],
+            self::TICKET_STATUS_PENDING => [self::TICKET_STATUS_IN_PROGRESS, self::TICKET_STATUS_SELLER_PROOF, self::TICKET_STATUS_REJECTED, self::TICKET_STATUS_CLOSED],
+            self::TICKET_STATUS_IN_PROGRESS => [self::TICKET_STATUS_SELLER_PROOF, self::TICKET_STATUS_PLATFORM_REVIEW, self::TICKET_STATUS_RESOLVED, self::TICKET_STATUS_REJECTED, self::TICKET_STATUS_CLOSED],
+            self::TICKET_STATUS_SELLER_PROOF => [self::TICKET_STATUS_PLATFORM_REVIEW, self::TICKET_STATUS_IN_PROGRESS, self::TICKET_STATUS_REJECTED, self::TICKET_STATUS_CLOSED],
+            self::TICKET_STATUS_PLATFORM_REVIEW => [self::TICKET_STATUS_RESOLVED, self::TICKET_STATUS_REJECTED, self::TICKET_STATUS_IN_PROGRESS, self::TICKET_STATUS_CLOSED],
             self::TICKET_STATUS_RESOLVED => [self::TICKET_STATUS_CLOSED],
+            self::TICKET_STATUS_REJECTED => [self::TICKET_STATUS_CLOSED],
             self::TICKET_STATUS_CLOSED => [],
         ];
     }

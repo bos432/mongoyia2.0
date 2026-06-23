@@ -8,6 +8,7 @@ use yii\helpers\Url;
 /* @var $payment array */
 /* @var $paymentEnvironments array */
 /* @var $mail array */
+/* @var $translation array */
 /* @var $opsAlert array */
 /* @var $launch array */
 
@@ -185,6 +186,99 @@ $statusClass = [
                                         <div class="text-muted small mt-2"><?= Html::encode($latest['message']) ?></div>
                                     <?php endif; ?>
                                 </div>
+                        </div>
+                        <?= Html::endForm() ?>
+                    </div>
+                <?php endforeach; ?>
+            </div>
+        </div>
+
+        <div class="mb-3" data-mongoyia-customer-service-translation-config="<?= Html::encode($translation['version'] ?? '') ?>">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <h3 class="mb-0">客服翻译配置</h3>
+            </div>
+            <p class="text-muted">
+                客服消息翻译支持 OpenAI-compatible 和 Google-compatible 两类驱动；API Key 加密保存，页面只展示脱敏状态。翻译失败时聊天仍保留原文，不阻塞消息发送。
+            </p>
+
+            <div class="row">
+                <?php foreach (($translation['providers'] ?? []) as $provider): ?>
+                    <?php $latest = $provider['latest_check'] ?? []; ?>
+                    <?php $badge = $statusClass[$latest['result'] ?? 'PENDING'] ?? 'secondary'; ?>
+                    <div class="col-lg-6 col-md-12">
+                        <?= Html::beginForm(['save-translation'], 'post') ?>
+                        <?= Html::hiddenInput('provider', $provider['provider']) ?>
+                        <?= Html::hiddenInput('environment', $payment['environment'] ?? 'test') ?>
+                        <div class="card">
+                            <div class="card-header">
+                                <h4 class="card-title"><?= Html::encode($provider['label']) ?></h4>
+                                <div class="card-tools">
+                                    <span class="badge badge-<?= $badge ?>"><?= Html::encode($latest['result'] ?? 'PENDING') ?></span>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <p class="text-muted small"><?= Html::encode($provider['description']) ?></p>
+
+                                <?php foreach (($provider['fields'] ?? []) as $field): ?>
+                                    <div class="form-group">
+                                        <label>
+                                            <?= Html::encode($field['label']) ?>
+                                            <?php if (!empty($field['required_for_enable'])): ?>
+                                                <span class="text-danger">*</span>
+                                            <?php endif; ?>
+                                        </label>
+                                        <?php if (($field['type'] ?? '') === 'switch'): ?>
+                                            <?= Html::hiddenInput('config[' . $field['code'] . ']', '0') ?>
+                                            <div>
+                                                <label class="mb-0">
+                                                    <?= Html::checkbox('config[' . $field['code'] . ']', (string)$field['value'] === '1', ['value' => '1']) ?>
+                                                    启用
+                                                </label>
+                                            </div>
+                                        <?php elseif (($field['type'] ?? '') === 'select'): ?>
+                                            <?= Html::dropDownList('config[' . $field['code'] . ']', $field['value'], $translation['work_languages'] ?? [], ['class' => 'form-control']) ?>
+                                        <?php else: ?>
+                                            <?= Html::textInput('config[' . $field['code'] . ']', $field['value'], [
+                                                'class' => 'form-control',
+                                                'type' => ($field['type'] ?? '') === 'number' ? 'number' : 'text',
+                                                'placeholder' => !empty($field['sensitive']) && $field['configured'] ? '已配置，留空保持原值' : (string)($field['default'] ?? ''),
+                                            ]) ?>
+                                        <?php endif; ?>
+                                        <small class="text-muted">
+                                            <?= !empty($field['sensitive']) ? Html::encode($field['redacted_value']) : '当前值可明文显示' ?>
+                                        </small>
+                                    </div>
+                                <?php endforeach; ?>
+
+                                <div class="border-top pt-2">
+                                    <strong>测试翻译</strong>
+                                    <div class="form-row mt-2">
+                                        <div class="col-md-5">
+                                            <?= Html::textInput('test_text', 'Hello', ['class' => 'form-control form-control-sm', 'maxlength' => 255]) ?>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <?= Html::dropDownList('source_language', 'en', $translation['languages'] ?? [], ['class' => 'form-control form-control-sm']) ?>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <?= Html::dropDownList('target_language', 'mn', $translation['languages'] ?? [], ['class' => 'form-control form-control-sm']) ?>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-footer">
+                                <?= Html::submitButton('保存翻译配置', ['class' => 'btn btn-primary btn-sm']) ?>
+                                <?= Html::submitButton('仅检测', [
+                                    'class' => 'btn btn-default btn-sm',
+                                    'formaction' => Url::to(['check-translation']),
+                                ]) ?>
+                                <?= Html::submitButton('测试翻译', [
+                                    'class' => 'btn btn-default btn-sm',
+                                    'formaction' => Url::to(['test-translation']),
+                                ]) ?>
+                                <?php if (!empty($latest['message'])): ?>
+                                    <div class="text-muted small mt-2"><?= Html::encode($latest['message']) ?></div>
+                                <?php endif; ?>
+                            </div>
                         </div>
                         <?= Html::endForm() ?>
                     </div>

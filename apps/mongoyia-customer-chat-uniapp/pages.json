@@ -1,0 +1,17 @@
+{
+  "pages": [
+    {
+      "path": "pages/chat/index",
+      "style": {
+        "navigationBarTitleText": "Mongoyia客服",
+        "navigationBarBackgroundColor": "#0f766e",
+        "navigationBarTextStyle": "white"
+      }
+    }
+  ],
+  "globalStyle": {
+    "navigationBarTextStyle": "black",
+    "navigationBarTitleText": "Mongoyia",
+    "backgroundColor": "#f6f7f9"
+  }
+}

@@ -2,6 +2,7 @@
 
 use yii\grid\GridView;
 use common\helpers\Html;
+use common\services\mall\CustomerServiceAssistanceService;
 use yii\helpers\Url;
 //use common\components\enums\YesNo;
 use common\models\mall\Order as ActiveModel;
@@ -340,6 +341,7 @@ function fxamount($amount){
         }
 
         .context-actions input,
+        .context-actions select,
         .context-actions textarea {
             width: 100%;
             margin-bottom: 8px;
@@ -370,6 +372,32 @@ function fxamount($amount){
             color: #9ca3af;
             border-color: #d1d5db;
             cursor: not-allowed;
+        }
+
+        .context-search-result {
+            border: 1px solid #bfdbfe;
+            border-radius: 4px;
+            background: #fff;
+            padding: 8px;
+            margin-top: 8px;
+            cursor: pointer;
+        }
+
+        .context-search-result:hover {
+            border-color: #2563eb;
+        }
+
+        .context-search-result-title {
+            font-size: 12px;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 4px;
+        }
+
+        .context-search-result-meta,
+        .context-status {
+            font-size: 12px;
+            color: #64748b;
         }
 
         .chat-header {
@@ -424,6 +452,15 @@ function fxamount($amount){
             background: white;
             color: #333;
             border: 1px solid #e0e0e0;
+        }
+
+        .message-original {
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px solid rgba(0, 0, 0, .08);
+            color: #777;
+            font-size: 12px;
+            line-height: 1.45;
         }
 
         .message-time {
@@ -560,7 +597,9 @@ function fxamount($amount){
         }
 
         /* 隐藏的文件输入 */
-        #imageInput {
+        #imageInput,
+        #fileInput,
+        #videoInput {
             display: none;
         }
 
@@ -645,10 +684,15 @@ function fxamount($amount){
                     </div>
                 </div>
                 <button class="tool-btn" id="imageBtn">📷 图片</button>
+                <button class="tool-btn" id="fileBtn">文件</button>
+                <button class="tool-btn" id="videoBtn">视频</button>
+                <button class="tool-btn" id="voiceBtn">语音</button>
                 <select class="quick-reply-select" id="quickReplySelect">
                     <option value="">快捷回复</option>
                 </select>
                 <input type="file" id="imageInput" accept="image/*">
+                <input type="file" id="fileInput" accept=".pdf,.doc,.docx,.xls,.xlsx,.txt,.csv,.zip">
+                <input type="file" id="videoInput" accept="video/mp4,video/webm">
             </div>
             <div class="input-wrapper">
                 <textarea class="message-input" id="messageInput" placeholder="输入消息..."></textarea>
@@ -659,6 +703,27 @@ function fxamount($amount){
 
     <div class="context-panel" data-mongoyia-customer-service-session-context="panel">
         <div class="context-header">会话上下文</div>
+        <div class="context-actions" data-mongoyia-customer-service-assistance="search">
+            <div class="context-actions-title">订单/商品查询</div>
+            <select id="assistanceKind">
+                <option value="order">订单</option>
+                <option value="product">商品</option>
+            </select>
+            <input id="assistanceKeyword" type="text" maxlength="80" placeholder="订单号、手机号、邮箱、用户、商品、SKU">
+            <div class="context-actions-row">
+                <button class="context-action-btn" id="assistanceSearchBtn" type="button">查询</button>
+            </div>
+            <div id="assistanceResults" class="context-status">可按订单号、手机号、邮箱、商品名或 SKU 查询。</div>
+        </div>
+        <div class="context-actions" data-mongoyia-customer-service-assistance-request="panel">
+            <div class="context-actions-title">协助处理单</div>
+            <select id="assistanceTypeSelect"></select>
+            <textarea id="assistanceContent" rows="2" maxlength="1000" placeholder="协助说明，例如支付指导、物流查询、退款建议原因"></textarea>
+            <div class="context-actions-row">
+                <button class="context-action-btn" id="createAssistanceRequestBtn" type="button" disabled>创建协助单</button>
+            </div>
+            <div id="assistanceStatus" class="context-status">协助单只进入审批/流转，不直接修改订单、支付、资金或库存。</div>
+        </div>
         <div class="context-actions" data-mongoyia-customer-service-chat-ticket="actions">
             <div class="context-actions-title">从当前聊天创建工单</div>
             <input id="ticketOrderId" type="number" min="0" placeholder="订单ID，可留空">
@@ -689,6 +754,13 @@ function fxamount($amount){
         authToken: <?= json_encode($imAuthToken ?? '') ?>,
         wsAddress: <?= json_encode(Yii::$app->params['imWebsocketUrl'] ?? 'ws://127.0.0.1:8767') ?>,
         uploadUrl: <?= json_encode(Yii::$app->params['chatUploadUrl'] ?? '/mall/chat/upload') ?>,
+        mediaUploadUrl: <?= json_encode(Url::to(['media-upload'])) ?>,
+        translationUrl: <?= json_encode(Url::to(['translate'])) ?>,
+        assistanceSearchUrl: <?= json_encode(Url::to(['assistance-search'])) ?>,
+        assistanceDetailUrl: <?= json_encode(Url::to(['assistance-detail'])) ?>,
+        assistanceRequestUrl: <?= json_encode(Url::to(['assistance-request'])) ?>,
+        assistanceTypes: <?= json_encode((new CustomerServiceAssistanceService())->assistanceTypes(), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?>,
+        staffWorkLanguage: <?= json_encode($staffWorkLanguage ?? 'en') ?>,
         sessionContextUrl: <?= json_encode(Url::to(['session-context'])) ?>,
         ticketCreateUrl: <?= json_encode(Url::to(['ticket-create-from-session'])) ?>,
         quickReplies: <?= json_encode($quickReplies ?? [], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?>,
@@ -703,6 +775,10 @@ function fxamount($amount){
     let reconnectTimer = null;
     let chatListCache = [];
     let currentSessionContext = null;
+    let currentAssistanceDetail = null;
+    let mediaRecorder = null;
+    let voiceChunks = [];
+    let voiceStartAt = 0;
     const unreadMap = {};
 
     // 常用emoji列表
@@ -726,6 +802,14 @@ function fxamount($amount){
         chatList: document.getElementById('chatList'),
         chatHeader: document.getElementById('chatHeader'),
         contextPanel: document.getElementById('contextPanel'),
+        assistanceKind: document.getElementById('assistanceKind'),
+        assistanceKeyword: document.getElementById('assistanceKeyword'),
+        assistanceSearchBtn: document.getElementById('assistanceSearchBtn'),
+        assistanceResults: document.getElementById('assistanceResults'),
+        assistanceTypeSelect: document.getElementById('assistanceTypeSelect'),
+        assistanceContent: document.getElementById('assistanceContent'),
+        createAssistanceRequestBtn: document.getElementById('createAssistanceRequestBtn'),
+        assistanceStatus: document.getElementById('assistanceStatus'),
         ticketOrderId: document.getElementById('ticketOrderId'),
         ticketTitle: document.getElementById('ticketTitle'),
         ticketContent: document.getElementById('ticketContent'),
@@ -738,6 +822,11 @@ function fxamount($amount){
         emojiPanel: document.getElementById('emojiPanel'),
         emojiGrid: document.getElementById('emojiGrid'),
         imageBtn: document.getElementById('imageBtn'),
+        fileBtn: document.getElementById('fileBtn'),
+        fileInput: document.getElementById('fileInput'),
+        videoBtn: document.getElementById('videoBtn'),
+        videoInput: document.getElementById('videoInput'),
+        voiceBtn: document.getElementById('voiceBtn'),
         quickReplySelect: document.getElementById('quickReplySelect'),
         imageInput: document.getElementById('imageInput'),
         imagePreview: document.getElementById('imagePreview'),
@@ -765,6 +854,20 @@ function fxamount($amount){
 
     function initQuickReplies() {
         renderQuickReplies();
+    }
+
+    function initAssistanceTypes() {
+        if (!elements.assistanceTypeSelect) {
+            return;
+        }
+        elements.assistanceTypeSelect.innerHTML = '';
+        Object.keys(CONFIG.assistanceTypes || {}).forEach(key => {
+            const definition = CONFIG.assistanceTypes[key] || {};
+            const option = document.createElement('option');
+            option.value = key;
+            option.textContent = (definition.label || key) + (definition.approval_required ? '（需审批）' : '');
+            elements.assistanceTypeSelect.appendChild(option);
+        });
     }
 
     function renderQuickReplies() {
@@ -829,6 +932,11 @@ function fxamount($amount){
         const disabled = !currentChatTarget;
         elements.createOrderAssistBtn.disabled = disabled;
         elements.createComplaintBtn.disabled = disabled;
+        if (elements.createAssistanceRequestBtn) {
+            const hasOrder = currentSessionContext && currentSessionContext.order && currentSessionContext.order.id;
+            const hasProduct = currentSessionContext && currentSessionContext.product && currentSessionContext.product.id;
+            elements.createAssistanceRequestBtn.disabled = !(hasOrder || hasProduct);
+        }
     }
 
     // 连接WebSocket
@@ -936,6 +1044,9 @@ function fxamount($amount){
                 if (currentChatTarget && isCurrentChatMessage(data)) {
                     currentChatTarget.product_id = normalizePositiveInt(data.product_id) || normalizePositiveInt(currentChatTarget.product_id);
                     currentChatTarget.store_id = normalizePositiveInt(data.store_id) || normalizePositiveInt(currentChatTarget.store_id);
+                    if (data.from == 1 && data.source_language) {
+                        currentChatTarget.customer_language = data.source_language;
+                    }
                     renderChatHeader();
                     displayMessage(data);
                     unreadMap[sessionKey(data)] = 0;
@@ -1156,6 +1267,7 @@ function fxamount($amount){
 
     function resetContextPanel(text) {
         currentSessionContext = null;
+        currentAssistanceDetail = null;
         elements.contextPanel.innerHTML = '';
         const empty = document.createElement('div');
         empty.className = 'context-empty';
@@ -1229,6 +1341,29 @@ function fxamount($amount){
             ['物流状态', data.order && data.order.shipment_status !== undefined ? data.order.shipment_status : ''],
             ['创建时间', data.order && data.order.created_at ? formatTimestamp(data.order.created_at) : '']
         ]);
+        if (Array.isArray(data.order_items) && data.order_items.length > 0) {
+            renderOrderItemsCard(data.order_items);
+        }
+        if (data.logistics) {
+            renderContextCard('物流摘要', [
+                ['物流公司', data.logistics.wlgs || data.logistics.shipment_name || ''],
+                ['物流单号', data.logistics.wldh || ''],
+                ['发货时间', data.logistics.shipped_at ? formatTimestamp(data.logistics.shipped_at) : ''],
+                ['处理边界', data.logistics.note || '只读查询']
+            ]);
+        }
+        if (Array.isArray(data.payment_attempts) && data.payment_attempts.length > 0) {
+            renderPaymentAttemptsCard(data.payment_attempts);
+        }
+        if (data.boundaries) {
+            renderContextCard('处理边界', [
+                ['订单修改', data.boundaries.order_mutation_allowed ? '允许' : '禁止'],
+                ['支付修改', data.boundaries.payment_mutation_allowed ? '允许' : '禁止'],
+                ['资金修改', data.boundaries.fund_mutation_allowed ? '允许' : '禁止'],
+                ['库存修改', data.boundaries.stock_mutation_allowed ? '允许' : '禁止'],
+                ['协助单', data.boundaries.assistance_creates_ticket_only ? '仅创建工单/审批流' : '']
+            ]);
+        }
         renderTicketsCard(Array.isArray(data.tickets) ? data.tickets : []);
         updateContextActionButtons();
     }
@@ -1253,6 +1388,22 @@ function fxamount($amount){
             card.appendChild(line);
         });
         elements.contextPanel.appendChild(card);
+    }
+
+    function renderOrderItemsCard(items) {
+        const rows = items.slice(0, 8).map(item => [
+            '#' + (item.product_id || item.id || '-'),
+            (item.name || '-') + ' / ' + (item.sku || '-') + ' × ' + (item.number || 0) + ' / ' + formatMoney(item.price || 0)
+        ]);
+        renderContextCard('订单明细', rows);
+    }
+
+    function renderPaymentAttemptsCard(attempts) {
+        const rows = attempts.slice(0, 5).map(item => [
+            item.provider || item.event || ('#' + item.id),
+            (item.result || '-') + ' / ' + formatMoney(item.amount || 0) + ' ' + (item.currency || '') + (item.processed_at ? ' / ' + formatTimestamp(item.processed_at) : '')
+        ]);
+        renderContextCard('支付记录', rows);
     }
 
     function renderTicketsCard(tickets) {
@@ -1300,6 +1451,172 @@ function fxamount($amount){
         }
         const date = new Date(number * 1000);
         return date.getFullYear() + '-' + String(date.getMonth() + 1).padStart(2, '0') + '-' + String(date.getDate()).padStart(2, '0') + ' ' + String(date.getHours()).padStart(2, '0') + ':' + String(date.getMinutes()).padStart(2, '0');
+    }
+
+    function currentSearchStoreId() {
+        if (!CONFIG.isPlatformOperator) {
+            return 0;
+        }
+        return normalizePositiveInt(elements.storeFilter && elements.storeFilter.value) ||
+            normalizePositiveInt(currentChatTarget && currentChatTarget.store_id);
+    }
+
+    async function searchAssistanceContext() {
+        const kind = elements.assistanceKind.value || 'order';
+        const params = new URLSearchParams();
+        params.set('kind', kind);
+        params.set('q', elements.assistanceKeyword.value || '');
+        params.set('limit', '10');
+        const storeId = currentSearchStoreId();
+        if (storeId > 0) {
+            params.set('store_id', storeId);
+        }
+
+        elements.assistanceResults.textContent = '正在查询...';
+        try {
+            const response = await fetch(CONFIG.assistanceSearchUrl + '?' + params.toString(), {
+                headers: {'Accept': 'application/json'}
+            });
+            const result = await response.json();
+            if (!response.ok || !result || result.code != 200) {
+                throw new Error(result && result.msg ? result.msg : '查询失败');
+            }
+            renderAssistanceResults(kind, result.data && Array.isArray(result.data.items) ? result.data.items : []);
+        } catch (error) {
+            elements.assistanceResults.textContent = error.message || '查询失败';
+        }
+    }
+
+    function renderAssistanceResults(kind, items) {
+        elements.assistanceResults.innerHTML = '';
+        if (items.length === 0) {
+            elements.assistanceResults.textContent = '没有找到匹配记录';
+            return;
+        }
+
+        items.forEach(item => {
+            const node = document.createElement('div');
+            node.className = 'context-search-result';
+            node.onclick = () => loadAssistanceDetail(kind, item.id);
+            const title = document.createElement('div');
+            title.className = 'context-search-result-title';
+            title.textContent = kind === 'product'
+                ? ('#' + item.id + ' ' + (item.name || '未命名商品'))
+                : ('#' + item.id + ' ' + (item.sn || '未命名订单'));
+            const meta = document.createElement('div');
+            meta.className = 'context-search-result-meta';
+            meta.textContent = kind === 'product'
+                ? ('SKU ' + (item.sku || '-') + ' / 库存 ' + (item.stock || 0) + ' / ' + formatMoney(item.price || 0))
+                : ('金额 ' + formatMoney(item.amount || 0) + ' / 支付 ' + (item.payment_status !== undefined ? item.payment_status : '-') + ' / 物流 ' + (item.shipment_status !== undefined ? item.shipment_status : '-'));
+            node.appendChild(title);
+            node.appendChild(meta);
+            elements.assistanceResults.appendChild(node);
+        });
+    }
+
+    async function loadAssistanceDetail(kind, id) {
+        const params = new URLSearchParams();
+        params.set('kind', kind);
+        params.set('id', normalizePositiveInt(id));
+        elements.assistanceStatus.textContent = '正在加载详情...';
+        try {
+            const response = await fetch(CONFIG.assistanceDetailUrl + '?' + params.toString(), {
+                headers: {'Accept': 'application/json'}
+            });
+            const result = await response.json();
+            if (!response.ok || !result || result.code != 200 || !result.data) {
+                throw new Error(result && result.msg ? result.msg : '详情加载失败');
+            }
+            currentAssistanceDetail = result.data;
+            mergeAssistanceDetail(kind, result.data);
+            elements.assistanceStatus.textContent = '已载入' + (kind === 'product' ? '商品' : '订单') + '上下文';
+        } catch (error) {
+            elements.assistanceStatus.textContent = error.message || '详情加载失败';
+        }
+    }
+
+    function mergeAssistanceDetail(kind, detail) {
+        const base = currentSessionContext || {
+            context: {},
+            user: {},
+            product: {},
+            order: {},
+            tickets: []
+        };
+        const context = Object.assign({}, base.context || {});
+        if (kind === 'product' && detail.product) {
+            base.product = detail.product;
+            context.product_id = detail.product.id || 0;
+            context.store_id = context.store_id || detail.product.store_id || 0;
+        }
+        if (kind !== 'product' && detail.order) {
+            base.order = detail.order;
+            base.order_items = Array.isArray(detail.items) ? detail.items : [];
+            base.payment_attempts = Array.isArray(detail.payment_attempts) ? detail.payment_attempts : [];
+            base.logistics = detail.logistics || {};
+            context.order_id = detail.order.id || 0;
+            context.order_sn = detail.order.sn || '';
+            context.store_id = context.store_id || detail.order.store_id || 0;
+            context.customer_user_id = context.customer_user_id || detail.order.user_id || 0;
+            if (base.order_items.length > 0 && !context.product_id) {
+                context.product_id = base.order_items[0].product_id || 0;
+            }
+            elements.ticketOrderId.value = detail.order.id || '';
+        }
+        base.context = context;
+        base.boundaries = detail.boundaries || base.boundaries || {};
+        currentSessionContext = base;
+        renderSessionContext(base);
+    }
+
+    async function createAssistanceRequest() {
+        const context = currentSessionContext && currentSessionContext.context ? currentSessionContext.context : {};
+        const order = currentSessionContext && currentSessionContext.order ? currentSessionContext.order : {};
+        const product = currentSessionContext && currentSessionContext.product ? currentSessionContext.product : {};
+        const user = currentSessionContext && currentSessionContext.user ? currentSessionContext.user : {};
+        const storeFromUid = CONFIG.isPlatformOperator && currentChatTarget && currentChatTarget.uid ? CONFIG.storeMap[String(currentChatTarget.uid)] : null;
+        const storeId = normalizePositiveInt(context.store_id) || normalizePositiveInt(order.store_id) || normalizePositiveInt(product.store_id) || normalizePositiveInt(currentChatTarget && currentChatTarget.store_id) || normalizePositiveInt(storeFromUid && storeFromUid.id);
+        if (storeId <= 0) {
+            elements.assistanceStatus.textContent = '请先选择或查询可识别店铺的订单/商品';
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append(CONFIG.csrfParam, CONFIG.csrfToken);
+        formData.append('assistance_type', elements.assistanceTypeSelect.value || 'payment_guidance');
+        formData.append('store_id', storeId);
+        formData.append('product_id', normalizePositiveInt(context.product_id) || normalizePositiveInt(product.id) || normalizePositiveInt(currentChatTarget && currentChatTarget.product_id));
+        formData.append('order_id', normalizePositiveInt(elements.ticketOrderId.value) || normalizePositiveInt(context.order_id) || normalizePositiveInt(order.id));
+        formData.append('order_sn', context.order_sn || order.sn || '');
+        formData.append('customer_user_id', normalizePositiveInt(context.customer_user_id) || normalizePositiveInt(user.id) || normalizePositiveInt(order.user_id));
+        formData.append('customer_uuid', context.customer_uuid || (currentChatTarget && currentChatTarget.uuid) || '');
+        formData.append('merchant_user_id', normalizePositiveInt(currentChatTarget && currentChatTarget.uid));
+        formData.append('chat_uuid', context.chat_uuid || (currentChatTarget && currentChatTarget.uuid) || '');
+        formData.append('title', elements.ticketTitle.value || '');
+        formData.append('content', elements.assistanceContent.value || elements.ticketContent.value || '');
+
+        elements.createAssistanceRequestBtn.disabled = true;
+        elements.assistanceStatus.textContent = '正在创建协助单...';
+        try {
+            const response = await fetch(CONFIG.assistanceRequestUrl, {
+                method: 'POST',
+                headers: {'Accept': 'application/json'},
+                body: formData
+            });
+            const result = await response.json();
+            if (!response.ok || !result || result.code != 200 || !result.success) {
+                throw new Error(result && (result.msg || result.message) ? (result.msg || result.message) : '创建协助单失败');
+            }
+            const data = result.data || {};
+            elements.assistanceContent.value = '';
+            elements.assistanceStatus.textContent = '协助单创建成功：#' + data.ticket_id + ' ' + (data.ticket_sn || '') + (data.approval_required ? '（需审批）' : '');
+            if (currentChatTarget) {
+                loadSessionContext();
+            }
+        } catch (error) {
+            elements.assistanceStatus.textContent = error.message || '创建协助单失败';
+            updateContextActionButtons();
+        }
     }
 
     async function createTicketFromSession(ticketType) {
@@ -1384,6 +1701,11 @@ function fxamount($amount){
             loadSessionContext();
         }
 
+        const languageMessage = messages.slice().reverse().find(msg => msg.from == 1 && msg.source_language);
+        if (languageMessage && currentChatTarget) {
+            currentChatTarget.customer_language = languageMessage.source_language;
+        }
+
         messages.forEach(msg => {
             displayMessage(msg);
         });
@@ -1412,8 +1734,27 @@ function fxamount($amount){
             } else {
                 bubble.textContent = '[图片地址无效]';
             }
+        } else if (msg.msg_type == 3 || msg.msg_type == '3') {
+            const link = document.createElement('a');
+            link.href = normalizeMediaUrl(msg.content);
+            link.target = '_blank';
+            link.rel = 'noopener';
+            link.textContent = '打开文件';
+            bubble.appendChild(link);
+        } else if (msg.msg_type == 4 || msg.msg_type == '4') {
+            const video = document.createElement('video');
+            video.controls = true;
+            video.src = normalizeMediaUrl(msg.content);
+            video.style.maxWidth = '260px';
+            bubble.appendChild(video);
+        } else if (msg.msg_type == 5 || msg.msg_type == '5') {
+            const audio = document.createElement('audio');
+            audio.controls = true;
+            audio.src = normalizeMediaUrl(msg.content);
+            bubble.appendChild(audio);
         } else {
-            bubble.textContent = msg.content || '';
+            bubble.textContent = displayText(msg, isSent);
+            appendOriginalText(bubble, msg, isSent);
         }
 
         const time = document.createElement('div');
@@ -1426,10 +1767,31 @@ function fxamount($amount){
         scrollToBottom();
     }
 
+    function displayText(msg, isSent) {
+        if (!isSent && msg.translation_status === 'translated' && msg.translated_content) {
+            return msg.translated_content;
+        }
+
+        return msg.content || '';
+    }
+
+    function appendOriginalText(bubble, msg, isSent) {
+        if (isSent || msg.translation_status !== 'translated' || !msg.translated_content || !msg.content || msg.translated_content === msg.content) {
+            return;
+        }
+
+        const original = document.createElement('div');
+        original.className = 'message-original';
+        original.textContent = '原文: ' + msg.content;
+        bubble.appendChild(original);
+    }
+
     // 发送文字消息
-    function sendMessage() {
+    async function sendMessage() {
         const content = elements.messageInput.value.trim();
         if (!content || !currentChatTarget || !isConnected || !ws || ws.readyState !== WebSocket.OPEN) return;
+        const targetLanguage = currentChatTarget.customer_language || 'en';
+        const translation = await translateMessage(content, 'staff_to_user', CONFIG.staffWorkLanguage, targetLanguage);
 
         const data = {
             type: 'chat',
@@ -1438,12 +1800,58 @@ function fxamount($amount){
             target_uuid: currentChatTarget.uuid,
             target_uid: CONFIG.isPlatformOperator ? normalizePositiveInt(currentChatTarget.uid) : undefined,
             product_id: normalizePositiveInt(currentChatTarget.product_id),
-            store_id: normalizePositiveInt(currentChatTarget.store_id)
+            store_id: normalizePositiveInt(currentChatTarget.store_id),
+            ...translation
         };
 
         ws.send(JSON.stringify(data));
         elements.messageInput.value = '';
         updateSendButton();
+    }
+
+    async function translateMessage(content, direction, sourceLanguage, targetLanguage) {
+        const fallback = {
+            original_content: content,
+            source_language: sourceLanguage || '',
+            target_language: targetLanguage || '',
+            translated_content: '',
+            translation_status: 'none',
+            translation_provider: '',
+            translation_error: '',
+            translated_at: 0
+        };
+
+        if (!CONFIG.translationUrl) {
+            return fallback;
+        }
+
+        try {
+            const formData = new FormData();
+            formData.append(CONFIG.csrfParam, CONFIG.csrfToken);
+            formData.append('content', content);
+            formData.append('direction', direction);
+            formData.append('source_language', sourceLanguage || '');
+            formData.append('target_language', targetLanguage || '');
+
+            const response = await fetch(CONFIG.translationUrl, {
+                method: 'POST',
+                body: formData
+            });
+            if (!response.ok) {
+                throw new Error('translation HTTP ' + response.status);
+            }
+
+            const result = await response.json();
+            if (!result || result.code != 200 || !result.data || !result.data.metadata) {
+                throw new Error(result && result.msg ? result.msg : 'translation failed');
+            }
+
+            return result.data.metadata;
+        } catch (error) {
+            fallback.translation_status = 'failed';
+            fallback.translation_error = String(error && error.message ? error.message : error).slice(0, 255);
+            return fallback;
+        }
     }
 
     // 发送图片消息
@@ -1502,6 +1910,54 @@ function fxamount($amount){
         }
     }
 
+    async function sendMedia(file, media, duration = 0) {
+        if (!currentChatTarget) {
+            alert('请先选择聊天对象');
+            return;
+        }
+
+        if (!isConnected || !ws || ws.readyState !== WebSocket.OPEN) {
+            addSystemMessage('连接已断开，无法发送媒体消息');
+            return;
+        }
+
+        try {
+            const formData = new FormData();
+            formData.append(CONFIG.csrfParam, CONFIG.csrfToken);
+            formData.append('file', file);
+            formData.append('media', media);
+            formData.append('duration', String(duration || 0));
+
+            addSystemMessage('正在上传媒体...');
+            const response = await fetch(CONFIG.mediaUploadUrl, {
+                method: 'POST',
+                body: formData
+            });
+            const result = await response.json();
+            if (!response.ok || !result || result.code != 200 || !result.data) {
+                throw new Error(result && result.msg ? result.msg : '媒体上传失败');
+            }
+
+            const mediaUrl = normalizeMediaUrl(result.data.url || '');
+            if (!mediaUrl) {
+                throw new Error('上传返回缺少媒体地址');
+            }
+
+            ws.send(JSON.stringify({
+                type: 'chat',
+                content: mediaUrl,
+                msg_type: result.data.msg_type,
+                target_uuid: currentChatTarget.uuid,
+                target_uid: CONFIG.isPlatformOperator ? normalizePositiveInt(currentChatTarget.uid) : undefined,
+                product_id: normalizePositiveInt(currentChatTarget.product_id),
+                store_id: normalizePositiveInt(currentChatTarget.store_id)
+            }));
+            addSystemMessage('媒体上传成功');
+        } catch (error) {
+            addSystemMessage(error.message || '媒体上传失败，请重试');
+        }
+    }
+
     function normalizeUploadUrl(result) {
         if (typeof result === 'string') {
             return result;
@@ -1548,6 +2004,28 @@ function fxamount($amount){
         return '';
     }
 
+    function normalizeMediaUrl(url) {
+        if (!url || typeof url !== 'string') {
+            return '';
+        }
+
+        const value = url.trim();
+        if (value.startsWith('/mall/chat/media-view?')) {
+            return value;
+        }
+
+        try {
+            const parsed = new URL(value, window.location.origin);
+            if ((parsed.protocol === 'http:' || parsed.protocol === 'https:') && parsed.host === window.location.host && parsed.pathname === '/mall/chat/media-view') {
+                return parsed.href;
+            }
+        } catch (error) {
+            return '';
+        }
+
+        return '';
+    }
+
     // 图片预览
     function previewImage(src) {
         const safeSrc = normalizeImageUrl(src);
@@ -1564,6 +2042,14 @@ function fxamount($amount){
     elements.sendBtn.onclick = sendMessage;
     elements.createOrderAssistBtn.onclick = () => createTicketFromSession('order_assist');
     elements.createComplaintBtn.onclick = () => createTicketFromSession('complaint');
+    elements.assistanceSearchBtn.onclick = searchAssistanceContext;
+    elements.createAssistanceRequestBtn.onclick = createAssistanceRequest;
+    elements.assistanceKeyword.onkeypress = (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            searchAssistanceContext();
+        }
+    };
     elements.chatSearch.oninput = displayChatList;
     if (elements.storeFilter) {
         elements.storeFilter.onchange = displayChatList;
@@ -1600,6 +2086,72 @@ function fxamount($amount){
         e.target.value = '';
     };
 
+    elements.fileBtn.onclick = () => {
+        elements.fileInput.click();
+    };
+
+    elements.fileInput.onchange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            sendMedia(file, 'file');
+        }
+        e.target.value = '';
+    };
+
+    elements.videoBtn.onclick = () => {
+        elements.videoInput.click();
+    };
+
+    elements.videoInput.onchange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            sendMedia(file, 'video');
+        }
+        e.target.value = '';
+    };
+
+    elements.voiceBtn.onclick = async () => {
+        if (mediaRecorder && mediaRecorder.state === 'recording') {
+            mediaRecorder.stop();
+            elements.voiceBtn.textContent = '语音';
+            return;
+        }
+
+        if (!navigator.mediaDevices || !window.MediaRecorder) {
+            addSystemMessage('当前浏览器不支持录音');
+            return;
+        }
+
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({audio: true});
+            voiceChunks = [];
+            voiceStartAt = Date.now();
+            const mimeType = MediaRecorder.isTypeSupported('audio/webm') ? 'audio/webm' : '';
+            mediaRecorder = new MediaRecorder(stream, mimeType ? {mimeType} : undefined);
+            mediaRecorder.ondataavailable = (event) => {
+                if (event.data && event.data.size > 0) {
+                    voiceChunks.push(event.data);
+                }
+            };
+            mediaRecorder.onstop = () => {
+                stream.getTracks().forEach(track => track.stop());
+                const duration = Math.ceil((Date.now() - voiceStartAt) / 1000);
+                if (voiceChunks.length > 0) {
+                    const blob = new Blob(voiceChunks, {type: mediaRecorder.mimeType || 'audio/webm'});
+                    const file = new File([blob], `voice-${Date.now()}.webm`, {type: blob.type || 'audio/webm'});
+                    sendMedia(file, 'voice', duration);
+                }
+                mediaRecorder = null;
+                voiceChunks = [];
+            };
+            mediaRecorder.start();
+            elements.voiceBtn.textContent = '停止录音';
+            addSystemMessage('正在录音，再点一次发送');
+        } catch (error) {
+            addSystemMessage('录音启动失败，请检查麦克风权限');
+        }
+    };
+
     elements.imagePreview.onclick = () => {
         elements.imagePreview.classList.remove('show');
     };
@@ -1614,6 +2166,7 @@ function fxamount($amount){
     // 初始化
     initEmojiPanel();
     initQuickReplies();
+    initAssistanceTypes();
     setWelcomeMessage('正在连接客服系统...');
     connect();
 

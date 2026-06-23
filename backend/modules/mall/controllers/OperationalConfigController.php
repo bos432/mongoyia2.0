@@ -3,6 +3,7 @@
 namespace backend\modules\mall\controllers;
 
 use common\services\mall\OperationalConfigService;
+use common\services\mall\CustomerServiceTranslationService;
 use common\services\mall\OperationalLaunchSignoffService;
 use common\services\mall\OperationalMailConfigService;
 use common\services\mall\OperationalOpsAlertService;
@@ -25,6 +26,7 @@ class OperationalConfigController extends BaseController
             ),
             'paymentEnvironments' => (new OperationalPaymentConfigService())->environments(),
             'mail' => (new OperationalMailConfigService())->snapshot(),
+            'translation' => (new CustomerServiceTranslationService())->snapshot(),
             'opsAlert' => (new OperationalOpsAlertService())->snapshot(),
             'launch' => (new OperationalLaunchSignoffService())->snapshot(),
         ]);
@@ -70,6 +72,68 @@ class OperationalConfigController extends BaseController
         }
 
         return $this->redirect(['index', 'environment' => $environment]);
+    }
+
+    public function actionSaveTranslation()
+    {
+        if (!$this->isMallPlatformOperator()) {
+            throw new ForbiddenHttpException(Yii::t('app', 'No Auth'));
+        }
+
+        $request = Yii::$app->request;
+        $provider = (string)$request->post('provider', '');
+        try {
+            $result = (new CustomerServiceTranslationService())->saveProvider(
+                $provider,
+                (array)$request->post('config', [])
+            );
+            Yii::$app->session->setFlash('success', '客服翻译配置已保存，检测结果：' . $result['result'] . ' - ' . $result['message']);
+        } catch (\Throwable $e) {
+            Yii::$app->session->setFlash('error', '客服翻译配置保存失败：' . $e->getMessage());
+        }
+
+        return $this->redirect(['index', 'environment' => (string)$request->post('environment', 'test')]);
+    }
+
+    public function actionCheckTranslation()
+    {
+        if (!$this->isMallPlatformOperator()) {
+            throw new ForbiddenHttpException(Yii::t('app', 'No Auth'));
+        }
+
+        $request = Yii::$app->request;
+        $provider = (string)$request->post('provider', '');
+        try {
+            $result = (new CustomerServiceTranslationService())->checkProvider($provider, true);
+            Yii::$app->session->setFlash('success', '客服翻译配置检测完成：' . $result['result'] . ' - ' . $result['message']);
+        } catch (\Throwable $e) {
+            Yii::$app->session->setFlash('error', '客服翻译配置检测失败：' . $e->getMessage());
+        }
+
+        return $this->redirect(['index', 'environment' => (string)$request->post('environment', 'test')]);
+    }
+
+    public function actionTestTranslation()
+    {
+        if (!$this->isMallPlatformOperator()) {
+            throw new ForbiddenHttpException(Yii::t('app', 'No Auth'));
+        }
+
+        $request = Yii::$app->request;
+        $provider = (string)$request->post('provider', '');
+        try {
+            $result = (new CustomerServiceTranslationService())->testProvider(
+                $provider,
+                (string)$request->post('test_text', 'Hello'),
+                (string)$request->post('source_language', 'en'),
+                (string)$request->post('target_language', 'mn')
+            );
+            Yii::$app->session->setFlash(($result['result'] ?? '') === 'PASS' ? 'success' : 'error', '客服翻译测试结果：' . $result['result'] . ' - ' . $result['message']);
+        } catch (\Throwable $e) {
+            Yii::$app->session->setFlash('error', '客服翻译测试失败：' . $e->getMessage());
+        }
+
+        return $this->redirect(['index', 'environment' => (string)$request->post('environment', 'test')]);
     }
 
     public function actionSaveMail()

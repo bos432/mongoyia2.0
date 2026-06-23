@@ -3,8 +3,9 @@
 namespace frontend\modules\mall\controllers;
 
 use common\models\mall\Product;
-use common\services\mall\ImMediaUploadSkeletonService;
 use common\services\mall\CustomerServiceRatingService;
+use common\services\mall\CustomerServiceTranslationService;
+use common\services\mall\CustomerServiceMediaService;
 use Yii;
 use yii\helpers\FileHelper;
 use yii\web\NotFoundHttpException;
@@ -46,6 +47,8 @@ class ChatController extends BaseController
             throw new NotFoundHttpException(Yii::t('app', 'Invalid id'));
         }
 
+        $translationService = new CustomerServiceTranslationService();
+
         return $this->render($this->action->id, [
             'suid' => (int)$product['user_id'],
             'productId' => $gid,
@@ -53,7 +56,38 @@ class ChatController extends BaseController
             'customerUserId' => Yii::$app->user->isGuest ? 0 : (int)Yii::$app->user->id,
             'customerUuid' => Yii::$app->user->isGuest ? ('guest-' . substr(md5(Yii::$app->session->id), 0, 16)) : ('user-' . (int)Yii::$app->user->id),
             'ratingLabels' => (new CustomerServiceRatingService())->labels(),
+            'staffWorkLanguage' => $translationService->defaultStaffWorkLanguage(),
         ]);
+    }
+
+    public function actionTranslate()
+    {
+        Yii::$app->response->format = Response::FORMAT_JSON;
+        if (!Yii::$app->request->isPost) {
+            Yii::$app->response->statusCode = 405;
+            return ['code' => 405, 'msg' => $this->chatMessage('invalidRequestMethod')];
+        }
+
+        $request = Yii::$app->request;
+        $service = new CustomerServiceTranslationService();
+        $targetLanguage = (string)$request->post('target_language', '');
+        if ($targetLanguage === '' && (string)$request->post('direction', '') === 'user_to_staff') {
+            $targetLanguage = $service->defaultStaffWorkLanguage();
+        }
+
+        $translation = $service->translate(
+            (string)$request->post('content', ''),
+            (string)$request->post('source_language', ''),
+            $targetLanguage !== '' ? $targetLanguage : 'en'
+        );
+
+        return [
+            'code' => 200,
+            'msg' => 'ok',
+            'data' => $translation + [
+                'metadata' => $service->messageMetadata($translation),
+            ],
+        ];
     }
 
     public function actionRatingSubmit()
@@ -137,8 +171,40 @@ class ChatController extends BaseController
     {
         Yii::$app->response->format = Response::FORMAT_JSON;
 
-        $media = (string)Yii::$app->request->post('media', Yii::$app->request->get('media', ''));
-        return (new ImMediaUploadSkeletonService())->disabledResponse($media, $this->chatMessage('mediaTransportDisabled'));
+        try {
+            $media = (string)Yii::$app->request->post('media', Yii::$app->request->get('media', ''));
+            $file = UploadedFile::getInstanceByName('file');
+            if (!$file) {
+                return ['code' => 400, 'msg' => $this->chatMessage('uploadEmpty')];
+            }
+
+            $stored = (new CustomerServiceMediaService())->upload($file, $media, [
+                'duration' => (int)Yii::$app->request->post('duration', 0),
+                'smoke' => Yii::$app->request->post('smoke') === '1',
+            ]);
+            return [
+                'code' => 200,
+                'msg' => 'ok',
+                'data' => (new CustomerServiceMediaService())->responseData($stored),
+            ];
+        } catch (\Throwable $e) {
+            Yii::$app->response->statusCode = 400;
+            return ['code' => 400, 'msg' => $e->getMessage()];
+        }
+    }
+
+    public function actionMediaView($media_id, $token)
+    {
+        try {
+            $file = (new CustomerServiceMediaService())->viewFile((string)$media_id, (string)$token);
+        } catch (\Throwable $e) {
+            throw new NotFoundHttpException($e->getMessage());
+        }
+
+        return Yii::$app->response->sendFile($file['path'], $file['name'], [
+            'mimeType' => $file['mime'],
+            'inline' => in_array($file['media'], ['video', 'voice'], true),
+        ]);
     }
 
     public function actionToken()
@@ -174,6 +240,9 @@ class ChatController extends BaseController
                     'product_id' => $gid,
                     'store_id' => (int)$product['store_id'],
                 ]),
+                'uid' => (int)$product['user_id'],
+                'product_id' => $gid,
+                'store_id' => (int)$product['store_id'],
             ],
         ];
     }
@@ -205,6 +274,7 @@ class ChatController extends BaseController
                 'mediaTransportDisabled' => '文件、视频、语音上传暂未开放',
                 'invalidIdentity' => '客服身份参数无效',
                 'productSupportMissing' => '商品客服不存在',
+                'invalidRequestMethod' => '请求方式无效',
             ],
             'en' => [
                 'uploadEmpty' => 'No file was uploaded',
@@ -216,6 +286,7 @@ class ChatController extends BaseController
                 'mediaTransportDisabled' => 'File, video, and voice uploads are not enabled yet',
                 'invalidIdentity' => 'Invalid customer-service identity parameters',
                 'productSupportMissing' => 'Product customer service was not found',
+                'invalidRequestMethod' => 'Invalid request method',
             ],
             'mn' => [
                 'uploadEmpty' => 'Байршуулах файл алга',
@@ -227,6 +298,7 @@ class ChatController extends BaseController
                 'mediaTransportDisabled' => 'Файл, видео, дуу хоолой байршуулах боломж одоогоор нээгдээгүй байна',
                 'invalidIdentity' => 'Хэрэглэгчийн үйлчилгээний таних параметр буруу байна',
                 'productSupportMissing' => 'Бүтээгдэхүүний хэрэглэгчийн үйлчилгээ олдсонгүй',
+                'invalidRequestMethod' => 'Хүсэлтийн арга буруу байна',
             ],
         ];
 

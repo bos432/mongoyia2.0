@@ -10,6 +10,11 @@ use yii\helpers\Url;
 /* @var $evidenceFiles array */
 /* @var $ratingRows array */
 /* @var $workflowTargets array */
+/* @var $complaintLoopSummary array */
+/* @var $complaintCategories array */
+/* @var $complaintEvidenceRoles array */
+/* @var $complaintStatusLabels array */
+/* @var $assistanceTypes array */
 
 $this->title = '客服工单详情';
 $this->params['breadcrumbs'][] = ['label' => '客服', 'url' => ['index']];
@@ -21,10 +26,13 @@ $typeLabels = [
     'complaint' => '投诉',
 ];
 $statusLabels = [
-    'pending' => '待处理',
+    'pending' => '待受理',
     'in_progress' => '处理中',
+    'seller_proof' => '待商家举证',
+    'platform_review' => '待平台复核',
     'resolved' => '已解决',
     'closed' => '已关闭',
+    'rejected' => '驳回',
 ];
 $eventLabels = [
     'create' => '创建',
@@ -33,7 +41,10 @@ $eventLabels = [
 ];
 $workflowButtons = [
     'in_progress' => ['label' => '开始处理', 'class' => 'btn-outline-primary'],
+    'seller_proof' => ['label' => '要求商家举证', 'class' => 'btn-outline-warning'],
+    'platform_review' => ['label' => '提交平台复核', 'class' => 'btn-outline-info'],
     'resolved' => ['label' => '标记解决', 'class' => 'btn-outline-success'],
+    'rejected' => ['label' => '驳回投诉', 'class' => 'btn-outline-danger'],
     'closed' => ['label' => '关闭工单', 'class' => 'btn-outline-secondary'],
 ];
 $ratingLabels = [
@@ -41,6 +52,14 @@ $ratingLabels = [
     'neutral' => '一般',
     'dissatisfied' => '不满意',
 ];
+$complaintLoopSummary = $complaintLoopSummary ?? [];
+$complaintCategories = $complaintCategories ?? [];
+$complaintEvidenceRoles = $complaintEvidenceRoles ?? [];
+$complaintStatusLabels = $complaintStatusLabels ?? $statusLabels;
+$assistanceTypes = $assistanceTypes ?? [];
+$complaintProofRows = (array)($complaintLoopSummary['proofs'] ?? []);
+$complaintLinkedAssistanceRows = (array)($complaintLoopSummary['linked_assistance_tickets'] ?? []);
+$complaintNextStatuses = (array)($complaintLoopSummary['next_statuses'] ?? $workflowTargets);
 ?>
 
 <div class="row" data-mongoyia-customer-service-ticket-readonly="view">
@@ -228,6 +247,176 @@ $ratingLabels = [
                                         </form>
                                     <?php endif; ?>
                                 </td>
+                            </tr>
+                        <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="card" data-mongoyia-customer-service-complaint-loop="backend">
+            <div class="card-header">
+                <h3 class="card-title">投诉闭环处理</h3>
+            </div>
+            <div class="card-body">
+                <p class="text-muted mb-3">MONGOYIA_CUSTOMER_SERVICE_COMPLAINT_LOOP_BACKEND_V1：分类、用户/客服/商家/平台证据、商家举证、平台复核、处理结论、用户反馈和后续协助单均写入工单审计；不直接退款、赔付、改订单、改支付、改库存。</p>
+                <div class="row">
+                    <div class="col-md-4">
+                        <table class="table table-bordered table-sm">
+                            <tbody>
+                            <tr>
+                                <th style="width: 120px;">投诉分类</th>
+                                <td><?= Html::encode((string)($complaintLoopSummary['category_label'] ?? '未分类')) ?></td>
+                            </tr>
+                            <tr>
+                                <th>可流转状态</th>
+                                <td>
+                                    <?php if (empty($complaintNextStatuses)): ?>
+                                        <span class="text-muted">无</span>
+                                    <?php endif; ?>
+                                    <?php foreach ($complaintNextStatuses as $status): ?>
+                                        <span class="badge badge-light"><?= Html::encode($complaintStatusLabels[$status] ?? $status) ?></span>
+                                    <?php endforeach; ?>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>处理结论</th>
+                                <td><?= nl2br(Html::encode((string)($complaintLoopSummary['conclusion']['content'] ?? ''))) ?></td>
+                            </tr>
+                            <tr>
+                                <th>用户反馈</th>
+                                <td><?= nl2br(Html::encode((string)($complaintLoopSummary['user_feedback']['content'] ?? ''))) ?></td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="col-md-8">
+                        <form method="post" action="<?= Html::encode(Url::to(['complaint-loop-step'])) ?>">
+                            <input type="hidden" name="<?= Html::encode(Yii::$app->request->csrfParam) ?>" value="<?= Html::encode(Yii::$app->request->csrfToken) ?>">
+                            <input type="hidden" name="id" value="<?= (int)$ticket['id'] ?>">
+                            <div class="form-row">
+                                <div class="form-group col-md-4">
+                                    <label>投诉分类</label>
+                                    <select name="category" class="form-control form-control-sm">
+                                        <option value="">保持不变</option>
+                                        <?php foreach ($complaintCategories as $key => $label): ?>
+                                            <option value="<?= Html::encode($key) ?>" <?= (string)($complaintLoopSummary['category'] ?? '') === (string)$key ? 'selected' : '' ?>><?= Html::encode($label) ?></option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                </div>
+                                <div class="form-group col-md-4">
+                                    <label>证据角色</label>
+                                    <select name="evidence_role" class="form-control form-control-sm">
+                                        <?php foreach ($complaintEvidenceRoles as $key => $label): ?>
+                                            <option value="<?= Html::encode($key) ?>"><?= Html::encode($label) ?></option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                </div>
+                                <div class="form-group col-md-4">
+                                    <label>状态流转</label>
+                                    <select name="target_status" class="form-control form-control-sm">
+                                        <option value="">只记录，不变更状态</option>
+                                        <?php foreach ($complaintNextStatuses as $status): ?>
+                                            <option value="<?= Html::encode($status) ?>"><?= Html::encode($complaintStatusLabels[$status] ?? $status) ?></option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>举证/处理说明</label>
+                                <textarea name="evidence_note" class="form-control form-control-sm" rows="2" maxlength="1000"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label>处理结论</label>
+                                <textarea name="conclusion" class="form-control form-control-sm" rows="3" maxlength="4000"><?= Html::encode((string)($complaintLoopSummary['conclusion']['content'] ?? '')) ?></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label>用户反馈</label>
+                                <textarea name="user_feedback" class="form-control form-control-sm" rows="2" maxlength="2000"><?= Html::encode((string)($complaintLoopSummary['user_feedback']['content'] ?? '')) ?></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label>事件备注</label>
+                                <input type="text" name="event_content" class="form-control form-control-sm" maxlength="1000" placeholder="例如：已要求商家 48 小时内补充质检照片">
+                            </div>
+                            <button type="submit" class="btn btn-outline-primary btn-sm">记录投诉步骤</button>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="table-responsive mt-3">
+                    <table class="table table-bordered table-sm mb-0">
+                        <thead>
+                        <tr>
+                            <th>证据角色</th>
+                            <th>说明</th>
+                            <th>操作人</th>
+                            <th>时间</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <?php if (empty($complaintProofRows)): ?>
+                            <tr><td colspan="4" class="text-muted text-center">暂无闭环举证记录</td></tr>
+                        <?php endif; ?>
+                        <?php foreach ($complaintProofRows as $proof): ?>
+                            <tr>
+                                <td><?= Html::encode($complaintEvidenceRoles[$proof['role'] ?? ''] ?? ($proof['role'] ?? '')) ?></td>
+                                <td><?= nl2br(Html::encode((string)($proof['note'] ?? ''))) ?></td>
+                                <td><?= Html::encode(($proof['operator_type'] ?? '') . ' #' . (int)($proof['operator_user_id'] ?? 0)) ?></td>
+                                <td><?= (int)($proof['created_at'] ?? 0) > 0 ? date('Y-m-d H:i', (int)$proof['created_at']) : '' ?></td>
+                            </tr>
+                        <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
+
+                <hr>
+                <form method="post" action="<?= Html::encode(Url::to(['complaint-link-assistance'])) ?>" data-mongoyia-customer-service-complaint-link-assistance="form">
+                    <input type="hidden" name="<?= Html::encode(Yii::$app->request->csrfParam) ?>" value="<?= Html::encode(Yii::$app->request->csrfToken) ?>">
+                    <input type="hidden" name="id" value="<?= (int)$ticket['id'] ?>">
+                    <div class="form-row">
+                        <div class="form-group col-md-4">
+                            <label>后续协助类型</label>
+                            <select name="assistance_type" class="form-control form-control-sm" required>
+                                <?php foreach ($assistanceTypes as $key => $definition): ?>
+                                    <option value="<?= Html::encode($key) ?>"><?= Html::encode((string)$definition['label']) ?><?= !empty($definition['approval_required']) ? '（需审批）' : '' ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                        <div class="form-group col-md-8">
+                            <label>协助说明</label>
+                            <input type="text" name="content" class="form-control form-control-sm" maxlength="1000" placeholder="例如：投诉判定需发起退款建议，等待售后审批">
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-outline-warning btn-sm">生成后续协助单</button>
+                </form>
+
+                <div class="table-responsive mt-3">
+                    <table class="table table-bordered table-sm mb-0">
+                        <thead>
+                        <tr>
+                            <th>协助单</th>
+                            <th>类型</th>
+                            <th>来源</th>
+                            <th>说明</th>
+                            <th>时间</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <?php if (empty($complaintLinkedAssistanceRows)): ?>
+                            <tr><td colspan="5" class="text-muted text-center">暂无后续协助单</td></tr>
+                        <?php endif; ?>
+                        <?php foreach ($complaintLinkedAssistanceRows as $linked): ?>
+                            <tr>
+                                <td>
+                                    <a href="<?= Html::encode(Url::to(['ticket-view', 'id' => (int)($linked['ticket_id'] ?? 0)])) ?>">
+                                        #<?= (int)($linked['ticket_id'] ?? 0) ?> <?= Html::encode((string)($linked['ticket_sn'] ?? '')) ?>
+                                    </a>
+                                </td>
+                                <td><?= Html::encode((string)($assistanceTypes[$linked['assistance_type'] ?? '']['label'] ?? ($linked['assistance_type'] ?? ''))) ?></td>
+                                <td><?= !empty($linked['created']) ? '新建' : '已存在' ?></td>
+                                <td><?= Html::encode((string)($linked['note'] ?? '')) ?></td>
+                                <td><?= (int)($linked['created_at'] ?? 0) > 0 ? date('Y-m-d H:i', (int)$linked['created_at']) : '' ?></td>
                             </tr>
                         <?php endforeach; ?>
                         </tbody>

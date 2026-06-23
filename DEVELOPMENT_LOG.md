@@ -4469,3 +4469,110 @@
   - Overall production go-live is still separate and remains blocked until the global gates are complete: real payment credentials/sandbox-live evidence, SMTP/mail evidence, scheduler/backup/alert evidence, load/security/business signoff, and any Phase 7 production-readiness artifacts required by the launch gate.
 - Next stage:
   - Continue plan-listed global production-readiness work outside Phase 9, starting with Phase 7 real operational configuration evidence or whichever existing backlog item has the next available external inputs.
+
+## 2026-06-23 Phase 10-15 Plan Registration
+
+- Stage name: Phase 10.0-15.0 remaining original-requirements plan registration
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting the next development stage.
+  - Registered the user-approved remaining-requirements plan as Phase 10 through Phase 15.
+  - Kept Phase 9 customer-service completion accepted and scoped future customer-service work to production configuration/regression linkage only.
+  - Added Phase 10 as the immediate next development target: backend operations configuration center acceptance, real/sandbox provider evidence, scheduler/backup/load/security/business signoff checks, redacted export, and GO/NO-GO reporting.
+  - Added Phase 11-15 placeholders for payment/multi-merchant completion, account/notification/language completion, full buyer/seller APP, logistics/product/review completion, and distributor support center completion.
+- Main files changed/added:
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - Documentation-only plan registration; no runtime command was required.
+  - Local working tree still has unrelated untracked `docs/mongoyia-operational-config-provider-setup-guide.md`, left untouched.
+- Remaining issues:
+  - Phase 10 implementation has not started yet.
+  - Overall production go-live remains blocked until real payment credentials/sandbox-live evidence, SMTP/mail evidence, scheduler/backup/alert evidence, load/security/business signoff, and Phase 10 production-readiness artifacts are complete.
+- Next stage:
+  - Reread the development plan and this log, then start Phase 10.1 by adding an operational production-readiness acceptance command that aggregates Phase 7 checks, redacted export, production evidence gates, and explicit manual browser/provider evidence flags.
+
+## 2026-06-23 Phase 10.1 Operational Acceptance Command
+
+- Stage name: Phase 10.1 operational production-readiness acceptance aggregation
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting Phase 10.1.
+  - Added `operational-config-phase10-acceptance/run` as the Phase 10 aggregation command.
+  - The command verifies source coverage for encrypted operational config, payment config, SMTP config, ops/alert center, launch signoff, redacted export, and production go-live gate.
+  - The command can optionally run Phase 7 child checks, redacted export, production health/backup/scheduled/load/evidence summary, and production go-live gate via `--runChildChecks=1`.
+  - The command adds explicit manual acceptance flags for browser operations-center validation, provider evidence, production evidence, and redacted export review.
+  - Strict mode fails when failures, warnings, or pending manual evidence remain, keeping production `NO-GO` until real evidence is recorded.
+- Main files changed/added:
+  - `console/controllers/OperationalConfigPhase10AcceptanceController.php`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l console/controllers/OperationalConfigPhase10AcceptanceController.php` passed.
+  - Static marker check confirmed existing operational translation actions, ops-alert UI marker, launch-signoff UI marker, launch-signoff service marker, and production go-live service marker exist.
+  - Local Yii command execution was not attempted because this patch checkout does not have Composer `vendor/autoload.php`; run the command on BaoTa/full-vendor environment.
+- Remaining issues:
+  - Need deploy/pull this command to BaoTa, run migrations, and run:
+    `/www/server/php/83/bin/php yii operational-config-phase10-acceptance/run --baseUrl=https://demo2026.mongoyia.com --runChildChecks=1 --fixture=1 --strict=1 --interactive=0`.
+  - Browser/provider/production evidence flags remain pending until a platform admin validates the backend page and real/sandbox provider evidence is recorded.
+  - Overall production go-live remains blocked until Phase 10 evidence flags and downstream production go-live gate pass.
+- Next stage:
+  - Reread the development plan and this log, then continue Phase 10.2 by adding a DB-backed provider evidence snapshot/check layer so the backend can record QPay/LianLian/PayPal/SMTP/translation/alert evidence references without storing secrets.
+
+## 2026-06-23 Phase 10.2 Provider Evidence Records
+
+- Stage name: Phase 10.2 provider evidence record/check layer
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting Phase 10.2.
+  - Added `OperationalProviderEvidenceService` to record non-sensitive service-provider evidence references for QPay, LianLian, PayPal, SMTP, translation API, and alert channels.
+  - Evidence records reuse the existing encrypted operational config tables but store only non-sensitive references and confirmations: backend config checked, callback/test result references, redaction confirmation, reviewer, and notes.
+  - Added sensitive-looking input detection so evidence references containing private-key/API-key/Basic/Bearer/HMAC-secret patterns fail readiness instead of being accepted.
+  - Added backend operations-center forms and actions for saving/checking provider evidence without storing secrets.
+  - Added `operational-config-provider-evidence-test/run` and wired it into `operational-config-phase10-acceptance/run --runChildChecks=1`.
+- Main files changed/added:
+  - `common/services/mall/OperationalProviderEvidenceService.php`
+  - `backend/modules/mall/controllers/OperationalConfigController.php`
+  - `backend/modules/mall/views/operational-config/index.php`
+  - `console/controllers/OperationalConfigProviderEvidenceTestController.php`
+  - `console/controllers/OperationalConfigPhase10AcceptanceController.php`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l common/services/mall/OperationalProviderEvidenceService.php` passed.
+  - `php -l backend/modules/mall/controllers/OperationalConfigController.php` passed.
+  - `php -l backend/modules/mall/views/operational-config/index.php` passed.
+  - `php -l console/controllers/OperationalConfigProviderEvidenceTestController.php` passed.
+  - `php -l console/controllers/OperationalConfigPhase10AcceptanceController.php` passed.
+  - Static marker check confirmed provider evidence service, backend action, UI marker, and Phase 10 child-command wiring.
+  - Local Yii command execution is unavailable because `vendor/autoload.php` is absent in this patch checkout.
+- Remaining issues:
+  - Need run `operational-config-provider-evidence-test/run --fixture=1` and `operational-config-phase10-acceptance/run --runChildChecks=1 --fixture=1` on BaoTa/full-vendor environment.
+  - Real or sandbox provider evidence references still need to be entered by a platform admin; no actual QPay/LianLian/PayPal/SMTP/translation/alert provider evidence has been accepted yet.
+- Next stage:
+  - Reread the development plan and this log, then continue Phase 10.3 by tightening the backend GO/NO-GO readiness view around provider evidence, redacted export, and production signoff state.
+
+## 2026-06-23 Phase 10.3 Backend GO/NO-GO Readiness Summary
+
+- Stage name: Phase 10.3 backend GO/NO-GO readiness summary
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting Phase 10.3.
+  - Added `OperationalPhase10ReadinessService` to summarize Phase 10 readiness from provider evidence, launch signoff, latest redacted export, and latest production go-live gate report.
+  - Added a top-level Phase 10 readiness card to `/backend/mall/operational-config/index` with GO-READY/NO-GO decision, row-level evidence, and provider status badges.
+  - Wired the readiness service into `OperationalConfigController`.
+  - Added Phase 10 readiness markers to `operational-config-phase10-acceptance/run` source coverage.
+- Main files changed/added:
+  - `common/services/mall/OperationalPhase10ReadinessService.php`
+  - `backend/modules/mall/controllers/OperationalConfigController.php`
+  - `backend/modules/mall/views/operational-config/index.php`
+  - `console/controllers/OperationalConfigPhase10AcceptanceController.php`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l common/services/mall/OperationalPhase10ReadinessService.php` passed.
+  - `php -l backend/modules/mall/controllers/OperationalConfigController.php` passed.
+  - `php -l backend/modules/mall/views/operational-config/index.php` passed.
+  - `php -l console/controllers/OperationalConfigPhase10AcceptanceController.php` passed.
+  - Local Yii/browser execution remains unavailable because this patch checkout does not have `vendor/autoload.php`.
+- Remaining issues:
+  - Need deploy/pull to BaoTa, run migrations, then run Phase 10 acceptance and browser validation.
+  - GO-READY will remain NO-GO until provider evidence, launch signoff, redacted export, and production go-live gate all pass in the full environment.
+- Next stage:
+  - On BaoTa/full-vendor environment, run Phase 10 automated acceptance. After it passes with only manual evidence pending, validate `/backend/mall/operational-config/index` in the browser and record provider/production evidence references.

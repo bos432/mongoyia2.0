@@ -8,6 +8,8 @@ use common\services\mall\OperationalLaunchSignoffService;
 use common\services\mall\OperationalMailConfigService;
 use common\services\mall\OperationalOpsAlertService;
 use common\services\mall\OperationalPaymentConfigService;
+use common\services\mall\OperationalPhase10ReadinessService;
+use common\services\mall\OperationalProviderEvidenceService;
 use Yii;
 use yii\web\ForbiddenHttpException;
 
@@ -29,6 +31,12 @@ class OperationalConfigController extends BaseController
             'translation' => (new CustomerServiceTranslationService())->snapshot(),
             'opsAlert' => (new OperationalOpsAlertService())->snapshot(),
             'launch' => (new OperationalLaunchSignoffService())->snapshot(),
+            'providerEvidence' => (new OperationalProviderEvidenceService())->snapshot(
+                (string)Yii::$app->request->get('environment', 'test')
+            ),
+            'phase10Readiness' => (new OperationalPhase10ReadinessService())->snapshot(
+                (string)Yii::$app->request->get('environment', 'test')
+            ),
         ]);
     }
 
@@ -214,5 +222,47 @@ class OperationalConfigController extends BaseController
         }
 
         return $this->redirect(['index', 'environment' => (string)Yii::$app->request->post('environment', 'test')]);
+    }
+
+    public function actionSaveProviderEvidence()
+    {
+        if (!$this->isMallPlatformOperator()) {
+            throw new ForbiddenHttpException(Yii::t('app', 'No Auth'));
+        }
+
+        $request = Yii::$app->request;
+        $provider = (string)$request->post('provider', '');
+        $environment = (string)$request->post('environment', 'test');
+        try {
+            $result = (new OperationalProviderEvidenceService())->saveProvider(
+                $provider,
+                $environment,
+                (array)$request->post('evidence', [])
+            );
+            Yii::$app->session->setFlash('success', '服务商证据已保存，检测结果：' . $result['result'] . ' - ' . $result['message']);
+        } catch (\Throwable $e) {
+            Yii::$app->session->setFlash('error', '服务商证据保存失败：' . $e->getMessage());
+        }
+
+        return $this->redirect(['index', 'environment' => $environment]);
+    }
+
+    public function actionCheckProviderEvidence()
+    {
+        if (!$this->isMallPlatformOperator()) {
+            throw new ForbiddenHttpException(Yii::t('app', 'No Auth'));
+        }
+
+        $request = Yii::$app->request;
+        $provider = (string)$request->post('provider', '');
+        $environment = (string)$request->post('environment', 'test');
+        try {
+            $result = (new OperationalProviderEvidenceService())->checkProvider($provider, $environment, true);
+            Yii::$app->session->setFlash('success', '服务商证据检测完成：' . $result['result'] . ' - ' . $result['message']);
+        } catch (\Throwable $e) {
+            Yii::$app->session->setFlash('error', '服务商证据检测失败：' . $e->getMessage());
+        }
+
+        return $this->redirect(['index', 'environment' => $environment]);
     }
 }

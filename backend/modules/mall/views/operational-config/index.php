@@ -11,6 +11,8 @@ use yii\helpers\Url;
 /* @var $translation array */
 /* @var $opsAlert array */
 /* @var $launch array */
+/* @var $providerEvidence array */
+/* @var $phase10Readiness array */
 
 $this->title = '运营配置中心';
 $this->params['breadcrumbs'][] = $this->title;
@@ -91,6 +93,120 @@ $statusClass = [
                     <?php endforeach; ?>
                     </tbody>
                 </table>
+            </div>
+        </div>
+
+        <div class="card" data-mongoyia-operational-phase10-readiness="<?= Html::encode($phase10Readiness['version'] ?? '') ?>">
+            <?php $phase10Badge = $statusClass[$phase10Readiness['result'] ?? 'PENDING'] ?? 'secondary'; ?>
+            <div class="card-header">
+                <h3 class="card-title">Phase 10 上线运营 readiness</h3>
+                <div class="card-tools">
+                    <span class="badge badge-<?= $phase10Badge ?>"><?= Html::encode($phase10Readiness['decision'] ?? 'NO-GO') ?></span>
+                </div>
+            </div>
+            <div class="card-body p-0">
+                <table class="table table-hover mb-0">
+                    <thead>
+                    <tr>
+                        <th>检查项</th>
+                        <th>结果</th>
+                        <th>证据</th>
+                        <th>说明</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <?php foreach (($phase10Readiness['rows'] ?? []) as $row): ?>
+                        <?php $badge = $statusClass[$row['result'] ?? 'PENDING'] ?? 'secondary'; ?>
+                        <tr>
+                            <td><?= Html::encode($row['name']) ?></td>
+                            <td><span class="badge badge-<?= $badge ?>"><?= Html::encode($row['result']) ?></span></td>
+                            <td><code><?= Html::encode($row['evidence']) ?></code></td>
+                            <td><?= Html::encode($row['message']) ?></td>
+                        </tr>
+                    <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
+            <div class="card-body">
+                <strong>服务商明细：</strong>
+                <?php foreach (($phase10Readiness['provider_rows'] ?? []) as $row): ?>
+                    <?php $badge = $statusClass[$row['result'] ?? 'PENDING'] ?? 'secondary'; ?>
+                    <span class="badge badge-<?= $badge ?> mr-1"><?= Html::encode($row['name']) ?>: <?= Html::encode($row['result']) ?></span>
+                <?php endforeach; ?>
+                <p class="text-muted mb-0 mt-2">
+                    只有服务商证据、上线签核、脱敏导出和生产 GO/NO-GO gate 都通过后，这里才会显示 GO-READY。
+                </p>
+            </div>
+        </div>
+
+        <div class="mb-3" data-mongoyia-operational-provider-evidence="<?= Html::encode($providerEvidence['version'] ?? '') ?>">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <h3 class="mb-0">服务商证据验收</h3>
+                <span class="text-muted small">当前环境：<?= Html::encode($paymentEnvironments[$providerEvidence['environment'] ?? 'test'] ?? ($providerEvidence['environment'] ?? 'test')) ?></span>
+            </div>
+            <p class="text-muted">
+                这里只记录 QPay、LianLian、PayPal、SMTP、翻译和告警的脱敏证据引用，例如服务商后台截图编号、沙箱测试报告、内部工单或审计报告；不要录入私钥、Basic Auth、HMAC Secret、SMTP 密码、API Key 或原始回调报文。
+            </p>
+            <div class="row">
+                <?php foreach (($providerEvidence['providers'] ?? []) as $provider): ?>
+                    <?php $latest = $provider['latest_check'] ?? []; ?>
+                    <?php $badge = $statusClass[$latest['result'] ?? 'PENDING'] ?? 'secondary'; ?>
+                    <div class="col-lg-4 col-md-12">
+                        <?= Html::beginForm(['save-provider-evidence'], 'post') ?>
+                        <?= Html::hiddenInput('provider', $provider['provider']) ?>
+                        <?= Html::hiddenInput('environment', $providerEvidence['environment'] ?? 'test') ?>
+                        <div class="card">
+                            <div class="card-header">
+                                <h4 class="card-title"><?= Html::encode($provider['label']) ?></h4>
+                                <div class="card-tools">
+                                    <span class="badge badge-<?= $badge ?>"><?= Html::encode($latest['result'] ?? 'PENDING') ?></span>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <p class="text-muted small"><?= Html::encode($provider['description']) ?></p>
+                                <?php foreach (($provider['fields'] ?? []) as $field): ?>
+                                    <div class="form-group">
+                                        <label>
+                                            <?= Html::encode($field['label']) ?>
+                                            <?php if (!empty($field['required'])): ?><span class="text-danger">*</span><?php endif; ?>
+                                        </label>
+                                        <?php if (($field['type'] ?? '') === 'switch'): ?>
+                                            <?= Html::hiddenInput('evidence[' . $field['code'] . ']', '0') ?>
+                                            <div>
+                                                <label class="mb-0">
+                                                    <?= Html::checkbox('evidence[' . $field['code'] . ']', (string)$field['value'] === '1', ['value' => '1']) ?>
+                                                    已确认
+                                                </label>
+                                            </div>
+                                        <?php elseif (($field['type'] ?? '') === 'textarea'): ?>
+                                            <?= Html::textarea('evidence[' . $field['code'] . ']', $field['value'], [
+                                                'class' => 'form-control',
+                                                'rows' => 3,
+                                                'placeholder' => '只填写脱敏说明或外部证据引用',
+                                            ]) ?>
+                                        <?php else: ?>
+                                            <?= Html::textInput('evidence[' . $field['code'] . ']', $field['value'], [
+                                                'class' => 'form-control',
+                                                'placeholder' => '报告编号、工单号、截图编号或审计链接',
+                                            ]) ?>
+                                        <?php endif; ?>
+                                    </div>
+                                <?php endforeach; ?>
+                                <?php if (!empty($latest['message'])): ?>
+                                    <div class="text-muted small"><?= Html::encode($latest['message']) ?></div>
+                                <?php endif; ?>
+                            </div>
+                            <div class="card-footer">
+                                <?= Html::submitButton('保存证据并检测', ['class' => 'btn btn-primary btn-sm']) ?>
+                                <?= Html::submitButton('仅检测证据', [
+                                    'class' => 'btn btn-default btn-sm',
+                                    'formaction' => Url::to(['check-provider-evidence']),
+                                ]) ?>
+                            </div>
+                        </div>
+                        <?= Html::endForm() ?>
+                    </div>
+                <?php endforeach; ?>
             </div>
         </div>
 

@@ -6443,3 +6443,25 @@
   - Phase 10/11/12/14/15 external provider, logistics, social-login, notification, production operations, and signoff evidence remain pending; production remains `NO-GO`.
 - Next stage:
   - Run syntax/static verification, commit and push this coverage patch, then continue with BaoTa/browser validation after deployment catches up or another plan-listed local readiness item.
+
+## 2026-06-23 Phase 13 Buyer Cart Browser Recheck After Coverage Push
+
+- Stage name: Phase 13 buyer cart browser recheck after coverage push
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting the stage.
+  - Opened a clean right-side browser tab on `https://demo2026.mongoyia.com/product-codex-test-product-1781945133`.
+  - Confirmed the product page opens, the buyer session is still visible, and the Phase 14 review-sort marker is present.
+  - Checked cart links on the deployed product page and still found two old `/mall/cart` short links alongside `/mall/cart/index`, while local pushed source has already normalized the frontend mall cart links.
+  - Opened `https://demo2026.mongoyia.com/mall/cart/index`; the browser still reports `net::ERR_HTTP_RESPONSE_CODE_FAILURE`.
+  - Did not submit checkout/payment forms, mutate cart/order/payment/fund data, or enter credentials.
+- Main files changed/added:
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - Browser product page: opens successfully and has no visible fatal error.
+  - Browser cart page: still blocked by HTTP response failure on the deployed server.
+  - Browser evidence indicates the deployed server is still serving stale cart template/controller output or cached PHP/page output; latest pushed commit for acceptance coverage is `a5ee1fe`.
+- Remaining issues:
+  - BaoTa/test server must pull `a5ee1fe` or newer, run migrations/readiness, and clear PHP opcache/runtime/page cache before buyer cart/checkout validation can continue.
+  - Production remains `NO-GO` until external provider, logistics, social-login, notification, production operations, and business/security signoff evidence is accepted.
+- Next stage:
+  - Commit and push this browser recheck log entry, then continue with another plan-listed local readiness item that does not require deployed server freshness.

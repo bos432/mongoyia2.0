@@ -6,12 +6,14 @@
 - Completed:
   - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting the stage.
   - Updated QPay/LianLian runtime defaults so committed code no longer reads secret-bearing payment `.env` keys for Basic Auth, merchant IDs, private keys, callback secrets, or HMAC secrets.
+  - Removed the old `PayConstant::loadFromEnv()` path so LianLian SDK constants are populated only from the encrypted runtime config array and an empty config stays disabled.
   - Kept public provider endpoint defaults in code and left channels disabled unless encrypted backend payment configuration is enabled and complete.
   - Added a runtime readiness guard so QPay/LianLian are hidden from the payment page and blocked at the create/query actions when backend configuration has missing required fields.
   - Updated `deploy-check`, operational payment config readiness, and payment-provider readiness markers to match the new backend-config-only payment credential source.
   - Updated `docs/mongoyia-upgrade-backlog-20260618.md` with the Phase 10/11 runtime payment configuration alignment note.
 - Main files changed/added:
   - `frontend/modules/mall/controllers/PaymentController.php`
+  - `frontend/modules/mall/controllers/PayConstant.php`
   - `console/controllers/DeployCheckController.php`
   - `console/controllers/OperationalConfigPaymentTestController.php`
   - `console/controllers/PaymentProviderReadinessController.php`
@@ -19,10 +21,11 @@
   - `DEVELOPMENT_LOG.md`
 - Run/test result:
   - `php -l frontend/modules/mall/controllers/PaymentController.php` passed.
+  - `php -l frontend/modules/mall/controllers/PayConstant.php` passed.
   - `php -l console/controllers/DeployCheckController.php` passed.
   - `php -l console/controllers/OperationalConfigPaymentTestController.php` passed.
   - `php -l console/controllers/PaymentProviderReadinessController.php` passed.
-  - Static scan confirmed no `env('QPAY...')`, `env('LIANLIAN...')`, `qpayEnvFallbacks`, `lianlianEnvFallbacks`, or old QPay/LianLian callback-env fallback markers remain in the runtime payment controller/readiness marker checks.
+  - Static scan confirmed no `env('QPAY...')`, `env('LIANLIAN...')`, `qpayEnvFallbacks`, `lianlianEnvFallbacks`, `loadFromEnv`, or old QPay/LianLian callback-env fallback markers remain in the runtime payment controller/PayConstant/readiness marker checks.
   - Full Yii console execution remains BaoTa-only because this local checkout lacks `vendor/autoload.php`.
 - Remaining issues:
   - BaoTa/test server must pull this commit and run migrations/readiness before browser/payment-channel validation can reflect the new guard.

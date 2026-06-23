@@ -1,5 +1,32 @@
 # Development Log
 
+## 2026-06-24 Phase 10-15 Aggregate BaoTa Cache Refresh Guidance
+
+- Stage name: Phase 10-15 aggregate BaoTa cache/opcache refresh guidance
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting the stage.
+  - Rechecked the right-side browser against `https://demo2026.mongoyia.com/product-codex-test-product-1781945133`.
+  - Confirmed the deployed product page still loads `/resources/mall/default/js/main.js?v=1.1.3`, still renders two exact `/mall/cart` short links, and `/mall/cart/index` remains blocked by `ERR_HTTP_RESPONSE_CODE_FAILURE`.
+  - Updated the Phase 10-15 aggregate acceptance report's BaoTa verification command to use `git pull --ff-only`, print the deployed commit, run migrations, flush Yii cache, restart PHP-FPM, and only then run the aggregate acceptance command.
+  - Added `MONGOYIA_PHASE10_15_DEPLOY_CACHE_REFRESH_V1` guidance so stale PHP/opcache/page output is treated as a deployment freshness problem instead of a business-flow failure.
+  - Updated the Phase 10-15 backlog row and strict aggregate notes to mention the cache/opcache refresh guidance before browser-facing probes.
+- Main files changed/added:
+  - `console/controllers/MongoyiaRequirementsClosureAcceptanceController.php`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - Browser product page opens, but deployed output is still stale (`main.js?v=1.1.3` and two exact `/mall/cart` links).
+  - Browser cart page remains blocked with `net::ERR_HTTP_RESPONSE_CODE_FAILURE`.
+  - `php -l console/controllers/MongoyiaRequirementsClosureAcceptanceController.php` passed.
+  - Static marker scan confirmed `MONGOYIA_PHASE10_15_DEPLOY_CACHE_REFRESH_V1`, `git pull --ff-only`, `cache/flush-all`, and `php-fpm-83 restart` in the aggregate report/backlog.
+  - `git diff --check` reported no whitespace errors, only existing Windows line-ending conversion warnings.
+  - Full Yii console execution remains BaoTa-only because this local checkout lacks `vendor/autoload.php`.
+- Remaining issues:
+  - BaoTa/test server must pull this commit, flush Yii cache, restart PHP-FPM/opcache, and rerun the Phase 10-15 aggregate acceptance command before browser role-flow validation can continue.
+  - Phase 10/11/12/13/14/15 external and browser evidence remain incomplete; production remains `NO-GO`.
+- Next stage:
+  - Commit and push this aggregate deploy-refresh guidance, then continue with BaoTa/browser validation after the test server is refreshed or another plan-listed local readiness item.
+
 ## 2026-06-24 Phase 13 Deployed Product/Cart Route Freshness Gates
 
 - Stage name: Phase 13 deployed product/cart route freshness gates

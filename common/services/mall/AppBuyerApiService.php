@@ -28,6 +28,7 @@ class AppBuyerApiService
     public const REVIEW_WRITE_VERSION = 'MONGOYIA_APP_BUYER_REVIEW_WRITE_V1';
     public const CATEGORY_STORE_SCOPE_VERSION = 'MONGOYIA_APP_BUYER_CATEGORY_STORE_SCOPE_V1';
     public const PRODUCT_STORE_SCOPE_VERSION = 'MONGOYIA_APP_BUYER_PRODUCT_STORE_SCOPE_V1';
+    public const CART_FAVORITE_STORE_SCOPE_VERSION = 'MONGOYIA_APP_BUYER_CART_FAVORITE_STORE_SCOPE_V1';
 
     private $searchVideoService;
 
@@ -235,11 +236,12 @@ class AppBuyerApiService
             'summary' => [
                 'total' => number_format($total, 2, '.', ''),
                 'number' => $number,
+                'cart_favorite_store_scope_version' => self::CART_FAVORITE_STORE_SCOPE_VERSION,
             ],
         ];
     }
 
-    public function addCart(int $userId, array $input): array
+    public function addCart(int $userId, array $input, int $storeId = 0): array
     {
         if ($userId <= 0) {
             return $this->authRequiredPayload();
@@ -247,7 +249,7 @@ class AppBuyerApiService
 
         $productId = (int)($input['product_id'] ?? 0);
         $number = max(1, min(999, (int)($input['number'] ?? 1)));
-        $product = $this->publicProductQuery(0)->andWhere(['id' => $productId])->one();
+        $product = $this->publicProductQuery($storeId)->andWhere(['id' => $productId])->one();
         if (!$product) {
             throw new \RuntimeException('Product not found.');
         }
@@ -676,13 +678,13 @@ class AppBuyerApiService
         return ['version' => self::VERSION, 'store_favorite' => true];
     }
 
-    public function toggleFavorite(int $userId, int $productId): array
+    public function toggleFavorite(int $userId, int $productId, int $storeId = 0): array
     {
         if ($userId <= 0) {
             return $this->authRequiredPayload();
         }
 
-        $product = $this->publicProductQuery(0)->andWhere(['id' => $productId])->one();
+        $product = $this->publicProductQuery($storeId)->andWhere(['id' => $productId])->one();
         if (!$product) {
             throw new \RuntimeException('Product not found.');
         }
@@ -694,7 +696,11 @@ class AppBuyerApiService
         if ($favorite) {
             $favorite->status = BaseModel::STATUS_DELETED;
             $favorite->save(false);
-            return ['version' => self::VERSION, 'favorite' => false];
+            return [
+                'version' => self::VERSION,
+                'cart_favorite_store_scope_version' => self::CART_FAVORITE_STORE_SCOPE_VERSION,
+                'favorite' => false,
+            ];
         }
 
         $favorite = new Favorite();
@@ -707,7 +713,11 @@ class AppBuyerApiService
             throw new \RuntimeException('Favorite save failed: ' . json_encode($favorite->errors, JSON_UNESCAPED_UNICODE));
         }
 
-        return ['version' => self::VERSION, 'favorite' => true];
+        return [
+            'version' => self::VERSION,
+            'cart_favorite_store_scope_version' => self::CART_FAVORITE_STORE_SCOPE_VERSION,
+            'favorite' => true,
+        ];
     }
 
     public function reviews(int $productId, int $page = 1, int $pageSize = 20, string $sort = 'newest'): array

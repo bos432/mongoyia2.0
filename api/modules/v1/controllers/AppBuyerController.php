@@ -74,7 +74,11 @@ class AppBuyerController extends BaseController
         try {
             if (Yii::$app->request->isPost) {
                 $this->requireLogin();
-                return $this->buyerService()->addCart($this->currentUserId(), Yii::$app->request->post());
+                return $this->buyerService()->addCart(
+                    $this->currentUserId(),
+                    Yii::$app->request->post(),
+                    (int)$this->getStoreId()
+                );
             }
 
             return $this->buyerService()->cart($this->currentUserId());
@@ -115,7 +119,11 @@ class AppBuyerController extends BaseController
         try {
             if (Yii::$app->request->isPost) {
                 $this->requireLogin();
-                return $this->buyerService()->toggleFavorite($this->currentUserId(), (int)Yii::$app->request->post('product_id'));
+                return $this->buyerService()->toggleFavorite(
+                    $this->currentUserId(),
+                    (int)Yii::$app->request->post('product_id'),
+                    (int)$this->getStoreId()
+                );
             }
 
             return $this->buyerService()->favorites($this->currentUserId());

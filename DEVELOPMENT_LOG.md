@@ -4972,3 +4972,42 @@
 - Next stage:
   - Commit and push Phase 12.3, then on BaoTa run migrations plus `notification-phase12-readiness/run --fixture=1` and the Phase 12 aggregate command.
   - Continue Phase 12.4 by adding language review import/export foundation for UI, mail, notification, and payment-error strings.
+
+## 2026-06-23 Phase 12.4 Language Review Import/Export Foundation
+
+- Stage name: Phase 12.4 reviewer-safe language review import/export foundation
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting the stage.
+  - Added `LanguageReviewService` for reviewer-safe export/import across UI, mail, notification, and payment-error string domains.
+  - Added CSV and Markdown export workflow with columns for target language, category, source text, current translation, reviewed translation, review status, reviewer, and notes.
+  - Added dry-run-first import workflow; only `approved`/`accepted`/`pass` rows for supported targets and safe message categories are eligible, and files are written only when `--apply=1` is explicitly used.
+  - Added a minimal `common/messages/en/app.php` seed so Phase 12 English app-language readiness has a real package file for account, notification, payment, and password-recovery prompts.
+  - Added `language-review-export/run`, `language-review-import/run`, and `language-review-phase12-readiness/run`.
+  - Wired language review readiness into `account-notification-phase12-acceptance/run --runChildChecks=1`.
+  - Updated the Phase 12 backlog status and command list to record the language review import/export foundation.
+- Main files changed/added:
+  - `common/services/mall/LanguageReviewService.php`
+  - `console/controllers/LanguageReviewExportController.php`
+  - `console/controllers/LanguageReviewImportController.php`
+  - `console/controllers/LanguageReviewPhase12ReadinessController.php`
+  - `console/controllers/AccountNotificationPhase12AcceptanceController.php`
+  - `common/messages/en/app.php`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l common/services/mall/LanguageReviewService.php` passed.
+  - `php -l console/controllers/LanguageReviewExportController.php` passed.
+  - `php -l console/controllers/LanguageReviewImportController.php` passed.
+  - `php -l console/controllers/LanguageReviewPhase12ReadinessController.php` passed.
+  - `php -l console/controllers/AccountNotificationPhase12AcceptanceController.php` passed.
+  - `php -l common/messages/en/app.php` passed.
+  - Static marker checks confirmed language review service domains, export/import commands, readiness command, Phase 12 aggregate wiring, backlog command markers, and English app package markers.
+  - `git diff --check` reported no whitespace errors; only existing Windows line-ending conversion warnings.
+  - Full Yii console execution was not run locally because this patch checkout does not have `vendor/autoload.php`; run the language review readiness and Phase 12 aggregate commands on BaoTa/full-vendor environment after pull.
+- Remaining issues:
+  - Human-reviewed translations still require a reviewer to fill exported CSV rows and import them after review.
+  - Facebook/Google callback/bind evidence, security-code provider delivery/audit evidence, external notification provider evidence, and browser evidence remain pending.
+  - Phase 10/11 external provider and production evidence remain incomplete, so production remains `NO-GO`.
+- Next stage:
+  - Commit and push Phase 12.4, then on BaoTa run `language-review-phase12-readiness/run --fixture=1` and the Phase 12 aggregate command.
+  - Continue Phase 12.5 by adding third-party callback/binding runtime foundation if provider inputs remain unavailable, or run BaoTa checks and browser evidence when inputs are available.

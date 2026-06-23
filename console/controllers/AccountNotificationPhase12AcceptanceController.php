@@ -208,6 +208,29 @@ class AccountNotificationPhase12AcceptanceController extends Controller
             'PhpMessageSource',
             '@common/messages',
         ]);
+        $this->requireFileContains('Language review import/export service', 'common/services/mall/LanguageReviewService.php', [
+            'MONGOYIA_LANGUAGE_REVIEW_V1',
+            'DOMAIN_MAIL',
+            'DOMAIN_NOTIFICATION',
+            'DOMAIN_PAYMENT_ERROR',
+            'exportBundle',
+            'importCsv',
+        ]);
+        $this->requireFileContains('Language review export command', 'console/controllers/LanguageReviewExportController.php', [
+            'Mongoyia language review export',
+            'targets',
+            'domains',
+        ]);
+        $this->requireFileContains('Language review import command', 'console/controllers/LanguageReviewImportController.php', [
+            'Mongoyia language review import',
+            'inputPath',
+            'apply',
+        ]);
+        $this->requireFileContains('Language review readiness command', 'console/controllers/LanguageReviewPhase12ReadinessController.php', [
+            'MONGOYIA_LANGUAGE_REVIEW_PHASE12_READINESS_V1',
+            'language-review-phase12-readiness',
+            'dry-run import',
+        ]);
         $this->requireDirectoryContains('English language package', 'common/messages/en', ['app.php']);
         $this->requireDirectoryContains('Mongolian language package', 'common/messages/mn', ['app.php']);
     }
@@ -290,7 +313,12 @@ class AccountNotificationPhase12AcceptanceController extends Controller
             'Language package foundation' => [
                 'status' => is_dir($this->resolvePath('common/messages/mn')) ? 'PASS' : 'PENDING',
                 'evidence' => 'common/messages',
-                'notes' => 'Message packages exist; reviewer-safe export/import workflow remains a Phase 12 implementation task.',
+                'notes' => 'Message packages exist and Phase 12 language review export/import now provides the reviewer workflow.',
+            ],
+            'Language review import/export foundation' => [
+                'status' => 'PASS',
+                'evidence' => 'common/services/mall/LanguageReviewService.php',
+                'notes' => 'Reviewer-safe CSV/Markdown export and approved-row import dry-run/apply workflow are present for UI, mail, notification, and payment-error strings.',
             ],
         ];
 
@@ -327,6 +355,7 @@ class AccountNotificationPhase12AcceptanceController extends Controller
             'Identity provider config readiness' => ['route' => 'identity-config-readiness/run', 'fixture' => true],
             'Account security policy readiness' => ['route' => 'account-security-readiness/run', 'fixture' => true],
             'Notification event/send-log readiness' => ['route' => 'notification-phase12-readiness/run', 'fixture' => true],
+            'Language review import/export readiness' => ['route' => 'language-review-phase12-readiness/run', 'fixture' => true],
             'Operational mail config readiness' => ['route' => 'operational-config-mail-test/run', 'fixture' => true],
         ];
     }
@@ -376,6 +405,7 @@ class AccountNotificationPhase12AcceptanceController extends Controller
             '/www/server/php/83/bin/php yii migrate/up --interactive=0',
             '/www/server/php/83/bin/php yii account-security-readiness/run --fixture=1 --interactive=0',
             '/www/server/php/83/bin/php yii notification-phase12-readiness/run --fixture=1 --interactive=0',
+            '/www/server/php/83/bin/php yii language-review-phase12-readiness/run --fixture=1 --interactive=0',
             '/www/server/php/83/bin/php yii account-notification-phase12-acceptance/run \\',
             '  --baseUrl=https://demo2026.mongoyia.com \\',
             '  --runChildChecks=1 \\',

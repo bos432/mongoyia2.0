@@ -165,6 +165,27 @@ class DistributionSupportPhase15AcceptanceController extends Controller
             'material-save',
             'material-disable',
         ]);
+        $this->requireFileContains('Distributor signoff phase 15 service', 'common/services/mall/DistributionSignoffPhase15Service.php', [
+            'MONGOYIA_DISTRIBUTION_SIGNOFF_PHASE15_V1',
+            'saveEvidence',
+            'reviewEvidence',
+            'evidenceRows',
+        ]);
+        $this->requireFileContains('Distributor signoff phase 15 readiness', 'console/controllers/DistributionSignoffPhase15ReadinessController.php', [
+            'MONGOYIA_DISTRIBUTION_SIGNOFF_PHASE15_READINESS_V1',
+            'Distributor signoff fixture',
+            'reviewEvidence',
+        ]);
+        $this->requireFileContains('Distributor signoff phase 15 migration', 'console/migrations/m260623_220000_mongoyia_distribution_signoff_evidence.php', [
+            'mall_distribution_signoff_evidence',
+            'evidence_type',
+            'signoff_status',
+        ]);
+        $this->requireFileContains('Backend signoff evidence UI', 'backend/modules/mall/views/distribution-distributor/index.php', [
+            'data-mongoyia-phase15-signoff-evidence',
+            'signoff-evidence-save',
+            'signoff-evidence-review',
+        ]);
     }
 
     private function checkPlannedScopeMatrix(): void
@@ -263,6 +284,7 @@ class DistributionSupportPhase15AcceptanceController extends Controller
             '/www/server/php/83/bin/php yii migrate/up --interactive=0',
             '/www/server/php/83/bin/php yii distribution-support-content-phase15-readiness/run --fixture=1 --interactive=0',
             '/www/server/php/83/bin/php yii distribution-material-phase15-readiness/run --fixture=1 --interactive=0',
+            '/www/server/php/83/bin/php yii distribution-signoff-phase15-readiness/run --fixture=1 --interactive=0',
             '/www/server/php/83/bin/php yii distribution-support-phase15-acceptance/run --fixture=1 --interactive=0',
             '```',
             '',

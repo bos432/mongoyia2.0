@@ -5610,3 +5610,36 @@
 - Next stage:
   - Commit and push Phase 15.2 after local checks pass.
   - Continue Phase 15.3 by adding distributor payout/invite reward signoff evidence for offline review without triggering real payouts.
+
+## 2026-06-23 Phase 15.3 Distributor Signoff Evidence
+
+- Stage name: Phase 15.3 distributor payout/invite reward signoff evidence
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting the stage.
+  - Added `mall_distribution_signoff_evidence` for commission-rule, offline-withdrawal-payout, and invite-reward signoff evidence.
+  - Added `DistributionSignoffPhase15Service` for evidence entry, summary, pending/approve/reject review transitions, and repeat-review blocking.
+  - Extended backend `/backend/mall/distribution-distributor/index` with signoff evidence entry, summary, evidence list, and approve/reject actions.
+  - Added `distribution-signoff-phase15-readiness/run` with schema/source checks and rollback fixture coverage for dry-run entry, pending status, approve dry-run, approve apply, and repeat-review blocking.
+  - Wired Phase 15 aggregate acceptance to detect the Phase 15.3 service, migration, readiness command, and backend UI.
+  - Updated the Phase 15 backlog status and command list.
+- Main files changed/added:
+  - `console/migrations/m260623_220000_mongoyia_distribution_signoff_evidence.php`
+  - `common/services/mall/DistributionSignoffPhase15Service.php`
+  - `backend/modules/mall/controllers/DistributionDistributorController.php`
+  - `backend/modules/mall/views/distribution-distributor/index.php`
+  - `console/controllers/DistributionSignoffPhase15ReadinessController.php`
+  - `console/controllers/DistributionSupportPhase15AcceptanceController.php`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l` passed for the new migration, signoff service, backend controller/view, Phase 15.3 readiness command, and Phase 15 aggregate acceptance command.
+  - Static marker checks confirmed Phase 15.3 service/readiness/UI markers and backlog command markers.
+  - `git diff --check` reported no whitespace errors; only existing Windows line-ending conversion warnings.
+  - Full Yii console execution is not available locally because this patch checkout does not have `vendor/autoload.php`; after BaoTa pull run `migrate/up`, `distribution-signoff-phase15-readiness/run --fixture=1`, and `distribution-support-phase15-acceptance/run --fixture=1`.
+- Remaining issues:
+  - Phase 15 browser role-flow evidence remains pending until BaoTa pulls this stage and migrations run.
+  - Phase 14 browser role-flow evidence also remains pending until BaoTa pulls the latest migrations and readiness commands.
+  - Phase 10/11/12 external provider and production evidence remain incomplete; production remains `NO-GO`.
+- Next stage:
+  - Commit and push Phase 15.3 after local checks pass.
+  - After BaoTa pull/migration, run Phase 14/15 readiness commands and complete browser role-flow evidence, or continue only if a plan-listed code gap remains.

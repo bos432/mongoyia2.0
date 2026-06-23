@@ -7,6 +7,7 @@ use common\services\mall\DistributionAnalyticsService;
 use common\services\mall\DistributionInviteRewardWorkflowService;
 use common\services\mall\DistributionMaterialPhase15Service;
 use common\services\mall\DistributionSupportContentService;
+use common\services\mall\DistributionSignoffPhase15Service;
 use Yii;
 use yii\web\ForbiddenHttpException;
 
@@ -23,6 +24,7 @@ class DistributionDistributorController extends BaseController
         $service = new DistributionProfileService();
         $materialService = new DistributionMaterialPhase15Service();
         $supportService = new DistributionSupportContentService();
+        $signoffService = new DistributionSignoffPhase15Service();
         $analyticsService = new DistributionAnalyticsService();
         $supportType = (string)Yii::$app->request->get('support_type', '');
         $supportLanguage = (string)Yii::$app->request->get('support_language', '');
@@ -40,6 +42,10 @@ class DistributionDistributorController extends BaseController
             'supportTypeLabels' => $supportService->typeLabels(),
             'supportLanguageLabels' => $supportService->languageLabels(),
             'supportStatusLabels' => $supportService->statusLabels(),
+            'signoffRows' => $signoffService->evidenceRows('', '', $limit),
+            'signoffSummary' => $signoffService->summary(),
+            'signoffTypeLabels' => $signoffService->evidenceTypeLabels(),
+            'signoffStatusLabels' => $signoffService->statusLabels(),
             'invites' => $this->inviteRows($limit),
             'inviteRewards' => $this->inviteRewardRows($limit),
             'analyticsRows' => $analyticsService->distributorRows($limit),
@@ -146,6 +152,37 @@ class DistributionDistributorController extends BaseController
 
         $id = (int)Yii::$app->request->post('id', Yii::$app->request->get('id', 0));
         $result = (new DistributionMaterialPhase15Service())->disableMaterial($id, true, (int)Yii::$app->user->id);
+        if ((int)$result['updated'] <= 0) {
+            return $this->redirectError($result['skippedReason'] ?: Yii::t('app', 'No eligible records'), ['index']);
+        }
+
+        return $this->redirectSuccess(['index']);
+    }
+
+    public function actionSignoffEvidenceSave()
+    {
+        if (!$this->isMallPlatformOperator()) {
+            throw new ForbiddenHttpException(Yii::t('app', 'No Auth'));
+        }
+
+        $result = (new DistributionSignoffPhase15Service())->saveEvidence(Yii::$app->request->post(), true, (int)Yii::$app->user->id);
+        if ($result['skippedReason'] !== '') {
+            return $this->redirectError($result['skippedReason'], ['index']);
+        }
+
+        return $this->redirectSuccess(['index']);
+    }
+
+    public function actionSignoffEvidenceReview()
+    {
+        if (!$this->isMallPlatformOperator()) {
+            throw new ForbiddenHttpException(Yii::t('app', 'No Auth'));
+        }
+
+        $id = (int)Yii::$app->request->post('id', Yii::$app->request->get('id', 0));
+        $action = (string)Yii::$app->request->post('workflow_action', Yii::$app->request->get('workflow_action', ''));
+        $remark = (string)Yii::$app->request->post('review_remark', 'backend signoff review');
+        $result = (new DistributionSignoffPhase15Service())->reviewEvidence($id, $action, true, (int)Yii::$app->user->id, $remark);
         if ((int)$result['updated'] <= 0) {
             return $this->redirectError($result['skippedReason'] ?: Yii::t('app', 'No eligible records'), ['index']);
         }

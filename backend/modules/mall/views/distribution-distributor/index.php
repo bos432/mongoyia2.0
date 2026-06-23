@@ -19,6 +19,10 @@ use yii\helpers\Url;
 /* @var $supportTypeLabels array */
 /* @var $supportLanguageLabels array */
 /* @var $supportStatusLabels array */
+/* @var $signoffRows array */
+/* @var $signoffSummary array */
+/* @var $signoffTypeLabels array */
+/* @var $signoffStatusLabels array */
 /* @var $invites array */
 /* @var $inviteRewards array */
 /* @var $analyticsRows array */
@@ -423,6 +427,105 @@ $this->params['breadcrumbs'][] = $this->title;
                             <td><?= (int)$row['first_order_id'] > 0 ? ('#' . (int)$row['first_order_id']) : '未产生' ?></td>
                             <td><span class="badge badge-info"><?= Html::encode($row['invite_status']) ?></span></td>
                             <td><?= Html::encode($row['source']) ?></td>
+                        </tr>
+                    <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="card" data-mongoyia-phase15-signoff-evidence>
+            <div class="card-header">
+                <h3 class="card-title">分销签核证据</h3>
+            </div>
+            <div class="card-body">
+                <form method="post" action="<?= Html::encode(Url::to(['signoff-evidence-save'])) ?>">
+                    <input type="hidden" name="<?= Html::encode(Yii::$app->request->csrfParam) ?>" value="<?= Html::encode(Yii::$app->request->csrfToken) ?>">
+                    <div class="row">
+                        <div class="col-md-2 mb-2">
+                            <select name="evidence_type" class="form-control form-control-sm">
+                                <?php foreach ($signoffTypeLabels as $key => $label): ?>
+                                    <option value="<?= Html::encode($key) ?>"><?= Html::encode($label) ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                        <div class="col-md-2 mb-2">
+                            <input name="reference_type" maxlength="48" value="manual" class="form-control form-control-sm" placeholder="关联类型">
+                        </div>
+                        <div class="col-md-2 mb-2">
+                            <input name="reference_id" type="number" min="0" value="0" class="form-control form-control-sm" placeholder="关联ID">
+                        </div>
+                        <div class="col-md-2 mb-2">
+                            <input name="distributor_user_id" type="number" min="0" value="0" class="form-control form-control-sm" placeholder="分销员ID">
+                        </div>
+                        <div class="col-md-2 mb-2">
+                            <input name="amount" type="number" step="0.01" value="0.00" class="form-control form-control-sm" placeholder="金额">
+                        </div>
+                        <div class="col-md-2 mb-2">
+                            <input name="reviewer_role" maxlength="64" class="form-control form-control-sm" placeholder="审核角色">
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4 mb-2">
+                            <input name="evidence_title" maxlength="160" class="form-control form-control-sm" placeholder="证据标题">
+                        </div>
+                        <div class="col-md-4 mb-2">
+                            <input name="evidence_url" maxlength="255" class="form-control form-control-sm" placeholder="证据链接/工单/报告引用">
+                        </div>
+                        <div class="col-md-4 mb-2 text-right">
+                            <button type="submit" class="btn btn-primary btn-sm">保存签核证据</button>
+                        </div>
+                    </div>
+                    <textarea name="evidence_note" rows="2" class="form-control form-control-sm" placeholder="证据说明，不填写私钥、支付密钥、银行卡完整号等敏感信息"></textarea>
+                </form>
+            </div>
+            <div class="card-body border-top">
+                <div class="row">
+                    <?php foreach ($signoffSummary as $row): ?>
+                        <div class="col-md-3 mb-2">
+                            <small class="text-muted"><?= Html::encode($signoffTypeLabels[$row['evidence_type']] ?? $row['evidence_type']) ?> / <?= Html::encode($signoffStatusLabels[$row['signoff_status']] ?? $row['signoff_status']) ?></small>
+                            <div><?= (int)$row['rows'] ?> / <?= number_format((float)$row['amount'], 2) ?></div>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+            </div>
+            <div class="card-body p-0 border-top">
+                <table class="table table-hover mb-0">
+                    <thead>
+                    <tr>
+                        <th>证据</th>
+                        <th>类型/关联</th>
+                        <th>分销员/金额</th>
+                        <th>说明</th>
+                        <th>状态</th>
+                        <th>操作</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <?php if (empty($signoffRows)): ?>
+                        <tr><td colspan="6" class="text-muted text-center">暂无分销签核证据</td></tr>
+                    <?php endif; ?>
+                    <?php foreach ($signoffRows as $row): ?>
+                        <tr>
+                            <td>#<?= (int)$row['id'] ?><br><small><?= Html::encode($row['evidence_title']) ?></small><br><small><?= Html::encode($row['evidence_url']) ?></small></td>
+                            <td><?= Html::encode($signoffTypeLabels[$row['evidence_type']] ?? $row['evidence_type']) ?><br><small><?= Html::encode($row['reference_type']) ?> #<?= (int)$row['reference_id'] ?></small></td>
+                            <td><?= (int)$row['distributor_user_id'] ?><br><small><?= number_format((float)$row['amount'], 2) ?></small></td>
+                            <td><small><?= nl2br(Html::encode($row['evidence_note'])) ?></small></td>
+                            <td><?= Html::encode($signoffStatusLabels[$row['signoff_status']] ?? $row['signoff_status']) ?><br><small><?= Html::encode($row['review_remark']) ?></small></td>
+                            <td>
+                                <?php if ((string)$row['signoff_status'] === 'pending'): ?>
+                                    <?php foreach (['approve' => ['通过', 'btn-outline-success'], 'reject' => ['驳回', 'btn-outline-warning']] as $action => $button): ?>
+                                        <form method="post" action="<?= Html::encode(Url::to(['signoff-evidence-review'])) ?>" class="d-inline">
+                                            <input type="hidden" name="<?= Html::encode(Yii::$app->request->csrfParam) ?>" value="<?= Html::encode(Yii::$app->request->csrfToken) ?>">
+                                            <input type="hidden" name="id" value="<?= (int)$row['id'] ?>">
+                                            <input type="hidden" name="workflow_action" value="<?= Html::encode($action) ?>">
+                                            <button type="submit" class="btn <?= Html::encode($button[1]) ?> btn-sm mb-1"><?= Html::encode($button[0]) ?></button>
+                                        </form>
+                                    <?php endforeach; ?>
+                                <?php else: ?>
+                                    <span class="text-muted">无操作</span>
+                                <?php endif; ?>
+                            </td>
                         </tr>
                     <?php endforeach; ?>
                     </tbody>

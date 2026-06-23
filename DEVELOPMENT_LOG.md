@@ -6514,3 +6514,28 @@
   - Phase 10/11/12/13/15 external/browser evidence remains pending; production remains `NO-GO`.
 - Next stage:
   - Verify, commit, and push this Phase 14 checklist patch, then continue with the next plan-listed local readiness item.
+
+## 2026-06-23 Phase 13 Browser Evidence Checklist
+
+- Stage name: Phase 13 browser evidence checklist
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting the stage.
+  - Extended `app-phase13-acceptance/run` report output with a browser role-flow checklist for buyer H5/APP, seller H5/APP, customer-service entry, mobile layout, refresh persistence, and safety validation.
+  - Added `migrate/up` to the Phase 13 BaoTa verification command in the generated report so deployed schema stays aligned before APP/H5 role-flow evidence.
+  - Added an accepted-evidence command template showing how to pass buyer API, seller API, browser, and APP package evidence paths after reviewer acceptance.
+  - Updated the development backlog to record that Phase 13 has browser evidence checklist coverage and an accepted-evidence command template.
+- Main files changed/added:
+  - `console/controllers/AppPhase13AcceptanceController.php`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l console/controllers/AppPhase13AcceptanceController.php` passed.
+  - Static marker checks confirmed `Browser Role-Flow Checklist`, `Accepted Evidence Command`, `phase13-browser-evidence`, `phase13-app-package-evidence`, and Phase 13 BaoTa `migrate/up` coverage.
+  - `git diff --check` reported no whitespace errors, only existing Windows line-ending conversion warnings.
+  - Full Yii console execution remains BaoTa-only because this local checkout lacks `vendor/autoload.php`.
+- Remaining issues:
+  - Phase 13 browser evidence still requires the BaoTa/test server to pull the latest code, run migrations/readiness, and clear PHP/runtime/page cache.
+  - Buyer cart browser validation remains blocked on the deployed server until the latest cart runtime fix is actually served.
+  - Phase 10/11/12/14/15 external/browser evidence remains pending; production remains `NO-GO`.
+- Next stage:
+  - Verify, commit, and push this Phase 13 checklist patch, then continue with the next plan-listed local readiness item.

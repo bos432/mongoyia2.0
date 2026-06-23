@@ -118,6 +118,7 @@ class AppPhase13AcceptanceController extends Controller
             'MONGOYIA_APP_BUYER_CHECKOUT_WRITE_V1',
             'home',
             'categories',
+            'MONGOYIA_APP_BUYER_CATEGORY_STORE_SCOPE_V1',
             'search',
             'product',
             'addCart',

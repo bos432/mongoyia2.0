@@ -7403,3 +7403,31 @@
   - Production remains `NO-GO`.
 - Next stage:
   - Run final diff checks, commit and push this Phase 12 APP account-entry patch, then continue with the next plan-listed local readiness item.
+
+## 2026-06-24 Phase 13 Buyer APP Category Store Scope
+
+- Stage name: Phase 13 buyer APP category store scope
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting the stage.
+  - Fixed `AppBuyerApiService::categories()` so category `product_count` uses the same `$storeId`-scoped public product query as the category/listing context.
+  - Added `MONGOYIA_APP_BUYER_CATEGORY_STORE_SCOPE_V1` and `category_store_scope_version` to the buyer APP category response.
+  - Added Phase 13 buyer readiness and aggregate acceptance coverage for the store-scoped category count marker.
+  - Updated the Phase 13 backlog notes to record this small stage as Phase 13.12.
+- Main files changed/added:
+  - `common/services/mall/AppBuyerApiService.php`
+  - `console/controllers/AppBuyerPhase13ReadinessController.php`
+  - `console/controllers/AppPhase13AcceptanceController.php`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l common/services/mall/AppBuyerApiService.php` passed.
+  - `php -l console/controllers/AppBuyerPhase13ReadinessController.php` passed.
+  - `php -l console/controllers/AppPhase13AcceptanceController.php` passed.
+  - Static marker check for `MONGOYIA_APP_BUYER_CATEGORY_STORE_SCOPE_V1`, `category_store_scope_version`, and `Phase 13.12` passed.
+  - Source check confirmed `categories()` now uses `publicProductQuery($storeId)` for category product counts.
+  - Full Yii acceptance remains BaoTa-only because this local checkout lacks `vendor/autoload.php`.
+- Remaining issues:
+  - Phase 13 browser role-flow evidence and APP accepted evidence remain pending until BaoTa deploys fresh code and browser checkout/cart validation passes.
+  - Phase 10/11/12/14/15 external/provider/browser evidence gates remain pending; production remains `NO-GO`.
+- Next stage:
+  - Run final diff checks, commit and push this Phase 13 category-scope patch, then continue with the next plan-listed readiness item.

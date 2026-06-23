@@ -26,6 +26,7 @@ class AppBuyerApiService
     public const CHECKOUT_WRITE_VERSION = 'MONGOYIA_APP_BUYER_CHECKOUT_WRITE_V1';
     public const NOTIFICATION_CENTER_VERSION = 'MONGOYIA_APP_BUYER_NOTIFICATION_CENTER_V1';
     public const REVIEW_WRITE_VERSION = 'MONGOYIA_APP_BUYER_REVIEW_WRITE_V1';
+    public const CATEGORY_STORE_SCOPE_VERSION = 'MONGOYIA_APP_BUYER_CATEGORY_STORE_SCOPE_V1';
 
     private $searchVideoService;
 
@@ -63,13 +64,14 @@ class AppBuyerApiService
                 'name' => (string)$category->name,
                 'brief' => (string)($category->brief ?? ''),
                 'banner' => (string)($category->banner ?? ''),
-                'product_count' => (int)$this->publicProductQuery(0)->andWhere(['category_id' => (int)$category->id])->count(),
+                'product_count' => (int)$this->publicProductQuery($storeId)->andWhere(['category_id' => (int)$category->id])->count(),
                 'sort' => (int)$category->sort,
             ];
         }
 
         return [
             'version' => self::VERSION,
+            'category_store_scope_version' => self::CATEGORY_STORE_SCOPE_VERSION,
             'items' => $items,
         ];
     }

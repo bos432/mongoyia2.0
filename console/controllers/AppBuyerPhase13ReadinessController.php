@@ -57,6 +57,8 @@ class AppBuyerPhase13ReadinessController extends Controller
             'MONGOYIA_APP_BUYER_API_V1',
             'home',
             'categories',
+            'MONGOYIA_APP_BUYER_CATEGORY_STORE_SCOPE_V1',
+            'category_store_scope_version',
             'search',
             'product',
             'addCart',

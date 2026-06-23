@@ -1,5 +1,28 @@
 # Development Log
 
+## 2026-06-23 Phase 10 Env Template Operational Config Boundary
+
+- Stage name: Phase 10 env template operational config boundary
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting the stage.
+  - Added `OP_CONFIG_MASTER_KEY` to `.env.example` and `.env.test.example` so operators see the only new secret that must remain outside the database.
+  - Documented that external provider credentials must be stored in the backend operational config center, not PHP `.env`.
+  - Cleared payment-provider credential placeholders from `.env.test.example` so QPay, LianLian, and PayPal example values cannot be mistaken for real or sandbox secrets.
+  - Kept legacy dry-run placeholder keys present but empty for compatibility with existing readiness gates while preventing secret-bearing examples.
+- Main files changed/added:
+  - `.env.example`
+  - `.env.test.example`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - Static scan confirmed no `replace-with-qpay`, `replace-with-lianlian`, `replace-with-paypal`, or `replace-with-local-callback` placeholder secrets remain in `.env.example` or `.env.test.example`.
+  - Static scan confirmed SMTP, mail, translation, and payment secret keys are present only as empty placeholders in the example files.
+  - Full Yii console execution remains BaoTa-only because this local checkout lacks `vendor/autoload.php`.
+- Remaining issues:
+  - Real/sandbox QPay, LianLian, PayPal, SMTP, translation, alert, identity-provider, logistics, and production operations evidence must still be entered through backend encrypted configuration/evidence gates.
+  - Production remains `NO-GO` until Phase 10-15 external/browser evidence is accepted.
+- Next stage:
+  - Run whitespace/static checks, commit and push this env-boundary documentation, then continue with the next plan-listed readiness or browser evidence item.
+
 ## 2026-06-23 Phase 10/11 Payment Runtime Env Fallback Removal
 
 - Stage name: Phase 10/11 payment runtime env fallback removal

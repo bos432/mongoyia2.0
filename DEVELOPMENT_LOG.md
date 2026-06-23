@@ -4248,3 +4248,30 @@
     and
     `/www/server/php/83/bin/php yii customer-service-phase9-acceptance/run --baseUrl=https://demo2026.mongoyia.com --productId=2 --runChildChecks=1 --fixture=1 --strict=1 --interactive=0`.
   - If that passes, continue Phase 9.7 browser/APP role-flow acceptance and rerun the acceptance command with `--browserAccepted=1 --appAccepted=1` plus evidence paths.
+
+## 2026-06-23 Phase 9 Remote Deployment Sync
+
+- Stage name: Phase 9 source push for BaoTa deployment
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log after the BaoTa server reported `Unknown command: customer-service-phase9-acceptance/run`.
+  - Confirmed the server had only pulled a log-only commit and that the local Phase 9 source files were still uncommitted/unpushed.
+  - Staged only Phase 9 customer-service completion files and left the unrelated untracked `docs/mongoyia-operational-config-provider-setup-guide.md` out of the commit.
+  - Committed Phase 9 code as `fd08b98 Add Phase 9 customer service completion`.
+  - Pushed `fd08b98` to `https://github.com/bos432/mongoyia2.0.git` master so BaoTa `git pull` can fetch the missing acceptance command and Phase 9 source.
+- Main files changed/added:
+  - `console/controllers/CustomerServicePhase9AcceptanceController.php`
+  - Phase 9 translation/media/assistance/complaint/analytics services and readiness commands
+  - Phase 9 backend/frontend客服 UI and Python IM media guard changes
+  - `apps/mongoyia-customer-chat-uniapp`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - PHP syntax checks passed for all Phase 9 PHP services, controllers, views, readiness commands, and migrations.
+  - `python -m py_compile deploy/im-backend/main.py` passed; generated `__pycache__` was removed before commit.
+  - `node --check` passed for uni-app helper/config files, and JSON parse checks passed for `package.json`, `manifest.json`, and `pages.json`.
+  - `git push mongoyia HEAD:master` succeeded and advanced master from `beb4daf` to `fd08b98`.
+- Remaining issues:
+  - BaoTa still needs another `git pull`, then migrations and `customer-service-phase9-acceptance/run`.
+  - Local patch checkout still cannot run Yii commands because `vendor/autoload.php` is absent.
+- Next stage:
+  - On BaoTa, pull `fd08b98` or newer and rerun Phase 9 migrations plus `customer-service-phase9-acceptance/run --runChildChecks=1 --fixture=1 --strict=1`.

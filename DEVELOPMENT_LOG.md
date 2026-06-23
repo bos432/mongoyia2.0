@@ -6586,3 +6586,27 @@
   - Live payment must stay blocked until Phase 10 production/provider evidence is real and accepted; production remains `NO-GO`.
 - Next stage:
   - Commit and push this Phase 11 checklist patch, then re-read the development plan and this log before continuing with the next plan-listed local readiness or BaoTa/browser validation stage.
+
+## 2026-06-23 Phase 10 Browser Evidence Checklist
+
+- Stage name: Phase 10 operational production-readiness browser evidence checklist
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting the stage.
+  - Standardized `operational-config-phase10-acceptance/run` report output to use `Browser Role-Flow Checklist` and `Accepted Evidence Command` sections.
+  - Documented platform operations-config browser validation for readiness summary, payment callback URL helpers, SMTP, translation, alerts, scheduled evidence, launch signoff, redacted export, refresh persistence, and production-safety checks.
+  - Replaced generic evidence placeholders with fixed non-secret evidence paths for browser evidence, provider evidence, production operations evidence, and redacted export review.
+  - Updated the development backlog with a Phase 10 acceptance command section and evidence-template summary.
+- Main files changed/added:
+  - `console/controllers/OperationalConfigPhase10AcceptanceController.php`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l console/controllers/OperationalConfigPhase10AcceptanceController.php` passed.
+  - Static marker checks confirmed `Browser Role-Flow Checklist`, `Accepted Evidence Command`, `phase10-browser-evidence`, `phase10-provider-evidence`, `phase10-production-ops-evidence`, and `phase10-redacted-export-review`.
+  - `git diff --check` reported no whitespace errors, only existing Windows line-ending conversion warnings.
+  - Full Yii console execution remains BaoTa-only because this local checkout lacks `vendor/autoload.php`.
+- Remaining issues:
+  - Real or sandbox provider evidence, production operations/signoff evidence, redacted export review evidence, and Phase 10 accepted flags remain pending.
+  - Production remains `NO-GO` until the evidence is real, reviewed, and downstream production go-live gates pass.
+- Next stage:
+  - Commit and push this Phase 10 checklist patch, then re-read the development plan and this log before continuing with BaoTa/browser validation or the next plan-listed readiness item.

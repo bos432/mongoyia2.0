@@ -1,5 +1,35 @@
 # Development Log
 
+## 2026-06-24 Phase 13 Cart Checkout URL Parameter Builder
+
+- Stage name: Phase 13 cart checkout URL parameter builder
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting the stage.
+  - Replaced the cart checkout button's mixed `Url::to()` plus manual `?cid=` concatenation with a single `$checkoutParams` array passed to `Url::to($checkoutParams)`.
+  - Preserved both optional `coupon` and `cid` parameters while preventing malformed double-query URLs during buyer cart/checkout role-flow validation.
+  - Added Phase 13 buyer readiness checks for the checkout URL builder marker, coupon/cid parameter coverage, and absence of `?cid=` query concatenation.
+  - Mirrored the same checks in the Phase 13 aggregate APP acceptance command.
+  - Updated the Phase 13 backlog row to record checkout URL parameter-builder coverage.
+- Main files changed/added:
+  - `web/resources/mall/default/views/cart/index.php`
+  - `console/controllers/AppBuyerPhase13ReadinessController.php`
+  - `console/controllers/AppPhase13AcceptanceController.php`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l web/resources/mall/default/views/cart/index.php` passed.
+  - `php -l console/controllers/AppBuyerPhase13ReadinessController.php` passed.
+  - `php -l console/controllers/AppPhase13AcceptanceController.php` passed.
+  - Static marker scan confirmed `MONGOYIA_CART_CHECKOUT_URL_PARAMS_V1`, `Buyer web cart checkout URL builder`, `Url::to($checkoutParams)`, and Phase 13 backlog coverage.
+  - Static negative scan confirmed no `?cid=` concatenation remains in `web/resources/mall/default/views/cart/index.php`.
+  - `git diff --check` reported no whitespace errors, only existing Windows line-ending conversion warnings.
+  - Full Yii console execution remains BaoTa-only because this local checkout lacks `vendor/autoload.php`.
+- Remaining issues:
+  - BaoTa/test server must pull this commit and clear PHP/static caches before buyer cart/checkout browser validation can prove the deployed behavior.
+  - Phase 10/11/12/13/14/15 external and browser evidence remain incomplete; production remains `NO-GO`.
+- Next stage:
+  - Commit and push this Phase 13 checkout URL-builder guard, then reread the plan/log and continue with another plan-listed local readiness item or deployed browser validation after BaoTa is refreshed.
+
 ## 2026-06-24 Phase 13 Product/Nav Cart Index Source Guards
 
 - Stage name: Phase 13 product/nav cart index source guards

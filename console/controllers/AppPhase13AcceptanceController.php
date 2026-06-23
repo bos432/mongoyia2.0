@@ -153,6 +153,17 @@ class AppPhase13AcceptanceController extends Controller
             'Shopping cart was refreshed',
             '/mall/cart/index',
         ]);
+        $this->requireFileContains('Buyer web cart checkout URL builder', 'web/resources/mall/default/views/cart/index.php', [
+            'MONGOYIA_CART_CHECKOUT_URL_PARAMS_V1',
+            '$checkoutParams = [\'/mall/cart/checkout\'];',
+            '$checkoutParams[\'coupon\']',
+            '$checkoutParams[\'cid\']',
+            'Url::to($checkoutParams)',
+        ]);
+        $this->requireFileNotContains('Buyer web cart checkout has no cid query concatenation', 'web/resources/mall/default/views/cart/index.php', [
+            '\'?cid=\'',
+            '"?cid="',
+        ]);
         $this->requireFileContains('PWA smoke tracks buyer cart guard', 'console/controllers/PwaSmokeTestController.php', [
             'MONGOYIA_CART_STALE_ROW_GUARD_V1',
             'Unavailable product',

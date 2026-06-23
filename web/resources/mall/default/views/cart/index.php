@@ -134,7 +134,18 @@ $cartProducts = $cartProducts ?? [];
                         <?php if ($discount <> 0) { ?><li><li><?= Yii::t('app', 'Discount') ?> <span><?= $this->context->getNumberByCurrency($discount) ?></span></li><?php } ?>
                         <li><?= Yii::t('app', 'Total') ?> <span><?= $this->context->getNumberByCurrency($total) ?></span></li>
                     </ul>
-                    <a href="<?= Yii::$app->request->get('coupon') ? Url::to(['/mall/cart/checkout', 'coupon' => Yii::$app->request->get('coupon')]) : Url::to(['/mall/cart/checkout']) ?><?= $cid==0?'':'?cid='.$cid ?>" class="primary-btn"><?= Yii::t('mall', 'Proceed to checkout') ?></a>
+                    <?php
+                    // MONGOYIA_CART_CHECKOUT_URL_PARAMS_V1 keeps coupon and cid in one Yii URL builder call.
+                    $checkoutParams = ['/mall/cart/checkout'];
+                    $couponCode = Yii::$app->request->get('coupon');
+                    if ($couponCode !== null && $couponCode !== '') {
+                        $checkoutParams['coupon'] = $couponCode;
+                    }
+                    if ((int)$cid !== 0) {
+                        $checkoutParams['cid'] = (int)$cid;
+                    }
+                    ?>
+                    <a href="<?= Url::to($checkoutParams) ?>" class="primary-btn"><?= Yii::t('mall', 'Proceed to checkout') ?></a>
                 </div>
             </div>
         </div>

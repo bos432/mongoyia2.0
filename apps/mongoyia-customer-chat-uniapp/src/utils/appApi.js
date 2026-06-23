@@ -14,7 +14,8 @@ export const BUYER_ENDPOINTS = {
   favorites: '/api/v1/app-buyer/favorites',
   storeFavorites: '/api/v1/app-buyer/store-favorites',
   reviews: '/api/v1/app-buyer/reviews',
-  myReviews: '/api/v1/app-buyer/my-reviews'
+  myReviews: '/api/v1/app-buyer/my-reviews',
+  notifications: '/api/v1/app-buyer/notifications'
 }
 
 export const SELLER_ENDPOINTS = {

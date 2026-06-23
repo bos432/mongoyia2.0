@@ -2,6 +2,7 @@
 
 namespace common\services\mall;
 
+use common\models\base\Message;
 use common\models\BaseModel;
 use common\models\mall\Address;
 use common\models\mall\Cart;
@@ -16,12 +17,14 @@ use common\models\mall\ProductSku;
 use common\models\mall\Review;
 use common\models\mall\StoreFavorite;
 use common\models\mall\UserCoupon;
+use common\services\mall\OperationalNotificationService;
 use Yii;
 
 class AppBuyerApiService
 {
     public const VERSION = 'MONGOYIA_APP_BUYER_API_V1';
     public const CHECKOUT_WRITE_VERSION = 'MONGOYIA_APP_BUYER_CHECKOUT_WRITE_V1';
+    public const NOTIFICATION_CENTER_VERSION = 'MONGOYIA_APP_BUYER_NOTIFICATION_CENTER_V1';
 
     private $searchVideoService;
 
@@ -775,6 +778,98 @@ class AppBuyerApiService
         ];
     }
 
+    public function notifications(int $userId, int $page = 1, int $pageSize = 20): array
+    {
+        if ($userId <= 0) {
+            return $this->authRequiredPayload();
+        }
+
+        $page = max(1, $page);
+        $pageSize = max(1, min(50, $pageSize));
+        $query = Message::find()
+            ->where(['user_id' => $userId])
+            ->andWhere(['>', 'status', BaseModel::STATUS_DELETED])
+            ->orderBy(['id' => SORT_DESC]);
+        $total = (int)$query->count();
+        $unread = (int)Message::find()
+            ->where(['user_id' => $userId, 'status' => Message::STATUS_UNREAD])
+            ->count();
+
+        $items = [];
+        foreach ($query->offset(($page - 1) * $pageSize)->limit($pageSize)->all() as $message) {
+            $items[] = $this->notificationSummary($message);
+        }
+
+        return [
+            'version' => self::VERSION,
+            'notification_center_version' => self::NOTIFICATION_CENTER_VERSION,
+            'items' => $items,
+            'summary' => [
+                'total' => $total,
+                'unread' => $unread,
+                'page' => $page,
+                'page_size' => $pageSize,
+            ],
+        ];
+    }
+
+    public function markNotificationRead(int $userId, int $messageId = 0, bool $all = false): array
+    {
+        if ($userId <= 0) {
+            return $this->authRequiredPayload();
+        }
+
+        $now = time();
+        if ($all) {
+            $updated = Message::updateAll([
+                'status' => Message::STATUS_READ,
+                'updated_at' => $now,
+                'updated_by' => $userId,
+            ], [
+                'user_id' => $userId,
+                'status' => Message::STATUS_UNREAD,
+            ]);
+
+            return [
+                'version' => self::VERSION,
+                'notification_center_version' => self::NOTIFICATION_CENTER_VERSION,
+                'updated' => (int)$updated,
+                'summary' => $this->notifications($userId)['summary'] ?? [],
+            ];
+        }
+
+        if ($messageId <= 0) {
+            throw new \RuntimeException('Notification ID is required.');
+        }
+
+        $message = Message::find()
+            ->where(['id' => $messageId, 'user_id' => $userId])
+            ->andWhere(['>', 'status', BaseModel::STATUS_DELETED])
+            ->one();
+        if (!$message) {
+            throw new \RuntimeException('Notification not found.');
+        }
+
+        $updated = 0;
+        if ((int)$message->status === Message::STATUS_UNREAD) {
+            $message->status = Message::STATUS_READ;
+            $message->updated_at = $now;
+            $message->updated_by = $userId;
+            if (!$message->save(false)) {
+                throw new \RuntimeException('Notification read state save failed.');
+            }
+            $updated = 1;
+        }
+
+        return [
+            'version' => self::VERSION,
+            'notification_center_version' => self::NOTIFICATION_CENTER_VERSION,
+            'updated' => $updated,
+            'item' => $this->notificationSummary($message),
+            'summary' => $this->notifications($userId)['summary'] ?? [],
+        ];
+    }
+
     private function publicProductQuery(int $storeId = 0)
     {
         $query = Product::find()
@@ -970,6 +1065,34 @@ class AppBuyerApiService
             'auth_required' => true,
             'items' => [],
             'summary' => [],
+        ];
+    }
+
+    private function notificationSummary(Message $message): array
+    {
+        $decoded = json_decode((string)$message->content, true);
+        $content = (string)$message->content;
+        $eventKey = '';
+        $payload = [];
+        if (is_array($decoded)) {
+            $eventKey = (string)($decoded['event_key'] ?? '');
+            $content = (string)($decoded['content'] ?? $message->name);
+            $payload = is_array($decoded['payload'] ?? null) ? $decoded['payload'] : [];
+        } else {
+            $content = html_entity_decode($content, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+        }
+
+        $eventLabels = (new OperationalNotificationService())->eventDefinitions();
+
+        return [
+            'id' => (int)$message->id,
+            'title' => (string)$message->name,
+            'content' => $content,
+            'event_key' => $eventKey,
+            'event_label' => (string)($eventLabels[$eventKey]['label'] ?? ''),
+            'payload' => $payload,
+            'is_unread' => (int)$message->status === Message::STATUS_UNREAD,
+            'created_at' => (int)$message->created_at,
         ];
     }
 

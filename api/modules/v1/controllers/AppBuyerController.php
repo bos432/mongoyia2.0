@@ -26,6 +26,7 @@ class AppBuyerController extends BaseController
         'store-favorites',
         'reviews',
         'my-reviews',
+        'notifications',
     ];
 
     private $buyerService;
@@ -146,6 +147,28 @@ class AppBuyerController extends BaseController
     {
         try {
             return $this->buyerService()->myReviews(
+                $this->currentUserId(),
+                (int)Yii::$app->request->get('page', 1),
+                (int)Yii::$app->request->get('page_size', 20)
+            );
+        } catch (\Throwable $e) {
+            return $this->apiError($e->getMessage(), $this->isGuest() ? 401 : 422);
+        }
+    }
+
+    public function actionNotifications()
+    {
+        try {
+            if (Yii::$app->request->isPost) {
+                $this->requireLogin();
+                return $this->buyerService()->markNotificationRead(
+                    $this->currentUserId(),
+                    (int)Yii::$app->request->post('id', 0),
+                    (int)Yii::$app->request->post('all', 0) === 1
+                );
+            }
+
+            return $this->buyerService()->notifications(
                 $this->currentUserId(),
                 (int)Yii::$app->request->get('page', 1),
                 (int)Yii::$app->request->get('page_size', 20)

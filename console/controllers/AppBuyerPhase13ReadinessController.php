@@ -65,6 +65,9 @@ class AppBuyerPhase13ReadinessController extends Controller
             'favorites',
             'reviews',
             'myReviews',
+            'MONGOYIA_APP_BUYER_NOTIFICATION_CENTER_V1',
+            'notifications',
+            'markNotificationRead',
             'MONGOYIA_APP_BUYER_CHECKOUT_WRITE_V1',
             'submitOrder',
         ]);
@@ -80,6 +83,7 @@ class AppBuyerPhase13ReadinessController extends Controller
             'actionFavorites',
             'actionReviews',
             'actionMyReviews',
+            'actionNotifications',
             'submitOrder',
         ]);
         $this->requireFileContains('APP shared API helper uses buyer endpoints', 'apps/mongoyia-customer-chat-uniapp/src/utils/appApi.js', [
@@ -94,6 +98,7 @@ class AppBuyerPhase13ReadinessController extends Controller
             '/api/v1/app-buyer/store-favorites',
             '/api/v1/app-buyer/reviews',
             '/api/v1/app-buyer/my-reviews',
+            '/api/v1/app-buyer/notifications',
         ]);
         $this->requireFileContains('Buyer account page shows coupons, favorites, store favorites, and reviews', 'apps/mongoyia-customer-chat-uniapp/src/pages/buyer/account.vue', [
             'data-mongoyia-phase13-buyer-account',
@@ -101,6 +106,12 @@ class AppBuyerPhase13ReadinessController extends Controller
             'BUYER_ENDPOINTS.favorites',
             'BUYER_ENDPOINTS.storeFavorites',
             'BUYER_ENDPOINTS.myReviews',
+        ]);
+        $this->requireFileContains('Buyer notification page shows site/app notifications', 'apps/mongoyia-customer-chat-uniapp/src/pages/buyer/notifications.vue', [
+            'data-mongoyia-phase12-app-notifications',
+            'BUYER_ENDPOINTS.notifications',
+            'markRead',
+            'markAllRead',
         ]);
         $this->requireFileContains('API URL manager supports APP controller ids', 'api/config/main.php', [
             '<modules:[\w-]+>/<controller:[\w-]+>/<action:[\w-]+>',
@@ -130,6 +141,7 @@ class AppBuyerPhase13ReadinessController extends Controller
             '/api/v1/app-buyer/favorites' => 'authenticated favorite list/toggle',
             '/api/v1/app-buyer/reviews' => 'public product review list',
             '/api/v1/app-buyer/my-reviews' => 'authenticated buyer review list',
+            '/api/v1/app-buyer/notifications' => 'authenticated buyer notification list/read state',
         ] as $route => $notes) {
             $this->addCheck($route, 'PASS', $route, $notes);
         }
@@ -151,7 +163,7 @@ class AppBuyerPhase13ReadinessController extends Controller
             '- Generated at: ' . date('Y-m-d H:i:s'),
             '- Failures: ' . $this->failures,
             '- Warnings: ' . $this->warnings,
-            '- Scope: buyer APP JSON APIs for home, categories, search, product detail, cart, checkout/order creation, coupons, favorites, reviews, and customer-service entry.',
+            '- Scope: buyer APP JSON APIs for home, categories, search, product detail, cart, checkout/order creation, coupons, favorites, reviews, notifications, and customer-service entry.',
             '- Safety: checkout/order creation validates cart, stock, receiver address, parent/child order rows, order-product rows, and cart cleanup without marking online payments paid.',
             '',
             '## Checks',

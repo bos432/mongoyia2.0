@@ -91,6 +91,7 @@ class AppPhase13AcceptanceController extends Controller
             'pages/buyer/cart',
             'pages/buyer/orders',
             'pages/buyer/account',
+            'pages/buyer/notifications',
             'pages/seller/dashboard',
             'pages/seller/products',
             'pages/seller/orders',
@@ -117,6 +118,8 @@ class AppPhase13AcceptanceController extends Controller
             'coupons',
             'favorites',
             'myReviews',
+            'notifications',
+            'markNotificationRead',
         ]);
         $this->requireFileContains('Buyer APP JSON API controller', 'api/modules/v1/controllers/AppBuyerController.php', [
             'MONGOYIA_APP_BUYER_CONTROLLER_V1',
@@ -130,6 +133,7 @@ class AppPhase13AcceptanceController extends Controller
             'actionCoupons',
             'actionFavorites',
             'actionMyReviews',
+            'actionNotifications',
         ]);
         $this->requireFileContains('Buyer APP JSON API readiness', 'console/controllers/AppBuyerPhase13ReadinessController.php', [
             'MONGOYIA_APP_BUYER_PHASE13_READINESS_V1',
@@ -228,7 +232,7 @@ class AppPhase13AcceptanceController extends Controller
         return [
             'Buyer home route shell' => [
                 'path' => 'apps/mongoyia-customer-chat-uniapp/src/pages/buyer/home.vue',
-                'markers' => ['data-mongoyia-phase13-buyer-home', 'BUYER_ENDPOINTS.home', 'openSearch', 'openAccount'],
+                'markers' => ['data-mongoyia-phase13-buyer-home', 'BUYER_ENDPOINTS.home', 'openSearch', 'openAccount', 'openNotifications'],
                 'notes' => 'Buyer home/search/category/cart/order/seller navigation shell is present.',
             ],
             'Buyer category route shell' => [
@@ -260,6 +264,11 @@ class AppPhase13AcceptanceController extends Controller
                 'path' => 'apps/mongoyia-customer-chat-uniapp/src/pages/buyer/account.vue',
                 'markers' => ['data-mongoyia-phase13-buyer-account', 'BUYER_ENDPOINTS.coupons', 'BUYER_ENDPOINTS.favorites', 'BUYER_ENDPOINTS.storeFavorites', 'BUYER_ENDPOINTS.myReviews'],
                 'notes' => 'Buyer coupons, product favorites, store favorites, and own reviews shell is present.',
+            ],
+            'Buyer notification route shell' => [
+                'path' => 'apps/mongoyia-customer-chat-uniapp/src/pages/buyer/notifications.vue',
+                'markers' => ['data-mongoyia-phase12-app-notifications', 'BUYER_ENDPOINTS.notifications', 'markRead', 'markAllRead'],
+                'notes' => 'Buyer site/app notification list and read-state shell is present.',
             ],
             'Seller dashboard route shell' => [
                 'path' => 'apps/mongoyia-customer-chat-uniapp/src/pages/seller/dashboard.vue',

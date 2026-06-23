@@ -57,6 +57,14 @@
       }
     },
     {
+      "path": "pages/buyer/notifications",
+      "style": {
+        "navigationBarTitleText": "消息通知",
+        "navigationBarBackgroundColor": "#0f766e",
+        "navigationBarTextStyle": "white"
+      }
+    },
+    {
       "path": "pages/seller/dashboard",
       "style": {
         "navigationBarTitleText": "商家工作台",

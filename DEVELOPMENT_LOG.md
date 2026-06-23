@@ -5903,3 +5903,44 @@
 - Next stage:
   - Push this deployment-check log entry.
   - Continue with the next plan-listed stage that can be advanced locally without server deployment or real provider credentials.
+
+## 2026-06-23 Phase 12.7 Buyer APP Notification Center
+
+- Stage name: Phase 12.7 buyer APP site/app notification center
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting the stage.
+  - Added `MONGOYIA_APP_BUYER_NOTIFICATION_CENTER_V1` to the buyer APP API service.
+  - Added authenticated `/api/v1/app-buyer/notifications` support for listing the current user's site messages with unread summary and pagination.
+  - Added POST read-state handling for a single notification or all unread notifications for the authenticated user only.
+  - Added the uni-app/H5 buyer notification page with auth-required login prompt, unread count, refresh, single read, and all-read controls.
+  - Added buyer home and buyer account entries for the notification center.
+  - Updated Phase 12 notification readiness, Phase 12 aggregate acceptance, Phase 13 buyer readiness, and Phase 13 aggregate APP acceptance markers.
+  - Updated the development backlog to record Phase 12.7.
+- Main files changed/added:
+  - `common/services/mall/AppBuyerApiService.php`
+  - `api/modules/v1/controllers/AppBuyerController.php`
+  - `apps/mongoyia-customer-chat-uniapp/src/utils/appApi.js`
+  - `apps/mongoyia-customer-chat-uniapp/src/pages.json`
+  - `apps/mongoyia-customer-chat-uniapp/src/pages/buyer/home.vue`
+  - `apps/mongoyia-customer-chat-uniapp/src/pages/buyer/account.vue`
+  - `apps/mongoyia-customer-chat-uniapp/src/pages/buyer/notifications.vue`
+  - `console/controllers/NotificationPhase12ReadinessController.php`
+  - `console/controllers/AccountNotificationPhase12AcceptanceController.php`
+  - `console/controllers/AppBuyerPhase13ReadinessController.php`
+  - `console/controllers/AppPhase13AcceptanceController.php`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l` passed for `AppBuyerApiService.php`, `AppBuyerController.php`, `NotificationPhase12ReadinessController.php`, `AccountNotificationPhase12AcceptanceController.php`, `AppBuyerPhase13ReadinessController.php`, and `AppPhase13AcceptanceController.php`.
+  - `node -e "JSON.parse(...pages.json...)"` passed.
+  - Static marker checks confirmed `MONGOYIA_APP_BUYER_NOTIFICATION_CENTER_V1`, `data-mongoyia-phase12-app-notifications`, `actionNotifications`, `markNotificationRead`, `BUYER_ENDPOINTS.notifications`, `pages/buyer/notifications`, and `openNotifications`.
+  - `npm run build:h5` passed in `apps/mongoyia-customer-chat-uniapp`; output contained only existing uni-app/Vite informational/deprecation warnings.
+  - `git diff --check` reported no whitespace errors; only existing Windows line-ending conversion warnings.
+  - Full Yii console execution was not run locally because this patch checkout does not have `vendor/autoload.php`; after BaoTa pull run `notification-phase12-readiness/run --fixture=1`, `account-notification-phase12-acceptance/run --fixture=1`, `app-buyer-phase13-readiness/run --fixture=1`, and `app-phase13-acceptance/run --fixture=1`.
+- Remaining issues:
+  - APP/SMS/mail push provider delivery evidence remains external and gated; this stage only exposes stored site messages inside the APP/H5 client.
+  - Browser role-flow evidence remains pending until BaoTa pulls latest commits and migrations are applied.
+  - Phase 10/11/12 external provider and production evidence remain incomplete; production remains `NO-GO`.
+- Next stage:
+  - Commit and push Phase 12.7.
+  - Re-read the development plan and this log, then continue with the next plan-listed stage or browser/server validation if BaoTa has pulled the latest commits.

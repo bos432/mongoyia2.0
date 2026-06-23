@@ -10,6 +10,7 @@
       <button class="quick-btn" @tap="go('/pages/buyer/cart')">购物车</button>
       <button class="quick-btn" @tap="go('/pages/buyer/orders')">订单</button>
       <button class="quick-btn" @tap="openAccount">我的</button>
+      <button class="quick-btn" @tap="openNotifications">消息</button>
       <button class="quick-btn" @tap="go('/pages/seller/dashboard')">商家</button>
       <button class="quick-btn" @tap="openLogin('buyer')">登录</button>
     </view>
@@ -76,6 +77,9 @@ export default {
     },
     openAccount() {
       uni.navigateTo({ url: '/pages/buyer/account?baseUrl=' + encodeURIComponent(this.baseUrl) })
+    },
+    openNotifications() {
+      uni.navigateTo({ url: '/pages/buyer/notifications?baseUrl=' + encodeURIComponent(this.baseUrl) })
     },
     openLogin(role) {
       uni.navigateTo({

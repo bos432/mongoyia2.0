@@ -88,6 +88,27 @@ class NotificationPhase12ReadinessController extends Controller
             '/mall/notification-log/index',
             'grantToRoles',
         ]);
+        $this->requireFileContains('Buyer APP notification API', 'common/services/mall/AppBuyerApiService.php', [
+            'MONGOYIA_APP_BUYER_NOTIFICATION_CENTER_V1',
+            'notifications',
+            'markNotificationRead',
+            'Message::STATUS_UNREAD',
+        ]);
+        $this->requireFileContains('Buyer APP notification controller', 'api/modules/v1/controllers/AppBuyerController.php', [
+            'actionNotifications',
+            'markNotificationRead',
+            'notifications',
+        ]);
+        $this->requireFileContains('Buyer APP notification page', 'apps/mongoyia-customer-chat-uniapp/src/pages/buyer/notifications.vue', [
+            'data-mongoyia-phase12-app-notifications',
+            'BUYER_ENDPOINTS.notifications',
+            'markRead',
+            'markAllRead',
+        ]);
+        $this->requireFileContains('Buyer APP notification route', 'apps/mongoyia-customer-chat-uniapp/src/pages.json', [
+            'pages/buyer/notifications',
+            '消息通知',
+        ]);
     }
 
     private function checkFixtureMatrix(): void

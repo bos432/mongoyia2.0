@@ -12,6 +12,16 @@
 
     <view v-else>
       <view class="block">
+        <view class="data-row compact" @tap="openNotifications">
+          <view class="row-main">
+            <text class="row-title">消息通知</text>
+            <text class="row-meta">订单、物流、支付、客服、投诉处理通知</text>
+          </view>
+          <text class="row-status">查看</text>
+        </view>
+      </view>
+
+      <view class="block">
         <view class="block-head">
           <text class="block-title">优惠券</text>
           <text class="block-count">{{ coupons.length }}</text>
@@ -128,6 +138,9 @@ export default {
       if (id > 0) {
         uni.navigateTo({ url: '/pages/buyer/product?id=' + id + '&baseUrl=' + encodeURIComponent(this.baseUrl) })
       }
+    },
+    openNotifications() {
+      uni.navigateTo({ url: '/pages/buyer/notifications?baseUrl=' + encodeURIComponent(this.baseUrl) })
     },
     openLogin() {
       uni.navigateTo({

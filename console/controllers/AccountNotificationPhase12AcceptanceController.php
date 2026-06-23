@@ -240,6 +240,17 @@ class AccountNotificationPhase12AcceptanceController extends Controller
             '/mall/notification-log/index',
             'delivery_status',
         ]);
+        $this->requireFileContains('Buyer APP notification center', 'apps/mongoyia-customer-chat-uniapp/src/pages/buyer/notifications.vue', [
+            'data-mongoyia-phase12-app-notifications',
+            'BUYER_ENDPOINTS.notifications',
+            'markRead',
+            'markAllRead',
+        ]);
+        $this->requireFileContains('Buyer APP notification API runtime', 'common/services/mall/AppBuyerApiService.php', [
+            'MONGOYIA_APP_BUYER_NOTIFICATION_CENTER_V1',
+            'markNotificationRead',
+            'notificationSummary',
+        ]);
         $this->requireFileContains('SMTP runtime foundation', 'common/components/mailer/SmtpMailer.php', [
             'OperationalMailConfigService',
             'runtimeConfig',

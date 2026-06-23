@@ -64,6 +64,7 @@ class AppBuyerPhase13ReadinessController extends Controller
             'coupons',
             'favorites',
             'reviews',
+            'myReviews',
             'MONGOYIA_APP_BUYER_CHECKOUT_WRITE_V1',
             'submitOrder',
         ]);
@@ -78,6 +79,7 @@ class AppBuyerPhase13ReadinessController extends Controller
             'actionCoupons',
             'actionFavorites',
             'actionReviews',
+            'actionMyReviews',
             'submitOrder',
         ]);
         $this->requireFileContains('APP shared API helper uses buyer endpoints', 'apps/mongoyia-customer-chat-uniapp/src/utils/appApi.js', [
@@ -87,6 +89,18 @@ class AppBuyerPhase13ReadinessController extends Controller
             '/api/v1/app-buyer/product',
             '/api/v1/app-buyer/cart',
             '/api/v1/app-buyer/orders',
+            '/api/v1/app-buyer/coupons',
+            '/api/v1/app-buyer/favorites',
+            '/api/v1/app-buyer/store-favorites',
+            '/api/v1/app-buyer/reviews',
+            '/api/v1/app-buyer/my-reviews',
+        ]);
+        $this->requireFileContains('Buyer account page shows coupons, favorites, store favorites, and reviews', 'apps/mongoyia-customer-chat-uniapp/src/pages/buyer/account.vue', [
+            'data-mongoyia-phase13-buyer-account',
+            'BUYER_ENDPOINTS.coupons',
+            'BUYER_ENDPOINTS.favorites',
+            'BUYER_ENDPOINTS.storeFavorites',
+            'BUYER_ENDPOINTS.myReviews',
         ]);
         $this->requireFileContains('API URL manager supports APP controller ids', 'api/config/main.php', [
             '<modules:[\w-]+>/<controller:[\w-]+>/<action:[\w-]+>',
@@ -115,6 +129,7 @@ class AppBuyerPhase13ReadinessController extends Controller
             '/api/v1/app-buyer/coupons' => 'authenticated coupon list',
             '/api/v1/app-buyer/favorites' => 'authenticated favorite list/toggle',
             '/api/v1/app-buyer/reviews' => 'public product review list',
+            '/api/v1/app-buyer/my-reviews' => 'authenticated buyer review list',
         ] as $route => $notes) {
             $this->addCheck($route, 'PASS', $route, $notes);
         }

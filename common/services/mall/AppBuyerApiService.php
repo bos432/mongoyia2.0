@@ -737,6 +737,44 @@ class AppBuyerApiService
         ];
     }
 
+    public function myReviews(int $userId, int $page = 1, int $pageSize = 20): array
+    {
+        if ($userId <= 0) {
+            return $this->authRequiredPayload();
+        }
+
+        $page = max(1, $page);
+        $pageSize = max(1, min(50, $pageSize));
+        $query = Review::find()
+            ->where(['user_id' => $userId])
+            ->andWhere(['>', 'status', BaseModel::STATUS_DELETED])
+            ->orderBy(['id' => SORT_DESC]);
+        $total = (int)$query->count();
+
+        $items = [];
+        foreach ($query->offset(($page - 1) * $pageSize)->limit($pageSize)->all() as $review) {
+            $items[] = [
+                'id' => (int)$review->id,
+                'product_id' => (int)$review->product_id,
+                'name' => (string)$review->name,
+                'star' => (int)$review->star,
+                'content' => (string)$review->content,
+                'moderation_status' => $review->hasAttribute('moderation_status') ? (string)$review->moderation_status : '',
+                'created_at' => (int)$review->created_at,
+            ];
+        }
+
+        return [
+            'version' => self::VERSION,
+            'items' => $items,
+            'summary' => [
+                'total' => $total,
+                'page' => $page,
+                'page_size' => $pageSize,
+            ],
+        ];
+    }
+
     private function publicProductQuery(int $storeId = 0)
     {
         $query = Product::find()

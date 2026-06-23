@@ -10,7 +10,11 @@ export const BUYER_ENDPOINTS = {
   product: '/api/v1/app-buyer/product',
   cart: '/api/v1/app-buyer/cart',
   orders: '/api/v1/app-buyer/orders',
-  storeFavorites: '/api/v1/app-buyer/store-favorites'
+  coupons: '/api/v1/app-buyer/coupons',
+  favorites: '/api/v1/app-buyer/favorites',
+  storeFavorites: '/api/v1/app-buyer/store-favorites',
+  reviews: '/api/v1/app-buyer/reviews',
+  myReviews: '/api/v1/app-buyer/my-reviews'
 }
 
 export const SELLER_ENDPOINTS = {

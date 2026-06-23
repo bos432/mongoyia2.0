@@ -5842,3 +5842,42 @@
 - Next stage:
   - Commit and push Phase 13.9.
   - Re-read the development plan and this log, then continue with BaoTa/browser validation if the test server has pulled the latest commits, otherwise move to the next plan-listed Phase 14/15 browser evidence or production-readiness stage that can be advanced locally.
+
+## 2026-06-23 Phase 13.10 Buyer APP Account Center
+
+- Stage name: Phase 13.10 buyer APP account center for coupons, favorites, and reviews
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting the stage.
+  - Added `/api/v1/app-buyer/my-reviews` to expose the authenticated buyer's own review list with pagination metadata.
+  - Added buyer APP endpoint constants for coupons, product favorites, store favorites, product reviews, and own reviews.
+  - Added the `pages/buyer/account` H5/uni-app page for coupons, product favorites, store favorites, and own reviews.
+  - Added auth-required handling on the buyer account page so unauthenticated users see a login prompt instead of misleading empty data.
+  - Added product favorite toggle controls to the buyer product page while preserving the existing store favorite and cart/order flows.
+  - Added a buyer home entry to the account center and updated Phase 13 buyer/aggregate readiness markers.
+  - Updated the Phase 13 backlog text to record the buyer account center scope.
+- Main files changed/added:
+  - `common/services/mall/AppBuyerApiService.php`
+  - `api/modules/v1/controllers/AppBuyerController.php`
+  - `apps/mongoyia-customer-chat-uniapp/src/utils/appApi.js`
+  - `apps/mongoyia-customer-chat-uniapp/src/pages.json`
+  - `apps/mongoyia-customer-chat-uniapp/src/pages/buyer/home.vue`
+  - `apps/mongoyia-customer-chat-uniapp/src/pages/buyer/product.vue`
+  - `apps/mongoyia-customer-chat-uniapp/src/pages/buyer/account.vue`
+  - `console/controllers/AppBuyerPhase13ReadinessController.php`
+  - `console/controllers/AppPhase13AcceptanceController.php`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l` passed for `AppBuyerApiService.php`, `AppBuyerController.php`, `AppBuyerPhase13ReadinessController.php`, and `AppPhase13AcceptanceController.php`.
+  - `node -e "JSON.parse(...pages.json...)"` passed.
+  - Static marker checks confirmed `data-mongoyia-phase13-buyer-account`, `myReviews`, `actionMyReviews`, `toggleFavorite`, `requiresLogin`, and `pages/buyer/account`.
+  - `npm run build:h5` passed in `apps/mongoyia-customer-chat-uniapp`; output contained only existing uni-app/Vite informational/deprecation warnings.
+  - `git diff --check` reported no whitespace errors; only existing Windows line-ending conversion warnings.
+  - Full Yii console execution was not run locally because this patch checkout does not have `vendor/autoload.php`; after BaoTa pull run `app-buyer-phase13-readiness/run --fixture=1` and `app-phase13-acceptance/run --fixture=1`.
+- Remaining issues:
+  - Phase 13 authenticated H5/browser buyer account, buyer checkout, seller shipment/product/coupon/ops role-flow evidence remains pending until BaoTa pulls this commit and runs readiness commands with usable buyer/seller test accounts.
+  - Phase 14/15 browser evidence remains pending until BaoTa pulls latest code and migrations.
+  - Phase 10/11/12 external provider and production evidence remain incomplete; production remains `NO-GO`.
+- Next stage:
+  - Commit and push Phase 13.10.
+  - Re-read the development plan and this log, then continue with BaoTa/browser validation if the server has pulled the latest commits, otherwise move to the next plan-listed stage that can be advanced locally without real provider credentials.

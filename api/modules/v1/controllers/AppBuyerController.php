@@ -25,6 +25,7 @@ class AppBuyerController extends BaseController
         'favorites',
         'store-favorites',
         'reviews',
+        'my-reviews',
     ];
 
     private $buyerService;
@@ -139,6 +140,19 @@ class AppBuyerController extends BaseController
             (int)Yii::$app->request->get('page', 1),
             (int)Yii::$app->request->get('page_size', 20)
         );
+    }
+
+    public function actionMyReviews()
+    {
+        try {
+            return $this->buyerService()->myReviews(
+                $this->currentUserId(),
+                (int)Yii::$app->request->get('page', 1),
+                (int)Yii::$app->request->get('page_size', 20)
+            );
+        } catch (\Throwable $e) {
+            return $this->apiError($e->getMessage(), $this->isGuest() ? 401 : 422);
+        }
     }
 
     private function buyerService(): AppBuyerApiService

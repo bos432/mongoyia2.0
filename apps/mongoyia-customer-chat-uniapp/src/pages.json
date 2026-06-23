@@ -49,6 +49,14 @@
       }
     },
     {
+      "path": "pages/buyer/account",
+      "style": {
+        "navigationBarTitleText": "我的",
+        "navigationBarBackgroundColor": "#0f766e",
+        "navigationBarTextStyle": "white"
+      }
+    },
+    {
       "path": "pages/seller/dashboard",
       "style": {
         "navigationBarTitleText": "商家工作台",

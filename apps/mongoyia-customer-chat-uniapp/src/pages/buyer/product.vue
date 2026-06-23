@@ -42,10 +42,13 @@
 
     <view class="bottom-actions">
       <button class="action-btn" @tap="openChat">客服</button>
-      <button class="action-btn" data-mongoyia-phase14-store-favorite="MONGOYIA_FAVORITE_REVIEW_PHASE14_V1" @tap="toggleStoreFavorite">
-        {{ storeFavorite ? '已藏店铺' : '收藏店铺' }}
+      <button class="action-btn" @tap="toggleFavorite">
+        {{ favorite ? '已藏商品' : '藏商品' }}
       </button>
-      <button class="action-btn" @tap="addCart">加入购物车</button>
+      <button class="action-btn" data-mongoyia-phase14-store-favorite="MONGOYIA_FAVORITE_REVIEW_PHASE14_V1" @tap="toggleStoreFavorite">
+        {{ storeFavorite ? '已藏店铺' : '藏店铺' }}
+      </button>
+      <button class="action-btn" @tap="addCart">购物车</button>
       <button class="action-btn primary" type="primary" @tap="buyNow">购买</button>
     </view>
   </view>
@@ -63,6 +66,7 @@ export default {
       productId: 0,
       product: {},
       store: {},
+      favorite: false,
       storeFavorite: false,
       skuList: [],
       selectedSku: null,
@@ -88,6 +92,7 @@ export default {
         const data = response.data || response || {}
         this.product = data.product || data
         this.store = data.store || {}
+        this.favorite = Boolean(data.favorite)
         this.storeFavorite = Boolean(data.store_favorite)
         this.skuList = data.skus || data.sku_list || []
         this.selectedSku = this.skuList[0] || null
@@ -115,6 +120,20 @@ export default {
       } catch (error) {
         uni.showToast({ title: error.message || '操作失败', icon: 'none' })
         return false
+      }
+    },
+    async toggleFavorite() {
+      try {
+        const response = await appRequest({
+          baseUrl: this.baseUrl,
+          path: BUYER_ENDPOINTS.favorites,
+          method: 'POST',
+          data: { product_id: this.productId }
+        })
+        this.favorite = Boolean(response.favorite)
+        uni.showToast({ title: this.favorite ? '已收藏商品' : '已取消收藏' })
+      } catch (error) {
+        uni.showToast({ title: error.message || '操作失败', icon: 'none' })
       }
     },
     async toggleStoreFavorite() {
@@ -246,6 +265,7 @@ export default {
   flex: 1;
   height: 42px;
   border-radius: 6px;
+  font-size: 12px;
 }
 
 .primary {

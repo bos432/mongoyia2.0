@@ -90,6 +90,7 @@ class AppPhase13AcceptanceController extends Controller
             'pages/buyer/product',
             'pages/buyer/cart',
             'pages/buyer/orders',
+            'pages/buyer/account',
             'pages/seller/dashboard',
             'pages/seller/products',
             'pages/seller/orders',
@@ -113,6 +114,9 @@ class AppPhase13AcceptanceController extends Controller
             'product',
             'addCart',
             'submitOrder',
+            'coupons',
+            'favorites',
+            'myReviews',
         ]);
         $this->requireFileContains('Buyer APP JSON API controller', 'api/modules/v1/controllers/AppBuyerController.php', [
             'MONGOYIA_APP_BUYER_CONTROLLER_V1',
@@ -123,6 +127,9 @@ class AppPhase13AcceptanceController extends Controller
             'actionCart',
             'actionOrders',
             'submitOrder',
+            'actionCoupons',
+            'actionFavorites',
+            'actionMyReviews',
         ]);
         $this->requireFileContains('Buyer APP JSON API readiness', 'console/controllers/AppBuyerPhase13ReadinessController.php', [
             'MONGOYIA_APP_BUYER_PHASE13_READINESS_V1',
@@ -221,7 +228,7 @@ class AppPhase13AcceptanceController extends Controller
         return [
             'Buyer home route shell' => [
                 'path' => 'apps/mongoyia-customer-chat-uniapp/src/pages/buyer/home.vue',
-                'markers' => ['data-mongoyia-phase13-buyer-home', 'BUYER_ENDPOINTS.home', 'openSearch'],
+                'markers' => ['data-mongoyia-phase13-buyer-home', 'BUYER_ENDPOINTS.home', 'openSearch', 'openAccount'],
                 'notes' => 'Buyer home/search/category/cart/order/seller navigation shell is present.',
             ],
             'Buyer category route shell' => [
@@ -236,7 +243,7 @@ class AppPhase13AcceptanceController extends Controller
             ],
             'Buyer product route shell' => [
                 'path' => 'apps/mongoyia-customer-chat-uniapp/src/pages/buyer/product.vue',
-                'markers' => ['data-mongoyia-phase13-buyer-product', 'BUYER_ENDPOINTS.product', 'openChat', 'addCart'],
+                'markers' => ['data-mongoyia-phase13-buyer-product', 'BUYER_ENDPOINTS.product', 'openChat', 'addCart', 'toggleFavorite'],
                 'notes' => 'Buyer product detail/cart/customer-service shell is present.',
             ],
             'Buyer cart route shell' => [
@@ -248,6 +255,11 @@ class AppPhase13AcceptanceController extends Controller
                 'path' => 'apps/mongoyia-customer-chat-uniapp/src/pages/buyer/orders.vue',
                 'markers' => ['data-mongoyia-phase13-buyer-orders', 'BUYER_ENDPOINTS.orders', 'submitOrder'],
                 'notes' => 'Buyer order list/submit shell is present.',
+            ],
+            'Buyer account route shell' => [
+                'path' => 'apps/mongoyia-customer-chat-uniapp/src/pages/buyer/account.vue',
+                'markers' => ['data-mongoyia-phase13-buyer-account', 'BUYER_ENDPOINTS.coupons', 'BUYER_ENDPOINTS.favorites', 'BUYER_ENDPOINTS.storeFavorites', 'BUYER_ENDPOINTS.myReviews'],
+                'notes' => 'Buyer coupons, product favorites, store favorites, and own reviews shell is present.',
             ],
             'Seller dashboard route shell' => [
                 'path' => 'apps/mongoyia-customer-chat-uniapp/src/pages/seller/dashboard.vue',

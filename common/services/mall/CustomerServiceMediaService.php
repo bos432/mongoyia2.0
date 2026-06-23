@@ -10,6 +10,7 @@ use yii\web\UploadedFile;
 class CustomerServiceMediaService
 {
     public const VERSION = 'MONGOYIA_CUSTOMER_SERVICE_MEDIA_V1';
+    public const STORAGE_RELATIVE_ROOT = 'runtime/mongoyia-im-media';
 
     private $policy;
 
@@ -157,7 +158,7 @@ class CustomerServiceMediaService
 
     public function storageRoot(): string
     {
-        return dirname(__DIR__, 3) . DIRECTORY_SEPARATOR . 'runtime' . DIRECTORY_SEPARATOR . 'mongoyia-im-media';
+        return dirname(__DIR__, 3) . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, self::STORAGE_RELATIVE_ROOT);
     }
 
     private function buildViewUrl(string $mediaId): string

@@ -4275,3 +4275,31 @@
   - Local patch checkout still cannot run Yii commands because `vendor/autoload.php` is absent.
 - Next stage:
   - On BaoTa, pull `fd08b98` or newer and rerun Phase 9 migrations plus `customer-service-phase9-acceptance/run --runChildChecks=1 --fixture=1 --strict=1`.
+
+## 2026-06-23 Phase 9.7 BaoTa Acceptance Failure Fix
+
+- Stage name: Phase 9.7 acceptance child-check failure fix for translation config and media storage markers
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting this fix stage.
+  - Reviewed the BaoTa acceptance output from `customer-service-phase9-acceptance/run --runChildChecks=1 --fixture=1 --strict=1`.
+  - Fixed global operational config persistence so `store_id=0` records are not rewritten by the shared `BaseModel` store default during save.
+  - Added explicit active/type/sort defaults when `OperationalConfigService` creates a new operational config row, so encrypted backend config is immediately readable by active-row queries.
+  - Added a stable `CustomerServiceMediaService::STORAGE_RELATIVE_ROOT` constant containing `runtime/mongoyia-im-media` and reused it for the non-public media storage root.
+  - Updated the Phase 9 backlog row to record the BaoTa acceptance-failure fixes while browser/APP role-flow acceptance remains pending.
+- Main files changed/added:
+  - `common/models/mall/OperationalConfig.php`
+  - `common/services/mall/OperationalConfigService.php`
+  - `common/services/mall/CustomerServiceMediaService.php`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l common/models/mall/OperationalConfig.php` passed.
+  - `php -l common/services/mall/OperationalConfigService.php` passed.
+  - `php -l common/services/mall/CustomerServiceMediaService.php` passed.
+  - Local Yii command execution is still unavailable in this patch checkout because `vendor/autoload.php` is absent; the Phase 9 child readiness commands must be rerun on BaoTa/full-vendor environment.
+- Remaining issues:
+  - BaoTa must pull this fix and rerun Phase 9 acceptance child checks.
+  - With `--strict=1`, final acceptance will still fail while browser role-flow and uni-app/H5 acceptance evidence are pending; this is the intended final gate.
+- Next stage:
+  - Push this fix, then on BaoTa run `git pull`, `yii migrate/up`, and `customer-service-phase9-acceptance/run --runChildChecks=1 --fixture=1`.
+  - After child checks pass, continue Phase 9.7 browser role-flow and uni-app/H5 acceptance, then rerun strict with `--browserAccepted=1 --appAccepted=1` plus evidence paths.

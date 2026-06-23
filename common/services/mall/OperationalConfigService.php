@@ -47,6 +47,9 @@ class OperationalConfigService
             $model->provider = $provider;
             $model->code = $code;
             $model->environment = $environment;
+            $model->type = OperationalConfig::TYPE_DEFAULT;
+            $model->sort = OperationalConfig::SORT_DEFAULT;
+            $model->status = OperationalConfig::STATUS_ACTIVE;
         }
 
         $oldRedacted = $this->redactedModelValue($model);

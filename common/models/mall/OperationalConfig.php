@@ -12,6 +12,20 @@ class OperationalConfig extends BaseModel
         return '{{%mall_operational_config}}';
     }
 
+    public function beforeSave($insert)
+    {
+        $requestedStoreId = $this->store_id;
+        if (!parent::beforeSave($insert)) {
+            return false;
+        }
+
+        if ((int)$requestedStoreId === 0) {
+            $this->store_id = 0;
+        }
+
+        return true;
+    }
+
     public function rules()
     {
         return [

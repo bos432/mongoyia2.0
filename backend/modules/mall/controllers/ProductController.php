@@ -31,6 +31,8 @@ use yii\web\NotFoundHttpException;
  */
 class ProductController extends BaseController
 {
+    public const AUDIT_VERB_GUARD_VERSION = 'MONGOYIA_PRODUCT_AUDIT_POST_VERB_GUARD_V1';
+
     /**
      * @var bool
      */
@@ -69,6 +71,15 @@ class ProductController extends BaseController
         'price' => 'text',
         'market_price' => 'text',
     ];
+
+    public function behaviors()
+    {
+        $behaviors = parent::behaviors();
+        $behaviors['verbs']['actions']['approve'] = ['post'];
+        $behaviors['verbs']['actions']['reject'] = ['post'];
+
+        return $behaviors;
+    }
 
     public function actionIndex()
     {
@@ -454,7 +465,7 @@ if(!$sa){
             throw new ForbiddenHttpException(Yii::t('app', 'No Auth'));
         }
 
-        $model = $this->findModel(Yii::$app->request->get('id'));
+        $model = $this->findModel(Yii::$app->request->post('id', 0));
         if (!$model) {
             return $this->redirectError(Yii::t('app', 'Invalid id'));
         }
@@ -465,7 +476,7 @@ if(!$sa){
 
         $model->status = Product::STATUS_ACTIVE;
         $model->audit_status = 'approved';
-        $model->audit_remark = Yii::$app->request->get('remark', 'Approved from backend.');
+        $model->audit_remark = Yii::$app->request->post('remark', 'Approved from backend.');
         $model->reviewed_at = time();
         $model->reviewer_id = Yii::$app->user->id;
         if (!$model->save()) {
@@ -482,14 +493,14 @@ if(!$sa){
             throw new ForbiddenHttpException(Yii::t('app', 'No Auth'));
         }
 
-        $model = $this->findModel(Yii::$app->request->get('id'));
+        $model = $this->findModel(Yii::$app->request->post('id', 0));
         if (!$model) {
             return $this->redirectError(Yii::t('app', 'Invalid id'));
         }
 
         $model->status = Product::STATUS_INACTIVE;
         $model->audit_status = 'rejected';
-        $model->audit_remark = Yii::$app->request->get('remark', 'Rejected from backend.');
+        $model->audit_remark = Yii::$app->request->post('remark', 'Rejected from backend.');
         $model->reviewed_at = time();
         $model->reviewer_id = Yii::$app->user->id;
         if (!$model->save()) {

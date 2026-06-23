@@ -7,6 +7,7 @@ use common\models\mall\Product as ActiveModel;
 use yii\helpers\Inflector;
 use common\helpers\ArrayHelper;
 use common\helpers\ImageHelper;
+use yii\helpers\Url;
 
 /* @var $this yii\web\View */
 /* @var $dataProvider yii\data\ActiveDataProvider */
@@ -92,13 +93,21 @@ $info['columns'][] = [
             if (!$sa || $model->audit_status === 'approved') {
                 return '';
             }
-            return Html::edit(['approve', 'id' => $model->id], '通过', ['class' => 'btn btn-success btn-sm']);
+            return '<form method="post" action="' . Html::encode(Url::to(['approve'])) . '" class="d-inline" data-mongoyia-product-audit-post-guard="1">'
+                . '<input type="hidden" name="' . Html::encode(Yii::$app->request->csrfParam) . '" value="' . Html::encode(Yii::$app->request->csrfToken) . '">'
+                . '<input type="hidden" name="id" value="' . (int)$model->id . '">'
+                . '<button type="submit" class="btn btn-success btn-sm">通过</button>'
+                . '</form>';
         },
         'reject' => function ($url, $model, $key) use ($sa) {
             if (!$sa || $model->audit_status === 'rejected') {
                 return '';
             }
-            return Html::edit(['reject', 'id' => $model->id], '驳回', ['class' => 'btn btn-warning btn-sm']);
+            return '<form method="post" action="' . Html::encode(Url::to(['reject'])) . '" class="d-inline" data-mongoyia-product-audit-post-guard="1">'
+                . '<input type="hidden" name="' . Html::encode(Yii::$app->request->csrfParam) . '" value="' . Html::encode(Yii::$app->request->csrfToken) . '">'
+                . '<input type="hidden" name="id" value="' . (int)$model->id . '">'
+                . '<button type="submit" class="btn btn-warning btn-sm">驳回</button>'
+                . '</form>';
         },
         'delete' => function ($url, $model, $key){
             return Html::delete(['delete', 'id' => $model->id, 'soft' => true, 'tree' => false]);

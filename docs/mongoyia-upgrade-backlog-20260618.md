@@ -410,6 +410,8 @@ Phase 13.14 buyer APP cart/favorite write store scope: `/api/v1/app-buyer/cart` 
 
 Phase 13.15 merchant coupon backend POST guard: the backend merchant-coupon participation actions now use `MONGOYIA_MERCHANT_COUPON_POST_VERB_GUARD_V1`, POST-only verb filters, CSRF-protected inline forms, and POST-only `coupon_type_id` reads. Phase 13 seller readiness and the coupon closure test check this guard so platform-coupon join/leave writes cannot be triggered by plain GET links.
 
+Phase 13.16 product audit backend POST guard: backend product audit approve/reject actions now use `MONGOYIA_PRODUCT_AUDIT_POST_VERB_GUARD_V1`, POST-only verb filters, CSRF-protected inline forms, and POST-only `id`/`remark` reads. Product audit and Phase 13 seller readiness checks cover this guard so platform product approval/rejection cannot be triggered by plain GET links.
+
 Phase 14 acceptance command:
 
 ```bash

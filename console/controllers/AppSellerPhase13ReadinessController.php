@@ -109,6 +109,18 @@ class AppSellerPhase13ReadinessController extends Controller
             'saveProduct',
             '提交审核',
         ]);
+        $this->requireFileContains('Backend product audit actions use POST forms', 'backend/modules/mall/controllers/ProductController.php', [
+            'MONGOYIA_PRODUCT_AUDIT_POST_VERB_GUARD_V1',
+            "'approve'] = ['post']",
+            "'reject'] = ['post']",
+            "post('id', 0)",
+        ]);
+        $this->requireFileContains('Backend product audit UI posts CSRF forms', 'backend/modules/mall/views/product/index.php', [
+            'data-mongoyia-product-audit-post-guard',
+            'csrfToken',
+            "Url::to(['approve'])",
+            "Url::to(['reject'])",
+        ]);
         $this->requireFileContains('Seller coupon page posts platform participation changes', 'apps/mongoyia-customer-chat-uniapp/src/pages/seller/coupons.vue', [
             'data-mongoyia-phase13-seller-coupons',
             'MONGOYIA_APP_SELLER_COUPON_PARTICIPATION_WRITE_V1',

@@ -7674,3 +7674,33 @@
   - Phase 10/11/12/14/15 external/provider/browser evidence gates remain pending; production remains `NO-GO`.
 - Next stage:
   - Commit and push this Phase 13 merchant coupon guard patch, then reread the plan/log and continue with the next plan-listed readiness item.
+
+## 2026-06-24 Phase 13 Product Audit POST Verb Guard
+
+- Stage name: Phase 13 product audit POST verb guard
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting the stage.
+  - Added `MONGOYIA_PRODUCT_AUDIT_POST_VERB_GUARD_V1` to the backend product controller.
+  - Restricted backend product audit approve/reject actions to POST.
+  - Changed the product list audit approve/reject UI from GET links to CSRF-protected inline POST forms.
+  - Updated product audit actions to read `id` and `remark` from POST only.
+  - Added source coverage to the product audit test plus Phase 13 seller readiness and aggregate acceptance checks.
+  - Updated the Phase 13 backlog notes to record this small stage as Phase 13.16.
+- Main files changed/added:
+  - `backend/modules/mall/controllers/ProductController.php`
+  - `backend/modules/mall/views/product/index.php`
+  - `console/controllers/ProductAuditTestController.php`
+  - `console/controllers/AppSellerPhase13ReadinessController.php`
+  - `console/controllers/AppPhase13AcceptanceController.php`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l` passed for all changed PHP files.
+  - Static marker checks confirmed `MONGOYIA_PRODUCT_AUDIT_POST_VERB_GUARD_V1`, POST-only approve/reject verb guards, CSRF form markers, POST-only `id`, and `Phase 13.16`.
+  - `git diff --check` reported no whitespace errors, only existing Windows line-ending conversion warnings.
+  - Full Yii console execution remains BaoTa-only because this local checkout lacks `vendor/autoload.php`.
+- Remaining issues:
+  - Phase 13 authenticated browser/APP role-flow evidence still requires BaoTa/test server to pull latest code, run migrations/readiness, and verify buyer/seller flows.
+  - Phase 10/11/12/14/15 external/provider/browser evidence gates remain pending; production remains `NO-GO`.
+- Next stage:
+  - Commit and push this Phase 13 product audit guard patch, then reread the plan/log and continue with the next plan-listed readiness item.

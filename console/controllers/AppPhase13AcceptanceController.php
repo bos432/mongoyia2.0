@@ -230,6 +230,7 @@ class AppPhase13AcceptanceController extends Controller
         ]);
         $this->requireFileContains('Seller APP JSON API readiness', 'console/controllers/AppSellerPhase13ReadinessController.php', [
             'MONGOYIA_APP_SELLER_PHASE13_READINESS_V1',
+            'MONGOYIA_PRODUCT_AUDIT_POST_VERB_GUARD_V1',
             'MONGOYIA_MERCHANT_COUPON_POST_VERB_GUARD_V1',
             'app-seller-phase13-readiness/run',
             'shipment write uses existing paid/COD checks',

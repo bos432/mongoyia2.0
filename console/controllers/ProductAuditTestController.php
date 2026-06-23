@@ -54,6 +54,7 @@ class ProductAuditTestController extends Controller
         $this->checkMethodExists('beforeEditStatusSave');
         $this->checkMethodExists('validateProductCategoryAuthorization');
         $this->checkMethodExists('applyProductAuditState');
+        $this->checkProductAuditPostGuard();
 
         $this->checkSellerSubmitState($seller);
         $this->checkPlatformApprovalState($platform);
@@ -193,6 +194,41 @@ class ProductAuditTestController extends Controller
             return;
         }
         $this->ok("ProductController has {$method}().");
+    }
+
+    private function checkProductAuditPostGuard(): void
+    {
+        $this->requireFileContains('@app/../backend/modules/mall/controllers/ProductController.php', [
+            'MONGOYIA_PRODUCT_AUDIT_POST_VERB_GUARD_V1',
+            "'approve'] = ['post']",
+            "'reject'] = ['post']",
+            "post('id', 0)",
+            "post('remark', 'Approved from backend.')",
+            "post('remark', 'Rejected from backend.')",
+        ]);
+        $this->requireFileContains('@app/../backend/modules/mall/views/product/index.php', [
+            'data-mongoyia-product-audit-post-guard',
+            'csrfToken',
+            "Url::to(['approve'])",
+            "Url::to(['reject'])",
+        ]);
+    }
+
+    private function requireFileContains(string $alias, array $needles): void
+    {
+        $path = Yii::getAlias($alias);
+        if (!is_file($path)) {
+            $this->fail("Missing file {$path}.");
+            return;
+        }
+        $content = (string)file_get_contents($path);
+        foreach ($needles as $needle) {
+            if (strpos($content, $needle) === false) {
+                $this->fail("File {$path} missing '{$needle}'.");
+                return;
+            }
+        }
+        $this->ok("File contains required markers: {$path}");
     }
 
     private function requireColumns(string $table, array $columns)

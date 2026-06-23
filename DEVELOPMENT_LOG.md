@@ -5458,3 +5458,54 @@
   - Phase 10/11/12 external provider and production evidence remain incomplete; production remains `NO-GO`.
 - Next stage:
   - Commit and push Phase 14.4, then continue Phase 14.5 store favorite and review moderation behavior.
+
+## 2026-06-23 Phase 14.5 Store Favorite And Review Moderation
+
+- Stage name: Phase 14.5 store favorite and review moderation behavior
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting the stage.
+  - Added `mall_store_favorite` as a dedicated store-favorite table instead of weakening the existing product-favorite foreign key.
+  - Added review moderation fields: `moderation_status`, `moderation_remark`, `moderated_at`, and `moderated_by`.
+  - Added store favorite model, backend read-only list, PC product-page store favorite AJAX toggle, APP product-detail store favorite toggle, and buyer APP store-favorites API.
+  - Changed user order review submission to create pending/inactive reviews; only backend-approved reviews become active and visible.
+  - Added backend review moderation actions for approve, reject, and violation, with status/remark/time/reviewer writeback and cache clearing.
+  - Added public review-list safeguards so only `status=active` plus `moderation_status=approved` reviews display when moderation fields exist.
+  - Added permission records for review approve/reject/violation and store favorite backend list.
+  - Added `FavoriteReviewPhase14Service`, `favorite-review-phase14-readiness/run`, and Phase 14 aggregate wiring.
+  - Updated the Phase 14 backlog status and command list.
+- Main files changed/added:
+  - `console/migrations/m260623_190000_mongoyia_store_favorite_review_moderation.php`
+  - `common/models/mall/StoreFavoriteBase.php`
+  - `common/models/mall/StoreFavorite.php`
+  - `common/models/mall/ReviewBase.php`
+  - `common/models/mall/Review.php`
+  - `common/services/mall/FavoriteReviewPhase14Service.php`
+  - `common/services/mall/AppBuyerApiService.php`
+  - `api/modules/v1/controllers/AppBuyerController.php`
+  - `frontend/modules/mall/controllers/ProductController.php`
+  - `frontend/modules/mall/controllers/OrderController.php`
+  - `backend/modules/mall/controllers/ReviewController.php`
+  - `backend/modules/mall/controllers/StoreFavoriteController.php`
+  - `backend/modules/mall/views/review/index.php`
+  - `backend/modules/mall/views/store-favorite/index.php`
+  - `apps/mongoyia-customer-chat-uniapp/src/utils/appApi.js`
+  - `apps/mongoyia-customer-chat-uniapp/src/pages/buyer/product.vue`
+  - `web/resources/mall/default/views/product/view.php`
+  - `console/controllers/FavoriteReviewPhase14ReadinessController.php`
+  - `console/controllers/LogisticsProductPhase14AcceptanceController.php`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l` passed for the new migration, new store-favorite models, updated review models, favorite/review service, buyer API service/controller, frontend product/order controllers, backend review/store-favorite controllers, backend review/store-favorite views, Phase 14.5 readiness command, Phase 14 aggregate command, and PC product view.
+  - Pure PHP fixture passed for store favorite create/cancel behavior and review moderation approve/reject visibility transitions.
+  - `node -e "JSON.parse(...pages.json...)"` passed.
+  - `npm run build:h5` passed in `apps/mongoyia-customer-chat-uniapp`; output contained only uni-app/Vite informational/deprecation warnings.
+  - Static marker checks confirmed Phase 14.5 readiness markers, backlog command marker, APP/PC store favorite UI markers, backend store favorite list marker, and review moderation UI markers.
+  - `git diff --check` reported no whitespace errors; only existing Windows line-ending conversion warnings.
+  - Full Yii console execution was not run locally because this patch checkout does not have `vendor/autoload.php`; after BaoTa pull run `migrate/up`, `favorite-review-phase14-readiness/run --fixture=1`, and `logistics-product-phase14-acceptance/run --fixture=1`.
+- Remaining issues:
+  - Phase 14 browser role-flow evidence remains pending until BaoTa pulls this stage and migrations run.
+  - Phase 10/11/12 external provider and production evidence remain incomplete; production remains `NO-GO`.
+  - Phase 15 distributor training and operations support center remains planned.
+- Next stage:
+  - Commit and push Phase 14.5, then continue Phase 14 browser role-flow evidence or proceed to Phase 15 if browser evidence must wait for BaoTa deployment.

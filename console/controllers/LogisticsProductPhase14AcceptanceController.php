@@ -178,6 +178,25 @@ class LogisticsProductPhase14AcceptanceController extends Controller
             'data-mongoyia-phase14-product-video',
             'product-details-video',
         ]);
+        $this->requireFileContains('Favorite and review moderation service', 'common/services/mall/FavoriteReviewPhase14Service.php', [
+            'MONGOYIA_FAVORITE_REVIEW_PHASE14_V1',
+            'planStoreFavoriteToggle',
+            'reviewModerationTransition',
+        ]);
+        $this->requireFileContains('Favorite and review moderation readiness', 'console/controllers/FavoriteReviewPhase14ReadinessController.php', [
+            'MONGOYIA_FAVORITE_REVIEW_PHASE14_READINESS_V1',
+            'favorite-review-phase14-readiness/run',
+            'Favorite/review fixture',
+        ]);
+        $this->requireFileContains('Store favorite and review moderation migration', 'console/migrations/m260623_190000_mongoyia_store_favorite_review_moderation.php', [
+            'mall_store_favorite',
+            'moderation_status',
+            '/mall/review/approve',
+        ]);
+        $this->requireFileContains('Review moderation backend UI', 'backend/modules/mall/views/review/index.php', [
+            'data-mongoyia-phase14-review-moderation',
+            'mark-violation',
+        ]);
     }
 
     private function checkPlannedScopeMatrix(): void
@@ -282,6 +301,7 @@ class LogisticsProductPhase14AcceptanceController extends Controller
             'git pull',
             '/www/server/php/83/bin/php yii migrate/up --interactive=0',
             '/www/server/php/83/bin/php yii product-search-video-phase14-readiness/run --fixture=1 --interactive=0',
+            '/www/server/php/83/bin/php yii favorite-review-phase14-readiness/run --fixture=1 --interactive=0',
             '/www/server/php/83/bin/php yii logistics-product-phase14-acceptance/run --fixture=1 --interactive=0',
             '```',
             '',

@@ -104,6 +104,7 @@ if (method_exists($model, 'hasAttribute') && $model->hasAttribute('video_url')) 
                     <a href="/mall/chat/index?gid=<?= $model->id;?>" class="cart-btn"></i> <?= Yii::t('mall', 'Ask Customer Service') ?> </a>
                     <a href="javascript:" id="addToCart" class="cart-btn"><i class="fa fa-shopping-bag"></i> <?= Yii::t('mall', 'Add to Cart') ?></a>
                     <a href="javascript:" class="heart-icon"><i class="fa fa-heart-o"></i></a>
+                    <a href="javascript:" class="store-heart-icon" data-mongoyia-phase14-store-favorite="MONGOYIA_FAVORITE_REVIEW_PHASE14_V1"><i class="fa fa-star-o"></i> <?= Yii::t('mall', 'Store') ?></a>
 
                     <ul class="border-0">
                         <li><b><?= Yii::t('mall', 'Promotions') ?></b> <span><?= Yii::t('mall', 'Free shipping') ?></span></li>
@@ -189,6 +190,22 @@ if (method_exists($model, 'hasAttribute') && $model->hasAttribute('video_url')) 
     border-radius: 6px;
     background: #000;
 }
+.store-heart-icon {
+    display: inline-block;
+    height: 46px;
+    min-width: 72px;
+    margin-left: 8px;
+    padding: 0 12px;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    color: #4b5563;
+    line-height: 46px;
+    text-align: center;
+}
+.store-heart-icon-active {
+    color: #d97706;
+    border-color: #f59e0b;
+}
 </style>
 
 <?php sort($arrDefaultAttribute); ?>
@@ -234,6 +251,12 @@ $(document).ready(function() {
     $.get('<?= Url::to(['/mall/product/favorite', 'product_id' => $model->id]) ?>', function(data, status) {
         if (data.data === 1) {
             $(".heart-icon").addClass('heart-icon-active');
+        }
+    }, "json")
+
+    $.get('<?= Url::to(['/mall/product/store-favorite', 'store_id' => (int)$model->store_id]) ?>', function(data, status) {
+        if (data.data === 1) {
+            $(".store-heart-icon").addClass('store-heart-icon-active');
         }
     }, "json")
 
@@ -294,6 +317,29 @@ $('.heart-icon').click(function() {
             $(".heart-icon").addClass('heart-icon-active');
         } else {
             $(".heart-icon").removeClass('heart-icon-active');
+        }
+    }, "json");
+})
+
+$('.store-heart-icon').click(function() {
+    if (!login) {
+        window.location.href = urlLogin;
+        return;
+    }
+    let param = {
+        store_id: <?= (int)$model->store_id ?>,
+        _csrf: '<?= Yii::$app->request->getCsrfToken() ?>'
+    };
+    $.post('<?= Url::to(['/mall/product/store-favorite']) ?>', param, function(data) {
+        if (data.code !== 200) {
+            alert(data.msg);
+            return;
+        }
+
+        if (data.data === 1) {
+            $(".store-heart-icon").addClass('store-heart-icon-active');
+        } else {
+            $(".store-heart-icon").removeClass('store-heart-icon-active');
         }
     }, "json");
 })

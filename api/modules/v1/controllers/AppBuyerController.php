@@ -23,6 +23,7 @@ class AppBuyerController extends BaseController
         'orders',
         'coupons',
         'favorites',
+        'store-favorites',
         'reviews',
     ];
 
@@ -109,6 +110,20 @@ class AppBuyerController extends BaseController
             }
 
             return $this->buyerService()->favorites($this->currentUserId());
+        } catch (\Throwable $e) {
+            return $this->apiError($e->getMessage(), $this->isGuest() ? 401 : 422);
+        }
+    }
+
+    public function actionStoreFavorites()
+    {
+        try {
+            if (Yii::$app->request->isPost) {
+                $this->requireLogin();
+                return $this->buyerService()->toggleStoreFavorite($this->currentUserId(), (int)Yii::$app->request->post('store_id'));
+            }
+
+            return $this->buyerService()->storeFavorites($this->currentUserId());
         } catch (\Throwable $e) {
             return $this->apiError($e->getMessage(), $this->isGuest() ? 401 : 422);
         }

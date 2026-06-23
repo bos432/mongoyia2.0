@@ -23,6 +23,10 @@ use common\models\Store;
  * @property int $type 类型
  * @property int $sort 排序
  * @property int $status 状态
+ * @property string $moderation_status 审核状态
+ * @property string $moderation_remark 审核备注
+ * @property int $moderated_at 审核时间
+ * @property int $moderated_by 审核人
  * @property int $created_at 创建时间
  * @property int $updated_at 更新时间
  * @property int $created_by 创建用户
@@ -44,9 +48,11 @@ class Review extends ReviewBase
     public function rules()
     {
         return array_merge(parent::rules(), [
-            [['store_id', 'parent_id', 'product_id', 'user_id', 'order_id', 'star', 'point', 'like', 'type', 'sort', 'status', 'created_at', 'updated_at', 'created_by', 'updated_by'], 'integer'],
+            [['store_id', 'parent_id', 'product_id', 'user_id', 'order_id', 'star', 'point', 'like', 'type', 'sort', 'status', 'moderated_at', 'moderated_by', 'created_at', 'updated_at', 'created_by', 'updated_by'], 'integer'],
             [['product_id', 'user_id', 'name'], 'required'],
             [['content'], 'string'],
+            [['moderation_status'], 'string', 'max' => 32],
+            [['moderation_remark'], 'string', 'max' => 1000],
             [['name'], 'string', 'max' => 255],
         ]);
     }
@@ -72,6 +78,10 @@ class Review extends ReviewBase
                 'type' => '类型',
                 'sort' => '排序',
                 'status' => '状态',
+                'moderation_status' => '审核状态',
+                'moderation_remark' => '审核备注',
+                'moderated_at' => '审核时间',
+                'moderated_by' => '审核人',
                 'created_at' => '创建时间',
                 'updated_at' => '更新时间',
                 'created_by' => '创建用户',
@@ -93,6 +103,10 @@ class Review extends ReviewBase
                 'type' => Yii::t('app', 'Type'),
                 'sort' => Yii::t('app', 'Sort'),
                 'status' => Yii::t('app', 'Status'),
+                'moderation_status' => Yii::t('app', 'Moderation Status'),
+                'moderation_remark' => Yii::t('app', 'Moderation Remark'),
+                'moderated_at' => Yii::t('app', 'Moderated At'),
+                'moderated_by' => Yii::t('app', 'Moderated By'),
                 'created_at' => Yii::t('app', 'Created At'),
                 'updated_at' => Yii::t('app', 'Updated At'),
                 'created_by' => Yii::t('app', 'Created By'),

@@ -13,6 +13,8 @@ use common\models\mall\ProductAttributeItemLabel;
 use common\models\mall\ProductParam;
 use common\models\mall\ProductSku;
 use common\models\mall\Review;
+use common\models\mall\StoreFavorite;
+use common\models\Store;
 use Yii;
 use yii\data\ActiveDataProvider;
 
@@ -147,6 +149,7 @@ class ProductController extends BaseController
                 $model = new Favorite();
                 $model->user_id = Yii::$app->user->id;
                 $model->product_id = $productId;
+                $model->store_id = (int)$product->store_id;
                 $model->name = $product->name;
                 if (!$model->save()) {
                     Yii::$app->logSystem->db($model->errors);
@@ -180,6 +183,74 @@ class ProductController extends BaseController
         return $this->render($this->action->id, [
             'models' => $models,
         ]);
+    }
+
+    public function actionStoreFavorite()
+    {
+        $tableReady = Yii::$app->db->schema->getTableSchema(StoreFavorite::tableName(), true) !== null;
+        if (Yii::$app->request->isPost) {
+            if (Yii::$app->user->isGuest) {
+                return $this->error(-2);
+            }
+            if (!$tableReady) {
+                return $this->error(-11, Yii::t('app', 'Store favorite table is not ready'));
+            }
+
+            $storeId = (int)Yii::$app->request->post('store_id');
+            if ($storeId <= 0) {
+                return $this->error(-11, Yii::t('mall', 'Need Store'));
+            }
+            $store = Store::findOne(['id' => $storeId]);
+            if (!$store) {
+                return $this->error(-11, Yii::t('mall', 'Need Store'));
+            }
+
+            $model = StoreFavorite::find()
+                ->where(['user_id' => Yii::$app->user->id, 'store_id' => $storeId])
+                ->andWhere(['>', 'status', StoreFavorite::STATUS_DELETED])
+                ->one();
+            if ($model) {
+                $model->status = StoreFavorite::STATUS_DELETED;
+                $model->save(false);
+                return $this->success(0);
+            }
+
+            $model = new StoreFavorite();
+            $model->user_id = Yii::$app->user->id;
+            $model->store_id = $storeId;
+            $model->name = (string)$store->name;
+            $model->status = StoreFavorite::STATUS_ACTIVE;
+            $model->created_at = time();
+            $model->updated_at = time();
+            $model->created_by = Yii::$app->user->id;
+            $model->updated_by = Yii::$app->user->id;
+            if (!$model->save()) {
+                Yii::$app->logSystem->db($model->errors);
+                return $this->success(0);
+            }
+
+            return $this->success(1);
+        } else if (Yii::$app->request->isAjax) {
+            if (Yii::$app->user->isGuest) {
+                return $this->error(-2);
+            }
+            if (!$tableReady) {
+                return $this->success(0);
+            }
+
+            $storeId = (int)Yii::$app->request->get('store_id');
+            if ($storeId <= 0) {
+                return $this->error(-11, Yii::t('mall', 'Need Store'));
+            }
+
+            $model = StoreFavorite::find()
+                ->where(['user_id' => Yii::$app->user->id, 'store_id' => $storeId])
+                ->andWhere(['>', 'status', StoreFavorite::STATUS_DELETED])
+                ->one();
+            return $this->success($model ? 1 : 0);
+        }
+
+        return $this->error(-1);
     }
 
     /**
@@ -254,6 +325,10 @@ class ProductController extends BaseController
         }
 
         $query = Review::find()->where(['product_id' => $productId, 'status' => Review::STATUS_ACTIVE]);
+        $reviewSchema = Yii::$app->db->schema->getTableSchema(Review::tableName(), true);
+        if ($reviewSchema !== null && isset($reviewSchema->columns['moderation_status'])) {
+            $query->andWhere(['moderation_status' => Review::MODERATION_APPROVED]);
+        }
         $dataProvider = new ActiveDataProvider([
             'query' => $query,
             'pagination' => ['defaultPageSize' => Yii::$app->params['defaultPageSizeProductRank'] ?? 1],

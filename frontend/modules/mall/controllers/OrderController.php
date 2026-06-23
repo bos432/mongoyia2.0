@@ -86,7 +86,13 @@ class OrderController extends BaseController
                 $review->name = $name ?: Yii::$app->user->identity->username;
                 $review->star = $star;
                 $review->content = trim((string)$this->request->post('content'));
-                $review->status = Review::STATUS_ACTIVE;
+                $review->status = Review::STATUS_INACTIVE;
+                if (method_exists($review, 'hasAttribute') && $review->hasAttribute('moderation_status')) {
+                    $review->moderation_status = Review::MODERATION_PENDING;
+                    $review->moderation_remark = '';
+                    $review->moderated_at = 0;
+                    $review->moderated_by = 0;
+                }
                 $review->order_id = (int)$orderProduct->order_id;
                 $review->created_at = time();
                 $review->updated_at = time();
@@ -99,7 +105,7 @@ class OrderController extends BaseController
                 }
 
                 $transaction->commit();
-                return $this->redirectSuccess(Yii::t('app', 'Review submitted'));
+                return $this->redirectSuccess(Yii::t('app', 'Review submitted, waiting for moderation'));
             } catch (\Throwable $e) {
                 $transaction->rollBack();
                 return $this->htmlFailed($e->getMessage());

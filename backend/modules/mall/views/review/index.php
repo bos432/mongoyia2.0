@@ -13,9 +13,10 @@ use common\helpers\ArrayHelper;
 
 $this->title = Yii::t('app', 'Reviews');
 $this->params['breadcrumbs'][] = $this->title;
+$hasReviewModeration = (new ActiveModel())->hasAttribute('moderation_status');
 ?>
 
-<div class="row">
+<div class="row" data-mongoyia-phase14-review-moderation="MONGOYIA_FAVORITE_REVIEW_PHASE14_V1">
     <div class="col-md-12">
         <div class="card">
             <div class="card-header">
@@ -53,12 +54,27 @@ $this->params['breadcrumbs'][] = $this->title;
                         // 'like',
                         // ['attribute' => 'type', 'value' => function ($model) { return ActiveModel::getTypeLabels($model->type); }, 'filter' => Html::activeDropDownList($searchModel, 'type', ActiveModel::getTypeLabels(), ['class' => 'form-control', 'prompt' => Yii::t('app', 'Please Filter')]),],
                         // ['attribute' => 'sort', 'format' => 'raw', 'value' => function ($model) { return Html::sort($model->sort); }, 'filter' => false,],
+                        ['attribute' => 'moderation_status', 'visible' => $hasReviewModeration, 'value' => function ($model) { return ActiveModel::getModerationStatusLabels($model->moderation_status, true); }, 'filter' => Html::activeDropDownList($searchModel, 'moderation_status', ActiveModel::getModerationStatusLabels(), ['class' => 'form-control', 'prompt' => Yii::t('app', 'Please Filter')]),],
+                        ['attribute' => 'moderation_remark', 'visible' => $hasReviewModeration, 'contentOptions' => ['style' => 'max-width:220px;white-space:normal;']],
+                        ['attribute' => 'moderated_at', 'visible' => $hasReviewModeration, 'format' => 'datetime', 'filter' => false],
                         ['attribute' => 'status', 'format' => 'raw', 'value' => function ($model) { return ActiveModel::isStatusActiveInactive($model->status) ? Html::status($model->status) : ActiveModel::getStatusLabels($model->status, true); }, 'filter' => Html::activeDropDownList($searchModel, 'status', ActiveModel::getStatusLabels(), ['class' => 'form-control', 'prompt' => Yii::t('app', 'Please Filter')]),],
                         ['attribute' => 'created_at', 'format' => 'datetime', 'filter' => false],
                         // ['attribute' => 'updated_at', 'format' => 'datetime', 'filter' => false],
                         // ['attribute' => 'created_by', 'value' => function ($model) { return $model->createdBy->nameAdmin ?? '-'; }, ],
                         // ['attribute' => 'updated_by', 'value' => function ($model) { return $model->updatedBy->nameAdmin ?? '-'; }, ],
 
+                        [
+                            'header' => Yii::t('app', 'Moderation'),
+                            'format' => 'raw',
+                            'visible' => $hasReviewModeration,
+                            'value' => function ($model) {
+                                return implode(' ', [
+                                    Html::a(Yii::t('app', 'Approve'), ['approve', 'id' => $model->id], ['class' => 'btn btn-success btn-sm', 'data-method' => 'post', 'data-confirm' => Yii::t('app', 'Are you sure?')]),
+                                    Html::a(Yii::t('app', 'Reject'), ['reject', 'id' => $model->id], ['class' => 'btn btn-warning btn-sm', 'data-method' => 'post', 'data-confirm' => Yii::t('app', 'Are you sure?')]),
+                                    Html::a(Yii::t('app', 'Violation'), ['mark-violation', 'id' => $model->id], ['class' => 'btn btn-danger btn-sm', 'data-method' => 'post', 'data-confirm' => Yii::t('app', 'Are you sure?')]),
+                                ]);
+                            },
+                        ],
                         Html::actionsModal(),
                     ]
                 ]); ?>

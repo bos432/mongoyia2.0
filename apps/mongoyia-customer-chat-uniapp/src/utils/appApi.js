@@ -9,7 +9,8 @@ export const BUYER_ENDPOINTS = {
   suggestions: '/api/v1/app-buyer/suggestions',
   product: '/api/v1/app-buyer/product',
   cart: '/api/v1/app-buyer/cart',
-  orders: '/api/v1/app-buyer/orders'
+  orders: '/api/v1/app-buyer/orders',
+  storeFavorites: '/api/v1/app-buyer/store-favorites'
 }
 
 export const SELLER_ENDPOINTS = {

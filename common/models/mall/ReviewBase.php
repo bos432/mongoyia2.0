@@ -16,6 +16,11 @@ use Yii;
  */
 class ReviewBase extends BaseModel
 {
+    public const MODERATION_PENDING = 'pending';
+    public const MODERATION_APPROVED = 'approved';
+    public const MODERATION_REJECTED = 'rejected';
+    public const MODERATION_VIOLATION = 'violation';
+
     /**
      * @return array|array[]
      */
@@ -28,6 +33,20 @@ class ReviewBase extends BaseModel
     }
 
     /** add function getXxxLabels here, detail in BaseModel **/
+    public static function getModerationStatusLabels($id = null, $all = false, $flip = false)
+    {
+        $data = [
+            self::MODERATION_PENDING => Yii::t('app', 'Pending Review'),
+            self::MODERATION_APPROVED => Yii::t('app', 'Approved'),
+            self::MODERATION_REJECTED => Yii::t('app', 'Rejected'),
+            self::MODERATION_VIOLATION => Yii::t('app', 'Violation'),
+        ];
+
+        $all && $data += [];
+        $flip && $data = array_flip($data);
+
+        return !is_null($id) ? ($data[$id] ?? $id) : $data;
+    }
 
     /**
      * {@inheritdoc}
@@ -49,6 +68,10 @@ class ReviewBase extends BaseModel
             'type' => Yii::t('app', 'Type'),
             'sort' => Yii::t('app', 'Sort'),
             'status' => Yii::t('app', 'Status'),
+            'moderation_status' => Yii::t('app', 'Moderation Status'),
+            'moderation_remark' => Yii::t('app', 'Moderation Remark'),
+            'moderated_at' => Yii::t('app', 'Moderated At'),
+            'moderated_by' => Yii::t('app', 'Moderated By'),
             'created_at' => Yii::t('app', 'Created At'),
             'updated_at' => Yii::t('app', 'Updated At'),
             'created_by' => Yii::t('app', 'Created By'),

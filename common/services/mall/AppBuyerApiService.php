@@ -12,6 +12,7 @@ use common\models\mall\OrderProduct;
 use common\models\mall\Product;
 use common\models\mall\ProductSku;
 use common\models\mall\Review;
+use common\models\mall\StoreFavorite;
 use common\models\mall\UserCoupon;
 use Yii;
 
@@ -162,11 +163,18 @@ class AppBuyerApiService
         }
 
         $favorite = false;
+        $storeFavorite = false;
         if ($userId > 0) {
             $favorite = Favorite::find()
                 ->where(['user_id' => $userId, 'product_id' => $id])
                 ->andWhere(['>', 'status', BaseModel::STATUS_DELETED])
                 ->exists();
+            if ($this->hasTable(StoreFavorite::tableName())) {
+                $storeFavorite = StoreFavorite::find()
+                    ->where(['user_id' => $userId, 'store_id' => (int)$product->store_id])
+                    ->andWhere(['>', 'status', BaseModel::STATUS_DELETED])
+                    ->exists();
+            }
         }
 
         return [
@@ -179,6 +187,11 @@ class AppBuyerApiService
                 ->all()),
             'reviews' => $this->reviews($id, 1, 5)['items'],
             'favorite' => $favorite,
+            'store_favorite' => $storeFavorite,
+            'store' => [
+                'id' => (int)$product->store_id,
+                'name' => (string)($product->store->name ?? ''),
+            ],
             'customer_service' => [
                 'route' => '/pages/chat/index',
                 'gid' => $id,
@@ -386,6 +399,88 @@ class AppBuyerApiService
         ];
     }
 
+    public function storeFavorites(int $userId): array
+    {
+        if ($userId <= 0) {
+            return $this->authRequiredPayload();
+        }
+        if (!$this->hasTable(StoreFavorite::tableName())) {
+            return [
+                'version' => self::VERSION,
+                'items' => [],
+                'summary' => [
+                    'table_ready' => false,
+                    'favorite_review_version' => FavoriteReviewPhase14Service::VERSION,
+                ],
+            ];
+        }
+
+        $favorites = StoreFavorite::find()
+            ->where(['user_id' => $userId])
+            ->andWhere(['>', 'status', BaseModel::STATUS_DELETED])
+            ->orderBy(['id' => SORT_DESC])
+            ->limit(100)
+            ->all();
+
+        return [
+            'version' => self::VERSION,
+            'items' => array_map(function (StoreFavorite $favorite): array {
+                return [
+                    'id' => (int)$favorite->id,
+                    'store_id' => (int)$favorite->store_id,
+                    'name' => (string)$favorite->name,
+                    'created_at' => (int)$favorite->created_at,
+                ];
+            }, $favorites),
+            'summary' => [
+                'favorite_review_version' => FavoriteReviewPhase14Service::VERSION,
+            ],
+        ];
+    }
+
+    public function toggleStoreFavorite(int $userId, int $storeId): array
+    {
+        if ($userId <= 0) {
+            return $this->authRequiredPayload();
+        }
+        if ($storeId <= 0) {
+            throw new \RuntimeException('Store not found.');
+        }
+        if (!$this->hasTable(StoreFavorite::tableName())) {
+            throw new \RuntimeException('Store favorite table is not ready.');
+        }
+
+        $store = \common\models\Store::findOne(['id' => $storeId]);
+        if (!$store) {
+            throw new \RuntimeException('Store not found.');
+        }
+
+        $favorite = StoreFavorite::find()
+            ->where(['user_id' => $userId, 'store_id' => $storeId])
+            ->andWhere(['>', 'status', BaseModel::STATUS_DELETED])
+            ->one();
+        if ($favorite) {
+            $favorite->status = BaseModel::STATUS_DELETED;
+            $favorite->save(false);
+            return ['version' => self::VERSION, 'store_favorite' => false];
+        }
+
+        $favorite = new StoreFavorite();
+        $favorite->user_id = $userId;
+        $favorite->store_id = $storeId;
+        $favorite->name = (string)$store->name;
+        $favorite->status = BaseModel::STATUS_ACTIVE;
+        $favorite->created_at = time();
+        $favorite->updated_at = time();
+        $favorite->created_by = $userId;
+        $favorite->updated_by = $userId;
+        if (!$favorite->save()) {
+            throw new \RuntimeException('Store favorite save failed: ' . json_encode($favorite->errors, JSON_UNESCAPED_UNICODE));
+        }
+
+        return ['version' => self::VERSION, 'store_favorite' => true];
+    }
+
     public function toggleFavorite(int $userId, int $productId): array
     {
         if ($userId <= 0) {
@@ -427,6 +522,9 @@ class AppBuyerApiService
         $query = Review::find()
             ->where(['product_id' => $productId, 'status' => BaseModel::STATUS_ACTIVE])
             ->orderBy(['id' => SORT_DESC]);
+        if ($this->hasColumn(Review::tableName(), 'moderation_status')) {
+            $query->andWhere(['moderation_status' => Review::MODERATION_APPROVED]);
+        }
         $total = (int)$query->count();
 
         $items = [];
@@ -610,6 +708,15 @@ class AppBuyerApiService
         try {
             $schema = Yii::$app->db->schema->getTableSchema($table, true);
             return $schema && isset($schema->columns[$column]);
+        } catch (\Throwable $e) {
+            return false;
+        }
+    }
+
+    private function hasTable(string $table): bool
+    {
+        try {
+            return Yii::$app->db->schema->getTableSchema($table, true) !== null;
         } catch (\Throwable $e) {
             return false;
         }

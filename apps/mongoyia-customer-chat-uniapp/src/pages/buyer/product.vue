@@ -15,6 +15,7 @@
         <text class="product-title">{{ product.name || product.title || '商品' }}</text>
         <text class="product-price">{{ product.price || product.amount || '' }}</text>
         <text class="product-meta">{{ product.sku || product.store_name || '' }}</text>
+        <text v-if="store.name" class="product-meta">{{ store.name }}</text>
       </view>
 
       <view class="detail-band">
@@ -41,6 +42,9 @@
 
     <view class="bottom-actions">
       <button class="action-btn" @tap="openChat">客服</button>
+      <button class="action-btn" data-mongoyia-phase14-store-favorite="MONGOYIA_FAVORITE_REVIEW_PHASE14_V1" @tap="toggleStoreFavorite">
+        {{ storeFavorite ? '已藏店铺' : '收藏店铺' }}
+      </button>
       <button class="action-btn" @tap="addCart">加入购物车</button>
       <button class="action-btn primary" type="primary" @tap="buyNow">购买</button>
     </view>
@@ -58,6 +62,8 @@ export default {
       wsUrl: DEFAULT_CONFIG.wsUrl,
       productId: 0,
       product: {},
+      store: {},
+      storeFavorite: false,
       skuList: [],
       selectedSku: null,
       state: pageState()
@@ -81,6 +87,8 @@ export default {
         const response = await appRequest({ baseUrl: this.baseUrl, path: BUYER_ENDPOINTS.product, query: { id: this.productId } })
         const data = response.data || response || {}
         this.product = data.product || data
+        this.store = data.store || {}
+        this.storeFavorite = Boolean(data.store_favorite)
         this.skuList = data.skus || data.sku_list || []
         this.selectedSku = this.skuList[0] || null
         this.state.loaded = true
@@ -107,6 +115,25 @@ export default {
       } catch (error) {
         uni.showToast({ title: error.message || '操作失败', icon: 'none' })
         return false
+      }
+    },
+    async toggleStoreFavorite() {
+      const storeId = Number(this.store.id || this.product.store_id || 0)
+      if (!storeId) {
+        uni.showToast({ title: '店铺不存在', icon: 'none' })
+        return
+      }
+      try {
+        const response = await appRequest({
+          baseUrl: this.baseUrl,
+          path: BUYER_ENDPOINTS.storeFavorites,
+          method: 'POST',
+          data: { store_id: storeId }
+        })
+        this.storeFavorite = Boolean(response.store_favorite)
+        uni.showToast({ title: this.storeFavorite ? '已收藏店铺' : '已取消收藏' })
+      } catch (error) {
+        uni.showToast({ title: error.message || '操作失败', icon: 'none' })
       }
     },
     async buyNow() {

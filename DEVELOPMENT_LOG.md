@@ -1,5 +1,29 @@
 # Development Log
 
+## 2026-06-24 Phase 13 Browser Deployment Freshness Recheck After Checkout Guards
+
+- Stage name: Phase 13 browser deployment freshness recheck after checkout guards
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting the stage.
+  - Used the right-side browser to open `https://demo2026.mongoyia.com/product-codex-test-product-1781945133` after pushing Phase 13 checkout URL guard commits through `c7a6d7b`.
+  - Confirmed the deployed product page still references `/resources/mall/default/js/main.js?v=1.1.3`.
+  - Confirmed the deployed product DOM still contains two exact `/mall/cart` short links along with `/mall/cart/index` links.
+  - Tried opening `https://demo2026.mongoyia.com/mall/cart/index` in the right-side browser; it still fails with `net::ERR_HTTP_RESPONSE_CODE_FAILURE`.
+  - Performed read-only command-line checks against the same deployed URLs; product HTML still uses `main.js?v=1.1.3`, direct `main.js?v=1.1.4&codexFresh=...` does not contain `MONGOYIA_CART_LINK_NORMALIZER_V1`, and `/mall/cart/index` returns HTTP 444 for the non-session request.
+  - Did not submit forms, create orders, mutate cart/order/payment/fund data, or enter credentials.
+- Main files changed/added:
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - Browser product page: opens, but deployed output is stale.
+  - Browser cart page: still blocked by HTTP response failure.
+  - Static asset fetch: stale `main.js` content is still served and misses the cart-link normalizer marker.
+  - Local source and remote GitHub master contain the latest checkout URL guard and aggregate marker commits; the deployed BaoTa server has not yet served those changes.
+- Remaining issues:
+  - BaoTa/test server must pull `c7a6d7b` or newer, run migrations/readiness commands, clear PHP/opcache/runtime/page/static caches, and restart PHP-FPM if opcache remains stale before browser role-flow validation can continue.
+  - Phase 10/11/12/13/14/15 external and browser evidence remain incomplete; production remains `NO-GO`.
+- Next stage:
+  - Commit and push this deployment-freshness blocker evidence. After BaoTa is refreshed, rerun Phase 13 readiness/acceptance and resume right-side browser buyer cart/checkout validation.
+
 ## 2026-06-24 Phase 13 Acceptance Report Checkout URL Scope
 
 - Stage name: Phase 13 acceptance report checkout URL scope

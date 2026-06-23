@@ -16,6 +16,64 @@ class MongoyiaRequirementsClosureAcceptanceController extends Controller
     public $fixture = false;
     public $strict = false;
     public $runChildChecks = false;
+    public $phase10BrowserAccepted = false;
+    public $phase10ProviderEvidenceAccepted = false;
+    public $phase10ProductionEvidenceAccepted = false;
+    public $phase10RedactedExportAccepted = false;
+    public $phase10BrowserEvidencePath = '';
+    public $phase10ProviderEvidencePath = '';
+    public $phase10ProductionEvidencePath = '';
+    public $phase10RedactedExportPath = '';
+    public $phase11SandboxAccepted = false;
+    public $phase11MerchantConfigAccepted = false;
+    public $phase11StatsAccepted = false;
+    public $phase11CallbackAuditAccepted = false;
+    public $phase11BrowserAccepted = false;
+    public $phase11SandboxEvidencePath = '';
+    public $phase11MerchantConfigEvidencePath = '';
+    public $phase11StatsEvidencePath = '';
+    public $phase11CallbackAuditEvidencePath = '';
+    public $phase11BrowserEvidencePath = '';
+    public $phase12ThirdPartyLoginAccepted = false;
+    public $phase12PasswordRecoveryAccepted = false;
+    public $phase12NotificationAccepted = false;
+    public $phase12LanguageReviewAccepted = false;
+    public $phase12BrowserAccepted = false;
+    public $phase12ThirdPartyLoginEvidencePath = '';
+    public $phase12PasswordRecoveryEvidencePath = '';
+    public $phase12NotificationEvidencePath = '';
+    public $phase12LanguageReviewEvidencePath = '';
+    public $phase12BrowserEvidencePath = '';
+    public $phase13BuyerApiAccepted = false;
+    public $phase13SellerApiAccepted = false;
+    public $phase13BrowserAccepted = false;
+    public $phase13AppAccepted = false;
+    public $phase13BuyerEvidencePath = '';
+    public $phase13SellerEvidencePath = '';
+    public $phase13BrowserEvidencePath = '';
+    public $phase13AppEvidencePath = '';
+    public $phase14ProviderAdapterAccepted = false;
+    public $phase14TrackingSyncAccepted = false;
+    public $phase14SkuInventoryAccepted = false;
+    public $phase14SearchVideoAccepted = false;
+    public $phase14FavoriteReviewAccepted = false;
+    public $phase14BrowserAccepted = false;
+    public $phase14ProviderEvidencePath = '';
+    public $phase14TrackingEvidencePath = '';
+    public $phase14SkuInventoryEvidencePath = '';
+    public $phase14SearchVideoEvidencePath = '';
+    public $phase14FavoriteReviewEvidencePath = '';
+    public $phase14BrowserEvidencePath = '';
+    public $phase15TrainingAccepted = false;
+    public $phase15PromotionAccepted = false;
+    public $phase15DownloadTrackingAccepted = false;
+    public $phase15PayoutSignoffAccepted = false;
+    public $phase15BrowserAccepted = false;
+    public $phase15TrainingEvidencePath = '';
+    public $phase15PromotionEvidencePath = '';
+    public $phase15DownloadTrackingEvidencePath = '';
+    public $phase15PayoutSignoffEvidencePath = '';
+    public $phase15BrowserEvidencePath = '';
 
     private $checks = [];
     private $failures = 0;
@@ -31,6 +89,64 @@ class MongoyiaRequirementsClosureAcceptanceController extends Controller
             'fixture',
             'strict',
             'runChildChecks',
+            'phase10BrowserAccepted',
+            'phase10ProviderEvidenceAccepted',
+            'phase10ProductionEvidenceAccepted',
+            'phase10RedactedExportAccepted',
+            'phase10BrowserEvidencePath',
+            'phase10ProviderEvidencePath',
+            'phase10ProductionEvidencePath',
+            'phase10RedactedExportPath',
+            'phase11SandboxAccepted',
+            'phase11MerchantConfigAccepted',
+            'phase11StatsAccepted',
+            'phase11CallbackAuditAccepted',
+            'phase11BrowserAccepted',
+            'phase11SandboxEvidencePath',
+            'phase11MerchantConfigEvidencePath',
+            'phase11StatsEvidencePath',
+            'phase11CallbackAuditEvidencePath',
+            'phase11BrowserEvidencePath',
+            'phase12ThirdPartyLoginAccepted',
+            'phase12PasswordRecoveryAccepted',
+            'phase12NotificationAccepted',
+            'phase12LanguageReviewAccepted',
+            'phase12BrowserAccepted',
+            'phase12ThirdPartyLoginEvidencePath',
+            'phase12PasswordRecoveryEvidencePath',
+            'phase12NotificationEvidencePath',
+            'phase12LanguageReviewEvidencePath',
+            'phase12BrowserEvidencePath',
+            'phase13BuyerApiAccepted',
+            'phase13SellerApiAccepted',
+            'phase13BrowserAccepted',
+            'phase13AppAccepted',
+            'phase13BuyerEvidencePath',
+            'phase13SellerEvidencePath',
+            'phase13BrowserEvidencePath',
+            'phase13AppEvidencePath',
+            'phase14ProviderAdapterAccepted',
+            'phase14TrackingSyncAccepted',
+            'phase14SkuInventoryAccepted',
+            'phase14SearchVideoAccepted',
+            'phase14FavoriteReviewAccepted',
+            'phase14BrowserAccepted',
+            'phase14ProviderEvidencePath',
+            'phase14TrackingEvidencePath',
+            'phase14SkuInventoryEvidencePath',
+            'phase14SearchVideoEvidencePath',
+            'phase14FavoriteReviewEvidencePath',
+            'phase14BrowserEvidencePath',
+            'phase15TrainingAccepted',
+            'phase15PromotionAccepted',
+            'phase15DownloadTrackingAccepted',
+            'phase15PayoutSignoffAccepted',
+            'phase15BrowserAccepted',
+            'phase15TrainingEvidencePath',
+            'phase15PromotionEvidencePath',
+            'phase15DownloadTrackingEvidencePath',
+            'phase15PayoutSignoffEvidencePath',
+            'phase15BrowserEvidencePath',
         ]);
     }
 
@@ -93,6 +209,13 @@ class MongoyiaRequirementsClosureAcceptanceController extends Controller
             if (!empty($config['runChildChecks']) && $this->runChildChecks) {
                 $params['runChildChecks'] = 1;
             }
+            foreach (($config['passthrough'] ?? []) as $localName => $childName) {
+                $value = $this->{$localName};
+                if ($value === '' || $value === false || $value === null) {
+                    continue;
+                }
+                $params[$childName] = $value;
+            }
 
             try {
                 $exitCode = Yii::$app->runAction($route, $params);
@@ -132,6 +255,16 @@ class MongoyiaRequirementsClosureAcceptanceController extends Controller
                 'baseUrl' => true,
                 'fixture' => true,
                 'runChildChecks' => true,
+                'passthrough' => [
+                    'phase10BrowserAccepted' => 'browserAccepted',
+                    'phase10ProviderEvidenceAccepted' => 'providerEvidenceAccepted',
+                    'phase10ProductionEvidenceAccepted' => 'productionEvidenceAccepted',
+                    'phase10RedactedExportAccepted' => 'redactedExportAccepted',
+                    'phase10BrowserEvidencePath' => 'browserEvidencePath',
+                    'phase10ProviderEvidencePath' => 'providerEvidencePath',
+                    'phase10ProductionEvidencePath' => 'productionEvidencePath',
+                    'phase10RedactedExportPath' => 'redactedExportPath',
+                ],
             ],
             'Phase 11 payment and merchant payment' => [
                 'slug' => 'phase11-payment',
@@ -141,6 +274,18 @@ class MongoyiaRequirementsClosureAcceptanceController extends Controller
                 'baseUrl' => true,
                 'fixture' => true,
                 'runChildChecks' => true,
+                'passthrough' => [
+                    'phase11SandboxAccepted' => 'sandboxAccepted',
+                    'phase11MerchantConfigAccepted' => 'merchantConfigAccepted',
+                    'phase11StatsAccepted' => 'statsAccepted',
+                    'phase11CallbackAuditAccepted' => 'callbackAuditAccepted',
+                    'phase11BrowserAccepted' => 'browserAccepted',
+                    'phase11SandboxEvidencePath' => 'sandboxEvidencePath',
+                    'phase11MerchantConfigEvidencePath' => 'merchantConfigEvidencePath',
+                    'phase11StatsEvidencePath' => 'statsEvidencePath',
+                    'phase11CallbackAuditEvidencePath' => 'callbackAuditEvidencePath',
+                    'phase11BrowserEvidencePath' => 'browserEvidencePath',
+                ],
             ],
             'Phase 12 account notification language' => [
                 'slug' => 'phase12-account-notification',
@@ -150,6 +295,18 @@ class MongoyiaRequirementsClosureAcceptanceController extends Controller
                 'baseUrl' => false,
                 'fixture' => true,
                 'runChildChecks' => true,
+                'passthrough' => [
+                    'phase12ThirdPartyLoginAccepted' => 'thirdPartyLoginAccepted',
+                    'phase12PasswordRecoveryAccepted' => 'passwordRecoveryAccepted',
+                    'phase12NotificationAccepted' => 'notificationAccepted',
+                    'phase12LanguageReviewAccepted' => 'languageReviewAccepted',
+                    'phase12BrowserAccepted' => 'browserAccepted',
+                    'phase12ThirdPartyLoginEvidencePath' => 'thirdPartyLoginEvidencePath',
+                    'phase12PasswordRecoveryEvidencePath' => 'passwordRecoveryEvidencePath',
+                    'phase12NotificationEvidencePath' => 'notificationEvidencePath',
+                    'phase12LanguageReviewEvidencePath' => 'languageReviewEvidencePath',
+                    'phase12BrowserEvidencePath' => 'browserEvidencePath',
+                ],
             ],
             'Phase 13 buyer seller APP' => [
                 'slug' => 'phase13-app',
@@ -159,6 +316,16 @@ class MongoyiaRequirementsClosureAcceptanceController extends Controller
                 'baseUrl' => true,
                 'fixture' => true,
                 'runChildChecks' => false,
+                'passthrough' => [
+                    'phase13BuyerApiAccepted' => 'buyerApiAccepted',
+                    'phase13SellerApiAccepted' => 'sellerApiAccepted',
+                    'phase13BrowserAccepted' => 'browserAccepted',
+                    'phase13AppAccepted' => 'appAccepted',
+                    'phase13BuyerEvidencePath' => 'buyerEvidencePath',
+                    'phase13SellerEvidencePath' => 'sellerEvidencePath',
+                    'phase13BrowserEvidencePath' => 'browserEvidencePath',
+                    'phase13AppEvidencePath' => 'appEvidencePath',
+                ],
             ],
             'Phase 14 logistics product favorite review' => [
                 'slug' => 'phase14-logistics-product',
@@ -168,6 +335,20 @@ class MongoyiaRequirementsClosureAcceptanceController extends Controller
                 'baseUrl' => false,
                 'fixture' => true,
                 'runChildChecks' => false,
+                'passthrough' => [
+                    'phase14ProviderAdapterAccepted' => 'providerAdapterAccepted',
+                    'phase14TrackingSyncAccepted' => 'trackingSyncAccepted',
+                    'phase14SkuInventoryAccepted' => 'skuInventoryAccepted',
+                    'phase14SearchVideoAccepted' => 'searchVideoAccepted',
+                    'phase14FavoriteReviewAccepted' => 'favoriteReviewAccepted',
+                    'phase14BrowserAccepted' => 'browserAccepted',
+                    'phase14ProviderEvidencePath' => 'providerEvidencePath',
+                    'phase14TrackingEvidencePath' => 'trackingEvidencePath',
+                    'phase14SkuInventoryEvidencePath' => 'skuInventoryEvidencePath',
+                    'phase14SearchVideoEvidencePath' => 'searchVideoEvidencePath',
+                    'phase14FavoriteReviewEvidencePath' => 'favoriteReviewEvidencePath',
+                    'phase14BrowserEvidencePath' => 'browserEvidencePath',
+                ],
             ],
             'Phase 15 distributor support' => [
                 'slug' => 'phase15-distributor-support',
@@ -177,6 +358,18 @@ class MongoyiaRequirementsClosureAcceptanceController extends Controller
                 'baseUrl' => false,
                 'fixture' => true,
                 'runChildChecks' => false,
+                'passthrough' => [
+                    'phase15TrainingAccepted' => 'trainingAccepted',
+                    'phase15PromotionAccepted' => 'promotionAccepted',
+                    'phase15DownloadTrackingAccepted' => 'downloadTrackingAccepted',
+                    'phase15PayoutSignoffAccepted' => 'payoutSignoffAccepted',
+                    'phase15BrowserAccepted' => 'browserAccepted',
+                    'phase15TrainingEvidencePath' => 'trainingEvidencePath',
+                    'phase15PromotionEvidencePath' => 'promotionEvidencePath',
+                    'phase15DownloadTrackingEvidencePath' => 'downloadTrackingEvidencePath',
+                    'phase15PayoutSignoffEvidencePath' => 'payoutSignoffEvidencePath',
+                    'phase15BrowserEvidencePath' => 'browserEvidencePath',
+                ],
             ],
         ];
     }
@@ -231,6 +424,7 @@ class MongoyiaRequirementsClosureAcceptanceController extends Controller
             '- Fixture mode: ' . ($this->fixture ? 'yes' : 'no'),
             '- Child readiness checks: ' . ($this->runChildChecks ? 'yes' : 'no'),
             '- Strict mode: ' . ($this->strict ? 'yes' : 'no'),
+            '- Evidence flag passthrough: supported for Phase 10 through Phase 15 child acceptance commands.',
             '- Failures: ' . $this->failures,
             '- Warnings: ' . $this->warnings,
             '- Pending: ' . $this->pending,
@@ -265,6 +459,11 @@ class MongoyiaRequirementsClosureAcceptanceController extends Controller
             '```',
             '',
             'This aggregate gate is read-only. It does not store provider secrets, call real payment/logistics/social providers by itself, change payment state, create withdrawals, approve reviews, or switch production traffic.',
+            '',
+            '## Accepted Evidence Passthrough',
+            '',
+            'After browser, provider, APP package, logistics, language review, and distributor evidence is collected, pass the accepted flags to this aggregate command with phase-prefixed options such as `--phase10BrowserAccepted=1`, `--phase11SandboxAccepted=1`, `--phase12ThirdPartyLoginAccepted=1`, `--phase13AppAccepted=1`, `--phase14BrowserAccepted=1`, and `--phase15TrainingAccepted=1`.',
+            'Use matching `*EvidencePath` options for Markdown reports, tickets, or signed evidence references. Never pass raw secrets, provider credentials, callback payloads, private keys, SMTP passwords, Basic Auth values, or HMAC secrets as evidence-path values.',
             '',
             '## Acceptance Boundary',
             '',

@@ -6268,3 +6268,28 @@
 - Next stage:
   - Commit and push Phase 11.6.
   - Re-read the development plan and this log, then continue with the next plan-listed local closure item or BaoTa/browser validation after the server pulls latest code.
+
+## 2026-06-23 Phase 10-15 Aggregate Evidence Passthrough
+
+- Stage name: Phase 10-15 aggregate accepted-evidence passthrough
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting the stage.
+  - Rechecked the right-side browser on `https://demo2026.mongoyia.com/backend/mall/distribution-distributor/index`; the deployed server still lacks Phase 15 support/material/signoff markers, so final browser role-flow remains blocked until BaoTa pulls the latest code and migrations run.
+  - Extended `mongoyia-requirements-closure-acceptance/run` with phase-prefixed accepted-evidence flags and evidence-path passthrough for Phase 10, 11, 12, 13, 14, and 15 child acceptance commands.
+  - Kept the aggregate command read-only: the passthrough only marks already-reviewed evidence in child reports and does not store secrets, call providers, mutate payments/orders/funds/reviews/withdrawals, or switch production traffic.
+  - Updated the backlog to document the aggregate accepted-evidence passthrough behavior.
+- Main files changed/added:
+  - `console/controllers/MongoyiaRequirementsClosureAcceptanceController.php`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l console/controllers/MongoyiaRequirementsClosureAcceptanceController.php` passed.
+  - Static marker checks confirmed `phase10BrowserAccepted`, `phase11SandboxAccepted`, `phase12ThirdPartyLoginAccepted`, `phase13AppAccepted`, `phase14BrowserAccepted`, `phase15TrainingAccepted`, and `Accepted Evidence Passthrough`.
+  - Right-side browser marker check: `phase15Support=false`, `phase15Materials=false`, `phase15Signoff=false`, `phase11PaymentList=false`; console errors: none.
+  - Full Yii console execution was not run locally because this patch checkout does not have `vendor/autoload.php`; after BaoTa pull run the aggregate acceptance command in the server environment.
+- Remaining issues:
+  - BaoTa/test server is still on an older deployment, so Phase 11 payment browser evidence and Phase 13/14/15 role-flow browser evidence remain blocked until server pull/migration/readiness.
+  - Phase 10/11/12 provider, production operations, language/provider callback, and real payment/logistics evidence remain external; production remains `NO-GO`.
+- Next stage:
+  - Commit and push this aggregate passthrough stage.
+  - Re-read the development plan and this log, then continue with BaoTa/browser validation after the server pulls latest code, or another plan-listed local evidence/readiness item that does not require provider credentials.

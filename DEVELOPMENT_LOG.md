@@ -6017,3 +6017,26 @@
 - Next stage:
   - Commit and push Phase 13.11.
   - Re-read the development plan and this log, then continue with BaoTa/browser validation if the server has pulled latest code, otherwise advance the next plan-listed evidence/acceptance stage that can be done locally.
+
+## 2026-06-23 Phase 13-15 Browser Evidence Deployment Check After Phase 13.11
+
+- Stage name: Phase 13/14/15 browser evidence deployment check after buyer review submission
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting the stage.
+  - Reused the right-side browser tab on `https://demo2026.mongoyia.com/backend/mall/distribution-distributor/index`.
+  - Reloaded the backend distributor operations page and checked for Phase 15 browser markers required before Phase 13/14/15 browser role-flow evidence can be trusted.
+  - Confirmed `data-mongoyia-phase15-support-content`, `data-mongoyia-phase15-material-management`, and `data-mongoyia-phase15-signoff-evidence` are still absent on the server page.
+  - Did not submit any business form and did not change browser data.
+- Main files changed/added:
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - Browser URL checked: `https://demo2026.mongoyia.com/backend/mall/distribution-distributor/index`.
+  - Browser page title: `分销员运营`.
+  - Marker check result: `supportContent=false`, `materialManagement=false`, `signoffEvidence=false`.
+  - The local code for Phase 13.11 has been pushed to GitHub as `55e215a`, but the BaoTa/test server still appears to be running an older deployment.
+- Remaining issues:
+  - Phase 13 authenticated buyer/seller APP role-flow evidence, Phase 14 logistics/product/favorite/review browser evidence, and Phase 15 distributor support browser evidence remain blocked until BaoTa pulls latest commits and runs migrations/readiness commands.
+  - Phase 10/11/12 external provider and production evidence remain incomplete; production remains `NO-GO`.
+- Next stage:
+  - After BaoTa pulls `55e215a` or newer and runs migrations, run the Phase 13/14/15 readiness commands and complete right-side browser role-flow validation.
+  - If the server is still not updated, continue only with plan-listed local evidence/readiness work that does not require the deployed server or real provider credentials.

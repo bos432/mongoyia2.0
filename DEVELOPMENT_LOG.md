@@ -6075,4 +6075,53 @@
   - Real logistics provider evidence and Phase 10/11/12 external provider evidence remain incomplete; production remains `NO-GO`.
 - Next stage:
   - Commit and push Phase 14.6.
+
+## 2026-06-23 Phase 13-15 Browser Evidence Deployment Recheck After Phase 14.6
+
+- Stage name: Phase 13/14/15 browser evidence deployment recheck after review sorting
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting the stage.
+  - Reused the right-side browser tab on `https://demo2026.mongoyia.com/backend/mall/distribution-distributor/index`.
+  - Reloaded the deployed backend distributor operations page and checked the Phase 15 browser markers required before Phase 13/14/15 role-flow evidence can be trusted.
+  - Confirmed `data-mongoyia-phase15-support-content`, `data-mongoyia-phase15-material-management`, and `data-mongoyia-phase15-signoff-evidence` are still absent on the deployed page.
+  - Checked browser console errors for the page and found none.
+  - Did not submit forms or change business data.
+- Main files changed/added:
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - Browser URL checked: `https://demo2026.mongoyia.com/backend/mall/distribution-distributor/index`.
+  - Browser page title: `分销员运营`.
+  - Marker check result: `supportContent=false`, `materialManagement=false`, `signoffEvidence=false`.
+  - Browser console error result: none captured.
+- Remaining issues:
+  - BaoTa/test server is still running a pre-Phase-15 deployment, so Phase 13 authenticated buyer/seller APP role-flow evidence, Phase 14 logistics/product/favorite/review browser evidence, and Phase 15 distributor support browser evidence remain blocked until the server pulls the latest commits and runs migrations/readiness commands.
+  - Phase 10/11/12 external provider and production evidence remain incomplete; production remains `NO-GO`.
+- Next stage:
+  - Continue only with plan-listed local readiness/evidence work that does not require deployed server updates, real provider credentials, or production signoff.
   - Re-read the development plan and this log, then continue with BaoTa/browser validation if the server has pulled latest code, otherwise advance the next plan-listed local readiness/evidence item.
+
+## 2026-06-23 Phase 10-15 Aggregate Requirements Acceptance Gate
+
+- Stage name: Phase 10-15 aggregate remaining-requirements acceptance command
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting the stage.
+  - Added a read-only aggregate console command `mongoyia-requirements-closure-acceptance/run`.
+  - The aggregate command runs the existing Phase 10, 11, 12, 13, 14, and 15 acceptance commands, writes separate child Markdown reports, parses each child report's failures/warnings/pending counts, and writes a single top-level Markdown summary.
+  - Added `--fixture`, `--runChildChecks`, `--strict`, `--baseUrl`, `--handoverDir`, and `--outputPath` options so BaoTa can run one command after pull/migration.
+  - Kept the gate explicitly read-only: it does not store provider secrets, call real providers by itself, mutate payment/order/fund/review/withdrawal state, or switch production traffic.
+  - Updated the Phase 10-15 backlog section with the aggregate command and acceptance boundary.
+- Main files changed/added:
+  - `console/controllers/MongoyiaRequirementsClosureAcceptanceController.php`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l console/controllers/MongoyiaRequirementsClosureAcceptanceController.php` passed.
+  - Static marker checks confirmed `MONGOYIA_REQUIREMENTS_PHASE10_15_ACCEPTANCE_V1`, `mongoyia-requirements-closure-acceptance/run`, and all Phase 10-15 child acceptance routes.
+  - `git diff --check` reported no whitespace errors; only existing Windows line-ending conversion warnings.
+  - Full Yii execution was not run locally because this patch checkout does not have `vendor/autoload.php`; after BaoTa pull run `mongoyia-requirements-closure-acceptance/run --fixture=1 --runChildChecks=1`.
+- Remaining issues:
+  - The aggregate command will still report `PENDING` until real provider evidence, browser role-flow evidence, production operations evidence, redacted export review, and owner signoffs are accepted in their child phase gates.
+  - The right-side browser remains on an older BaoTa deployment that lacks Phase 15 markers, so Phase 13/14/15 browser role-flow evidence still cannot be completed from this local-only change.
+- Next stage:
+  - Commit and push the aggregate acceptance command.
+  - Re-read the development plan and this log, then either run BaoTa/browser validation after the server pulls latest code or continue another plan-listed local readiness/evidence item that does not need external provider credentials.

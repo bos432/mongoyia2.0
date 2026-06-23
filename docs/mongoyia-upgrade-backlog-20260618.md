@@ -323,6 +323,7 @@ The remaining original-requirements work is now tracked as Phase 10 through Phas
 
 | Phase | Priority | Work | Status | Verification |
 | --- | --- | --- | --- | --- |
+| 10-15 | P0 | Aggregate full remaining-requirements acceptance gate for operational readiness, payment, account/notification/language, APP, logistics/product, and distributor support | Added read-only aggregate command that runs Phase 10-15 acceptance commands, parses child reports, and summarizes failures/warnings/pending without bypassing external evidence gates | `mongoyia-requirements-closure-acceptance/run --fixture=1 --runChildChecks=1` |
 | 10 | P0 | Phase 7.6 backend operations configuration center acceptance: payment, SMTP, alert, scheduled evidence, launch signoff, redacted export, and GO/NO-GO production readiness | Added Phase 10.1 aggregation command and Phase 10.3 backend GO/NO-GO summary; browser/provider/production evidence pending | `operational-config-phase10-acceptance/run`, browser role-flow validation |
 | 10 | P0 | Real/sandbox provider configuration evidence for QPay, LianLian, PayPal, SMTP, translation API, and alert recipients | Added non-sensitive evidence record/check service, backend forms, and readiness command; real provider inputs pending | `operational-config-provider-evidence-test/run --fixture=1`, provider test actions plus redacted export |
 | 11 | P0 | QPay/LianLian/PayPal sandbox payment completion, live enablement guard, merchant encrypted payment configuration, payment stats, and callback/audit coverage | Phase 11.0 acceptance command, Phase 11.1 merchant encrypted config foundation, Phase 11.2 payment statistics foundation, and Phase 11.3 callback regression readiness added; real sandbox evidence and browser evidence pending | `payment-phase11-acceptance/run`, `payment-stat-readiness/run --fixture=1`, `payment-callback-regression-readiness/run --fixture=1` |
@@ -332,6 +333,18 @@ The remaining original-requirements work is now tracked as Phase 10 through Phas
 | 15 | P1 | Distributor training/FAQ/support content, multilingual promotion materials, download tracking, and payout/invite reward signoff evidence | Phase 15.0 acceptance scaffold, Phase 15.1 training/FAQ/support content, Phase 15.2 promotion material/download tracking, and Phase 15.3 signoff evidence implemented; browser evidence pending | `distribution-support-content-phase15-readiness/run --fixture=1`, `distribution-material-phase15-readiness/run --fixture=1`, `distribution-signoff-phase15-readiness/run --fixture=1`, `distribution-support-phase15-acceptance/run` |
 
 Production launch remains `NO-GO` until Phase 10 records complete production-style evidence and the later planned gaps that affect launch scope are accepted. External provider credentials, certificates, push keys, and real logistics/payment accounts must never be committed to the repository.
+
+Phase 10-15 aggregate acceptance command:
+
+```bash
+php yii mongoyia-requirements-closure-acceptance/run \
+  --baseUrl=https://demo2026.mongoyia.com \
+  --fixture=1 \
+  --runChildChecks=1 \
+  --interactive=0
+```
+
+Strict aggregate acceptance remains pending until each child phase acceptance report has zero failures, warnings, and pending manual evidence gates. This command is read-only: it writes Markdown reports, parses the Phase 10-15 child reports, and does not store provider secrets, call real payment/logistics/social providers by itself, change payment state, approve reviews, create withdrawals, or switch production traffic.
 
 Phase 11 acceptance command:
 

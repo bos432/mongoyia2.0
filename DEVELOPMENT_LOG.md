@@ -4930,3 +4930,45 @@
 - Next stage:
   - Commit and push Phase 12.2, then on BaoTa run migrations plus `account-security-readiness/run --fixture=1` and the Phase 12 aggregate command.
   - Continue Phase 12.3 by adding notification event hooks and send-log foundation for order, logistics, payment, customer-service reply, and complaint result notifications without calling external push/SMS providers.
+
+## 2026-06-23 Phase 12.3 Notification Event And Send-Log Foundation
+
+- Stage name: Phase 12.3 notification event hooks and send-log foundation
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting the stage.
+  - Added `OperationalNotificationService` with event hooks for order status, logistics status, payment result, customer-service reply, and complaint result notifications.
+  - Added site-message delivery support through the existing `base_message` foundation and an APP-reserved channel that records a reserved log instead of calling any external push provider.
+  - Added `mall_notification_send_log` migration with store/user/event/channel/status/source/trace/message-id fields and backend permission for the notification log page.
+  - Added read-only backend `/backend/mall/notification-log/index` with date, store, event, channel, and status filters plus summary, event/channel/status distribution, and recent log rows.
+  - Added an operations-center shortcut for the notification log page.
+  - Added `notification-phase12-readiness/run` and wired it into `account-notification-phase12-acceptance/run --runChildChecks=1`.
+  - Updated the Phase 12 backlog status and command list to record the notification event/send-log foundation.
+- Main files changed/added:
+  - `common/services/mall/OperationalNotificationService.php`
+  - `backend/modules/mall/controllers/NotificationLogController.php`
+  - `backend/modules/mall/views/notification-log/index.php`
+  - `backend/modules/mall/views/operational-config/index.php`
+  - `console/migrations/m260623_164000_mongoyia_notification_send_log.php`
+  - `console/controllers/NotificationPhase12ReadinessController.php`
+  - `console/controllers/AccountNotificationPhase12AcceptanceController.php`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l common/services/mall/OperationalNotificationService.php` passed.
+  - `php -l backend/modules/mall/controllers/NotificationLogController.php` passed.
+  - `php -l backend/modules/mall/views/notification-log/index.php` passed.
+  - `php -l console/migrations/m260623_164000_mongoyia_notification_send_log.php` passed.
+  - `php -l console/controllers/NotificationPhase12ReadinessController.php` passed.
+  - `php -l console/controllers/AccountNotificationPhase12AcceptanceController.php` passed.
+  - `php -l backend/modules/mall/views/operational-config/index.php` passed.
+  - Static marker checks confirmed event definitions, backend log page markers, migration markers, operations-center entry, Phase 12 child-command wiring, and backlog command markers.
+  - `git diff --check` reported no whitespace errors; only existing Windows line-ending conversion warnings.
+  - Full Yii console execution was not run locally because this patch checkout does not have `vendor/autoload.php`; run migrations and readiness commands on BaoTa/full-vendor environment after pull.
+- Remaining issues:
+  - Runtime call-site wiring for every business state transition should be added carefully as later small increments after BaoTa migration/readiness passes.
+  - External APP push/SMS/mail provider delivery evidence remains pending; this stage records APP as a reserved channel only.
+  - Facebook/Google callback/bind evidence, security-code provider delivery/audit evidence, language review import/export, and browser evidence remain pending.
+  - Phase 10/11 external provider and production evidence remain incomplete, so production remains `NO-GO`.
+- Next stage:
+  - Commit and push Phase 12.3, then on BaoTa run migrations plus `notification-phase12-readiness/run --fixture=1` and the Phase 12 aggregate command.
+  - Continue Phase 12.4 by adding language review import/export foundation for UI, mail, notification, and payment-error strings.

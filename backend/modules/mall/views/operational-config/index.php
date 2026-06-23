@@ -68,6 +68,10 @@ $statusClass = [
                         'class' => 'btn btn-sm btn-outline-secondary',
                         'data-mongoyia-account-security-entry' => '1',
                     ]) ?>
+                    <?= Html::a('通知日志', ['/mall/notification-log/index'], [
+                        'class' => 'btn btn-sm btn-outline-secondary',
+                        'data-mongoyia-notification-log-entry' => '1',
+                    ]) ?>
                 </p>
             </div>
             <div class="card-body p-0">

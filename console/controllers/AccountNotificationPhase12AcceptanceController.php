@@ -173,6 +173,30 @@ class AccountNotificationPhase12AcceptanceController extends Controller
             'Message::STATUS_UNREAD',
             'updateMessageCount',
         ]);
+        $this->requireFileContains('Operational notification event service', 'common/services/mall/OperationalNotificationService.php', [
+            'MONGOYIA_OPERATIONAL_NOTIFICATION_V1',
+            'EVENT_ORDER_STATUS',
+            'EVENT_LOGISTICS_STATUS',
+            'EVENT_PAYMENT_RESULT',
+            'EVENT_CUSTOMER_SERVICE_REPLY',
+            'EVENT_COMPLAINT_RESULT',
+            'CHANNEL_APP_RESERVED',
+        ]);
+        $this->requireFileContains('Notification send-log backend page', 'backend/modules/mall/views/notification-log/index.php', [
+            'data-mongoyia-notification-log',
+            'data-mongoyia-notification-log-summary',
+            'data-mongoyia-notification-log-recent',
+        ]);
+        $this->requireFileContains('Notification send-log readiness command', 'console/controllers/NotificationPhase12ReadinessController.php', [
+            'MONGOYIA_NOTIFICATION_PHASE12_READINESS_V1',
+            'Notification event',
+            'app-reserved',
+        ]);
+        $this->requireFileContains('Notification send-log migration', 'console/migrations/m260623_164000_mongoyia_notification_send_log.php', [
+            'mall_notification_send_log',
+            '/mall/notification-log/index',
+            'delivery_status',
+        ]);
         $this->requireFileContains('SMTP runtime foundation', 'common/components/mailer/SmtpMailer.php', [
             'OperationalMailConfigService',
             'runtimeConfig',
@@ -253,6 +277,11 @@ class AccountNotificationPhase12AcceptanceController extends Controller
                 'evidence' => 'common/components/base/MessageSystem.php',
                 'notes' => 'Unread site-message rows can be created; Phase 12 will add business event hooks and send logs.',
             ],
+            'Notification event hooks and send-log foundation' => [
+                'status' => 'PASS',
+                'evidence' => 'common/services/mall/OperationalNotificationService.php',
+                'notes' => 'Order, logistics, payment, customer-service reply, and complaint-result notification hooks plus send-log records are present; app push remains reserved.',
+            ],
             'Existing SMTP foundation' => [
                 'status' => 'PASS',
                 'evidence' => 'common/components/mailer/SmtpMailer.php',
@@ -297,6 +326,7 @@ class AccountNotificationPhase12AcceptanceController extends Controller
         return [
             'Identity provider config readiness' => ['route' => 'identity-config-readiness/run', 'fixture' => true],
             'Account security policy readiness' => ['route' => 'account-security-readiness/run', 'fixture' => true],
+            'Notification event/send-log readiness' => ['route' => 'notification-phase12-readiness/run', 'fixture' => true],
             'Operational mail config readiness' => ['route' => 'operational-config-mail-test/run', 'fixture' => true],
         ];
     }
@@ -345,6 +375,7 @@ class AccountNotificationPhase12AcceptanceController extends Controller
             'git pull',
             '/www/server/php/83/bin/php yii migrate/up --interactive=0',
             '/www/server/php/83/bin/php yii account-security-readiness/run --fixture=1 --interactive=0',
+            '/www/server/php/83/bin/php yii notification-phase12-readiness/run --fixture=1 --interactive=0',
             '/www/server/php/83/bin/php yii account-notification-phase12-acceptance/run \\',
             '  --baseUrl=https://demo2026.mongoyia.com \\',
             '  --runChildChecks=1 \\',

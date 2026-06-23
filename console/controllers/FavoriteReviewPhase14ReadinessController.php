@@ -101,6 +101,17 @@ class FavoriteReviewPhase14ReadinessController extends Controller
             'toggleStoreFavorite',
             'BUYER_ENDPOINTS.storeFavorites',
         ]);
+        $this->requireFileContains('APP received-order review submission', 'common/services/mall/AppBuyerApiService.php', [
+            'MONGOYIA_APP_BUYER_REVIEW_WRITE_V1',
+            'submitReview',
+            'MODERATION_PENDING',
+            'Only received orders can be reviewed',
+        ]);
+        $this->requireFileContains('APP received-order review UI', 'apps/mongoyia-customer-chat-uniapp/src/pages/buyer/orders.vue', [
+            'data-mongoyia-phase13-buyer-review-submit',
+            'BUYER_ENDPOINTS.reviews',
+            'submitReview',
+        ]);
         $this->requireFileContains('Review submission pending moderation', 'frontend/modules/mall/controllers/OrderController.php', [
             'MODERATION_PENDING',
             'Review submitted, waiting for moderation',

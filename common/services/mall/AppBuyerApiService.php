@@ -25,6 +25,7 @@ class AppBuyerApiService
     public const VERSION = 'MONGOYIA_APP_BUYER_API_V1';
     public const CHECKOUT_WRITE_VERSION = 'MONGOYIA_APP_BUYER_CHECKOUT_WRITE_V1';
     public const NOTIFICATION_CENTER_VERSION = 'MONGOYIA_APP_BUYER_NOTIFICATION_CENTER_V1';
+    public const REVIEW_WRITE_VERSION = 'MONGOYIA_APP_BUYER_REVIEW_WRITE_V1';
 
     private $searchVideoService;
 
@@ -740,6 +741,115 @@ class AppBuyerApiService
         ];
     }
 
+    public function submitReview(int $userId, array $input): array
+    {
+        if ($userId <= 0) {
+            return $this->authRequiredPayload();
+        }
+
+        $star = (int)($input['star'] ?? 0);
+        if ($star < 1 || $star > 5) {
+            throw new \RuntimeException('Review star must be between 1 and 5.');
+        }
+
+        $content = mb_substr(trim((string)($input['content'] ?? '')), 0, 1000, 'UTF-8');
+        if ($content === '') {
+            throw new \RuntimeException('Review content is required.');
+        }
+
+        $productId = (int)($input['product_id'] ?? 0);
+        $orderProductId = (int)($input['order_product_id'] ?? $input['item_id'] ?? 0);
+        $orderId = (int)($input['order_id'] ?? 0);
+
+        $orderProductQuery = OrderProduct::find()
+            ->where(['user_id' => $userId])
+            ->andWhere(['>', 'status', BaseModel::STATUS_DELETED]);
+        if ($orderProductId > 0) {
+            $orderProductQuery->andWhere(['id' => $orderProductId]);
+        } elseif ($orderId > 0 && $productId > 0) {
+            $orderProductQuery->andWhere(['product_id' => $productId])
+                ->andWhere(['or', ['order_id' => $orderId], ['parent_id' => $orderId]]);
+        } else {
+            throw new \RuntimeException('Order item is required.');
+        }
+
+        /** @var OrderProduct|null $orderProduct */
+        $orderProduct = $orderProductQuery->one();
+        if (!$orderProduct) {
+            throw new \RuntimeException('Order item not found.');
+        }
+        if ($productId > 0 && (int)$orderProduct->product_id !== $productId) {
+            throw new \RuntimeException('Order item product mismatch.');
+        }
+
+        /** @var Order|null $order */
+        $order = Order::find()
+            ->where(['id' => (int)$orderProduct->order_id, 'user_id' => $userId])
+            ->andWhere(['>', 'status', BaseModel::STATUS_DELETED])
+            ->one();
+        if (!$order) {
+            throw new \RuntimeException('Order not found.');
+        }
+        if ((int)$order->payment_status === Order::PAYMENT_STATUS_REFUND) {
+            throw new \RuntimeException('Refunded orders cannot be reviewed.');
+        }
+        if ((int)$order->shipment_status !== Order::SHIPMENT_STATUS_RECEIVED) {
+            throw new \RuntimeException('Only received orders can be reviewed.');
+        }
+
+        $duplicate = Review::find()
+            ->where([
+                'user_id' => $userId,
+                'order_id' => (int)$order->id,
+                'product_id' => (int)$orderProduct->product_id,
+            ])
+            ->andWhere(['>', 'status', BaseModel::STATUS_DELETED])
+            ->exists();
+        if ($duplicate) {
+            throw new \RuntimeException('This order item has already been reviewed.');
+        }
+
+        $review = new Review();
+        $review->store_id = (int)$orderProduct->store_id ?: (int)$order->store_id;
+        $review->parent_id = 0;
+        $review->product_id = (int)$orderProduct->product_id;
+        $review->user_id = $userId;
+        $review->order_id = (int)$order->id;
+        $review->name = mb_substr((string)$orderProduct->name, 0, 255, 'UTF-8');
+        $review->star = $star;
+        $review->content = $content;
+        $review->point = 0;
+        $review->like = 0;
+        $review->type = BaseModel::TYPE_DEFAULT;
+        $review->sort = BaseModel::SORT_DEFAULT;
+        $review->status = BaseModel::STATUS_ACTIVE;
+        $review->created_by = $userId;
+        $review->updated_by = $userId;
+        if ($review->hasAttribute('moderation_status')) {
+            $review->moderation_status = Review::MODERATION_PENDING;
+        }
+        if ($review->hasAttribute('moderation_remark')) {
+            $review->moderation_remark = '';
+        }
+        if ($review->hasAttribute('moderated_at')) {
+            $review->moderated_at = 0;
+        }
+        if ($review->hasAttribute('moderated_by')) {
+            $review->moderated_by = 0;
+        }
+
+        if (!$review->save()) {
+            throw new \RuntimeException('Review save failed: ' . json_encode($review->errors, JSON_UNESCAPED_UNICODE));
+        }
+
+        return [
+            'version' => self::VERSION,
+            'review_write_version' => self::REVIEW_WRITE_VERSION,
+            'item' => $this->reviewSummary($review),
+            'message' => 'Review submitted, waiting for moderation.',
+        ];
+    }
+
     public function myReviews(int $userId, int $page = 1, int $pageSize = 20): array
     {
         if ($userId <= 0) {
@@ -756,15 +866,7 @@ class AppBuyerApiService
 
         $items = [];
         foreach ($query->offset(($page - 1) * $pageSize)->limit($pageSize)->all() as $review) {
-            $items[] = [
-                'id' => (int)$review->id,
-                'product_id' => (int)$review->product_id,
-                'name' => (string)$review->name,
-                'star' => (int)$review->star,
-                'content' => (string)$review->content,
-                'moderation_status' => $review->hasAttribute('moderation_status') ? (string)$review->moderation_status : '',
-                'created_at' => (int)$review->created_at,
-            ];
+            $items[] = $this->reviewSummary($review);
         }
 
         return [
@@ -955,11 +1057,15 @@ class AppBuyerApiService
 
     private function orderSummary(Order $order): array
     {
-        $products = OrderProduct::find()
-            ->where(['order_id' => (int)$order->id])
+        $productQuery = OrderProduct::find()
             ->andWhere(['>', 'status', BaseModel::STATUS_DELETED])
-            ->limit(20)
-            ->all();
+            ->limit(20);
+        if ((int)$order->parent_id === 0) {
+            $productQuery->andWhere(['or', ['order_id' => (int)$order->id], ['parent_id' => (int)$order->id]]);
+        } else {
+            $productQuery->andWhere(['order_id' => (int)$order->id]);
+        }
+        $products = $productQuery->all();
 
         return [
             'id' => (int)$order->id,
@@ -979,14 +1085,31 @@ class AppBuyerApiService
             'items' => array_map(function (OrderProduct $item): array {
                 return [
                     'id' => (int)$item->id,
+                    'order_id' => (int)$item->order_id,
+                    'parent_id' => (int)$item->parent_id,
                     'product_id' => (int)$item->product_id,
                     'name' => (string)$item->name,
                     'sku' => (string)$item->sku,
                     'thumb' => (string)$item->thumb,
                     'number' => (int)$item->number,
                     'price' => number_format((float)$item->price, 2, '.', ''),
+                    'reviewable' => (int)$order->shipment_status === Order::SHIPMENT_STATUS_RECEIVED,
                 ];
             }, $products),
+        ];
+    }
+
+    private function reviewSummary(Review $review): array
+    {
+        return [
+            'id' => (int)$review->id,
+            'product_id' => (int)$review->product_id,
+            'order_id' => (int)$review->order_id,
+            'name' => (string)$review->name,
+            'star' => (int)$review->star,
+            'content' => (string)$review->content,
+            'moderation_status' => $review->hasAttribute('moderation_status') ? (string)$review->moderation_status : '',
+            'created_at' => (int)$review->created_at,
         ];
     }
 

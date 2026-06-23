@@ -118,6 +118,8 @@ class AppPhase13AcceptanceController extends Controller
             'coupons',
             'favorites',
             'myReviews',
+            'MONGOYIA_APP_BUYER_REVIEW_WRITE_V1',
+            'submitReview',
             'notifications',
             'markNotificationRead',
         ]);
@@ -132,6 +134,8 @@ class AppPhase13AcceptanceController extends Controller
             'submitOrder',
             'actionCoupons',
             'actionFavorites',
+            'actionReviews',
+            'submitReview',
             'actionMyReviews',
             'actionNotifications',
         ]);
@@ -257,8 +261,8 @@ class AppPhase13AcceptanceController extends Controller
             ],
             'Buyer orders route shell' => [
                 'path' => 'apps/mongoyia-customer-chat-uniapp/src/pages/buyer/orders.vue',
-                'markers' => ['data-mongoyia-phase13-buyer-orders', 'BUYER_ENDPOINTS.orders', 'submitOrder'],
-                'notes' => 'Buyer order list/submit shell is present.',
+                'markers' => ['data-mongoyia-phase13-buyer-orders', 'data-mongoyia-phase13-buyer-review-submit', 'BUYER_ENDPOINTS.orders', 'BUYER_ENDPOINTS.reviews', 'submitOrder', 'submitReview'],
+                'notes' => 'Buyer order list, checkout submit, and received-order review submit shell is present.',
             ],
             'Buyer account route shell' => [
                 'path' => 'apps/mongoyia-customer-chat-uniapp/src/pages/buyer/account.vue',
@@ -316,9 +320,9 @@ class AppPhase13AcceptanceController extends Controller
             '- Failures: ' . $this->failures,
             '- Warnings: ' . $this->warnings,
             '- Pending: ' . $this->pending,
-            '- Scope: buyer APP, seller APP workbench, audited seller product create/edit, seller coupon participation join/leave, seller store/logistics/deposit/statistics/distribution overview, shared backend APIs, customer-service entry, H5 development package, and role-flow evidence.',
+            '- Scope: buyer APP, seller APP workbench, buyer received-order review submission, audited seller product create/edit, seller coupon participation join/leave, seller store/logistics/deposit/statistics/distribution overview, shared backend APIs, customer-service entry, H5 development package, and role-flow evidence.',
             '- Safety: this command does not mutate orders, carts, products, shipment rows, funds, stock, or credentials.',
-            '- Boundary: Phase 13 verifies the APP route shell, buyer checkout write, seller shipment write, seller product create/edit submission, and seller platform coupon participation join/leave. Seller product writes are forced inactive/submitted for platform review, and coupon participation writes do not issue coupons or mutate orders. Browser/APP role-flow evidence remains pending until later acceptance.',
+            '- Boundary: Phase 13 verifies the APP route shell, buyer checkout write, buyer received-order review submit with pending moderation, seller shipment write, seller product create/edit submission, and seller platform coupon participation join/leave. Seller product writes are forced inactive/submitted for platform review, review submissions are not public until backend approval, and coupon participation writes do not issue coupons or mutate orders. Browser/APP role-flow evidence remains pending until later acceptance.',
             '',
             '## Checks',
             '',

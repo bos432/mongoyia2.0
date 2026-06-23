@@ -65,6 +65,8 @@ class AppBuyerPhase13ReadinessController extends Controller
             'favorites',
             'reviews',
             'myReviews',
+            'MONGOYIA_APP_BUYER_REVIEW_WRITE_V1',
+            'submitReview',
             'MONGOYIA_APP_BUYER_NOTIFICATION_CENTER_V1',
             'notifications',
             'markNotificationRead',
@@ -85,6 +87,7 @@ class AppBuyerPhase13ReadinessController extends Controller
             'actionMyReviews',
             'actionNotifications',
             'submitOrder',
+            'submitReview',
         ]);
         $this->requireFileContains('APP shared API helper uses buyer endpoints', 'apps/mongoyia-customer-chat-uniapp/src/utils/appApi.js', [
             '/api/v1/app-buyer/home',
@@ -106,6 +109,12 @@ class AppBuyerPhase13ReadinessController extends Controller
             'BUYER_ENDPOINTS.favorites',
             'BUYER_ENDPOINTS.storeFavorites',
             'BUYER_ENDPOINTS.myReviews',
+        ]);
+        $this->requireFileContains('Buyer orders page supports review submission', 'apps/mongoyia-customer-chat-uniapp/src/pages/buyer/orders.vue', [
+            'data-mongoyia-phase13-buyer-review-submit',
+            'MONGOYIA_APP_BUYER_REVIEW_WRITE_V1',
+            'BUYER_ENDPOINTS.reviews',
+            'submitReview',
         ]);
         $this->requireFileContains('Buyer notification page shows site/app notifications', 'apps/mongoyia-customer-chat-uniapp/src/pages/buyer/notifications.vue', [
             'data-mongoyia-phase12-app-notifications',
@@ -139,7 +148,7 @@ class AppBuyerPhase13ReadinessController extends Controller
             '/api/v1/app-buyer/orders' => 'authenticated order list plus checkout write',
             '/api/v1/app-buyer/coupons' => 'authenticated coupon list',
             '/api/v1/app-buyer/favorites' => 'authenticated favorite list/toggle',
-            '/api/v1/app-buyer/reviews' => 'public product review list',
+            '/api/v1/app-buyer/reviews' => 'public product review list plus authenticated received-order review submit',
             '/api/v1/app-buyer/my-reviews' => 'authenticated buyer review list',
             '/api/v1/app-buyer/notifications' => 'authenticated buyer notification list/read state',
         ] as $route => $notes) {

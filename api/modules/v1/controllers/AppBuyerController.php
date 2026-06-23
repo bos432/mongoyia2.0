@@ -136,11 +136,20 @@ class AppBuyerController extends BaseController
 
     public function actionReviews()
     {
-        return $this->buyerService()->reviews(
-            (int)Yii::$app->request->get('product_id'),
-            (int)Yii::$app->request->get('page', 1),
-            (int)Yii::$app->request->get('page_size', 20)
-        );
+        try {
+            if (Yii::$app->request->isPost) {
+                $this->requireLogin();
+                return $this->buyerService()->submitReview($this->currentUserId(), Yii::$app->request->post());
+            }
+
+            return $this->buyerService()->reviews(
+                (int)Yii::$app->request->get('product_id'),
+                (int)Yii::$app->request->get('page', 1),
+                (int)Yii::$app->request->get('page_size', 20)
+            );
+        } catch (\Throwable $e) {
+            return $this->apiError($e->getMessage(), $this->isGuest() ? 401 : 422);
+        }
     }
 
     public function actionMyReviews()

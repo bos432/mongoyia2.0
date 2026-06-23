@@ -5981,3 +5981,39 @@
 - Next stage:
   - Commit and push Phase 12.8.
   - Re-read the development plan and this log, then continue with the next plan-listed stage or browser/server validation if BaoTa has pulled the latest commits.
+
+## 2026-06-23 Phase 13.11 Buyer APP Received-Order Review Submission
+
+- Stage name: Phase 13.11 buyer APP received-order review submission
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting the stage.
+  - Added `MONGOYIA_APP_BUYER_REVIEW_WRITE_V1` and `submitReview()` to the buyer APP API service.
+  - Enabled authenticated POST `/api/v1/app-buyer/reviews` for buyer review submission while preserving GET product review listing.
+  - Enforced order-item ownership, received-order-only review eligibility, refund blocking, star range validation, content length limit, and duplicate review prevention.
+  - Saved submitted reviews as `status=active` with `moderation_status=pending`, so they remain hidden from public product reviews until backend moderation approves them.
+  - Improved APP order summaries to include child-order product rows for parent orders and expose `order_id`, `parent_id`, and `reviewable` metadata.
+  - Added the buyer APP order-page review form, rating selector, submit/cancel flow, and review markers for readiness checks.
+  - Updated Phase 13 buyer/aggregate readiness, Phase 14 favorite-review readiness, and the development backlog to record the received-order review submission path.
+- Main files changed/added:
+  - `common/services/mall/AppBuyerApiService.php`
+  - `api/modules/v1/controllers/AppBuyerController.php`
+  - `apps/mongoyia-customer-chat-uniapp/src/pages/buyer/orders.vue`
+  - `console/controllers/AppBuyerPhase13ReadinessController.php`
+  - `console/controllers/AppPhase13AcceptanceController.php`
+  - `console/controllers/FavoriteReviewPhase14ReadinessController.php`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l` passed for `AppBuyerApiService.php`, `AppBuyerController.php`, `AppBuyerPhase13ReadinessController.php`, `AppPhase13AcceptanceController.php`, and `FavoriteReviewPhase14ReadinessController.php`.
+  - `node -e "JSON.parse(...pages.json...)"` passed.
+  - Static marker checks confirmed `MONGOYIA_APP_BUYER_REVIEW_WRITE_V1`, `submitReview`, `data-mongoyia-phase13-buyer-review-submit`, `Only received orders can be reviewed`, and `review_write_version`.
+  - `npm run build:h5` passed in `apps/mongoyia-customer-chat-uniapp`; output contained only existing uni-app/Vite informational/deprecation warnings.
+  - `git diff --check` reported no whitespace errors; only existing Windows line-ending conversion warnings.
+  - Full Yii console execution was not run locally because this patch checkout does not have `vendor/autoload.php`; after BaoTa pull run `app-buyer-phase13-readiness/run --fixture=1`, `favorite-review-phase14-readiness/run --fixture=1`, `app-phase13-acceptance/run --fixture=1`, and `logistics-product-phase14-acceptance/run --fixture=1`.
+- Remaining issues:
+  - Authenticated H5/browser role-flow evidence for buyer review submission remains pending until BaoTa pulls this commit and runs migrations/readiness in the full server environment.
+  - Phase 10/11/12 external provider and production evidence remain incomplete; production remains `NO-GO`.
+  - Phase 13/14/15 browser role-flow evidence remains pending on the test server.
+- Next stage:
+  - Commit and push Phase 13.11.
+  - Re-read the development plan and this log, then continue with BaoTa/browser validation if the server has pulled latest code, otherwise advance the next plan-listed evidence/acceptance stage that can be done locally.

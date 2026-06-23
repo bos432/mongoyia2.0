@@ -1,5 +1,31 @@
 # Development Log
 
+## 2026-06-23 Phase 10-15 Browser Deployment Freshness Recheck
+
+- Stage name: Phase 10-15 browser deployment freshness recheck
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting the stage.
+  - Used the right-side browser to recheck deployed buyer and operations pages after pushing commit `b455cbb`.
+  - Confirmed the home page opens and `/backend/mall/operational-config/index` opens, reloads, and shows the operations configuration center with `OP_CONFIG_MASTER_KEY` configured.
+  - Confirmed the deployed product page opens but still renders old `/mall/cart` short links and does not show the local Phase 14 product review-sort marker.
+  - Confirmed direct browser navigation to both `/mall/cart` and `/mall/cart/index` still fails with `net::ERR_HTTP_RESPONSE_CODE_FAILURE`.
+  - Rechecked local source and confirmed the active frontend mall nav/product/cart/payment views/controllers use `/mall/cart/index`, and the local product view contains the Phase 14 product video/review-sort markers.
+  - Did not submit checkout/payment forms, create orders, mutate cart/order/payment/fund data, or enter credentials.
+- Main files changed/added:
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - Browser home page: passed.
+  - Browser operations configuration center: passed.
+  - Browser product page: partially passed, but deployed output is stale.
+  - Browser cart page: failed with `ERR_HTTP_RESPONSE_CODE_FAILURE`.
+  - Static source scan confirms the current local source differs from deployed output, so the next browser role-flow cannot be trusted until BaoTa serves the latest code and clears caches.
+- Remaining issues:
+  - BaoTa/test server must pull `b455cbb` or newer, run migrations, restart PHP-FPM/clear opcache/runtime/page cache, then rerun Phase 10-15 acceptance and browser role-flow.
+  - Phase 10/11/12/13/14/15 browser evidence remains incomplete on the deployed server because the deployed frontend output is stale.
+  - Production remains `NO-GO` until external provider, logistics, social-login, notification, operations, and business/security signoff evidence is accepted.
+- Next stage:
+  - Commit and push this browser freshness evidence, then continue with the next plan-listed local readiness check or resume browser role-flow after the test server is refreshed.
+
 ## 2026-06-23 Phase 10 Env Template Operational Config Boundary
 
 - Stage name: Phase 10 env template operational config boundary

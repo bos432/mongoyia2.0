@@ -62,7 +62,8 @@ $this->params['breadcrumbs'][] = $this->title;
                 </span>
             </div>
             <?php if ((int)$order->shipment_status === Order::SHIPMENT_STATUS_SHIPPING) {
-                echo Html::beginForm(['/mall/order/review', 'id' => $order->id], 'post', ['class' => 'd-inline']);
+                echo Html::beginForm(['/mall/order/review'], 'post', ['class' => 'd-inline', 'data-mongoyia-buyer-received-post-guard' => '1']);
+                echo Html::hiddenInput('id', (int)$order->id);
                 echo Html::submitButton(Yii::t('app', 'Received'), ['class' => 'btn btn-sm btn-theme ml-3']);
                 echo Html::endForm();
             } elseif ((int)$order->shipment_status < Order::SHIPMENT_STATUS_SHIPPING && in_array((int)$order->payment_status, [Order::PAYMENT_STATUS_PAID, Order::PAYMENT_STATUS_COD], true)) {

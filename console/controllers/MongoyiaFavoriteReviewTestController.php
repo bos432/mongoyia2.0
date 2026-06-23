@@ -66,9 +66,24 @@ class MongoyiaFavoriteReviewTestController extends Controller
     {
         $this->section('Entrances');
         $this->requireFileContains('@app/../frontend/modules/mall/controllers/ProductController.php', ['function actionFavorite', 'function actionReview']);
-        $this->requireFileContains('@app/../frontend/modules/mall/controllers/OrderController.php', ['function actionView', 'Review submitted', 'markReceived']);
+        $this->requireFileContains('@app/../frontend/modules/mall/controllers/OrderController.php', [
+            'function actionView',
+            'Review submitted',
+            'markReceived',
+            'MONGOYIA_BUYER_ORDER_RECEIVED_POST_ID_GUARD_V1',
+            "post('id', 0)",
+        ]);
         $this->requireFileContains('@app/../web/resources/mall/default/views/user/favorite_.php', ['Favorite']);
-        $this->requireFileContains('@app/../web/resources/mall/default/views/order/view.php', ['Write a review', 'star']);
+        $this->requireFileContains('@app/../web/resources/mall/default/views/order/view.php', [
+            'Write a review',
+            'star',
+            'data-mongoyia-buyer-received-post-guard',
+            "hiddenInput('id'",
+        ]);
+        $this->requireFileContains('@app/../web/resources/mall/default/views/user/order_.php', [
+            'data-mongoyia-buyer-received-post-guard',
+            "hiddenInput('id'",
+        ]);
     }
 
     private function checkProductPageAjaxEntrances()

@@ -184,6 +184,28 @@ class AppPhase13AcceptanceController extends Controller
             'Unavailable product',
             '/mall/cart/index',
         ]);
+        $this->requireFileContains('Buyer web received-order POST id guard', 'frontend/modules/mall/controllers/OrderController.php', [
+            'MONGOYIA_BUYER_ORDER_RECEIVED_POST_ID_GUARD_V1',
+            "'review' => ['POST']",
+            "post('id', 0)",
+            'markReceived',
+        ]);
+        $this->requireFileContains('Buyer web received-order list/detail forms use hidden POST id', 'web/resources/mall/default/views/user/order_.php', [
+            "Html::beginForm(['/mall/order/review'], 'post'",
+            'data-mongoyia-buyer-received-post-guard',
+            "hiddenInput('id'",
+        ]);
+        $this->requireFileContains('Buyer web order-detail received form uses hidden POST id', 'web/resources/mall/default/views/order/view.php', [
+            "Html::beginForm(['/mall/order/review'], 'post'",
+            'data-mongoyia-buyer-received-post-guard',
+            "hiddenInput('id'",
+        ]);
+        $this->requireFileNotContains('Buyer web received-order list has no URL id write form', 'web/resources/mall/default/views/user/order_.php', [
+            "Html::beginForm(['/mall/order/review', 'id' =>",
+        ]);
+        $this->requireFileNotContains('Buyer web order-detail has no URL id write form', 'web/resources/mall/default/views/order/view.php', [
+            "Html::beginForm(['/mall/order/review', 'id' =>",
+        ]);
         $this->requireFileContains('Buyer web cart link normalizer', 'web/resources/mall/default/js/main.js', [
             'MONGOYIA_CART_LINK_NORMALIZER_V1',
             '/mall/cart/index',

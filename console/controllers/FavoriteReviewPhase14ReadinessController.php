@@ -123,6 +123,22 @@ class FavoriteReviewPhase14ReadinessController extends Controller
         $this->requireFileContains('Review submission pending moderation', 'frontend/modules/mall/controllers/OrderController.php', [
             'MODERATION_PENDING',
             'Review submitted, waiting for moderation',
+            'MONGOYIA_BUYER_ORDER_RECEIVED_POST_ID_GUARD_V1',
+            "post('id', 0)",
+        ]);
+        $this->requireFileContains('PC received-order forms use hidden POST id', 'web/resources/mall/default/views/order/view.php', [
+            'data-mongoyia-buyer-received-post-guard',
+            "hiddenInput('id'",
+        ]);
+        $this->requireFileContains('PC order-list received forms use hidden POST id', 'web/resources/mall/default/views/user/order_.php', [
+            'data-mongoyia-buyer-received-post-guard',
+            "hiddenInput('id'",
+        ]);
+        $this->requireFileNotContains('PC received-order detail form has no URL id write', 'web/resources/mall/default/views/order/view.php', [
+            "Html::beginForm(['/mall/order/review', 'id' =>",
+        ]);
+        $this->requireFileNotContains('PC received-order list form has no URL id write', 'web/resources/mall/default/views/user/order_.php', [
+            "Html::beginForm(['/mall/order/review', 'id' =>",
         ]);
         $this->requireFileContains('Backend review moderation actions', 'backend/modules/mall/controllers/ReviewController.php', [
             'MONGOYIA_REVIEW_MODERATION_POST_VERB_GUARD_V1',

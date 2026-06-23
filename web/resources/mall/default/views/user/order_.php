@@ -52,7 +52,8 @@ $isPaid = in_array((int)$model->order->payment_status, [Order::PAYMENT_STATUS_PA
             <?php if ($isParentUnpaidOnline) {
                 echo Html::a(Yii::t('app', 'Continue Payment'), ['/mall/payment/index', 'id' => $order->id], ['class' => 'btn btn-sm btn-theme ml-3']);
             } elseif ((int)$model->order->shipment_status === Order::SHIPMENT_STATUS_SHIPPING) {
-                echo Html::beginForm(['/mall/order/review', 'id' => $model->order_id], 'post', ['class' => 'd-inline']);
+                echo Html::beginForm(['/mall/order/review'], 'post', ['class' => 'd-inline', 'data-mongoyia-buyer-received-post-guard' => '1']);
+                echo Html::hiddenInput('id', (int)$model->order_id);
                 echo Html::submitButton(Yii::t('app', 'Received'), ['class' => 'btn btn-sm btn-theme ml-3']);
                 echo Html::endForm();
             } elseif ((int)$model->order->shipment_status === Order::SHIPMENT_STATUS_RECEIVED && $isPaid) {

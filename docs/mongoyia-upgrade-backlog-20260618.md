@@ -421,6 +421,8 @@ Phase 13.18 buyer APP write POST guard: `AppBuyerController` now uses `MONGOYIA_
 
 Phase 13.19 merchant coupon store selector POST hardening: backend merchant-coupon participation keeps the platform operator's read-only GET store switch on the index page, but join/leave POST requests now read `store_id` only from POST through `MONGOYIA_MERCHANT_COUPON_STORE_ID_POST_GUARD_V1`. Phase 13 seller readiness and aggregate acceptance check the marker and reject the old POST/GET fallback, so platform-coupon participation cannot be redirected to a query-string store id during write actions.
 
+Phase 13.20 buyer received-order POST id hardening: PC/H5 buyer confirm-received forms now post `/mall/order/review` with the order id in a hidden POST field instead of a URL query parameter. `OrderController::actionReview()` reads `id` only from POST through `MONGOYIA_BUYER_ORDER_RECEIVED_POST_ID_GUARD_V1`; Phase 13 buyer readiness and aggregate acceptance reject the old URL-id write form.
+
 Phase 14 acceptance command:
 
 ```bash
@@ -437,6 +439,8 @@ Phase 14.1 logistics provider adapter contract is implemented through `Logistics
 Phase 14.8 order logistics workflow POST guard: backend order logistics status batch and platform logistics review batch now use `MONGOYIA_ORDER_LOGISTICS_WORKFLOW_POST_GUARD_V1`, POST-only verb filters, POST-only parameter reads, and CSRF POST forms on the order list. Logistics status/port-review readiness, PWA smoke, and Phase 14 aggregate acceptance check this guard so prepare/receive/review logistics writes cannot be triggered by plain GET links.
 
 Phase 14.9 review moderation POST id hardening: backend review approve/reject/mark-violation actions now use `MONGOYIA_REVIEW_MODERATION_ID_POST_GUARD_V1`, read review `id` only from POST, and render CSRF-protected moderation forms without URL id parameters. Favorite/review readiness and Phase 14 aggregate acceptance check the marker, POST id reads, UI form marker, and absence of the old URL-id action links.
+
+Phase 14.10 buyer received-order POST id hardening: the PC/H5 confirm-received precondition for review submission now uses POST body ids and stable `data-mongoyia-buyer-received-post-guard` form markers on both order list and detail pages. Favorite/review readiness and Phase 14 aggregate acceptance cover the guard so the received-order write cannot be triggered with a query-string order id.
 
 Phase 15 acceptance command:
 

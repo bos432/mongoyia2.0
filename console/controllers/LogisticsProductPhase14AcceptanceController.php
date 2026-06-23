@@ -199,8 +199,19 @@ class LogisticsProductPhase14AcceptanceController extends Controller
         $this->requireFileContains('Favorite and review moderation readiness', 'console/controllers/FavoriteReviewPhase14ReadinessController.php', [
             'MONGOYIA_FAVORITE_REVIEW_PHASE14_READINESS_V1',
             'MONGOYIA_REVIEW_MODERATION_ID_POST_GUARD_V1',
+            'MONGOYIA_BUYER_ORDER_RECEIVED_POST_ID_GUARD_V1',
             'favorite-review-phase14-readiness/run',
             'Favorite/review fixture',
+        ]);
+        $this->requireFileContains('Frontend buyer received-order POST guard', 'frontend/modules/mall/controllers/OrderController.php', [
+            'MONGOYIA_BUYER_ORDER_RECEIVED_POST_ID_GUARD_V1',
+            "'review' => ['POST']",
+            "post('id', 0)",
+            'markReceived',
+        ]);
+        $this->requireFileContains('Frontend buyer received-order form markers', 'web/resources/mall/default/views/order/view.php', [
+            'data-mongoyia-buyer-received-post-guard',
+            "hiddenInput('id'",
         ]);
         $this->requireFileContains('Store favorite and review moderation migration', 'console/migrations/m260623_190000_mongoyia_store_favorite_review_moderation.php', [
             'mall_store_favorite',

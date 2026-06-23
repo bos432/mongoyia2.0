@@ -93,10 +93,14 @@ class MongoyiaLogisticsBasicTestController extends Controller
     private function checkFrontendEntrances()
     {
         $this->section('Frontend entrances');
-        $this->requireFileContains('@app/../frontend/modules/mall/controllers/OrderController.php', ['markReceived']);
+        $this->requireFileContains('@app/../frontend/modules/mall/controllers/OrderController.php', [
+            'MONGOYIA_BUYER_ORDER_RECEIVED_POST_ID_GUARD_V1',
+            'markReceived',
+            "post('id', 0)",
+        ]);
         $this->requireFileContains('@app/../common/models/mall/Order.php', ['Only shipped orders can be received']);
-        $this->requireFileContains('@app/../web/resources/mall/default/views/order/view.php', ['shipment_name', 'shipment_id', 'Awaiting shipment', 'Write a review', '/mall/order/review']);
-        $this->requireFileContains('@app/../web/resources/mall/default/views/user/order_.php', ['shipment_status', '/mall/order/review', 'Received']);
+        $this->requireFileContains('@app/../web/resources/mall/default/views/order/view.php', ['shipment_name', 'shipment_id', 'Awaiting shipment', 'Write a review', '/mall/order/review', 'data-mongoyia-buyer-received-post-guard', "hiddenInput('id'"]);
+        $this->requireFileContains('@app/../web/resources/mall/default/views/user/order_.php', ['shipment_status', '/mall/order/review', 'Received', 'data-mongoyia-buyer-received-post-guard', "hiddenInput('id'"]);
     }
 
     private function checkShipmentData()

@@ -8058,3 +8058,46 @@
   - Phase 10/11/12/13/14/15 external/provider/browser evidence gates remain pending; production remains `NO-GO`.
 - Next stage:
   - Commit and push this Phase 9 customer-service chat POST guard patch, then reread the plan/log and continue with the next plan-listed readiness item.
+
+## 2026-06-24 Phase 13/14 Buyer Received-Order POST ID Hardening
+
+- Stage name: Phase 13.20 / Phase 14.10 buyer received-order POST id hardening
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting the stage.
+  - Added `MONGOYIA_BUYER_ORDER_RECEIVED_POST_ID_GUARD_V1` to the frontend mall order controller.
+  - Hardened `/mall/order/review` confirm-received handling so the order `id` is read only from POST body data while preserving the existing POST-only verb guard.
+  - Updated PC/H5 order-list and order-detail confirm-received forms to post `/mall/order/review` with hidden `id` fields instead of query-string ids.
+  - Added stable `data-mongoyia-buyer-received-post-guard` markers to both confirm-received forms.
+  - Added source coverage to logistics basic, favorite/review, Phase 13 buyer/aggregate, and Phase 14 favorite-review/aggregate readiness checks.
+  - Updated the Phase 13 and Phase 14 backlog notes as Phase 13.20 and Phase 14.10.
+- Main files changed/added:
+  - `frontend/modules/mall/controllers/OrderController.php`
+  - `web/resources/mall/default/views/user/order_.php`
+  - `web/resources/mall/default/views/order/view.php`
+  - `console/controllers/MongoyiaLogisticsBasicTestController.php`
+  - `console/controllers/MongoyiaFavoriteReviewTestController.php`
+  - `console/controllers/AppBuyerPhase13ReadinessController.php`
+  - `console/controllers/AppPhase13AcceptanceController.php`
+  - `console/controllers/FavoriteReviewPhase14ReadinessController.php`
+  - `console/controllers/LogisticsProductPhase14AcceptanceController.php`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l frontend/modules/mall/controllers/OrderController.php` passed.
+  - `php -l web/resources/mall/default/views/user/order_.php` passed.
+  - `php -l web/resources/mall/default/views/order/view.php` passed.
+  - `php -l console/controllers/MongoyiaLogisticsBasicTestController.php` passed.
+  - `php -l console/controllers/MongoyiaFavoriteReviewTestController.php` passed.
+  - `php -l console/controllers/AppBuyerPhase13ReadinessController.php` passed.
+  - `php -l console/controllers/AppPhase13AcceptanceController.php` passed.
+  - `php -l console/controllers/FavoriteReviewPhase14ReadinessController.php` passed.
+  - `php -l console/controllers/LogisticsProductPhase14AcceptanceController.php` passed.
+  - Static marker checks confirmed `MONGOYIA_BUYER_ORDER_RECEIVED_POST_ID_GUARD_V1`, `data-mongoyia-buyer-received-post-guard`, `post('id', 0)`, and the absence of the old `Html::beginForm(['/mall/order/review', 'id' => ...])` write form in the changed views.
+  - `git diff --check` reported no whitespace errors, only existing Windows line-ending conversion warnings.
+  - Full Yii console execution remains BaoTa-only because this local checkout lacks `vendor/autoload.php`.
+- Remaining issues:
+  - Phase 13 authenticated H5/APP buyer and seller role-flow browser evidence still requires BaoTa/test server deployment.
+  - Phase 14 logistics/product/favorite/review browser evidence still requires BaoTa/test server validation.
+  - Phase 10/11/12/15 external/provider/browser evidence gates remain pending; production remains `NO-GO`.
+- Next stage:
+  - Commit and push this Phase 13/14 buyer received-order POST id hardening patch, then reread the plan/log and continue with the next plan-listed readiness item.

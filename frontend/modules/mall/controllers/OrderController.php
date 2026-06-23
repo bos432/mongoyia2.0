@@ -27,6 +27,8 @@ use yii\web\NotFoundHttpException;
  */
 class OrderController extends BaseController
 {
+    public const MONGOYIA_BUYER_ORDER_RECEIVED_POST_ID_GUARD_V1 = 'MONGOYIA_BUYER_ORDER_RECEIVED_POST_ID_GUARD_V1';
+
     public $modelClass = Order::class;
 
     public function behaviors()
@@ -121,7 +123,7 @@ class OrderController extends BaseController
     }
 
     public function actionReview(){
-        $oid = (int)$this->request->get('id');
+        $oid = (int)$this->request->post('id', 0);
         $model = $this->findUserOrder($oid);
         try {
             $model->markReceived();

@@ -1,5 +1,36 @@
 # Development Log
 
+## 2026-06-23 Phase 10/11 Payment Runtime Env Fallback Removal
+
+- Stage name: Phase 10/11 payment runtime env fallback removal
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting the stage.
+  - Updated QPay/LianLian runtime defaults so committed code no longer reads secret-bearing payment `.env` keys for Basic Auth, merchant IDs, private keys, callback secrets, or HMAC secrets.
+  - Kept public provider endpoint defaults in code and left channels disabled unless encrypted backend payment configuration is enabled and complete.
+  - Added a runtime readiness guard so QPay/LianLian are hidden from the payment page and blocked at the create/query actions when backend configuration has missing required fields.
+  - Updated `deploy-check`, operational payment config readiness, and payment-provider readiness markers to match the new backend-config-only payment credential source.
+  - Updated `docs/mongoyia-upgrade-backlog-20260618.md` with the Phase 10/11 runtime payment configuration alignment note.
+- Main files changed/added:
+  - `frontend/modules/mall/controllers/PaymentController.php`
+  - `console/controllers/DeployCheckController.php`
+  - `console/controllers/OperationalConfigPaymentTestController.php`
+  - `console/controllers/PaymentProviderReadinessController.php`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l frontend/modules/mall/controllers/PaymentController.php` passed.
+  - `php -l console/controllers/DeployCheckController.php` passed.
+  - `php -l console/controllers/OperationalConfigPaymentTestController.php` passed.
+  - `php -l console/controllers/PaymentProviderReadinessController.php` passed.
+  - Static scan confirmed no `env('QPAY...')`, `env('LIANLIAN...')`, `qpayEnvFallbacks`, `lianlianEnvFallbacks`, or old QPay/LianLian callback-env fallback markers remain in the runtime payment controller/readiness marker checks.
+  - Full Yii console execution remains BaoTa-only because this local checkout lacks `vendor/autoload.php`.
+- Remaining issues:
+  - BaoTa/test server must pull this commit and run migrations/readiness before browser/payment-channel validation can reflect the new guard.
+  - Real/sandbox provider credentials still need to be entered in the encrypted backend operations config center and accepted through Phase 10/11 provider evidence.
+  - Production remains `NO-GO` until external payment, SMTP, translation, alert, logistics, social-login, notification, operations, and business/security signoff evidence is accepted.
+- Next stage:
+  - Run final static diff checks, commit and push this runtime payment alignment, then continue with the next plan-listed readiness or browser evidence item.
+
 ## 2026-06-23 Phase 10/11 Historical Payment Backup Secret Cleanup
 
 - Stage name: Phase 10/11 historical payment backup secret cleanup

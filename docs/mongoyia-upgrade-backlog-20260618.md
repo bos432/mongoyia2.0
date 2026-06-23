@@ -354,6 +354,8 @@ php yii operational-config-phase10-acceptance/run --runChildChecks=1 --fixture=1
 
 Strict Phase 10 acceptance remains pending until backend operations browser evidence, provider evidence, production operations/signoff evidence, and redacted export review evidence are complete. The Phase 10 acceptance report now includes a browser role-flow checklist and accepted-evidence command template for `phase10-browser-evidence`, `phase10-provider-evidence`, `phase10-production-ops-evidence`, and `phase10-redacted-export-review`. This command is read-only and does not store provider secrets, edit crontab/systemd, switch production traffic, enable live payment, or mark production GO without downstream gates.
 
+Phase 10/11 runtime payment config alignment: QPay and LianLian runtime no longer read secret-bearing `.env` payment values. If encrypted backend payment config is missing or incomplete, the channel stays disabled and the deploy check points operators to the operations config center instead of requiring QPay/LianLian credentials in PHP `.env`. Public provider endpoint defaults remain in code; merchant IDs, Basic Auth, private keys, callback secrets, and HMAC secrets must be saved through encrypted backend configuration and evidence gates.
+
 Phase 11 acceptance command:
 
 ```bash

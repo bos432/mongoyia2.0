@@ -38,6 +38,7 @@ class PaymentController extends BaseController
     public const MONGOYIA_PAYPAL_WEBHOOK_ROUTE_V1 = 'MONGOYIA_PAYPAL_WEBHOOK_ROUTE_V1';
     public const MONGOYIA_PAYMENT_CHANNEL_SELECTOR_V1 = 'MONGOYIA_PAYMENT_CHANNEL_SELECTOR_V1';
     public const MONGOYIA_MERCHANT_PAYMENT_RUNTIME_SCOPE_V1 = 'MONGOYIA_MERCHANT_PAYMENT_RUNTIME_SCOPE_V1';
+    public const MONGOYIA_PAYMENT_RUNTIME_NO_SECRET_ENV_FALLBACK_V1 = 'MONGOYIA_PAYMENT_RUNTIME_NO_SECRET_ENV_FALLBACK_V1';
 
     public $modelClass = Order::class;
 
@@ -81,7 +82,7 @@ class PaymentController extends BaseController
         $channels = [];
 
         $qpayConfig = $this->paymentProviderConfigForOrder('qpay', $model);
-        if ($this->paymentProviderEnabled($qpayConfig)
+        if ($this->paymentProviderReadyForRuntime('qpay', $qpayConfig)
             && (string)($qpayConfig['auth_basic'] ?? '') !== ''
             && (string)($qpayConfig['invoice_code'] ?? '') !== ''
         ) {
@@ -95,7 +96,7 @@ class PaymentController extends BaseController
         }
 
         $lianlianConfig = $this->paymentProviderConfigForOrder('lianlian', $model);
-        if ($this->paymentProviderEnabled($lianlianConfig) && PayConstant::isConfigured($lianlianConfig)) {
+        if ($this->paymentProviderReadyForRuntime('lianlian', $lianlianConfig) && PayConstant::isConfigured($lianlianConfig)) {
             $channels[] = [
                 'provider' => 'lianlian',
                 'label' => 'LianLian',
@@ -192,11 +193,11 @@ class PaymentController extends BaseController
         }
 
         if ($provider === 'paypal') {
-            $fallbacks = $this->paypalEnvFallbacks();
+            $fallbacks = $this->paypalRuntimeDefaults();
         } elseif ($provider === 'lianlian') {
-            $fallbacks = $this->lianlianEnvFallbacks();
+            $fallbacks = $this->lianlianRuntimeDefaults();
         } else {
-            $fallbacks = $this->qpayEnvFallbacks();
+            $fallbacks = $this->qpayRuntimeDefaults();
         }
         try {
             $cache[$cacheKey] = (new OperationalPaymentConfigService())->runtimeConfig($provider, $fallbacks, '', $storeId);
@@ -211,44 +212,39 @@ class PaymentController extends BaseController
         return $cache[$cacheKey];
     }
 
-    protected function qpayEnvFallbacks()
+    protected function qpayRuntimeDefaults()
     {
-        $authBasic = env('QPAY_AUTH_BASIC', '');
-        $invoiceCode = env('QPAY_INVOICE_CODE', '');
         return [
-            'enabled' => $authBasic !== '' && $invoiceCode !== '' ? '1' : '0',
-            'auth_basic' => $authBasic,
-            'invoice_code' => $invoiceCode,
-            'auth_url' => env('QPAY_AUTH_URL', 'https://merchant.qpay.mn/v2/auth/token'),
-            'invoice_url' => env('QPAY_INVOICE_URL', 'https://merchant.qpay.mn/v2/invoice'),
-            'callback_base' => env('QPAY_CALLBACK_BASE', 'https://www.mongoyia.com'),
-            'callback_secret' => env('QPAY_CALLBACK_SECRET', ''),
-            'callback_hmac_secret' => env('QPAY_CALLBACK_HMAC_SECRET', ''),
-            'callback_allowed_ips' => env('QPAY_CALLBACK_ALLOWED_IPS', ''),
-            'callback_max_age_seconds' => env('QPAY_CALLBACK_MAX_AGE_SECONDS', 0),
+            'enabled' => '0',
+            'auth_basic' => '',
+            'invoice_code' => '',
+            'auth_url' => 'https://merchant.qpay.mn/v2/auth/token',
+            'invoice_url' => 'https://merchant.qpay.mn/v2/invoice',
+            'callback_base' => '',
+            'callback_secret' => '',
+            'callback_hmac_secret' => '',
+            'callback_allowed_ips' => '',
+            'callback_max_age_seconds' => '0',
         ];
     }
 
-    protected function lianlianEnvFallbacks()
+    protected function lianlianRuntimeDefaults()
     {
-        $merchantId = env('LIANLIAN_MERCHANT_ID', '');
-        $publicKey = env('LIANLIAN_PUBLIC_KEY', '');
-        $privateKey = env('LIANLIAN_PRIVATE_KEY', '');
         return [
-            'enabled' => $merchantId !== '' && $publicKey !== '' && $privateKey !== '' ? '1' : '0',
-            'merchant_id' => $merchantId,
-            'sub_merchant_id' => env('LIANLIAN_SUB_MERCHANT_ID', ''),
-            'public_key' => $publicKey,
-            'private_key' => $privateKey,
-            'callback_base' => env('LIANLIAN_CALLBACK_BASE', 'https://www.mongoyia.com'),
-            'callback_secret' => env('LIANLIAN_CALLBACK_SECRET', ''),
-            'callback_hmac_secret' => env('LIANLIAN_CALLBACK_HMAC_SECRET', ''),
-            'callback_allowed_ips' => env('LIANLIAN_CALLBACK_ALLOWED_IPS', ''),
-            'callback_max_age_seconds' => env('LIANLIAN_CALLBACK_MAX_AGE_SECONDS', 0),
+            'enabled' => '0',
+            'merchant_id' => '',
+            'sub_merchant_id' => '',
+            'public_key' => '',
+            'private_key' => '',
+            'callback_base' => '',
+            'callback_secret' => '',
+            'callback_hmac_secret' => '',
+            'callback_allowed_ips' => '',
+            'callback_max_age_seconds' => '0',
         ];
     }
 
-    protected function paypalEnvFallbacks()
+    protected function paypalRuntimeDefaults()
     {
         $legacyEnvEnabled = env('PAYPAL_ENABLED', false);
         if ($legacyEnvEnabled) {
@@ -271,6 +267,27 @@ class PaymentController extends BaseController
     protected function paymentProviderEnabled(array $config)
     {
         return !empty($config['enabled']) && !in_array(strtolower((string)$config['enabled']), ['0', 'false', 'off', 'no'], true);
+    }
+
+    protected function paymentProviderReadyForRuntime($provider, array $config)
+    {
+        if (!$this->paymentProviderEnabled($config)) {
+            return false;
+        }
+
+        try {
+            $check = (new OperationalPaymentConfigService())->checkProvider(
+                (string)$provider,
+                (string)($config['environment'] ?? 'test'),
+                false,
+                (int)($config['store_id'] ?? 0)
+            );
+            $details = (array)($check['details'] ?? []);
+            return empty($details['missing']);
+        } catch (\Throwable $e) {
+            Yii::warning($e->getMessage(), 'mall.payment.provider_runtime_ready_failed');
+            return false;
+        }
     }
 
     protected function paypalDisabledRoute($route)
@@ -667,12 +684,24 @@ class PaymentController extends BaseController
         unset($value);
     }
 
-    protected function buildCallbackUrl($baseEnvKey, $path, $id, $secretEnvKey = null)
+    protected function buildCallbackUrl($path, $id)
     {
-        $base = rtrim(env($baseEnvKey, 'https://www.mongoyia.com'), '/');
+        $base = rtrim($this->requestHostInfo(), '/');
         $params = ['id' => $id];
-        if ($secretEnvKey) {
-            $secret = env($secretEnvKey, '');
+
+        return ($base === '' ? '' : $base) . $path . '?' . http_build_query($params);
+    }
+
+    protected function buildOperationalCallbackUrl(array $config, $path, $id, $secretCode = null)
+    {
+        $base = rtrim((string)($config['callback_base'] ?? ''), '/');
+        if ($base === '') {
+            return $this->buildCallbackUrl($path, $id);
+        }
+
+        $params = ['id' => $id];
+        if ($secretCode) {
+            $secret = (string)($config[$secretCode] ?? '');
             if ($secret !== '') {
                 $params['callback_secret'] = $secret;
             }
@@ -681,26 +710,13 @@ class PaymentController extends BaseController
         return $base . $path . '?' . http_build_query($params);
     }
 
-    protected function buildOperationalCallbackUrl(array $config, $baseEnvKey, $path, $id, $secretCode = null, $secretEnvKey = null)
+    protected function requestHostInfo()
     {
-        // Compatibility marker: buildCallbackUrl('QPAY_CALLBACK_BASE' and buildCallbackUrl('LIANLIAN_CALLBACK_BASE' fallbacks remain supported.
-        $base = rtrim((string)($config['callback_base'] ?? ''), '/');
-        if ($base === '') {
-            return $this->buildCallbackUrl($baseEnvKey, $path, $id, $secretEnvKey);
+        if (Yii::$app->has('request') && !Yii::$app->request->isConsoleRequest) {
+            return (string)Yii::$app->request->hostInfo;
         }
 
-        $params = ['id' => $id];
-        if ($secretCode) {
-            $secret = (string)($config[$secretCode] ?? '');
-            if ($secret === '' && $secretEnvKey) {
-                $secret = env($secretEnvKey, '');
-            }
-            if ($secret !== '') {
-                $params['callback_secret'] = $secret;
-            }
-        }
-
-        return $base . $path . '?' . http_build_query($params);
+        return '';
     }
 
     protected function paymentRequestPayload()
@@ -1433,7 +1449,7 @@ class PaymentController extends BaseController
         $qpayConfig = $this->paymentProviderConfigForOrder('qpay', $model);
         $authBasic = (string)($qpayConfig['auth_basic'] ?? '');
         $invoiceCode = (string)($qpayConfig['invoice_code'] ?? '');
-        if (!$this->paymentProviderEnabled($qpayConfig) || $authBasic === '' || $invoiceCode === '') {
+        if (!$this->paymentProviderReadyForRuntime('qpay', $qpayConfig) || $authBasic === '' || $invoiceCode === '') {
             $this->logPaymentAttempt($model, 'qpay', 'create', [
                 'merchant_transaction_id' => $merchantTransactionId,
                 'result' => PaymentAttempt::RESULT_FAILED,
@@ -1474,7 +1490,7 @@ class PaymentController extends BaseController
                 'invoice_receiver_code'=>'terminal',
                 'invoice_description'=>'test',
                 'amount'=>(float)$model->amount,
-                'callback_url'=>$this->buildOperationalCallbackUrl($qpayConfig, 'QPAY_CALLBACK_BASE', '/mall/payment/qpayres', $id, 'callback_secret', 'QPAY_CALLBACK_SECRET')
+                'callback_url'=>$this->buildOperationalCallbackUrl($qpayConfig, '/mall/payment/qpayres', $id, 'callback_secret')
             ]),[
                 "Authorization: Bearer ".$token,
                 "Content-Type: application/json"
@@ -1585,7 +1601,7 @@ class PaymentController extends BaseController
 
         $merchant_transaction_id = 'Test-pay'.$id;
         $lianlianConfig = $this->paymentProviderConfigForOrder('lianlian', $model);
-        if (!$this->paymentProviderEnabled($lianlianConfig) || !PayConstant::isConfigured($lianlianConfig)) {
+        if (!$this->paymentProviderReadyForRuntime('lianlian', $lianlianConfig) || !PayConstant::isConfigured($lianlianConfig)) {
             $this->logPaymentAttempt($model, 'lianlian', 'create', [
                 'merchant_transaction_id' => $merchant_transaction_id,
                 'amount' => (float)$model->amount,
@@ -1604,10 +1620,10 @@ class PaymentController extends BaseController
         $pay_request->country = 'MN';
         //支付成功后跳转地址，商户支付成功地址，这里模拟商户的支付成功页面
         //支付成功后，用户页面回跳URL地址;收银台方式接入必填，Iframe必填，api国际信用卡、本地必填。
-        $redirect_url=$this->buildOperationalCallbackUrl($lianlianConfig, 'LIANLIAN_CALLBACK_BASE', '/mall/payment/succeeded/', $id);
+        $redirect_url=$this->buildOperationalCallbackUrl($lianlianConfig, '/mall/payment/succeeded/', $id);
         $pay_request->redirect_url = $redirect_url;
         //支付成功后异步通知地址，这里模拟商户的接收异常通知请求  请看PayController#paymentSuccess
-        $notification_url=$this->buildOperationalCallbackUrl($lianlianConfig, 'LIANLIAN_CALLBACK_BASE', '/mall/payment/succeeded/', $id, 'callback_secret', 'LIANLIAN_CALLBACK_SECRET');
+        $notification_url=$this->buildOperationalCallbackUrl($lianlianConfig, '/mall/payment/succeeded/', $id, 'callback_secret');
         $pay_request->notification_url = $notification_url;
 
         $time = date('YmdHis', time());
@@ -1690,7 +1706,7 @@ class PaymentController extends BaseController
 
         $merchant_transaction_id = 'Test-pay'.$id;
         $lianlianConfig = $this->paymentProviderConfigForOrder('lianlian', $model);
-        if (!$this->paymentProviderEnabled($lianlianConfig) || !PayConstant::isConfigured($lianlianConfig)) {
+        if (!$this->paymentProviderReadyForRuntime('lianlian', $lianlianConfig) || !PayConstant::isConfigured($lianlianConfig)) {
             $this->logPaymentAttempt($model, 'lianlian', 'query', [
                 'merchant_transaction_id' => $merchant_transaction_id,
                 'amount' => (float)$model->amount,

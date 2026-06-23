@@ -396,48 +396,21 @@ class DeployCheckController extends Controller
     private function checkPaymentEnv(array $env)
     {
         $this->section('Payment');
-        $profile = strtolower((string)$this->profile);
-        $hardFail = in_array($profile, ['test', 'prod'], true);
-        if (($env['LIANLIAN_SANDBOX'] ?? 'true') !== 'true') {
-            $this->warn('LIANLIAN_SANDBOX is not true; confirm production credentials and callback allowlist before launch.');
-        }
+        $this->ok('Payment provider secrets are checked through the encrypted backend operational config center, not PHP .env.');
 
-        foreach (['QPAY_AUTH_BASIC', 'QPAY_INVOICE_CODE', 'QPAY_AUTH_URL', 'QPAY_INVOICE_URL', 'LIANLIAN_MERCHANT_ID', 'LIANLIAN_PUBLIC_KEY', 'LIANLIAN_PRIVATE_KEY'] as $key) {
-            if ($this->isPlaceholder($env[$key] ?? '')) {
-                $this->warn("{$key} is empty or placeholder; payment provider flow may be unavailable.");
-            }
-        }
-
-        foreach (['QPAY_CALLBACK_HMAC_SECRET', 'LIANLIAN_CALLBACK_HMAC_SECRET'] as $key) {
-            if ($this->isPlaceholder($env[$key] ?? '')) {
-                $this->warn("{$key} is empty or placeholder; callback HMAC enforcement is disabled.");
-            }
-        }
-
-        $platformHost = $this->hostFromDomain($env['STORE_PLATFORM_DOMAIN'] ?? '');
-        foreach (['QPAY_AUTH_URL', 'QPAY_INVOICE_URL', 'QPAY_CALLBACK_BASE', 'LIANLIAN_CALLBACK_BASE'] as $key) {
-            if (!array_key_exists($key, $env)) {
-                $this->fail("PHP .env missing {$key}.");
-                continue;
-            }
-
-            $scheme = parse_url($env[$key], PHP_URL_SCHEME);
-            $callbackHost = $this->hostFromDomain($env[$key]);
-            if (!$callbackHost) {
-                $message = "{$key} is not a valid callback URL.";
-                $hardFail ? $this->fail($message) : $this->warn($message);
-                continue;
-            }
-
-            if ($hardFail && $scheme !== 'https') {
-                $this->fail("{$key} must use https for {$profile}.");
-            }
-            if ($hardFail && $this->isExampleHost($callbackHost)) {
-                $this->fail("{$key} must be replaced with a real {$profile} host.");
-            }
-            if (in_array($key, ['QPAY_CALLBACK_BASE', 'LIANLIAN_CALLBACK_BASE'], true) && $platformHost && $callbackHost !== $platformHost) {
-                $message = "{$key} host '{$callbackHost}' differs from STORE_PLATFORM_DOMAIN '{$platformHost}'.";
-                $hardFail ? $this->fail($message) : $this->warn($message);
+        foreach ([
+            'QPAY_AUTH_BASIC',
+            'QPAY_INVOICE_CODE',
+            'QPAY_CALLBACK_SECRET',
+            'QPAY_CALLBACK_HMAC_SECRET',
+            'LIANLIAN_MERCHANT_ID',
+            'LIANLIAN_PUBLIC_KEY',
+            'LIANLIAN_PRIVATE_KEY',
+            'LIANLIAN_CALLBACK_SECRET',
+            'LIANLIAN_CALLBACK_HMAC_SECRET',
+        ] as $key) {
+            if (!$this->isPlaceholder($env[$key] ?? '')) {
+                $this->warn("{$key} is present in PHP .env but runtime payment uses encrypted backend config; migrate this value to the operations config center and remove the legacy env entry.");
             }
         }
     }
@@ -514,30 +487,7 @@ class DeployCheckController extends Controller
             $this->fail('IM_WEBSOCKET_URL must be replaced with a real ' . $profile . ' host.');
         }
 
-        foreach (['QPAY_AUTH_BASIC', 'QPAY_INVOICE_CODE', 'QPAY_AUTH_URL', 'QPAY_INVOICE_URL', 'LIANLIAN_MERCHANT_ID', 'LIANLIAN_PUBLIC_KEY', 'LIANLIAN_PRIVATE_KEY'] as $key) {
-            $this->failIfPlaceholder($phpEnv, $key, "{$key} must be configured for {$profile}.");
-        }
-
-        foreach (['QPAY_CALLBACK_HMAC_SECRET', 'LIANLIAN_CALLBACK_HMAC_SECRET'] as $key) {
-            $this->failIfPlaceholder($phpEnv, $key, "{$key} must be configured for {$profile}.");
-            $value = (string)($phpEnv[$key] ?? '');
-            if (!$this->isPlaceholder($value) && strlen($value) < 32) {
-                $this->fail("{$key} should be at least 32 characters.");
-            }
-        }
-
-        foreach (['QPAY_CALLBACK_MAX_AGE_SECONDS', 'LIANLIAN_CALLBACK_MAX_AGE_SECONDS'] as $key) {
-            if ((int)($phpEnv[$key] ?? 0) <= 0) {
-                $this->fail("{$key} must be greater than 0 for {$profile}.");
-            }
-        }
-
-        if ($profile === 'test' && (($phpEnv['LIANLIAN_SANDBOX'] ?? 'true') !== 'true')) {
-            $this->fail('LIANLIAN_SANDBOX must stay true for test profile.');
-        }
-        if ($profile === 'prod' && (($phpEnv['LIANLIAN_SANDBOX'] ?? 'true') === 'true')) {
-            $this->fail('LIANLIAN_SANDBOX must be false for prod profile.');
-        }
+        $this->ok("Payment provider credentials for {$profile} profile are expected in encrypted backend operational config plus accepted provider evidence, not PHP .env.");
 
         if ($this->failures === 0) {
             $this->ok("{$profile} profile readiness checks passed.");

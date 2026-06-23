@@ -65,8 +65,10 @@ class OperationalConfigPaymentTestController extends Controller
         $this->requireFileContains('@app/../frontend/modules/mall/controllers/PaymentController.php', [
             'OperationalPaymentConfigService',
             'paymentProviderConfig',
-            'qpayEnvFallbacks',
-            'lianlianEnvFallbacks',
+            'qpayRuntimeDefaults',
+            'lianlianRuntimeDefaults',
+            'MONGOYIA_PAYMENT_RUNTIME_NO_SECRET_ENV_FALLBACK_V1',
+            'paymentProviderReadyForRuntime',
             'buildOperationalCallbackUrl',
             'assertCallbackSignatureValue',
             "PayConstant::isConfigured(\$lianlianConfig)",

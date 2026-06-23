@@ -1,5 +1,36 @@
 # Development Log
 
+## 2026-06-24 Phase 10-15 Child Acceptance BaoTa Cache Refresh Guidance
+
+- Stage name: Phase 10-15 child acceptance BaoTa cache/opcache refresh guidance
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting the stage.
+  - Updated Phase 10, 11, 12, 13, 14, and 15 child acceptance reports so their generated BaoTa verification commands use `git pull --ff-only`, print the deployed commit, run migrations, flush Yii cache, and restart PHP-FPM before browser-facing checks.
+  - Added `MONGOYIA_PHASE10_15_CHILD_DEPLOY_CACHE_REFRESH_V1` to every Phase 10-15 child acceptance report.
+  - Updated the Phase 10-15 aggregate source coverage to require that child deploy-refresh marker, so a child report cannot regress to stale deployment guidance unnoticed.
+  - Updated the Phase 10-15 backlog row and strict aggregate notes to document aggregate plus child cache/opcache refresh guidance.
+- Main files changed/added:
+  - `console/controllers/OperationalConfigPhase10AcceptanceController.php`
+  - `console/controllers/PaymentPhase11AcceptanceController.php`
+  - `console/controllers/AccountNotificationPhase12AcceptanceController.php`
+  - `console/controllers/AppPhase13AcceptanceController.php`
+  - `console/controllers/LogisticsProductPhase14AcceptanceController.php`
+  - `console/controllers/DistributionSupportPhase15AcceptanceController.php`
+  - `console/controllers/MongoyiaRequirementsClosureAcceptanceController.php`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l` passed for all six Phase 10-15 child acceptance controllers and the aggregate acceptance controller.
+  - Static marker scan confirmed `MONGOYIA_PHASE10_15_CHILD_DEPLOY_CACHE_REFRESH_V1`, `git pull --ff-only`, deployed commit printing, `cache/flush-all`, and `php-fpm-83 restart` across the child reports.
+  - Static marker scan confirmed the aggregate source coverage requires `MONGOYIA_PHASE10_15_CHILD_DEPLOY_CACHE_REFRESH_V1`.
+  - `git diff --check` reported no whitespace errors, only existing Windows line-ending conversion warnings.
+  - Full Yii console execution remains BaoTa-only because this local checkout lacks `vendor/autoload.php`.
+- Remaining issues:
+  - BaoTa/test server must pull this commit and run the refreshed verification commands before browser role-flow evidence can close.
+  - Phase 10/11/12/13/14/15 external and browser evidence remain incomplete; production remains `NO-GO`.
+- Next stage:
+  - Commit and push this child acceptance deploy-refresh guidance, then continue with BaoTa/browser validation after the test server is refreshed or another plan-listed local readiness item.
+
 ## 2026-06-24 Phase 10-15 Aggregate BaoTa Cache Refresh Guidance
 
 - Stage name: Phase 10-15 aggregate BaoTa cache/opcache refresh guidance

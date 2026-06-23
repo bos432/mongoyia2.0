@@ -185,6 +185,7 @@ class MongoyiaRequirementsClosureAcceptanceController extends Controller
                 $config['version'],
                 $config['route'],
                 'Pending',
+                'MONGOYIA_PHASE10_15_CHILD_DEPLOY_CACHE_REFRESH_V1',
             ], $config['requiredMarkers'] ?? []);
             $this->requireFileContains($phase . ' acceptance command', $config['file'], $needles);
         }

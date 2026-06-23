@@ -1,5 +1,29 @@
 # Development Log
 
+## 2026-06-24 Phase 10-15 Aggregate Cart Checkout URL Coverage
+
+- Stage name: Phase 10-15 aggregate cart checkout URL coverage
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting the stage.
+  - Added `MONGOYIA_CART_CHECKOUT_URL_PARAMS_V1` to the Phase 13 required marker list inside `mongoyia-requirements-closure-acceptance/run`.
+  - Updated the Phase 10-15 aggregate backlog row so the full remaining-requirements gate explicitly requires Phase 13 cart checkout URL parameter-builder coverage.
+  - Updated the Phase 13 detailed row to record the checkout URL parameter builder alongside the existing cart stale-row, cart-index, cached-link, asset freshness, and browser evidence checks.
+- Main files changed/added:
+  - `console/controllers/MongoyiaRequirementsClosureAcceptanceController.php`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l console/controllers/MongoyiaRequirementsClosureAcceptanceController.php` passed.
+  - Static marker scan confirmed `MONGOYIA_CART_CHECKOUT_URL_PARAMS_V1` in the aggregate gate and Phase 13 acceptance controller.
+  - Static marker scan confirmed `cart checkout URL parameter-builder coverage` and `checkout URL parameter builder` in the backlog.
+  - `git diff --check` reported no whitespace errors, only existing Windows line-ending conversion warnings.
+  - Full Yii console execution remains BaoTa-only because this local checkout lacks `vendor/autoload.php`.
+- Remaining issues:
+  - BaoTa/test server must pull commit `83ff6fe` or newer plus this aggregate update before the deployed aggregate command can enforce the new marker.
+  - Phase 10/11/12/13/14/15 external and browser evidence remain incomplete; production remains `NO-GO`.
+- Next stage:
+  - Commit and push this aggregate marker update, then reread the plan/log and continue with another plan-listed local readiness item or deployed browser validation after BaoTa is refreshed.
+
 ## 2026-06-24 Phase 13 Cart Checkout URL Parameter Builder
 
 - Stage name: Phase 13 cart checkout URL parameter builder

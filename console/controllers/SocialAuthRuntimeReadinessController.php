@@ -78,6 +78,12 @@ class SocialAuthRuntimeReadinessController extends Controller
             'profile_json',
             'last_login_at',
         ]);
+        $this->requireFileContains('APP social login entry', 'apps/mongoyia-customer-chat-uniapp/src/pages/auth/login.vue', [
+            'data-mongoyia-phase12-social-login-entry',
+            "socialLogin('google')",
+            "socialLogin('facebook')",
+            '/social-auth/redirect',
+        ]);
     }
 
     private function checkFixtureMatrix(): void

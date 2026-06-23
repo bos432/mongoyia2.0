@@ -3,7 +3,8 @@ namespace api\controllers;
 
 use api\models\forms\RefreshForm;
 use api\models\LoginForm;
-use api\modules\v1\models\User;
+use api\models\User;
+use common\services\mall\AccountSecurityCodeService;
 use Yii;
 use yii\base\Response;
 use yii\filters\AccessControl;
@@ -20,7 +21,7 @@ class SiteController extends BaseController
 
     public $skipModelClass = '*';
 
-    public $optionalAuth = ['error', 'index', 'login', 'refresh', 'logout','visit'];
+    public $optionalAuth = ['error', 'index', 'login', 'refresh', 'logout', 'visit', 'security-code-request', 'security-code-login'];
 
     /**
      * @return string
@@ -65,6 +66,45 @@ class SiteController extends BaseController
         return $this->error();
     }
 
+    public function actionSecurityCodeRequest()
+    {
+        $result = (new AccountSecurityCodeService())->requestCode(
+            $this->securityCodeChannel(),
+            $this->securityCodeTarget()
+        );
+
+        if (empty($result['success'])) {
+            Yii::$app->response->statusCode = $this->securityCodeStatusCode($result);
+        }
+
+        return $result;
+    }
+
+    public function actionSecurityCodeLogin()
+    {
+        $result = (new AccountSecurityCodeService())->loginWithCode(
+            $this->securityCodeChannel(),
+            $this->securityCodeTarget(),
+            trim((string)Yii::$app->request->post('code', Yii::$app->request->get('code', '')))
+        );
+        if (empty($result['success'])) {
+            Yii::$app->response->statusCode = $this->securityCodeStatusCode($result);
+            return $result;
+        }
+
+        $user = User::findOne((int)($result['user_id'] ?? 0));
+        if (!$user) {
+            Yii::$app->response->statusCode = 422;
+            return [
+                'success' => false,
+                'code' => 'SECURITY_CODE_USER_UNAVAILABLE',
+                'message' => 'Target user is unavailable.',
+            ];
+        }
+
+        return Yii::$app->accessTokenSystem->getAccessToken($user);
+    }
+
     public function actionRefresh()
     {
         $model = new RefreshForm();
@@ -74,6 +114,39 @@ class SiteController extends BaseController
         }
 
         return $this->error();
+    }
+
+    private function securityCodeChannel(): string
+    {
+        $channel = Yii::$app->request->post('channel', Yii::$app->request->get('channel', 'email'));
+        $channel = strtolower(trim((string)$channel));
+        return $channel === 'mobile' ? 'mobile' : 'email';
+    }
+
+    private function securityCodeTarget(): string
+    {
+        return trim((string)Yii::$app->request->post('target', Yii::$app->request->get('target', '')));
+    }
+
+    private function securityCodeStatusCode(array $result): int
+    {
+        $code = (string)($result['code'] ?? '');
+        if ($code === 'SECURITY_CODE_LOGIN_DISABLED') {
+            return 404;
+        }
+        if ($code === 'SECURITY_CODE_TABLE_MISSING' ||
+            $code === 'SECURITY_CODE_DELIVERY_FAILED' ||
+            $code === 'SECURITY_CODE_MOBILE_RESERVED') {
+            return 503;
+        }
+        if ($code === 'SECURITY_CODE_LOCKED') {
+            return 423;
+        }
+        if ($code === 'SECURITY_CODE_EXPIRED') {
+            return 410;
+        }
+
+        return 400;
     }
 
     public function actionLogout()

@@ -164,6 +164,12 @@ class AccountNotificationPhase12AcceptanceController extends Controller
             'social-auth-runtime-readiness',
             'existing-session binding',
         ]);
+        $this->requireFileContains('APP social login entry', 'apps/mongoyia-customer-chat-uniapp/src/pages/auth/login.vue', [
+            'data-mongoyia-phase12-social-login-entry',
+            "socialLogin('google')",
+            "socialLogin('facebook')",
+            '/social-auth/redirect',
+        ]);
         $this->requireFileContains('Encrypted account security policy service', 'common/services/mall/OperationalAccountSecurityService.php', [
             'MONGOYIA_OPERATIONAL_ACCOUNT_SECURITY_V1',
             'email_reset_enabled',
@@ -209,6 +215,17 @@ class AccountNotificationPhase12AcceptanceController extends Controller
             'MONGOYIA_ACCOUNT_SECURITY_CODE_READINESS_V1',
             'account-security-code-readiness',
             'Forbidden plaintext security-code column',
+        ]);
+        $this->requireFileContains('APP security-code token handoff', 'api/controllers/SiteController.php', [
+            'actionSecurityCodeRequest',
+            'actionSecurityCodeLogin',
+            'accessTokenSystem->getAccessToken',
+        ]);
+        $this->requireFileContains('APP security-code login entry', 'apps/mongoyia-customer-chat-uniapp/src/pages/auth/login.vue', [
+            'data-mongoyia-phase12-app-account-entry',
+            '/api/site/security-code-request',
+            '/api/site/security-code-login',
+            'submitCodeLogin',
         ]);
         $this->requireFileContains('Site message foundation', 'common/components/base/MessageSystem.php', [
             'sendMessageType',

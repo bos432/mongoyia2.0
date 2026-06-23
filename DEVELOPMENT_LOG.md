@@ -5944,3 +5944,40 @@
 - Next stage:
   - Commit and push Phase 12.7.
   - Re-read the development plan and this log, then continue with the next plan-listed stage or browser/server validation if BaoTa has pulled the latest commits.
+
+## 2026-06-23 Phase 12.8 APP Security-Code And Social Login Entry
+
+- Stage name: Phase 12.8 APP security-code token handoff and social login entry
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting the stage.
+  - Added API `/api/site/security-code-request` to request an email security code through the existing `AccountSecurityCodeService`.
+  - Added API `/api/site/security-code-login` to verify the email security code and return the normal API access token through `accessTokenSystem->getAccessToken`.
+  - Corrected `api/controllers/SiteController.php` to use the existing `api\models\User` class for token issuance.
+  - Updated the uni-app/H5 login page with password/code mode switching, email security-code request/login, and Google/Facebook OAuth redirect buttons.
+  - Kept social login secrets out of the APP package: buttons open the existing `/social-auth/redirect` boundary, and provider config still comes from backend encrypted config.
+  - Updated Phase 12 security-code readiness, social-auth runtime readiness, Phase 12 aggregate acceptance, and Phase 13 APP auth readiness markers.
+  - Updated the development backlog to record Phase 12.8.
+- Main files changed/added:
+  - `api/controllers/SiteController.php`
+  - `apps/mongoyia-customer-chat-uniapp/src/pages/auth/login.vue`
+  - `console/controllers/AccountSecurityCodeReadinessController.php`
+  - `console/controllers/SocialAuthRuntimeReadinessController.php`
+  - `console/controllers/AppAuthPhase13ReadinessController.php`
+  - `console/controllers/AccountNotificationPhase12AcceptanceController.php`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l` passed for `SiteController.php`, `AccountSecurityCodeReadinessController.php`, `SocialAuthRuntimeReadinessController.php`, `AppAuthPhase13ReadinessController.php`, and `AccountNotificationPhase12AcceptanceController.php`.
+  - `node -e "JSON.parse(...pages.json...)"` passed.
+  - Static marker checks confirmed `MONGOYIA_APP_ACCOUNT_SECURITY_ENTRY_V1`, `MONGOYIA_APP_SOCIAL_LOGIN_ENTRY_V1`, `security-code-request`, `security-code-login`, `actionSecurityCodeRequest`, `actionSecurityCodeLogin`, `requestSecurityCode`, `submitCodeLogin`, and Google/Facebook social-login entries.
+  - `npm run build:h5` passed in `apps/mongoyia-customer-chat-uniapp`; output contained only existing uni-app/Vite informational/deprecation warnings.
+  - `git diff --check` reported no whitespace errors; only existing Windows line-ending conversion warnings.
+  - Full Yii console execution was not run locally because this patch checkout does not have `vendor/autoload.php`; after BaoTa pull run `account-security-code-readiness/run --fixture=1`, `social-auth-runtime-readiness/run --fixture=1`, `account-notification-phase12-acceptance/run --fixture=1`, and `app-auth-phase13-readiness/run --fixture=1`.
+- Remaining issues:
+  - Real email delivery depends on SMTP/account-security policy being enabled in backend operations config.
+  - Real Google/Facebook login depends on provider credentials and callback approval evidence; buttons safely fail through the existing runtime boundary if providers are disabled.
+  - Browser role-flow evidence remains pending until BaoTa pulls latest commits and migrations are applied.
+  - Phase 10/11/12 external provider and production evidence remain incomplete; production remains `NO-GO`.
+- Next stage:
+  - Commit and push Phase 12.8.
+  - Re-read the development plan and this log, then continue with the next plan-listed stage or browser/server validation if BaoTa has pulled the latest commits.

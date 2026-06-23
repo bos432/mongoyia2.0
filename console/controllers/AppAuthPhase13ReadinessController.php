@@ -62,7 +62,12 @@ class AppAuthPhase13ReadinessController extends Controller
         ]);
         $this->requireFileContains('APP login page uses existing API login', 'apps/mongoyia-customer-chat-uniapp/src/pages/auth/login.vue', [
             'data-mongoyia-phase13-auth-login',
+            'data-mongoyia-phase12-app-account-entry',
+            'data-mongoyia-phase12-social-login-entry',
             '/api/site/login',
+            '/api/site/security-code-request',
+            '/api/site/security-code-login',
+            '/social-auth/redirect',
             'saveAuthSession',
             'withAuth: false',
             'role === \'seller\'',
@@ -105,6 +110,9 @@ class AppAuthPhase13ReadinessController extends Controller
         foreach ([
             '/pages/auth/login' => 'APP login route stores API access token and redirects by role',
             '/api/site/login' => 'existing API login endpoint reused for token handoff',
+            '/api/site/security-code-request' => 'APP email security-code request endpoint',
+            '/api/site/security-code-login' => 'APP email security-code login returns API access token',
+            '/social-auth/redirect' => 'APP/H5 third-party login button opens frontend OAuth boundary',
             'access-token header' => 'request helper sends stored access token to buyer/seller JSON APIs',
         ] as $route => $notes) {
             $this->addCheck($route, 'PASS', $route, $notes);
@@ -127,8 +135,8 @@ class AppAuthPhase13ReadinessController extends Controller
             '- Generated at: ' . date('Y-m-d H:i:s'),
             '- Failures: ' . $this->failures,
             '- Warnings: ' . $this->warnings,
-            '- Scope: APP login page, token storage, token header injection, protected buyer/seller page login handoff, and H5 role-flow preparation.',
-            '- Safety: password is posted only to the existing `/api/site/login` endpoint and is not stored locally; buyer checkout and seller shipment writes use scoped API guards, while product/coupon writes remain gated by later audit/browser acceptance.',
+            '- Scope: APP login page, password and email security-code token handoff, Google/Facebook frontend OAuth entry, token storage, token header injection, protected buyer/seller page login handoff, and H5 role-flow preparation.',
+            '- Safety: password is posted only to the existing `/api/site/login` endpoint and is not stored locally; security-code login returns an API access token only after hash-verified code success; social login opens the existing frontend OAuth boundary and keeps provider secrets out of the APP package.',
             '',
             '## Checks',
             '',

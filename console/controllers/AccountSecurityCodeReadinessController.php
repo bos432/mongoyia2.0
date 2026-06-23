@@ -81,6 +81,19 @@ class AccountSecurityCodeReadinessController extends Controller
             'statusCodeForResult',
             'SECURITY_CODE_RUNTIME_GATE',
         ]);
+        $this->requireFileContains('API security-code token handoff', 'api/controllers/SiteController.php', [
+            'actionSecurityCodeRequest',
+            'actionSecurityCodeLogin',
+            'AccountSecurityCodeService',
+            'accessTokenSystem->getAccessToken',
+        ]);
+        $this->requireFileContains('APP security-code login entry', 'apps/mongoyia-customer-chat-uniapp/src/pages/auth/login.vue', [
+            'data-mongoyia-phase12-app-account-entry',
+            '/api/site/security-code-request',
+            '/api/site/security-code-login',
+            'requestSecurityCode',
+            'submitCodeLogin',
+        ]);
         $this->requireFileContains('Phase 12 aggregate wiring', 'console/controllers/AccountNotificationPhase12AcceptanceController.php', [
             'account-security-code-readiness/run',
             'Security-code delivery/storage runtime',

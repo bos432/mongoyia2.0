@@ -4,8 +4,23 @@
       <text class="title">Mongoyia</text>
       <text class="subtitle">{{ role === 'seller' ? '商家登录' : '买家登录' }}</text>
 
-      <input v-model="username" class="form-input" placeholder="用户名 / 邮箱" />
-      <input v-model="password" class="form-input" password placeholder="密码" />
+      <view class="mode-row" data-mongoyia-phase12-app-account-entry="MONGOYIA_APP_ACCOUNT_SECURITY_ENTRY_V1">
+        <button size="mini" :type="authMode === 'password' ? 'primary' : 'default'" @tap="authMode = 'password'">密码</button>
+        <button size="mini" :type="authMode === 'code' ? 'primary' : 'default'" @tap="authMode = 'code'">验证码</button>
+      </view>
+
+      <view v-if="authMode === 'password'" class="form-stack">
+        <input v-model="username" class="form-input" placeholder="用户名 / 邮箱" />
+        <input v-model="password" class="form-input" password placeholder="密码" />
+      </view>
+
+      <view v-else class="form-stack">
+        <input v-model="codeTarget" class="form-input" placeholder="邮箱" />
+        <view class="code-row">
+          <input v-model="codeValue" class="form-input code-input" placeholder="验证码" />
+          <button size="mini" :loading="codeLoading" @tap="requestSecurityCode">发送</button>
+        </view>
+      </view>
 
       <view class="role-row">
         <button size="mini" :type="role === 'buyer' ? 'primary' : 'default'" @tap="role = 'buyer'">买家</button>
@@ -14,6 +29,11 @@
 
       <button class="login-btn" type="primary" :loading="loading" @tap="submitLogin">登录</button>
       <button class="secondary-btn" @tap="clearLogin">退出当前账号</button>
+
+      <view class="social-row" data-mongoyia-phase12-social-login-entry="MONGOYIA_APP_SOCIAL_LOGIN_ENTRY_V1">
+        <button size="mini" @tap="socialLogin('google')">Google</button>
+        <button size="mini" @tap="socialLogin('facebook')">Facebook</button>
+      </view>
       <view v-if="error" class="notice">{{ error }}</view>
     </view>
   </view>
@@ -29,6 +49,10 @@ export default {
       baseUrl: DEFAULT_CONFIG.baseUrl,
       username: '',
       password: '',
+      authMode: 'password',
+      codeTarget: '',
+      codeValue: '',
+      codeLoading: false,
       role: 'buyer',
       redirect: '',
       loading: false,
@@ -42,6 +66,9 @@ export default {
   },
   methods: {
     async submitLogin() {
+      if (this.authMode === 'code') {
+        return this.submitCodeLogin()
+      }
       if (!this.username || !this.password) {
         this.error = '请输入账号和密码'
         return
@@ -68,6 +95,71 @@ export default {
       } finally {
         this.loading = false
       }
+    },
+    async requestSecurityCode() {
+      if (!this.codeTarget) {
+        this.error = '请输入邮箱'
+        return
+      }
+      this.codeLoading = true
+      this.error = ''
+      try {
+        const response = await requestJson({
+          baseUrl: this.baseUrl,
+          path: '/api/site/security-code-request',
+          method: 'POST',
+          data: {
+            channel: 'email',
+            target: this.codeTarget
+          },
+          withAuth: false
+        })
+        const data = response.data || response || {}
+        uni.showToast({ title: data.message || '验证码已发送', icon: 'none' })
+      } catch (error) {
+        this.error = error.message || '验证码发送失败'
+      } finally {
+        this.codeLoading = false
+      }
+    },
+    async submitCodeLogin() {
+      if (!this.codeTarget || !this.codeValue) {
+        this.error = '请输入邮箱和验证码'
+        return
+      }
+      this.loading = true
+      this.error = ''
+      try {
+        const response = await requestJson({
+          baseUrl: this.baseUrl,
+          path: '/api/site/security-code-login',
+          method: 'POST',
+          data: {
+            channel: 'email',
+            target: this.codeTarget,
+            code: this.codeValue
+          },
+          withAuth: false
+        })
+        const user = response.data || response || {}
+        saveAuthSession(user, this.baseUrl)
+        uni.showToast({ title: '登录成功' })
+        this.openAfterLogin()
+      } catch (error) {
+        this.error = error.message || '验证码登录失败'
+      } finally {
+        this.loading = false
+      }
+    },
+    socialLogin(provider) {
+      const url = cleanBaseUrl(this.baseUrl)
+        + '/social-auth/redirect?provider=' + encodeURIComponent(provider)
+        + '&returnUrl=' + encodeURIComponent('/')
+      if (typeof window !== 'undefined') {
+        window.location.href = url
+        return
+      }
+      uni.showToast({ title: '请在浏览器打开第三方登录', icon: 'none' })
     },
     clearLogin() {
       clearAuthSession()
@@ -139,10 +231,28 @@ export default {
   background: #ffffff;
 }
 
-.role-row {
+.form-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.mode-row,
+.role-row,
+.social-row {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 8px;
+}
+
+.code-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.code-input {
+  flex: 1;
 }
 
 .login-btn,

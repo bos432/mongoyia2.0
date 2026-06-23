@@ -125,6 +125,18 @@ class LogisticsProductPhase14AcceptanceController extends Controller
             'logistics-provider-phase14-readiness/run',
             'Simulated provider fixture',
         ]);
+        $this->requireFileContains('Logistics tracking sync service', 'common/services/mall/LogisticsTrackingSyncService.php', [
+            'MONGOYIA_LOGISTICS_TRACKING_SYNC_V1',
+            'planSync',
+            'manual_review_required',
+            'mark_received_pending_apply',
+            'provider_evidence_required',
+        ]);
+        $this->requireFileContains('Logistics tracking sync readiness', 'console/controllers/LogisticsTrackingPhase14ReadinessController.php', [
+            'MONGOYIA_LOGISTICS_TRACKING_PHASE14_READINESS_V1',
+            'logistics-tracking-phase14-readiness/run',
+            'Tracking plan fixture',
+        ]);
     }
 
     private function checkPlannedScopeMatrix(): void
@@ -132,7 +144,7 @@ class LogisticsProductPhase14AcceptanceController extends Controller
         $this->section('Phase 14 planned scope matrix');
         foreach ([
             'Logistics provider adapter contract' => 'Provider adapter config, simulated provider, real provider evidence gate, readiness command, and no committed provider secrets.',
-            'Tracking sync contract' => 'Single/batch tracking query, abnormal status mapping, audit evidence, and retry-safe sync.',
+            'Tracking sync contract' => 'Single/batch tracking query, abnormal status mapping, audit evidence, retry-safe sync, and readiness command.',
             'SKU/inventory/shipping contract' => 'Automatic SKU code generation, shipping timeout/deposit deduction, inventory location, and safe stock checks.',
             'Search/video contract' => 'SKU/keyword suggestions, brand/price/sales filters, and product video exposure.',
             'Store favorite/review moderation contract' => 'Store favorite, review approval/reject workflow, sorting, and violation handling.',

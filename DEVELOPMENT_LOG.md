@@ -5341,3 +5341,36 @@
 - Next stage:
   - Commit and push Phase 14.1, then on BaoTa run `logistics-provider-phase14-readiness/run --fixture=1` and `logistics-product-phase14-acceptance/run --fixture=1`.
   - Continue Phase 14.2 by adding tracking sync and abnormal-status evidence without calling real logistics providers.
+
+## 2026-06-23 Phase 14.2 Logistics Tracking Sync Plan
+
+- Stage name: Phase 14.2 logistics tracking sync and abnormal-status evidence
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting the stage.
+  - Added `LogisticsTrackingSyncService` to generate dry-run tracking sync plans from logistics provider adapter results.
+  - Implemented delivered-to-received pending action, active shipping action, abnormal manual-review classification, idempotent skip by sync key, and real-provider evidence gate.
+  - Kept the sync service read-only: it does not mutate orders, shipment rows, fund rows, stock, or provider credentials.
+  - Added `logistics-tracking-phase14-readiness/run` to verify fixture plan shape, abnormal rules, idempotency, provider gates, and safety flags.
+  - Wired the tracking readiness command into the Phase 14 aggregate acceptance source coverage.
+  - Updated the Phase 14 backlog status and command list.
+- Main files changed/added:
+  - `common/services/mall/LogisticsTrackingSyncService.php`
+  - `console/controllers/LogisticsTrackingPhase14ReadinessController.php`
+  - `console/controllers/LogisticsProductPhase14AcceptanceController.php`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l common/services/mall/LogisticsTrackingSyncService.php` passed.
+  - `php -l console/controllers/LogisticsTrackingPhase14ReadinessController.php` passed.
+  - `php -l console/controllers/LogisticsProductPhase14AcceptanceController.php` passed.
+  - Pure PHP offline simulation passed for five tracking rows: two normal actions, one abnormal manual review, one idempotent skip, and one real-provider evidence gate, with zero network calls.
+  - Static marker checks confirmed tracking service, tracking readiness command, aggregate acceptance wiring, and backlog command markers.
+  - Full Yii console execution is not available locally because this patch checkout does not have `vendor/autoload.php`; run `logistics-tracking-phase14-readiness/run --fixture=1` and `logistics-product-phase14-acceptance/run --fixture=1` on BaoTa/full-vendor environment after pull.
+- Remaining issues:
+  - Phase 14.3 SKU generation, inventory location, and shipping timeout/deposit evidence are pending.
+  - Search/video, store favorite, review moderation, and browser role-flow evidence remain pending.
+  - Real logistics provider tracking calls remain external evidence; no provider credentials or secrets were committed.
+  - Phase 10/11/12 external provider and production evidence remain incomplete; production remains `NO-GO`.
+- Next stage:
+  - Commit and push Phase 14.2, then on BaoTa run `logistics-tracking-phase14-readiness/run --fixture=1` and `logistics-product-phase14-acceptance/run --fixture=1`.
+  - Continue Phase 14.3 by adding SKU generation, inventory location, and shipping timeout/deposit evidence while keeping high-risk writes gated.

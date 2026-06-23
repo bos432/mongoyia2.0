@@ -65,6 +65,9 @@ class AppSellerPhase13ReadinessController extends Controller
             'distribution',
             'MONGOYIA_APP_SELLER_SHIPMENT_WRITE_V1',
             'shipOrder',
+            'MONGOYIA_APP_SELLER_PRODUCT_WRITE_V1',
+            'saveProduct',
+            'seller_product_write_requires_platform_audit',
         ]);
         $this->requireFileContains('Seller APP API controller', 'api/modules/v1/controllers/AppSellerController.php', [
             'MONGOYIA_APP_SELLER_CONTROLLER_V1',
@@ -79,6 +82,7 @@ class AppSellerPhase13ReadinessController extends Controller
             'actionDistribution',
             'sellerStoreId',
             'shipOrder',
+            'saveProduct',
         ]);
         $this->requireFileContains('APP shared API helper uses seller endpoints', 'apps/mongoyia-customer-chat-uniapp/src/utils/appApi.js', [
             '/api/v1/app-seller/dashboard',
@@ -95,6 +99,12 @@ class AppSellerPhase13ReadinessController extends Controller
             'SELLER_ENDPOINTS.shipment',
             'submitShipment',
             'shipment_fee',
+        ]);
+        $this->requireFileContains('Seller product page posts audited product submissions', 'apps/mongoyia-customer-chat-uniapp/src/pages/seller/products.vue', [
+            'data-mongoyia-phase13-seller-product-write',
+            'MONGOYIA_APP_SELLER_PRODUCT_WRITE_V1',
+            'saveProduct',
+            '提交审核',
         ]);
         $this->requireFileContains('API URL manager supports APP controller ids', 'api/config/main.php', [
             '<modules:[\w-]+>/<controller:[\w-]+>/<action:[\w-]+>',
@@ -114,7 +124,7 @@ class AppSellerPhase13ReadinessController extends Controller
         $this->section('Route matrix');
         foreach ([
             '/api/v1/app-seller/dashboard' => 'authenticated seller dashboard summary',
-            '/api/v1/app-seller/products' => 'authenticated seller product list plus product write gate',
+            '/api/v1/app-seller/products' => 'authenticated seller product list plus audited create/edit write',
             '/api/v1/app-seller/orders' => 'authenticated seller order list plus shipment write alias',
             '/api/v1/app-seller/shipment' => 'authenticated seller shipment write',
             '/api/v1/app-seller/logistics' => 'authenticated seller logistics method and fee summary',
@@ -143,8 +153,8 @@ class AppSellerPhase13ReadinessController extends Controller
             '- Generated at: ' . date('Y-m-d H:i:s'),
             '- Failures: ' . $this->failures,
             '- Warnings: ' . $this->warnings,
-            '- Scope: seller APP JSON APIs for dashboard, products, orders, shipment write, logistics fee, deposit, coupons, statistics, and distribution overview.',
-            '- Safety: seller APIs are store-scoped to the authenticated user store; shipment write uses existing paid/COD checks and idempotent shipment-fee deduction, while product/coupon write paths remain gated until audit/browser evidence is accepted.',
+            '- Scope: seller APP JSON APIs for dashboard, products, audited product create/edit, orders, shipment write, logistics fee, deposit, coupons, statistics, and distribution overview.',
+            '- Safety: seller APIs are store-scoped to the authenticated user store; shipment write uses existing paid/COD checks and idempotent shipment-fee deduction. Product writes force status inactive and audit_status=submitted, so sellers cannot list products without platform review.',
             '',
             '## Checks',
             '',

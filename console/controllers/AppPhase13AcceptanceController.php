@@ -134,6 +134,8 @@ class AppPhase13AcceptanceController extends Controller
             'orders',
             'MONGOYIA_APP_SELLER_SHIPMENT_WRITE_V1',
             'shipOrder',
+            'MONGOYIA_APP_SELLER_PRODUCT_WRITE_V1',
+            'saveProduct',
         ]);
         $this->requireFileContains('Seller APP JSON API controller', 'api/modules/v1/controllers/AppSellerController.php', [
             'MONGOYIA_APP_SELLER_CONTROLLER_V1',
@@ -143,6 +145,7 @@ class AppPhase13AcceptanceController extends Controller
             'actionShipment',
             'sellerStoreId',
             'shipOrder',
+            'saveProduct',
         ]);
         $this->requireFileContains('Seller APP JSON API readiness', 'console/controllers/AppSellerPhase13ReadinessController.php', [
             'MONGOYIA_APP_SELLER_PHASE13_READINESS_V1',
@@ -248,8 +251,8 @@ class AppPhase13AcceptanceController extends Controller
             ],
             'Seller products route shell' => [
                 'path' => 'apps/mongoyia-customer-chat-uniapp/src/pages/seller/products.vue',
-                'markers' => ['data-mongoyia-phase13-seller-products', 'SELLER_ENDPOINTS.products', 'loadProducts'],
-                'notes' => 'Seller product management list shell is present.',
+                'markers' => ['data-mongoyia-phase13-seller-products', 'data-mongoyia-phase13-seller-product-write', 'SELLER_ENDPOINTS.products', 'loadProducts', 'saveProduct'],
+                'notes' => 'Seller product management list and audited create/edit shell is present.',
             ],
             'Seller orders route shell' => [
                 'path' => 'apps/mongoyia-customer-chat-uniapp/src/pages/seller/orders.vue',
@@ -277,9 +280,9 @@ class AppPhase13AcceptanceController extends Controller
             '- Failures: ' . $this->failures,
             '- Warnings: ' . $this->warnings,
             '- Pending: ' . $this->pending,
-            '- Scope: buyer APP, seller APP workbench, shared backend APIs, customer-service entry, H5 development package, and role-flow evidence.',
+            '- Scope: buyer APP, seller APP workbench, audited seller product create/edit, shared backend APIs, customer-service entry, H5 development package, and role-flow evidence.',
             '- Safety: this command does not mutate orders, carts, products, shipment rows, funds, stock, or credentials.',
-            '- Boundary: Phase 13 verifies the APP route shell, buyer checkout write, and seller shipment write. Product/coupon writes and browser/APP role-flow evidence remain pending until later acceptance.',
+            '- Boundary: Phase 13 verifies the APP route shell, buyer checkout write, seller shipment write, and seller product create/edit submission. Seller product writes are forced inactive/submitted for platform review; coupon writes and browser/APP role-flow evidence remain pending until later acceptance.',
             '',
             '## Checks',
             '',

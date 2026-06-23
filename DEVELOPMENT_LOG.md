@@ -5736,3 +5736,39 @@
 - Next stage:
   - Commit and push Phase 13.6.
   - Continue with the next plan-listed small stage: seller APP product-management write path, if it can be implemented without bypassing product audit and store-isolation requirements.
+
+## 2026-06-23 Phase 13.7 Seller APP Product Write
+
+- Stage name: Phase 13.7 seller APP product create/edit submission
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting the stage.
+  - Added `MONGOYIA_APP_SELLER_PRODUCT_WRITE_V1` and a real `saveProduct()` path to the seller APP API service.
+  - Enabled POST `/api/v1/app-seller/products` for store-scoped seller product create/edit.
+  - Enforced category existence, store category authorization, non-negative price/stock validation, store isolation, and platform-review safety.
+  - Forced seller APP submissions to `status=inactive`, `audit_status=submitted`, `reviewed_at=0`, and `reviewer_id=0`, so sellers still cannot directly list products without platform review.
+  - Returned category options to the APP product page, respecting approved store category authorization when authorization rows exist.
+  - Rebuilt the uni-app seller product page with create/edit form, category picker/manual category ID fallback, image/video fields, submit state, and refresh persistence.
+  - Updated Phase 13 readiness/acceptance source markers and backlog text to record the audited seller product write path while leaving seller coupon writes gated.
+- Main files changed/added:
+  - `common/services/mall/AppSellerApiService.php`
+  - `api/modules/v1/controllers/AppSellerController.php`
+  - `apps/mongoyia-customer-chat-uniapp/src/pages/seller/products.vue`
+  - `console/controllers/AppSellerPhase13ReadinessController.php`
+  - `console/controllers/AppPhase13AcceptanceController.php`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l` passed for `AppSellerApiService.php`, `AppSellerController.php`, `AppSellerPhase13ReadinessController.php`, and `AppPhase13AcceptanceController.php`.
+  - `npm run build:h5` passed in `apps/mongoyia-customer-chat-uniapp`; output contained only existing uni-app/Vite informational/deprecation warnings.
+  - Static marker checks confirmed `MONGOYIA_APP_SELLER_PRODUCT_WRITE_V1`, `saveProduct`, `seller_product_write_requires_platform_audit`, APP product-write markers, and Phase 13.7 backlog markers.
+  - `node -e "JSON.parse(...pages.json...)"` passed.
+  - `git diff --check` reported no whitespace errors; only existing Windows line-ending conversion warnings.
+  - Full Yii console execution was not run locally because this patch checkout does not have `vendor/autoload.php`; after BaoTa pull run `app-seller-phase13-readiness/run --fixture=1` and `app-phase13-acceptance/run --fixture=1`.
+- Remaining issues:
+  - Phase 13 authenticated H5/browser role-flow evidence remains pending until BaoTa pulls these commits and runs readiness commands with usable buyer/seller test accounts.
+  - Seller coupon participation write remains gated until browser role-flow evidence is accepted.
+  - Phase 14/15 browser evidence remains pending until BaoTa pulls latest code and migrations.
+  - Phase 10/11/12 external provider and production evidence remain incomplete; production remains `NO-GO`.
+- Next stage:
+  - Commit and push Phase 13.7.
+  - Re-read the development plan and this log, then continue with the next plan-listed small stage: seller APP coupon participation write path if it can be implemented without bypassing coupon rules and browser evidence boundaries, or proceed to BaoTa/browser validation if code gaps are exhausted.

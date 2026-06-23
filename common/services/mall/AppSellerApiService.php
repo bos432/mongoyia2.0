@@ -4,12 +4,14 @@ namespace common\services\mall;
 
 use common\models\BaseModel;
 use common\models\base\FundLog;
+use common\models\mall\Category;
 use common\models\mall\Coupon;
 use common\models\mall\CouponType;
 use common\models\mall\LogisticsMethod;
 use common\models\mall\Order;
 use common\models\mall\OrderProduct;
 use common\models\mall\Product;
+use common\models\mall\StoreCategoryAuth;
 use common\models\mall\StoreCouponParticipation;
 use common\models\mall\StoreLogisticsMethod;
 use common\models\Store;
@@ -20,7 +22,8 @@ class AppSellerApiService
 {
     public const VERSION = 'MONGOYIA_APP_SELLER_API_V1';
     public const SHIPMENT_WRITE_VERSION = 'MONGOYIA_APP_SELLER_SHIPMENT_WRITE_V1';
-    public const PRODUCT_WRITE_GATE = 'seller_product_write_requires_audit_browser_acceptance';
+    public const PRODUCT_WRITE_VERSION = 'MONGOYIA_APP_SELLER_PRODUCT_WRITE_V1';
+    public const PRODUCT_WRITE_GATE = 'seller_product_write_requires_platform_audit';
 
     public function dashboard(int $storeId): array
     {
@@ -44,6 +47,7 @@ class AppSellerApiService
             ],
             'gates' => [
                 'shipment_write_version' => self::SHIPMENT_WRITE_VERSION,
+                'product_write_version' => self::PRODUCT_WRITE_VERSION,
                 'product_write' => self::PRODUCT_WRITE_GATE,
             ],
         ];
@@ -81,8 +85,91 @@ class AppSellerApiService
                 'total' => $total,
                 'page' => $page,
                 'page_size' => $pageSize,
+                'product_write_version' => self::PRODUCT_WRITE_VERSION,
                 'product_write_gate' => self::PRODUCT_WRITE_GATE,
             ],
+            'categories' => $this->categoryOptions($storeId),
+        ];
+    }
+
+    public function saveProduct(int $storeId, array $input): array
+    {
+        $productId = (int)($input['id'] ?? $input['product_id'] ?? 0);
+        $product = null;
+        if ($productId > 0) {
+            $product = Product::find()
+                ->where(['id' => $productId, 'store_id' => $storeId])
+                ->andWhere(['>', 'status', BaseModel::STATUS_DELETED])
+                ->one();
+            if (!$product) {
+                throw new \RuntimeException('PRODUCT_NOT_FOUND_OR_OUT_OF_SCOPE');
+            }
+        }
+        if (!$product) {
+            $product = new Product();
+            $product->created_by = $this->currentUserId();
+        }
+
+        $categoryId = (int)($input['category_id'] ?? $product->category_id ?? 0);
+        $name = mb_substr(trim((string)($input['name'] ?? $product->name ?? '')), 0, 255, 'UTF-8');
+        $sku = mb_substr(trim((string)($input['sku'] ?? $product->sku ?? '')), 0, 255, 'UTF-8');
+        $price = $this->moneyOrZero($input['price'] ?? $product->price ?? 0);
+        $marketPrice = $this->moneyOrZero($input['market_price'] ?? $product->market_price ?? $price);
+        $stock = $this->nonNegativeInt($input['stock'] ?? $product->stock ?? 0);
+
+        if ($categoryId <= 0) {
+            throw new \RuntimeException('CATEGORY_ID_REQUIRED');
+        }
+        if ($name === '') {
+            throw new \RuntimeException('PRODUCT_NAME_REQUIRED');
+        }
+        if ($sku === '') {
+            throw new \RuntimeException('PRODUCT_SKU_REQUIRED');
+        }
+        $this->assertCategoryUsable($storeId, $categoryId);
+
+        $product->store_id = $storeId;
+        $product->category_id = $categoryId;
+        $product->name = $name;
+        $product->sku = $sku;
+        $product->stock = $stock;
+        $product->price = $price;
+        $product->market_price = $marketPrice;
+        $product->thumb = mb_substr(trim((string)($input['thumb'] ?? $product->thumb ?? '')), 0, 255, 'UTF-8');
+        $product->image = mb_substr(trim((string)($input['image'] ?? $product->image ?? '')), 0, 255, 'UTF-8');
+        $product->brief = mb_substr(trim((string)($input['brief'] ?? $product->brief ?? '')), 0, 1000, 'UTF-8');
+        $product->content = (string)($input['content'] ?? $product->content ?? '');
+        $product->status = Product::STATUS_INACTIVE;
+        $product->updated_by = $this->currentUserId();
+
+        foreach ([
+            'stock_code' => 255,
+            'seo_keywords' => 255,
+            'video_url' => 1024,
+            'inventory_location' => 255,
+        ] as $field => $maxLength) {
+            if ($product->hasAttribute($field) && array_key_exists($field, $input)) {
+                $product->{$field} = mb_substr(trim((string)$input[$field]), 0, $maxLength, 'UTF-8');
+            }
+        }
+
+        if ($product->hasAttribute('audit_status')) {
+            $product->audit_status = 'submitted';
+            $product->audit_remark = 'Submitted from seller APP.';
+            $product->reviewed_at = 0;
+            $product->reviewer_id = 0;
+        }
+
+        if (!$product->save()) {
+            throw new \RuntimeException('Product save failed: ' . json_encode($product->errors, JSON_UNESCAPED_UNICODE));
+        }
+
+        return [
+            'version' => self::VERSION,
+            'product_write_version' => self::PRODUCT_WRITE_VERSION,
+            'product_write_gate' => self::PRODUCT_WRITE_GATE,
+            'message' => 'Product submitted for platform review.',
+            'product' => $this->productSummary($product),
         ];
     }
 
@@ -406,8 +493,58 @@ class AppSellerApiService
             'sales' => (int)$product->sales,
             'status' => (int)$product->status,
             'audit_status' => $this->attr($product, 'audit_status', ''),
+            'audit_note' => 'seller_app_submissions_require_platform_review',
+            'product_write_version' => self::PRODUCT_WRITE_VERSION,
             'product_write_gate' => self::PRODUCT_WRITE_GATE,
         ];
+    }
+
+    private function categoryOptions(int $storeId): array
+    {
+        $query = Category::find()
+            ->select(['id', 'name', 'parent_id'])
+            ->where(['>', 'status', BaseModel::STATUS_DELETED]);
+
+        $authorizedIds = [];
+        $hasAnyAuth = false;
+        if ($this->tableExists(StoreCategoryAuth::tableName())) {
+            $authorizedIds = (new Query())
+                ->select(['category_id'])
+                ->from(StoreCategoryAuth::tableName())
+                ->where([
+                    'store_id' => $storeId,
+                    'audit_status' => StoreCategoryAuth::AUDIT_APPROVED,
+                    'status' => BaseModel::STATUS_ACTIVE,
+                ])
+                ->column(Yii::$app->db);
+            $hasAnyAuth = (new Query())
+                ->from(StoreCategoryAuth::tableName())
+                ->where([
+                    'store_id' => $storeId,
+                    'status' => BaseModel::STATUS_ACTIVE,
+                ])
+                ->exists(Yii::$app->db);
+        }
+        if ($hasAnyAuth && !$authorizedIds) {
+            return [];
+        }
+        if ($hasAnyAuth) {
+            $query->andWhere(['id' => array_map('intval', $authorizedIds)]);
+        }
+
+        $rows = $query
+            ->orderBy(['sort' => SORT_ASC, 'id' => SORT_ASC])
+            ->limit(100)
+            ->asArray()
+            ->all();
+
+        return array_map(static function (array $row): array {
+            return [
+                'id' => (int)$row['id'],
+                'name' => (string)$row['name'],
+                'parent_id' => (int)$row['parent_id'],
+            ];
+        }, $rows);
     }
 
     private function orderSummary(Order $order): array
@@ -653,6 +790,82 @@ class AppSellerApiService
         }
 
         return is_numeric($value) ? round((float)$value, 2) : null;
+    }
+
+    private function moneyOrZero($value): float
+    {
+        if ($value === null || $value === '') {
+            return 0.0;
+        }
+
+        if (!is_numeric($value)) {
+            throw new \RuntimeException('INVALID_MONEY_VALUE');
+        }
+
+        return max(0.0, round((float)$value, 2));
+    }
+
+    private function nonNegativeInt($value): int
+    {
+        if ($value === null || $value === '') {
+            return 0;
+        }
+
+        if (!is_numeric($value)) {
+            throw new \RuntimeException('INVALID_INTEGER_VALUE');
+        }
+
+        return max(0, (int)$value);
+    }
+
+    private function assertCategoryUsable(int $storeId, int $categoryId): void
+    {
+        $category = Category::find()
+            ->where(['id' => $categoryId])
+            ->andWhere(['>', 'status', BaseModel::STATUS_DELETED])
+            ->one();
+        if (!$category) {
+            throw new \RuntimeException('CATEGORY_NOT_FOUND');
+        }
+
+        if (!$this->tableExists(StoreCategoryAuth::tableName())) {
+            return;
+        }
+
+        $hasAnyAuth = (new Query())
+            ->from(StoreCategoryAuth::tableName())
+            ->where([
+                'store_id' => $storeId,
+                'status' => BaseModel::STATUS_ACTIVE,
+            ])
+            ->exists(Yii::$app->db);
+        if (!$hasAnyAuth) {
+            return;
+        }
+
+        $isAllowed = (new Query())
+            ->from(StoreCategoryAuth::tableName())
+            ->where([
+                'store_id' => $storeId,
+                'category_id' => $categoryId,
+                'audit_status' => StoreCategoryAuth::AUDIT_APPROVED,
+                'status' => BaseModel::STATUS_ACTIVE,
+            ])
+            ->exists(Yii::$app->db);
+        if (!$isAllowed) {
+            throw new \RuntimeException('CATEGORY_NOT_AUTHORIZED_FOR_STORE');
+        }
+    }
+
+    private function currentUserId(): int
+    {
+        try {
+            return Yii::$app->has('user') && !Yii::$app->user->getIsGuest()
+                ? (int)Yii::$app->user->id
+                : 0;
+        } catch (\Throwable $e) {
+            return 0;
+        }
     }
 
     private function tableExists(string $table): bool

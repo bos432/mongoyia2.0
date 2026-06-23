@@ -32,13 +32,7 @@ class AppSellerController extends BaseController
     {
         return $this->runSellerAction(function (int $storeId) {
             if (Yii::$app->request->isPost) {
-                Yii::$app->response->statusCode = 409;
-                return [
-                    'version' => self::VERSION,
-                    'product_reserved' => true,
-                    'message' => 'Product write API is reserved until seller audit and browser role-flow acceptance is complete.',
-                    'gate' => AppSellerApiService::PRODUCT_WRITE_GATE,
-                ];
+                return $this->sellerService()->saveProduct($storeId, Yii::$app->request->post());
             }
 
             return $this->sellerService()->products($storeId, Yii::$app->request->get());

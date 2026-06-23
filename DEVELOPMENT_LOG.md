@@ -6562,3 +6562,27 @@
   - Phase 10/11/13/14/15 external/browser evidence remains pending; production remains `NO-GO`.
 - Next stage:
   - Commit and push this Phase 12 checklist patch, then re-read the development plan and this log before continuing with the next plan-listed local readiness or BaoTa/browser validation stage.
+
+## 2026-06-23 Phase 11 Browser Evidence Checklist
+
+- Stage name: Phase 11 payment browser evidence checklist
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting the stage.
+  - Standardized `payment-phase11-acceptance/run` report output to use `Browser Role-Flow Checklist` and `Accepted Evidence Command` sections.
+  - Documented platform admin, merchant, buyer, callback/audit, payment statistics, store-isolation, and live-payment safety checks in the generated Phase 11 report.
+  - Replaced generic evidence placeholders with fixed non-secret evidence paths for sandbox payment, merchant payment config, payment statistics, callback audit, and browser evidence review.
+  - Updated the development backlog to record Phase 11 browser evidence checklist coverage and accepted-evidence command guidance.
+- Main files changed/added:
+  - `console/controllers/PaymentPhase11AcceptanceController.php`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l console/controllers/PaymentPhase11AcceptanceController.php` passed.
+  - Static marker checks confirmed `Browser Role-Flow Checklist`, `Accepted Evidence Command`, `phase11-browser-evidence`, `phase11-sandbox-payment-evidence`, and `phase11-merchant-payment-config-evidence`.
+  - `git diff --check` reported no whitespace errors, only existing Windows line-ending conversion warnings.
+  - Full Yii console execution remains BaoTa-only because this local checkout lacks `vendor/autoload.php`.
+- Remaining issues:
+  - Real QPay/LianLian/PayPal sandbox evidence, provider callback/audit evidence, payment statistics review evidence, merchant-config browser evidence, and Phase 11 accepted flags remain pending.
+  - Live payment must stay blocked until Phase 10 production/provider evidence is real and accepted; production remains `NO-GO`.
+- Next stage:
+  - Commit and push this Phase 11 checklist patch, then re-read the development plan and this log before continuing with the next plan-listed local readiness or BaoTa/browser validation stage.

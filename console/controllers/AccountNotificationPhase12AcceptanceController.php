@@ -120,6 +120,18 @@ class AccountNotificationPhase12AcceptanceController extends Controller
             'ClientRepository',
             'ScopeRepository',
         ]);
+        $this->requireFileContains('OAuth PSR-7 response adapter', 'api/components/response/OauthResponse.php', [
+            'MONGOYIA_OAUTH_RESPONSE_ADAPTER_V1',
+            'getHeaderLine',
+            'normalizeHeaderValues',
+            'withAddedHeader',
+        ]);
+        $this->requireFileContains('OAuth PSR-7 stream adapter', 'api/components/response/OauthStream.php', [
+            'MONGOYIA_OAUTH_RESPONSE_ADAPTER_V1',
+            '__toString',
+            'read($length)',
+            'getContents',
+        ]);
         $this->requireFileContains('Encrypted third-party login config service', 'common/services/mall/OperationalIdentityConfigService.php', [
             'MONGOYIA_OPERATIONAL_IDENTITY_CONFIG_V1',
             'google',

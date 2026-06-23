@@ -1,5 +1,33 @@
 # Development Log
 
+## 2026-06-24 Phase 12 OAuth PSR-7 Response Adapter Completion
+
+- Stage name: Phase 12 OAuth PSR-7 response/stream adapter completion
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting the stage.
+  - Completed the OAuth PSR-7 stream adapter used by OAuth2 token flows: string casting, close/detach, size/tell/eof, seek/rewind, write/read/getContents, and metadata now return deterministic values instead of TODO stubs.
+  - Completed the OAuth PSR-7 response adapter header behavior: `getHeaders`, `getHeader`, `getHeaderLine`, `withHeader`, and `withAddedHeader` now provide usable PSR-style values while still writing through Yii response headers.
+  - Added `MONGOYIA_OAUTH_RESPONSE_ADAPTER_V1` coverage to Phase 12 acceptance so future regressions back to empty OAuth response adapters are caught.
+  - Updated the development backlog with a Phase 12.9 note for OAuth response adapter completion.
+- Main files changed/added:
+  - `api/components/response/OauthStream.php`
+  - `api/components/response/OauthResponse.php`
+  - `console/controllers/AccountNotificationPhase12AcceptanceController.php`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l api/components/response/OauthStream.php` passed.
+  - `php -l api/components/response/OauthResponse.php` passed.
+  - `php -l console/controllers/AccountNotificationPhase12AcceptanceController.php` passed.
+  - Static marker scan confirmed `MONGOYIA_OAUTH_RESPONSE_ADAPTER_V1`, `getHeaderLine`, `normalizeHeaderValues`, `read($length)`, and no remaining OAuth adapter TODO stubs.
+  - `git diff --check` reported no whitespace errors, only existing Windows line-ending conversion warnings.
+  - Full Yii console execution remains BaoTa-only because this local checkout lacks `vendor/autoload.php`.
+- Remaining issues:
+  - Real Facebook/Google provider callback evidence, password recovery/security-code delivery evidence, notification delivery evidence, language-review evidence, and browser role-flow evidence remain pending.
+  - Production remains `NO-GO`.
+- Next stage:
+  - Verify, commit, and push this Phase 12 adapter completion, then continue with the next plan-listed local readiness item or BaoTa/browser validation after the server refreshes.
+
 ## 2026-06-24 Phase 13 Browser Deployment Freshness Recheck After PayPal Boundary Push
 
 - Stage name: Phase 13 browser deployment freshness recheck after PayPal boundary push

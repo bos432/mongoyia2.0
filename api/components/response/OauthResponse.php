@@ -12,6 +12,8 @@ use Yii;
  */
 class OauthResponse implements \Psr\Http\Message\ResponseInterface
 {
+    public const VERSION = 'MONGOYIA_OAUTH_RESPONSE_ADAPTER_V1';
+
     public $_stream;
 
     /**
@@ -36,7 +38,7 @@ class OauthResponse implements \Psr\Http\Message\ResponseInterface
      */
     public function getHeaders()
     {
-        return Yii::$app->response->headers;
+        return Yii::$app->response->headers->toArray();
     }
 
     /**
@@ -52,7 +54,8 @@ class OauthResponse implements \Psr\Http\Message\ResponseInterface
      */
     public function getHeader($name)
     {
-        return Yii::$app->response->headers->get($name);
+        $value = Yii::$app->response->headers->get($name, null, false);
+        return $value === null ? [] : (array)$value;
     }
 
     /**
@@ -60,7 +63,7 @@ class OauthResponse implements \Psr\Http\Message\ResponseInterface
      */
     public function getHeaderLine($name)
     {
-        // TODO: Implement getHeaderLine() method.
+        return implode(',', $this->getHeader($name));
     }
 
     /**
@@ -68,7 +71,7 @@ class OauthResponse implements \Psr\Http\Message\ResponseInterface
      */
     public function withHeader($name, $value)
     {
-        Yii::$app->response->headers->set($name, $value);
+        Yii::$app->response->headers->set($name, $this->normalizeHeaderValues($value));
         return $this;
     }
 
@@ -77,7 +80,9 @@ class OauthResponse implements \Psr\Http\Message\ResponseInterface
      */
     public function withAddedHeader($name, $value)
     {
-        Yii::$app->response->headers->set($name, $value);
+        foreach ($this->normalizeHeaderValues($value) as $headerValue) {
+            Yii::$app->response->headers->add($name, $headerValue);
+        }
         return $this;
     }
 
@@ -133,5 +138,10 @@ class OauthResponse implements \Psr\Http\Message\ResponseInterface
     public function getReasonPhrase()
     {
         return Yii::$app->response->statusText;
+    }
+
+    private function normalizeHeaderValues($value): array
+    {
+        return array_map('strval', is_array($value) ? $value : [$value]);
     }
 }

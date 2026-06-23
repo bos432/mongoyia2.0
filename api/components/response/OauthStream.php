@@ -3,6 +3,7 @@
 namespace api\components\response;
 use Yii;
 use yii\helpers\Json;
+use RuntimeException;
 
 /**
  * Class OAuthStream
@@ -11,13 +12,18 @@ use yii\helpers\Json;
  */
 class OauthStream implements \Psr\Http\Message\StreamInterface
 {
+    public const VERSION = 'MONGOYIA_OAUTH_RESPONSE_ADAPTER_V1';
+
+    private $contents = '';
+    private $position = 0;
+    private $closed = false;
 
     /**
      * @inheritDoc
      */
     public function __toString()
     {
-        // TODO: Implement __toString() method.
+        return $this->contents;
     }
 
     /**
@@ -25,7 +31,9 @@ class OauthStream implements \Psr\Http\Message\StreamInterface
      */
     public function close()
     {
-        // TODO: Implement close() method.
+        $this->contents = '';
+        $this->position = 0;
+        $this->closed = true;
     }
 
     /**
@@ -33,7 +41,8 @@ class OauthStream implements \Psr\Http\Message\StreamInterface
      */
     public function detach()
     {
-        // TODO: Implement detach() method.
+        $this->close();
+        return null;
     }
 
     /**
@@ -41,7 +50,7 @@ class OauthStream implements \Psr\Http\Message\StreamInterface
      */
     public function getSize()
     {
-        // TODO: Implement getSize() method.
+        return strlen($this->contents);
     }
 
     /**
@@ -49,7 +58,8 @@ class OauthStream implements \Psr\Http\Message\StreamInterface
      */
     public function tell()
     {
-        // TODO: Implement tell() method.
+        $this->assertOpen();
+        return $this->position;
     }
 
     /**
@@ -57,7 +67,7 @@ class OauthStream implements \Psr\Http\Message\StreamInterface
      */
     public function eof()
     {
-        // TODO: Implement eof() method.
+        return $this->position >= $this->getSize();
     }
 
     /**
@@ -65,7 +75,7 @@ class OauthStream implements \Psr\Http\Message\StreamInterface
      */
     public function isSeekable()
     {
-        // TODO: Implement isSeekable() method.
+        return !$this->closed;
     }
 
     /**
@@ -73,7 +83,23 @@ class OauthStream implements \Psr\Http\Message\StreamInterface
      */
     public function seek($offset, $whence = SEEK_SET)
     {
-        // TODO: Implement seek() method.
+        $this->assertOpen();
+
+        if ($whence === SEEK_SET) {
+            $position = $offset;
+        } elseif ($whence === SEEK_CUR) {
+            $position = $this->position + $offset;
+        } elseif ($whence === SEEK_END) {
+            $position = $this->getSize() + $offset;
+        } else {
+            throw new RuntimeException('Invalid seek mode.');
+        }
+
+        if ($position < 0) {
+            throw new RuntimeException('Cannot seek before the beginning of the stream.');
+        }
+
+        $this->position = $position;
     }
 
     /**
@@ -81,7 +107,7 @@ class OauthStream implements \Psr\Http\Message\StreamInterface
      */
     public function rewind()
     {
-        // TODO: Implement rewind() method.
+        $this->seek(0);
     }
 
     /**
@@ -89,7 +115,7 @@ class OauthStream implements \Psr\Http\Message\StreamInterface
      */
     public function isWritable()
     {
-        // TODO: Implement isWritable() method.
+        return !$this->closed;
     }
 
     /**
@@ -97,7 +123,21 @@ class OauthStream implements \Psr\Http\Message\StreamInterface
      */
     public function write($string)
     {
-        Yii::$app->response->data = empty(json_decode($string)) ? $string : Json::decode($string);
+        $this->assertOpen();
+        $string = (string)$string;
+        $prefix = substr($this->contents, 0, $this->position);
+        $suffixPosition = $this->position + strlen($string);
+        $suffix = $suffixPosition < $this->getSize() ? substr($this->contents, $suffixPosition) : '';
+        $this->contents = $prefix . $string . $suffix;
+        $this->position += strlen($string);
+
+        try {
+            Yii::$app->response->data = Json::decode($this->contents, true);
+        } catch (\Throwable $exception) {
+            Yii::$app->response->data = $this->contents;
+        }
+
+        return strlen($string);
     }
 
     /**
@@ -105,7 +145,7 @@ class OauthStream implements \Psr\Http\Message\StreamInterface
      */
     public function isReadable()
     {
-        // TODO: Implement isReadable() method.
+        return !$this->closed;
     }
 
     /**
@@ -113,7 +153,12 @@ class OauthStream implements \Psr\Http\Message\StreamInterface
      */
     public function read($length)
     {
-        return strlen(Yii::$app->response->data);
+        $this->assertOpen();
+        $length = max(0, (int)$length);
+        $chunk = substr($this->contents, $this->position, $length);
+        $this->position += strlen($chunk);
+
+        return $chunk;
     }
 
     /**
@@ -121,7 +166,11 @@ class OauthStream implements \Psr\Http\Message\StreamInterface
      */
     public function getContents()
     {
-        return Yii::$app->response->data;
+        $this->assertOpen();
+        $contents = substr($this->contents, $this->position);
+        $this->position = $this->getSize();
+
+        return $contents;
     }
 
     /**
@@ -129,6 +178,20 @@ class OauthStream implements \Psr\Http\Message\StreamInterface
      */
     public function getMetadata($key = null)
     {
-        // TODO: Implement getMetadata() method.
+        $metadata = [
+            'seekable' => $this->isSeekable(),
+            'readable' => $this->isReadable(),
+            'writable' => $this->isWritable(),
+            'uri' => 'php://memory',
+        ];
+
+        return $key === null ? $metadata : ($metadata[$key] ?? null);
+    }
+
+    private function assertOpen(): void
+    {
+        if ($this->closed) {
+            throw new RuntimeException('Stream is closed.');
+        }
     }
 }

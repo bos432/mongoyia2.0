@@ -138,6 +138,22 @@ class PaymentPhase11AcceptanceController extends Controller
             'Duplicate paid callback ignored',
             'paymentGatewayResponse',
         ]);
+        $this->requireFileContains('Backend order refund POST guard', 'backend/modules/mall/controllers/OrderController.php', [
+            'MONGOYIA_BACKEND_ORDER_REFUND_POST_GUARD_V1',
+            "'edit-status'] = ['post']",
+            "post('id', 0)",
+            "post('status', null)",
+            'markRefunded',
+        ]);
+        $this->requireFileContains('Backend order refund UI posts CSRF forms', 'backend/modules/mall/views/order/index.php', [
+            'data-mongoyia-order-refund-post-guard',
+            'csrfToken',
+            "Url::to(['edit-status'])",
+            'PAYMENT_STATUS_REFUND',
+        ]);
+        $this->requireFileNotContains('Backend order refund UI has no URL-id status link', 'backend/modules/mall/views/order/index.php', [
+            "Html::buttonModal(['edit-status', 'id' =>",
+        ]);
         $this->requireFileContains('Payment attempt audit model', 'common/models/mall/PaymentAttempt.php', [
             'mall_payment_attempt',
             'RESULT_PENDING',
@@ -420,6 +436,25 @@ class PaymentPhase11AcceptanceController extends Controller
         }
 
         $this->addCheck($label, 'PASS', $path, 'Required Phase 11 markers are present.');
+    }
+
+    private function requireFileNotContains(string $label, string $path, array $needles): void
+    {
+        $full = $this->resolvePath($path);
+        if (!is_file($full)) {
+            $this->addCheck($label, 'FAIL', $path, 'Required file is missing.');
+            return;
+        }
+
+        $content = (string)file_get_contents($full);
+        foreach ($needles as $needle) {
+            if (strpos($content, $needle) !== false) {
+                $this->addCheck($label, 'FAIL', $path, "Forbidden marker {$needle} is still present.");
+                return;
+            }
+        }
+
+        $this->addCheck($label, 'PASS', $path, 'Forbidden Phase 11 markers are absent.');
     }
 
     private function section(string $name): void

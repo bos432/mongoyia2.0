@@ -8141,3 +8141,34 @@
   - Phase 10/11/12/15 external/provider/browser evidence gates remain pending; production remains `NO-GO`.
 - Next stage:
   - Commit and push this backend seller shipment POST id hardening patch, then reread the plan/log and continue with the next plan-listed readiness item.
+
+## 2026-06-24 Phase 11 Backend Order Refund POST Guard
+
+- Stage name: Phase 11.8 backend order refund POST guard
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting the stage.
+  - Added `MONGOYIA_BACKEND_ORDER_REFUND_POST_GUARD_V1` to the backend mall order controller.
+  - Restricted the order controller's `/backend/mall/order/edit-status` override to POST.
+  - Changed backend order refund handling to read `id` and `status` only from POST and reject non-refund status writes in the order override.
+  - Replaced the backend order-list refund URL link with a CSRF-protected inline POST form carrying hidden `id` and `status`.
+  - Added stable `data-mongoyia-order-refund-post-guard` to the refund form.
+  - Added Phase 11 acceptance coverage for the controller guard, refund UI form, and absence of the old URL-id status link.
+  - Updated the Phase 11 backlog notes as Phase 11.8.
+- Main files changed/added:
+  - `backend/modules/mall/controllers/OrderController.php`
+  - `backend/modules/mall/views/order/index.php`
+  - `console/controllers/PaymentPhase11AcceptanceController.php`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l backend/modules/mall/controllers/OrderController.php` passed.
+  - `php -l backend/modules/mall/views/order/index.php` passed.
+  - `php -l console/controllers/PaymentPhase11AcceptanceController.php` passed.
+  - Static marker checks confirmed `MONGOYIA_BACKEND_ORDER_REFUND_POST_GUARD_V1`, `data-mongoyia-order-refund-post-guard`, `edit-status` POST verb coverage, POST-only `id/status` reads, and no old `Html::buttonModal(['edit-status', 'id' => ...])` refund link in the order controller/view.
+  - `git diff --check` reported no whitespace errors, only existing Windows line-ending conversion warnings.
+  - Full Yii console execution remains BaoTa-only because this local checkout lacks `vendor/autoload.php`.
+- Remaining issues:
+  - BaoTa/test server must rerun Phase 11 payment acceptance and backend order refund browser evidence after deployment.
+  - Real/sandbox payment provider evidence, callback/audit evidence, and production evidence remain pending; production remains `NO-GO`.
+- Next stage:
+  - Commit and push this backend order refund POST guard patch, then reread the plan/log and continue with the next plan-listed readiness item.

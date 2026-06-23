@@ -17,6 +17,7 @@ class OrderController extends BaseController
 {
     public const LOGISTICS_WORKFLOW_POST_GUARD_VERSION = 'MONGOYIA_ORDER_LOGISTICS_WORKFLOW_POST_GUARD_V1';
     public const SHIPMENT_POST_ID_GUARD_VERSION = 'MONGOYIA_BACKEND_ORDER_SHIPMENT_POST_ID_GUARD_V1';
+    public const REFUND_POST_GUARD_VERSION = 'MONGOYIA_BACKEND_ORDER_REFUND_POST_GUARD_V1';
 
     /**
       * @var Order
@@ -51,6 +52,7 @@ class OrderController extends BaseController
     public function behaviors()
     {
         $behaviors = parent::behaviors();
+        $behaviors['verbs']['actions']['edit-status'] = ['post'];
         $behaviors['verbs']['actions']['logistics-status-batch'] = ['post'];
         $behaviors['verbs']['actions']['logistics-review-batch'] = ['post'];
 
@@ -88,15 +90,15 @@ class OrderController extends BaseController
 
     public function actionEditStatus()
     {
-        $id = Yii::$app->request->get('id');
-        $status = Yii::$app->request->get('status');
+        $id = Yii::$app->request->post('id', 0);
+        $status = Yii::$app->request->post('status', null);
         if (!$id || $status === null) {
             return $this->redirectError(Yii::t('app', 'Invalid id'));
         }
 
         $status = (int)$status;
         if ($status !== Order::PAYMENT_STATUS_REFUND) {
-            return parent::actionEditStatus();
+            return $this->redirectError(Yii::t('app', 'Invalid id'));
         }
 
         $model = $this->findModel($id);

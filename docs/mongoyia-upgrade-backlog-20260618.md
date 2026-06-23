@@ -368,6 +368,8 @@ php yii payment-phase11-acceptance/run --runChildChecks=1 --fixture=1 --interact
 
 Strict Phase 11 acceptance remains pending until sandbox provider evidence, merchant payment configuration, payment statistics, callback/audit regression, and browser role-flow evidence are complete. The Phase 11 acceptance report now includes a browser role-flow checklist and accepted-evidence command template for `phase11-sandbox-payment-evidence`, `phase11-merchant-payment-config-evidence`, `phase11-payment-statistics-evidence`, `phase11-callback-audit-evidence`, and `phase11-browser-evidence`. `MONGOYIA_PAYPAL_PHASE11_RUNTIME_SUPERSEDES_PHASE6_NOGO_V1` records that PayPal Orders/Webhook runtime acceptance replaces the old Phase 6 child no-go gate inside Phase 11; live production payment still cannot be enabled without Phase 10 evidence. These commands are read-only and do not enable live payment. Payment statistics can be checked separately with `php yii payment-stat-readiness/run --fixture=1 --interactive=0`; callback regression readiness can be checked separately with `php yii payment-callback-regression-readiness/run --fixture=1 --strict=1 --interactive=0`.
 
+Phase 11.8 backend order refund POST guard: the backend order refund action now uses `MONGOYIA_BACKEND_ORDER_REFUND_POST_GUARD_V1`, restricts `/backend/mall/order/edit-status` to POST in the order controller, reads `id/status` only from POST, and only permits `PAYMENT_STATUS_REFUND`. The order list renders a CSRF-protected `data-mongoyia-order-refund-post-guard` form instead of a URL-id status link; Phase 11 acceptance checks the guard and rejects the old `Html::buttonModal(['edit-status', 'id' => ...])` refund link.
+
 Phase 12 acceptance command:
 
 ```bash

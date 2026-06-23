@@ -61,6 +61,16 @@ $postActionButton = static function (array $url, string $label, array $options =
 
     return $html;
 };
+$refundPostButton = static function (int $orderId): string {
+    $html = '<form method="post" action="' . Html::encode(Url::to(['edit-status'])) . '" class="d-inline" data-mongoyia-order-refund-post-guard="1">';
+    $html .= '<input type="hidden" name="' . Html::encode(Yii::$app->request->csrfParam) . '" value="' . Html::encode(Yii::$app->request->csrfToken) . '">';
+    $html .= '<input type="hidden" name="id" value="' . (int)$orderId . '">';
+    $html .= '<input type="hidden" name="status" value="' . (int)ActiveModel::PAYMENT_STATUS_REFUND . '">';
+    $html .= '<button type="submit" class="btn btn-danger btn-sm" onclick="return confirm(\'' . Html::encode(Yii::t('app', 'Are you sure to do this operation?')) . '\')">' . Html::encode(Yii::t('app', 'Refund')) . '</button>';
+    $html .= '</form>';
+
+    return $html;
+};
 ?>
 
 <div class="row">
@@ -111,8 +121,8 @@ $postActionButton = static function (array $url, string $label, array $options =
                         'delete' => function ($url, $model, $key) {
                             return Html::delete(['delete', 'id' => $model->id, 'soft' => true], Yii::t('app', 'Delete'));
                         },
-                        'refund' => function ($url, $model, $key) {
-                            return $model->parent_id == 0 && $model->payment_method == ActiveModel::PAYMENT_METHOD_PAY && $model->payment_status == ActiveModel::PAYMENT_STATUS_PAID ? Html::buttonModal(['edit-status', 'id' => $model->id, 'status' => ActiveModel::PAYMENT_STATUS_REFUND], Yii::t('app', 'Refund'), ['class' => "btn btn-danger btn-sm"], false) : '';
+                        'refund' => function ($url, $model, $key) use ($refundPostButton) {
+                            return $model->parent_id == 0 && $model->payment_method == ActiveModel::PAYMENT_METHOD_PAY && $model->payment_status == ActiveModel::PAYMENT_STATUS_PAID ? $refundPostButton((int)$model->id) : '';
                         }
                     ];
                     $actionTemplate = '{view} {edit} {prepare} {fh} {receive} {review} {delete} {refund}';

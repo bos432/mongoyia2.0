@@ -75,13 +75,7 @@ class AppSellerController extends BaseController
     {
         return $this->runSellerAction(function (int $storeId) {
             if (Yii::$app->request->isPost) {
-                Yii::$app->response->statusCode = 409;
-                return [
-                    'version' => self::VERSION,
-                    'coupon_participation_reserved' => true,
-                    'message' => 'Coupon participation write API is reserved until APP browser role-flow acceptance is complete.',
-                    'gate' => 'seller_coupon_participation_requires_browser_acceptance',
-                ];
+                return $this->sellerService()->participateCoupon($storeId, Yii::$app->request->post());
             }
 
             return $this->sellerService()->coupons($storeId);

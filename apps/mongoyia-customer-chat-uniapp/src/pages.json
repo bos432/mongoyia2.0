@@ -73,6 +73,14 @@
       }
     },
     {
+      "path": "pages/seller/coupons",
+      "style": {
+        "navigationBarTitleText": "优惠券",
+        "navigationBarBackgroundColor": "#334155",
+        "navigationBarTextStyle": "white"
+      }
+    },
+    {
       "path": "pages/auth/login",
       "style": {
         "navigationBarTitleText": "登录",

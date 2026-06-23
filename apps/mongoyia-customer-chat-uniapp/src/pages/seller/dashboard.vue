@@ -18,6 +18,7 @@
     <view class="action-list">
       <button class="action-btn" @tap="goProducts">商品管理</button>
       <button class="action-btn" @tap="goOrders">订单发货</button>
+      <button class="action-btn" @tap="goCoupons">优惠券</button>
       <button class="action-btn" @tap="loadDashboard">刷新数据</button>
     </view>
 
@@ -66,6 +67,9 @@ export default {
     },
     goOrders() {
       uni.navigateTo({ url: '/pages/seller/orders?baseUrl=' + encodeURIComponent(this.baseUrl) })
+    },
+    goCoupons() {
+      uni.navigateTo({ url: '/pages/seller/coupons?baseUrl=' + encodeURIComponent(this.baseUrl) })
     },
     openLogin() {
       uni.navigateTo({

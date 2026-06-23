@@ -68,6 +68,8 @@ class AppSellerPhase13ReadinessController extends Controller
             'MONGOYIA_APP_SELLER_PRODUCT_WRITE_V1',
             'saveProduct',
             'seller_product_write_requires_platform_audit',
+            'MONGOYIA_APP_SELLER_COUPON_PARTICIPATION_WRITE_V1',
+            'participateCoupon',
         ]);
         $this->requireFileContains('Seller APP API controller', 'api/modules/v1/controllers/AppSellerController.php', [
             'MONGOYIA_APP_SELLER_CONTROLLER_V1',
@@ -83,6 +85,7 @@ class AppSellerPhase13ReadinessController extends Controller
             'sellerStoreId',
             'shipOrder',
             'saveProduct',
+            'participateCoupon',
         ]);
         $this->requireFileContains('APP shared API helper uses seller endpoints', 'apps/mongoyia-customer-chat-uniapp/src/utils/appApi.js', [
             '/api/v1/app-seller/dashboard',
@@ -105,6 +108,12 @@ class AppSellerPhase13ReadinessController extends Controller
             'MONGOYIA_APP_SELLER_PRODUCT_WRITE_V1',
             'saveProduct',
             '提交审核',
+        ]);
+        $this->requireFileContains('Seller coupon page posts platform participation changes', 'apps/mongoyia-customer-chat-uniapp/src/pages/seller/coupons.vue', [
+            'data-mongoyia-phase13-seller-coupons',
+            'MONGOYIA_APP_SELLER_COUPON_PARTICIPATION_WRITE_V1',
+            'participateCoupon',
+            'platform_participation',
         ]);
         $this->requireFileContains('API URL manager supports APP controller ids', 'api/config/main.php', [
             '<modules:[\w-]+>/<controller:[\w-]+>/<action:[\w-]+>',
@@ -129,7 +138,7 @@ class AppSellerPhase13ReadinessController extends Controller
             '/api/v1/app-seller/shipment' => 'authenticated seller shipment write',
             '/api/v1/app-seller/logistics' => 'authenticated seller logistics method and fee summary',
             '/api/v1/app-seller/deposit' => 'authenticated seller deposit balance and recent logs',
-            '/api/v1/app-seller/coupons' => 'authenticated seller coupon and platform participation summary',
+            '/api/v1/app-seller/coupons' => 'authenticated seller coupon summary plus platform coupon join/leave write',
             '/api/v1/app-seller/statistics' => 'authenticated seller period/product/shipment statistics',
             '/api/v1/app-seller/distribution' => 'authenticated seller distribution overview',
         ] as $route => $notes) {
@@ -153,8 +162,8 @@ class AppSellerPhase13ReadinessController extends Controller
             '- Generated at: ' . date('Y-m-d H:i:s'),
             '- Failures: ' . $this->failures,
             '- Warnings: ' . $this->warnings,
-            '- Scope: seller APP JSON APIs for dashboard, products, audited product create/edit, orders, shipment write, logistics fee, deposit, coupons, statistics, and distribution overview.',
-            '- Safety: seller APIs are store-scoped to the authenticated user store; shipment write uses existing paid/COD checks and idempotent shipment-fee deduction. Product writes force status inactive and audit_status=submitted, so sellers cannot list products without platform review.',
+            '- Scope: seller APP JSON APIs for dashboard, products, audited product create/edit, orders, shipment write, logistics fee, deposit, coupons, platform coupon participation join/leave, statistics, and distribution overview.',
+            '- Safety: seller APIs are store-scoped to the authenticated user store; shipment write uses existing paid/COD checks and idempotent shipment-fee deduction. Product writes force status inactive and audit_status=submitted, so sellers cannot list products without platform review. Coupon participation writes only join/leave platform coupon participation rows and do not issue coupons or mutate orders.',
             '',
             '## Checks',
             '',

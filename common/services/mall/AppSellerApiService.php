@@ -23,6 +23,7 @@ class AppSellerApiService
     public const VERSION = 'MONGOYIA_APP_SELLER_API_V1';
     public const SHIPMENT_WRITE_VERSION = 'MONGOYIA_APP_SELLER_SHIPMENT_WRITE_V1';
     public const PRODUCT_WRITE_VERSION = 'MONGOYIA_APP_SELLER_PRODUCT_WRITE_V1';
+    public const COUPON_PARTICIPATION_WRITE_VERSION = 'MONGOYIA_APP_SELLER_COUPON_PARTICIPATION_WRITE_V1';
     public const PRODUCT_WRITE_GATE = 'seller_product_write_requires_platform_audit';
 
     public function dashboard(int $storeId): array
@@ -48,6 +49,7 @@ class AppSellerApiService
             'gates' => [
                 'shipment_write_version' => self::SHIPMENT_WRITE_VERSION,
                 'product_write_version' => self::PRODUCT_WRITE_VERSION,
+                'coupon_participation_write_version' => self::COUPON_PARTICIPATION_WRITE_VERSION,
                 'product_write' => self::PRODUCT_WRITE_GATE,
             ],
         ];
@@ -368,8 +370,69 @@ class AppSellerApiService
             'summary' => [
                 'store_coupon_count' => count($storeCoupons),
                 'usage_count' => count($usageRows),
-                'participation_write_gate' => 'seller_coupon_participation_requires_browser_acceptance',
+                'participation_write_version' => self::COUPON_PARTICIPATION_WRITE_VERSION,
+                'participation_write_scope' => 'platform_coupon_join_leave_only',
             ],
+            'platform_participation' => $this->platformCouponParticipation($storeId),
+        ];
+    }
+
+    public function participateCoupon(int $storeId, array $input): array
+    {
+        if (!$this->tableExists(StoreCouponParticipation::tableName())) {
+            throw new \RuntimeException('STORE_COUPON_PARTICIPATION_TABLE_MISSING');
+        }
+
+        $couponTypeId = (int)($input['coupon_type_id'] ?? $input['id'] ?? 0);
+        $action = strtolower(trim((string)($input['action'] ?? $input['participation_status'] ?? 'join')));
+        $targetStatus = in_array($action, ['leave', StoreCouponParticipation::PARTICIPATION_LEFT], true)
+            ? StoreCouponParticipation::PARTICIPATION_LEFT
+            : StoreCouponParticipation::PARTICIPATION_JOINED;
+
+        if ($couponTypeId <= 0) {
+            throw new \RuntimeException('COUPON_TYPE_ID_REQUIRED');
+        }
+
+        $couponType = CouponType::find()
+            ->where(['id' => $couponTypeId, 'store_id' => $this->platformStoreIds()])
+            ->andWhere(['>', 'status', BaseModel::STATUS_DELETED])
+            ->one();
+        if (!$couponType) {
+            throw new \RuntimeException('PLATFORM_COUPON_NOT_FOUND');
+        }
+
+        $model = StoreCouponParticipation::find()
+            ->where(['store_id' => $storeId, 'coupon_type_id' => $couponTypeId])
+            ->one();
+        if (!$model) {
+            $model = new StoreCouponParticipation();
+            $model->store_id = $storeId;
+            $model->coupon_type_id = $couponTypeId;
+            $model->created_by = $this->currentUserId();
+        }
+
+        $now = time();
+        $model->participation_status = $targetStatus;
+        $model->status = $targetStatus === StoreCouponParticipation::PARTICIPATION_JOINED
+            ? BaseModel::STATUS_ACTIVE
+            : BaseModel::STATUS_INACTIVE;
+        $model->remark = mb_substr(trim((string)($input['remark'] ?? 'Submitted from seller APP.')), 0, 255, 'UTF-8');
+        $model->updated_by = $this->currentUserId();
+        if ($targetStatus === StoreCouponParticipation::PARTICIPATION_JOINED) {
+            $model->joined_at = $now;
+        } else {
+            $model->left_at = $now;
+        }
+
+        if (!$model->save()) {
+            throw new \RuntimeException('Coupon participation save failed: ' . json_encode($model->errors, JSON_UNESCAPED_UNICODE));
+        }
+
+        return [
+            'version' => self::VERSION,
+            'coupon_participation_write_version' => self::COUPON_PARTICIPATION_WRITE_VERSION,
+            'message' => $targetStatus === StoreCouponParticipation::PARTICIPATION_JOINED ? 'Joined platform coupon.' : 'Left platform coupon.',
+            'participation' => $this->couponParticipationSummary($couponType, $model),
             'platform_participation' => $this->platformCouponParticipation($storeId),
         ];
     }
@@ -652,6 +715,22 @@ class AppSellerApiService
         unset($row);
 
         return $rows;
+    }
+
+    private function couponParticipationSummary(CouponType $couponType, StoreCouponParticipation $participation): array
+    {
+        return [
+            'id' => (int)$couponType->id,
+            'coupon_type_id' => (int)$couponType->id,
+            'name' => (string)$couponType->name,
+            'money' => (string)$couponType->money,
+            'min_amount' => number_format((float)$couponType->min_amount, 2, '.', ''),
+            'started_at' => (int)$couponType->started_at,
+            'ended_at' => (int)$couponType->ended_at,
+            'participation_status' => (string)$participation->participation_status,
+            'joined_at' => (int)$participation->joined_at,
+            'left_at' => (int)$participation->left_at,
+        ];
     }
 
     private function periodStat(int $storeId, int $from, int $to): array

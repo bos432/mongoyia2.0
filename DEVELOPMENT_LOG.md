@@ -5772,3 +5772,40 @@
 - Next stage:
   - Commit and push Phase 13.7.
   - Re-read the development plan and this log, then continue with the next plan-listed small stage: seller APP coupon participation write path if it can be implemented without bypassing coupon rules and browser evidence boundaries, or proceed to BaoTa/browser validation if code gaps are exhausted.
+
+## 2026-06-23 Phase 13.8 Seller APP Coupon Participation Write
+
+- Stage name: Phase 13.8 seller APP platform coupon participation
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting the stage.
+  - Added `MONGOYIA_APP_SELLER_COUPON_PARTICIPATION_WRITE_V1` and a real `participateCoupon()` path to the seller APP API service.
+  - Enabled POST `/api/v1/app-seller/coupons` for authenticated seller join/leave of platform coupon participation rows.
+  - Reused existing `StoreCouponParticipation` semantics: joined rows are active, left rows are inactive, unique by store/coupon type, and store-scoped to the authenticated seller store.
+  - Kept the write path narrow: it does not create coupons, issue user coupons, mutate orders, change funds, or trigger payouts.
+  - Added the uni-app seller coupon page with platform coupon participation,本店优惠券, usage records, join/leave buttons, and refresh persistence.
+  - Added the seller dashboard coupon entry and registered `pages/seller/coupons` in the uni-app route registry.
+  - Updated Phase 13 readiness/acceptance source markers and backlog text to record the coupon participation write path.
+- Main files changed/added:
+  - `common/services/mall/AppSellerApiService.php`
+  - `api/modules/v1/controllers/AppSellerController.php`
+  - `apps/mongoyia-customer-chat-uniapp/src/pages.json`
+  - `apps/mongoyia-customer-chat-uniapp/src/pages/seller/dashboard.vue`
+  - `apps/mongoyia-customer-chat-uniapp/src/pages/seller/coupons.vue`
+  - `console/controllers/AppSellerPhase13ReadinessController.php`
+  - `console/controllers/AppPhase13AcceptanceController.php`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l` passed for `AppSellerApiService.php`, `AppSellerController.php`, `AppSellerPhase13ReadinessController.php`, and `AppPhase13AcceptanceController.php`.
+  - `node -e "JSON.parse(...pages.json...)"` passed.
+  - `npm run build:h5` passed in `apps/mongoyia-customer-chat-uniapp`; output contained only existing uni-app/Vite informational/deprecation warnings.
+  - Static marker checks confirmed `MONGOYIA_APP_SELLER_COUPON_PARTICIPATION_WRITE_V1`, `participateCoupon`, APP coupon page markers, route registration, and Phase 13.8 backlog markers.
+  - `git diff --check` reported no whitespace errors; only existing Windows line-ending conversion warnings.
+  - Full Yii console execution was not run locally because this patch checkout does not have `vendor/autoload.php`; after BaoTa pull run `app-seller-phase13-readiness/run --fixture=1` and `app-phase13-acceptance/run --fixture=1`.
+- Remaining issues:
+  - Phase 13 authenticated H5/browser role-flow evidence remains pending until BaoTa pulls these commits and runs readiness commands with usable buyer/seller test accounts.
+  - Phase 14/15 browser evidence remains pending until BaoTa pulls latest code and migrations.
+  - Phase 10/11/12 external provider and production evidence remain incomplete; production remains `NO-GO`.
+- Next stage:
+  - Commit and push Phase 13.8.
+  - Re-read the development plan and this log, then continue with BaoTa/browser validation if the test server has pulled the latest commits, otherwise move to the next plan-listed Phase 14/15 browser evidence or production-readiness stage that can be advanced locally.

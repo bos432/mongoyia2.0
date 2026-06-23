@@ -5249,3 +5249,34 @@
 - Next stage:
   - Commit and push Phase 13.3, then on BaoTa run `app-auth-phase13-readiness/run --fixture=1` and `app-phase13-acceptance/run --fixture=1`.
   - Continue Phase 13.4 by running H5/browser role-flow evidence where possible and deciding which gated write paths can be opened only after their payment/address/stock/logistics evidence gates pass.
+
+## 2026-06-23 Phase 13.4 Local H5 Anonymous Browser Smoke
+
+- Stage name: Phase 13.4 local H5 browser smoke and baseUrl hardening
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting the stage.
+  - Started the uni-app H5 dev server locally on `http://127.0.0.1:5177`.
+  - Verified in the in-app browser that the buyer home page opens, shows search/login/seller entry points, and has no console errors.
+  - Verified the login page opens from the buyer home login entry, shows buyer login, username, and password fields, and has no console errors.
+  - Verified direct H5 navigation to buyer cart shows a login prompt instead of a blank/blocking page when unauthenticated.
+  - Verified direct H5 navigation to seller dashboard shows seller metrics shell and seller-login prompt instead of a blank/blocking page when unauthenticated.
+  - Fixed double-encoded `baseUrl`/`wsUrl` handling in H5 route parameters by decoding valid URL values in `cleanBaseUrl`/`cleanWsUrl`.
+  - Updated the Phase 13 backlog status to record the local H5 anonymous browser smoke.
+- Main files changed/added:
+  - `apps/mongoyia-customer-chat-uniapp/src/utils/config.js`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - Browser validation passed for `http://127.0.0.1:5177/#/`, `#/pages/auth/login`, `#/pages/buyer/cart`, and `#/pages/seller/dashboard`.
+  - Browser console error checks returned no blocking errors on the verified pages.
+  - `node -e "JSON.parse(...pages.json...)"` passed.
+  - `npm run build:h5` passed in `apps/mongoyia-customer-chat-uniapp`; output contained only uni-app/Vite informational/deprecation warnings.
+  - `git diff --check` reported no whitespace errors; only existing Windows line-ending conversion warnings.
+- Remaining issues:
+  - Authenticated buyer/seller role-flow browser evidence still requires BaoTa deployment/pull plus real test account credentials.
+  - Buyer checkout/order creation remains intentionally gated until payment, address, stock, and browser role-flow safety evidence is accepted.
+  - Shipment, product write, and coupon participation write APIs remain intentionally gated until logistics/stock/fee/audit/browser evidence is accepted.
+  - Phase 10/11/12 external provider and production evidence remain incomplete; production remains `NO-GO`.
+- Next stage:
+  - Commit and push Phase 13.4, then on BaoTa pull and run Phase 13 readiness commands.
+  - Continue authenticated H5/browser role-flow after BaoTa has the latest APP code and usable buyer/seller test accounts are available, then proceed to Phase 14 planned logistics/product/review completion if Phase 13 write gates remain blocked by external evidence.

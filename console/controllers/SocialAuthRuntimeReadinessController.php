@@ -67,11 +67,14 @@ class SocialAuthRuntimeReadinessController extends Controller
         ]);
         $this->requireFileContains('Social auth frontend runtime controller', 'frontend/controllers/SocialAuthController.php', [
             'MONGOYIA_SOCIAL_AUTH_RUNTIME_V1',
+            'MONGOYIA_SOCIAL_AUTH_UNBIND_POST_GUARD_V1',
             'SocialIdentityService',
+            'VerbFilter',
             'actionRedirect',
             'actionCallback',
             'actionBind',
             'actionUnbind',
+            "'unbind' => ['POST']",
             'providerEnabled',
             'SOCIAL_AUTH_DISABLED',
             'SOCIAL_AUTH_UNAVAILABLE',

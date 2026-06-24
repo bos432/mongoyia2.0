@@ -166,10 +166,13 @@ class AccountNotificationPhase12AcceptanceController extends Controller
         $this->requireFileContains('Third-party login frontend boundary', 'frontend/controllers/SocialAuthController.php', [
             'MONGOYIA_SOCIAL_AUTH_BOUNDARY_V1',
             'MONGOYIA_SOCIAL_AUTH_RUNTIME_V1',
+            'MONGOYIA_SOCIAL_AUTH_UNBIND_POST_GUARD_V1',
+            'VerbFilter',
             'actionRedirect',
             'actionCallback',
             'actionBind',
             'actionUnbind',
+            "'unbind' => ['POST']",
             'SocialIdentityService',
             'SOCIAL_AUTH_DISABLED',
             'require_existing_session_before_first_login',

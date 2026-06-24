@@ -5,6 +5,7 @@ namespace frontend\controllers;
 use common\services\mall\OperationalIdentityConfigService;
 use common\services\mall\SocialIdentityService;
 use Yii;
+use yii\filters\VerbFilter;
 use yii\helpers\Url;
 use yii\web\BadRequestHttpException;
 use yii\web\Response;
@@ -13,9 +14,22 @@ class SocialAuthController extends BaseController
 {
     public const MONGOYIA_SOCIAL_AUTH_BOUNDARY_V1 = 'MONGOYIA_SOCIAL_AUTH_BOUNDARY_V1';
     public const MONGOYIA_SOCIAL_AUTH_RUNTIME_V1 = 'MONGOYIA_SOCIAL_AUTH_RUNTIME_V1';
+    public const SOCIAL_AUTH_UNBIND_POST_GUARD_VERSION = 'MONGOYIA_SOCIAL_AUTH_UNBIND_POST_GUARD_V1';
     public const PROVIDER_ACCEPTANCE_GATE = 'third_party_login_requires_provider_acceptance';
     public const SECRET_LOGGING_POLICY = 'provider_secret_never_logged';
     public const FIRST_LOGIN_BIND_POLICY = 'require_existing_session_before_first_login';
+
+    public function behaviors()
+    {
+        return [
+            'verbs' => [
+                'class' => VerbFilter::className(),
+                'actions' => [
+                    'unbind' => ['POST'],
+                ],
+            ],
+        ];
+    }
 
     public function actionRedirect($provider = '')
     {

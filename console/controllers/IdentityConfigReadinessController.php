@@ -85,11 +85,14 @@ class IdentityConfigReadinessController extends Controller
         ]);
         $this->requireFileContains('Frontend social auth boundary controller', 'frontend/controllers/SocialAuthController.php', [
             'MONGOYIA_SOCIAL_AUTH_BOUNDARY_V1',
+            'MONGOYIA_SOCIAL_AUTH_UNBIND_POST_GUARD_V1',
             'OperationalIdentityConfigService',
+            'VerbFilter',
             'actionRedirect',
             'actionCallback',
             'actionBind',
             'actionUnbind',
+            "'unbind' => ['POST']",
             'third_party_login_requires_provider_acceptance',
             'provider_secret_never_logged',
         ]);

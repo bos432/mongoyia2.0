@@ -1,5 +1,38 @@
 # Development Log
 
+## 2026-06-24 Phase 12 Social Auth Unbind POST Guard
+
+- Stage name: Phase 12.17 social-auth unbind POST guard
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting the stage.
+  - Added `MONGOYIA_SOCIAL_AUTH_UNBIND_POST_GUARD_V1` to the frontend social-auth controller.
+  - Restricted `/social-auth/unbind` to POST through `VerbFilter`.
+  - Kept `redirect`, `callback`, and `bind` OAuth browser flows GET-compatible.
+  - Added coverage to identity-config readiness, social-auth runtime readiness, and Phase 12 aggregate acceptance.
+  - Updated the Phase 12 backlog notes as Phase 12.17.
+- Main files changed/added:
+  - `frontend/controllers/SocialAuthController.php`
+  - `console/controllers/IdentityConfigReadinessController.php`
+  - `console/controllers/SocialAuthRuntimeReadinessController.php`
+  - `console/controllers/AccountNotificationPhase12AcceptanceController.php`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l frontend/controllers/SocialAuthController.php` passed.
+  - `php -l console/controllers/IdentityConfigReadinessController.php` passed.
+  - `php -l console/controllers/SocialAuthRuntimeReadinessController.php` passed.
+  - `php -l console/controllers/AccountNotificationPhase12AcceptanceController.php` passed.
+  - Static marker checks confirmed `MONGOYIA_SOCIAL_AUTH_UNBIND_POST_GUARD_V1`, POST-only `unbind`, and retained `actionRedirect`/`actionCallback`/`actionBind` OAuth flow actions.
+  - Static link check found no frontend template or APP direct GET unbind link; only the identity config callback URL helper still lists the unbind URL for operator reference.
+  - `git diff --check` reported no whitespace errors, only existing Windows line-ending conversion warnings.
+  - Full Yii console execution remains BaoTa-only because this local checkout lacks `vendor/autoload.php`.
+- Remaining issues:
+  - BaoTa/test server must rerun identity-config readiness, social-auth runtime readiness, Phase 12 acceptance, and total requirements closure acceptance after deployment.
+  - Browser/provider evidence must still validate Google/Facebook sandbox callback, bind, unbind, and conflict handling with real provider credentials.
+  - Phase 12 third-party login evidence remains external; production remains `NO-GO`.
+- Next stage:
+  - Commit and push this Phase 12 social-auth unbind POST guard patch, then reread the plan/log and continue with the next plan-listed readiness item.
+
 ## 2026-06-24 Phase 12 Frontend Security-Code POST Guard
 
 - Stage name: Phase 12.16 frontend security-code POST guard

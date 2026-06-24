@@ -400,6 +400,8 @@ Phase 12.15 frontend logout POST guard: PC/H5 buyer logout now uses `MONGOYIA_FR
 
 Phase 12.16 frontend security-code POST guard: the web frontend security-code request/login endpoints now use `MONGOYIA_FRONTEND_SECURITY_CODE_POST_GUARD_V1`, restrict `/account-security/request-code` and `/account-security/login-code` to POST, and read `target`/`code` only from POST body data. Account-security readiness, security-code readiness, and Phase 12 aggregate acceptance check the guard so verification-code delivery and login cannot be triggered through query strings.
 
+Phase 12.17 social-auth unbind POST guard: Google/Facebook account unbinding now uses `MONGOYIA_SOCIAL_AUTH_UNBIND_POST_GUARD_V1` and restricts `/social-auth/unbind` to POST while keeping OAuth redirect, callback, and bind flows browser-redirect compatible. Identity-config readiness, social-auth runtime readiness, and Phase 12 aggregate acceptance check the guard so third-party account bindings cannot be removed by a plain GET link.
+
 Phase 13 acceptance command:
 
 ```bash

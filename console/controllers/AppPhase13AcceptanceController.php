@@ -10,6 +10,7 @@ class AppPhase13AcceptanceController extends Controller
 {
     public const VERSION = 'MONGOYIA_APP_PHASE13_ACCEPTANCE_V1';
     public const CHILD_CHECKS_VERSION = 'MONGOYIA_APP_PHASE13_CHILD_CHECKS_V1';
+    public const ACCEPTED_EVIDENCE_PATH_GUARD_VERSION = 'MONGOYIA_ACCEPTED_EVIDENCE_PATH_GUARD_V1';
 
     public $baseUrl = 'https://demo2026.mongoyia.com';
     public $productPath = '/product-codex-test-product-1781945133';
@@ -99,6 +100,11 @@ class AppPhase13AcceptanceController extends Controller
             'app-buyer-phase13-readiness/run',
             'app-seller-phase13-readiness/run',
             'app-auth-phase13-readiness/run',
+        ]);
+        $this->requireFileContains('Phase 13 accepted evidence path guard', 'console/controllers/AppPhase13AcceptanceController.php', [
+            'MONGOYIA_ACCEPTED_EVIDENCE_PATH_GUARD_V1',
+            'missing accepted evidence path',
+            'Accepted evidence flag requires a non-secret evidence path/reference.',
         ]);
         $this->requireFileContains('uni-app package manifest', 'apps/mongoyia-customer-chat-uniapp/package.json', [
             'mongoyia-customer-chat-uniapp',
@@ -570,7 +576,7 @@ class AppPhase13AcceptanceController extends Controller
         $this->manualFlag(
             'Browser H5 APP role-flow acceptance',
             $this->browserAccepted,
-            $this->browserEvidencePath !== '' ? $this->browserEvidencePath : $this->baseUrl,
+            $this->browserEvidencePath,
             'H5 APP buyer and seller role-flow browser evidence was accepted.',
             'Validate H5 buyer order flow, seller shipment flow, customer-service chat, refresh persistence, and mobile layout in browser.'
         );
@@ -777,8 +783,14 @@ class AppPhase13AcceptanceController extends Controller
 
     private function manualFlag(string $area, bool $accepted, string $evidence, string $passNotes, string $pendingNotes): void
     {
+        $evidence = trim($evidence);
         if ($accepted) {
-            $this->addCheck($area, 'PASS', $evidence !== '' ? $evidence : 'external evidence recorded', $passNotes);
+            if ($evidence === '') {
+                $this->addCheck($area, 'FAIL', 'missing accepted evidence path', 'Accepted evidence flag requires a non-secret evidence path/reference. Pass the matching --*EvidencePath option after reviewer acceptance.');
+                return;
+            }
+
+            $this->addCheck($area, 'PASS', $evidence, $passNotes);
             return;
         }
 

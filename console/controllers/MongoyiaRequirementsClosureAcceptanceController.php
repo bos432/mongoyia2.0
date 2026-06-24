@@ -10,6 +10,7 @@ class MongoyiaRequirementsClosureAcceptanceController extends Controller
 {
     public const VERSION = 'MONGOYIA_REQUIREMENTS_PHASE10_15_ACCEPTANCE_V1';
     public const EXTERNAL_AFTERFILL_POLICY_VERSION = 'MONGOYIA_PHASE10_15_EXTERNAL_AFTERFILL_POLICY_V1';
+    public const ACCEPTED_EVIDENCE_PATH_GUARD_VERSION = 'MONGOYIA_PHASE10_15_ACCEPTED_EVIDENCE_PATH_GUARD_V1';
 
     public $baseUrl = 'https://demo2026.mongoyia.com';
     public $handoverDir = 'runtime/handover';
@@ -190,6 +191,7 @@ class MongoyiaRequirementsClosureAcceptanceController extends Controller
                 $config['route'],
                 'Pending',
                 'MONGOYIA_PHASE10_15_CHILD_DEPLOY_CACHE_REFRESH_V1',
+                'MONGOYIA_ACCEPTED_EVIDENCE_PATH_GUARD_V1',
             ], $config['requiredMarkers'] ?? []);
             $this->requireFileContains($phase . ' acceptance command', $config['file'], $needles);
         }
@@ -198,6 +200,11 @@ class MongoyiaRequirementsClosureAcceptanceController extends Controller
             'allowExternalAfterfill',
             'Afterfill pending',
             'AFTERFILL',
+        ]);
+        $this->requireFileContains('Phase 10-15 accepted evidence path guard', 'console/controllers/MongoyiaRequirementsClosureAcceptanceController.php', [
+            'MONGOYIA_PHASE10_15_ACCEPTED_EVIDENCE_PATH_GUARD_V1',
+            'MONGOYIA_ACCEPTED_EVIDENCE_PATH_GUARD_V1',
+            'Use matching `*EvidencePath` options',
         ]);
     }
 
@@ -538,7 +545,7 @@ class MongoyiaRequirementsClosureAcceptanceController extends Controller
             '## Accepted Evidence Passthrough',
             '',
             'After browser, provider, APP package, logistics, language review, and distributor evidence is collected, pass the accepted flags to this aggregate command with phase-prefixed options such as `--phase10BrowserAccepted=1`, `--phase11SandboxAccepted=1`, `--phase12ThirdPartyLoginAccepted=1`, `--phase13AppAccepted=1`, `--phase14BrowserAccepted=1`, and `--phase15TrainingAccepted=1`.',
-            'Use matching `*EvidencePath` options for Markdown reports, tickets, or signed evidence references. Never pass raw secrets, provider credentials, callback payloads, private keys, SMTP passwords, Basic Auth values, or HMAC secrets as evidence-path values.',
+            'Use matching `*EvidencePath` options for Markdown reports, tickets, or signed evidence references; accepted flags without a matching non-empty evidence path fail through MONGOYIA_PHASE10_15_ACCEPTED_EVIDENCE_PATH_GUARD_V1 / MONGOYIA_ACCEPTED_EVIDENCE_PATH_GUARD_V1. Never pass raw secrets, provider credentials, callback payloads, private keys, SMTP passwords, Basic Auth values, or HMAC secrets as evidence-path values.',
             '',
             '## Acceptance Boundary',
             '',

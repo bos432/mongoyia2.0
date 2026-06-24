@@ -11,6 +11,7 @@ class OperationalConfigPhase10AcceptanceController extends Controller
     public const VERSION = 'MONGOYIA_OPERATIONAL_CONFIG_PHASE10_ACCEPTANCE_V1';
     public const EXTERNAL_AFTERFILL_POLICY_VERSION = 'MONGOYIA_PHASE10_EXTERNAL_AFTERFILL_POLICY_V1';
     public const CHILD_CHECKS_VERSION = 'MONGOYIA_OPERATIONAL_CONFIG_PHASE10_CHILD_CHECKS_V1';
+    public const ACCEPTED_EVIDENCE_PATH_GUARD_VERSION = 'MONGOYIA_ACCEPTED_EVIDENCE_PATH_GUARD_V1';
 
     public $baseUrl = 'https://demo2026.mongoyia.com';
     public $handoverDir = 'runtime/handover';
@@ -166,6 +167,11 @@ class OperationalConfigPhase10AcceptanceController extends Controller
             'operational-config-export/run',
             'mongoyia-production-go-live-gate/run',
         ]);
+        $this->requireFileContains('Phase 10 accepted evidence path guard', 'console/controllers/OperationalConfigPhase10AcceptanceController.php', [
+            'MONGOYIA_ACCEPTED_EVIDENCE_PATH_GUARD_V1',
+            'missing accepted evidence path',
+            'Accepted evidence flag requires a non-secret evidence path/reference.',
+        ]);
         $this->requireFileContains('Provider evidence backend page', 'backend/modules/mall/views/operational-config/index.php', [
             'data-mongoyia-operational-provider-evidence',
             '服务商证据验收',
@@ -199,7 +205,7 @@ class OperationalConfigPhase10AcceptanceController extends Controller
         $this->manualFlag(
             'Backend operations browser acceptance',
             $this->browserAccepted,
-            $this->browserEvidencePath !== '' ? $this->browserEvidencePath : $this->baseUrl . '/backend/mall/operational-config/index',
+            $this->browserEvidencePath,
             'Platform admin saved and checked payment, SMTP, alert, launch signoff, translation, and redacted export flows in the browser.',
             'Open backend operations config center, save/check every card, export a redacted report, and rerun with --browserAccepted=1.'
         );
@@ -377,8 +383,14 @@ class OperationalConfigPhase10AcceptanceController extends Controller
 
     private function manualFlag(string $area, bool $accepted, string $evidence, string $passNotes, string $pendingNotes, bool $externalAfterfill = false): void
     {
+        $evidence = trim($evidence);
         if ($accepted) {
-            $this->addCheck($area, 'PASS', $evidence !== '' ? $evidence : 'external evidence recorded', $passNotes);
+            if ($evidence === '') {
+                $this->addCheck($area, 'FAIL', 'missing accepted evidence path', 'Accepted evidence flag requires a non-secret evidence path/reference. Pass the matching --*EvidencePath option after reviewer acceptance.');
+                return;
+            }
+
+            $this->addCheck($area, 'PASS', $evidence, $passNotes);
             return;
         }
 

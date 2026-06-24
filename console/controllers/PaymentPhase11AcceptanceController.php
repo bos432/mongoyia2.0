@@ -11,6 +11,7 @@ class PaymentPhase11AcceptanceController extends Controller
     public const VERSION = 'MONGOYIA_PAYMENT_PHASE11_ACCEPTANCE_V1';
     public const PROVIDER_AFTERFILL_POLICY_VERSION = 'MONGOYIA_PHASE11_PAYMENT_PROVIDER_AFTERFILL_POLICY_V1';
     public const CHILD_CHECKS_VERSION = 'MONGOYIA_PAYMENT_PHASE11_CHILD_CHECKS_V1';
+    public const ACCEPTED_EVIDENCE_PATH_GUARD_VERSION = 'MONGOYIA_ACCEPTED_EVIDENCE_PATH_GUARD_V1';
 
     public $baseUrl = 'https://demo2026.mongoyia.com';
     public $handoverDir = 'runtime/handover';
@@ -258,6 +259,11 @@ class PaymentPhase11AcceptanceController extends Controller
             'payment-stat-readiness/run',
             'payment-callback-regression-readiness/run',
         ]);
+        $this->requireFileContains('Phase 11 accepted evidence path guard', 'console/controllers/PaymentPhase11AcceptanceController.php', [
+            'MONGOYIA_ACCEPTED_EVIDENCE_PATH_GUARD_V1',
+            'missing accepted evidence path',
+            'Accepted evidence flag requires a non-secret evidence path/reference.',
+        ]);
     }
 
     private function checkManualAcceptanceInputs(): void
@@ -295,7 +301,7 @@ class PaymentPhase11AcceptanceController extends Controller
         $this->manualFlag(
             'Browser role-flow payment acceptance',
             $this->browserAccepted,
-            $this->browserEvidencePath !== '' ? $this->browserEvidencePath : $this->baseUrl,
+            $this->browserEvidencePath,
             'Platform admin, merchant, and buyer browser payment role-flow was accepted without obvious page/API errors.',
             'After implementation, validate payment config, buyer checkout, callback audit, merchant isolation, and stats pages in the browser.'
         );
@@ -439,8 +445,14 @@ class PaymentPhase11AcceptanceController extends Controller
 
     private function manualFlag(string $area, bool $accepted, string $evidence, string $passNotes, string $pendingNotes, bool $externalAfterfill = false): void
     {
+        $evidence = trim($evidence);
         if ($accepted) {
-            $this->addCheck($area, 'PASS', $evidence !== '' ? $evidence : 'external evidence recorded', $passNotes);
+            if ($evidence === '') {
+                $this->addCheck($area, 'FAIL', 'missing accepted evidence path', 'Accepted evidence flag requires a non-secret evidence path/reference. Pass the matching --*EvidencePath option after reviewer acceptance.');
+                return;
+            }
+
+            $this->addCheck($area, 'PASS', $evidence, $passNotes);
             return;
         }
 

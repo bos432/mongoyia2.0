@@ -11,6 +11,7 @@ class LogisticsProductPhase14AcceptanceController extends Controller
     public const VERSION = 'MONGOYIA_LOGISTICS_PRODUCT_PHASE14_ACCEPTANCE_V1';
     public const PROVIDER_AFTERFILL_POLICY_VERSION = 'MONGOYIA_PHASE14_LOGISTICS_PROVIDER_AFTERFILL_POLICY_V1';
     public const CHILD_CHECKS_VERSION = 'MONGOYIA_LOGISTICS_PRODUCT_PHASE14_CHILD_CHECKS_V1';
+    public const ACCEPTED_EVIDENCE_PATH_GUARD_VERSION = 'MONGOYIA_ACCEPTED_EVIDENCE_PATH_GUARD_V1';
 
     public $handoverDir = 'runtime/handover';
     public $outputPath = '';
@@ -103,6 +104,11 @@ class LogisticsProductPhase14AcceptanceController extends Controller
             'product-inventory-phase14-readiness/run',
             'product-search-video-phase14-readiness/run',
             'favorite-review-phase14-readiness/run',
+        ]);
+        $this->requireFileContains('Phase 14 accepted evidence path guard', 'console/controllers/LogisticsProductPhase14AcceptanceController.php', [
+            'MONGOYIA_ACCEPTED_EVIDENCE_PATH_GUARD_V1',
+            'missing accepted evidence path',
+            'Accepted evidence flag requires a non-secret evidence path/reference.',
         ]);
         $this->requireFileContains('Phase 14 logistics provider afterfill policy', 'console/controllers/LogisticsProductPhase14AcceptanceController.php', [
             'MONGOYIA_PHASE14_LOGISTICS_PROVIDER_AFTERFILL_POLICY_V1',
@@ -512,8 +518,14 @@ class LogisticsProductPhase14AcceptanceController extends Controller
 
     private function manualFlag(string $area, bool $accepted, string $evidence, string $passNotes, string $pendingNotes, bool $externalAfterfill = false): void
     {
+        $evidence = trim($evidence);
         if ($accepted) {
-            $this->addCheck($area, 'PASS', $evidence !== '' ? $evidence : 'external evidence recorded', $passNotes);
+            if ($evidence === '') {
+                $this->addCheck($area, 'FAIL', 'missing accepted evidence path', 'Accepted evidence flag requires a non-secret evidence path/reference. Pass the matching --*EvidencePath option after reviewer acceptance.');
+                return;
+            }
+
+            $this->addCheck($area, 'PASS', $evidence, $passNotes);
             return;
         }
 

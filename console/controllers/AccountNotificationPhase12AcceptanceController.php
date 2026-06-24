@@ -11,6 +11,7 @@ class AccountNotificationPhase12AcceptanceController extends Controller
     public const VERSION = 'MONGOYIA_ACCOUNT_NOTIFICATION_PHASE12_ACCEPTANCE_V1';
     public const PROVIDER_AFTERFILL_POLICY_VERSION = 'MONGOYIA_PHASE12_ACCOUNT_PROVIDER_AFTERFILL_POLICY_V1';
     public const CHILD_CHECKS_VERSION = 'MONGOYIA_ACCOUNT_NOTIFICATION_PHASE12_CHILD_CHECKS_V1';
+    public const ACCEPTED_EVIDENCE_PATH_GUARD_VERSION = 'MONGOYIA_ACCEPTED_EVIDENCE_PATH_GUARD_V1';
 
     public $baseUrl = 'https://demo2026.mongoyia.com';
     public $handoverDir = 'runtime/handover';
@@ -114,6 +115,11 @@ class AccountNotificationPhase12AcceptanceController extends Controller
             'notification-phase12-readiness/run',
             'language-review-phase12-readiness/run',
             'operational-config-mail-test/run',
+        ]);
+        $this->requireFileContains('Phase 12 accepted evidence path guard', 'console/controllers/AccountNotificationPhase12AcceptanceController.php', [
+            'MONGOYIA_ACCEPTED_EVIDENCE_PATH_GUARD_V1',
+            'missing accepted evidence path',
+            'Accepted evidence flag requires a non-secret evidence path/reference.',
         ]);
         $this->requireFileContains('Existing frontend password reset flow', 'frontend/controllers/SiteController.php', [
             'actionRequestPasswordReset',
@@ -421,7 +427,7 @@ class AccountNotificationPhase12AcceptanceController extends Controller
         $this->manualFlag(
             'Browser role-flow account/notification/language acceptance',
             $this->browserAccepted,
-            $this->browserEvidencePath !== '' ? $this->browserEvidencePath : $this->baseUrl,
+            $this->browserEvidencePath,
             'Buyer, merchant, and platform browser flows for login/recovery/notifications/language switching were accepted.',
             'Validate normal login, third-party login, password recovery, notification visibility, language switching, and readable error prompts in browser.'
         );
@@ -630,8 +636,14 @@ class AccountNotificationPhase12AcceptanceController extends Controller
 
     private function manualFlag(string $area, bool $accepted, string $evidence, string $passNotes, string $pendingNotes, bool $externalAfterfill = false): void
     {
+        $evidence = trim($evidence);
         if ($accepted) {
-            $this->addCheck($area, 'PASS', $evidence !== '' ? $evidence : 'external evidence recorded', $passNotes);
+            if ($evidence === '') {
+                $this->addCheck($area, 'FAIL', 'missing accepted evidence path', 'Accepted evidence flag requires a non-secret evidence path/reference. Pass the matching --*EvidencePath option after reviewer acceptance.');
+                return;
+            }
+
+            $this->addCheck($area, 'PASS', $evidence, $passNotes);
             return;
         }
 

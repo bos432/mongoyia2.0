@@ -10,6 +10,7 @@ class DistributionSupportPhase15AcceptanceController extends Controller
 {
     public const VERSION = 'MONGOYIA_DISTRIBUTION_SUPPORT_PHASE15_ACCEPTANCE_V1';
     public const CHILD_CHECKS_VERSION = 'MONGOYIA_DISTRIBUTION_SUPPORT_PHASE15_CHILD_CHECKS_V1';
+    public const ACCEPTED_EVIDENCE_PATH_GUARD_VERSION = 'MONGOYIA_ACCEPTED_EVIDENCE_PATH_GUARD_V1';
 
     public $handoverDir = 'runtime/handover';
     public $outputPath = '';
@@ -93,6 +94,11 @@ class DistributionSupportPhase15AcceptanceController extends Controller
             'distribution-support-content-phase15-readiness/run',
             'distribution-material-phase15-readiness/run',
             'distribution-signoff-phase15-readiness/run',
+        ]);
+        $this->requireFileContains('Phase 15 accepted evidence path guard', 'console/controllers/DistributionSupportPhase15AcceptanceController.php', [
+            'MONGOYIA_ACCEPTED_EVIDENCE_PATH_GUARD_V1',
+            'missing accepted evidence path',
+            'Accepted evidence flag requires a non-secret evidence path/reference.',
         ]);
         $this->requireFileContains('Existing distributor frontend center', 'web/resources/mall/default/views/user/distribution.php', [
             'Distribution Center',
@@ -414,8 +420,14 @@ class DistributionSupportPhase15AcceptanceController extends Controller
 
     private function manualFlag(string $area, bool $accepted, string $evidence, string $passNotes, string $pendingNotes): void
     {
+        $evidence = trim($evidence);
         if ($accepted) {
-            $this->addCheck($area, 'PASS', $evidence !== '' ? $evidence : 'external evidence recorded', $passNotes);
+            if ($evidence === '') {
+                $this->addCheck($area, 'FAIL', 'missing accepted evidence path', 'Accepted evidence flag requires a non-secret evidence path/reference. Pass the matching --*EvidencePath option after reviewer acceptance.');
+                return;
+            }
+
+            $this->addCheck($area, 'PASS', $evidence, $passNotes);
             return;
         }
 

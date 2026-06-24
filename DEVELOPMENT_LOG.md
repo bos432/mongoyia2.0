@@ -1,5 +1,38 @@
 # Development Log
 
+## 2026-06-24 Phase 10-15 Accepted Evidence Path Guard
+
+- Stage name: Phase 10-15 accepted evidence path guard
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting the stage.
+  - Added `MONGOYIA_ACCEPTED_EVIDENCE_PATH_GUARD_V1` to Phase 10, 11, 12, 13, 14, and 15 acceptance commands.
+  - Hardened every Phase 10-15 manual `*Accepted=1` gate so it now fails with `missing accepted evidence path` unless the matching non-empty `*EvidencePath` option is provided.
+  - Removed browser/base-URL and generic `external evidence recorded` fallbacks from accepted evidence PASS rows so acceptance cannot be marked green without a reviewer-visible evidence reference.
+  - Added `MONGOYIA_PHASE10_15_ACCEPTED_EVIDENCE_PATH_GUARD_V1` to the aggregate Phase 10-15 acceptance command and made aggregate source coverage require the child guard marker.
+  - Updated the upgrade backlog to document that accepted manual evidence gates require non-secret Markdown/ticket/signed evidence references.
+- Main files changed/added:
+  - `console/controllers/OperationalConfigPhase10AcceptanceController.php`
+  - `console/controllers/PaymentPhase11AcceptanceController.php`
+  - `console/controllers/AccountNotificationPhase12AcceptanceController.php`
+  - `console/controllers/AppPhase13AcceptanceController.php`
+  - `console/controllers/LogisticsProductPhase14AcceptanceController.php`
+  - `console/controllers/DistributionSupportPhase15AcceptanceController.php`
+  - `console/controllers/MongoyiaRequirementsClosureAcceptanceController.php`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l` passed for all seven changed console acceptance controllers.
+  - Static marker checks confirmed `MONGOYIA_ACCEPTED_EVIDENCE_PATH_GUARD_V1`, `MONGOYIA_PHASE10_15_ACCEPTED_EVIDENCE_PATH_GUARD_V1`, and `missing accepted evidence path` coverage.
+  - Static stale-code checks confirmed the old `external evidence recorded` fallback and browser evidence base-URL fallback are absent from the changed Phase 10-15 acceptance controllers.
+  - `git diff --check` reported no whitespace errors, only existing Windows line-ending conversion warnings.
+  - Full Yii console execution remains BaoTa-only because this local checkout lacks `vendor/autoload.php`.
+- Remaining issues:
+  - BaoTa/test server must pull this patch and rerun the Phase 10-15 aggregate acceptance command.
+  - Real browser/provider/APP/logistics/distributor evidence still needs to be collected before accepted flags can honestly be passed.
+  - Production remains `NO-GO` until real provider, operations, redacted export, browser, and owner signoff evidence are accepted.
+- Next stage:
+  - Commit and push this guard patch, then reread the plan/log and continue with BaoTa aggregate output or the next plan-listed browser evidence item.
+
 ## 2026-06-24 Phase 13 Cart Browser Blocker Hardening
 
 - Stage name: Phase 13.35 cart browser blocker hardening

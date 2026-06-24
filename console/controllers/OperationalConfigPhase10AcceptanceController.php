@@ -8,7 +8,9 @@ use yii\console\ExitCode;
 
 class OperationalConfigPhase10AcceptanceController extends Controller
 {
+    public const VERSION = 'MONGOYIA_OPERATIONAL_CONFIG_PHASE10_ACCEPTANCE_V1';
     public const EXTERNAL_AFTERFILL_POLICY_VERSION = 'MONGOYIA_PHASE10_EXTERNAL_AFTERFILL_POLICY_V1';
+    public const CHILD_CHECKS_VERSION = 'MONGOYIA_OPERATIONAL_CONFIG_PHASE10_CHILD_CHECKS_V1';
 
     public $baseUrl = 'https://demo2026.mongoyia.com';
     public $handoverDir = 'runtime/handover';
@@ -155,6 +157,15 @@ class OperationalConfigPhase10AcceptanceController extends Controller
             'AFTERFILL',
             'Afterfill pending',
         ]);
+        $this->requireFileContains('Phase 10 child readiness wiring', 'console/controllers/OperationalConfigPhase10AcceptanceController.php', [
+            'MONGOYIA_OPERATIONAL_CONFIG_PHASE10_ACCEPTANCE_V1',
+            'MONGOYIA_OPERATIONAL_CONFIG_PHASE10_CHILD_CHECKS_V1',
+            'runChildChecks',
+            'childCommands',
+            'operational-config-check/run',
+            'operational-config-export/run',
+            'mongoyia-production-go-live-gate/run',
+        ]);
         $this->requireFileContains('Provider evidence backend page', 'backend/modules/mall/views/operational-config/index.php', [
             'data-mongoyia-operational-provider-evidence',
             '服务商证据验收',
@@ -277,6 +288,7 @@ class OperationalConfigPhase10AcceptanceController extends Controller
         $lines = [
             '# Mongoyia Operational Config Phase 10 Acceptance',
             '',
+            '- Version: ' . self::VERSION,
             '- Result: ' . $result,
             '- Base URL: ' . $this->baseUrl,
             '- Generated at: ' . date('Y-m-d H:i:s'),
@@ -284,6 +296,7 @@ class OperationalConfigPhase10AcceptanceController extends Controller
             '- Warnings: ' . $this->warnings,
             '- Pending: ' . $this->pending,
             '- Afterfill pending: ' . $this->afterfillPending,
+            '- Child readiness checks: ' . ($this->runChildChecks ? 'yes' : 'no'),
             '- Scope: Phase 7.6 backend operations config acceptance plus production readiness evidence gates.',
             '- Secret policy: no API keys, Basic Auth, private keys, SMTP passwords, HMAC secrets, callback payloads, or alert tokens may appear in this report.',
             '- External afterfill policy: provider credentials, provider evidence, and production operations signoff evidence may remain AFTERFILL during development acceptance; production remains NO-GO until accepted.',

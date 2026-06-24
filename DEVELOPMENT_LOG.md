@@ -9171,3 +9171,31 @@
   - Production remains `NO-GO` until accepted evidence and GO/NO-GO gates pass.
 - Next stage:
   - Commit and push this Phase 13 child-check wiring patch, then reread the plan/log and continue with the next plan-listed readiness item.
+
+## 2026-06-24 Phase 10 Operational Child Checks
+
+- Stage name: Phase 10.9 operational child readiness source coverage
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting the stage.
+  - Added `MONGOYIA_OPERATIONAL_CONFIG_PHASE10_ACCEPTANCE_V1` to the Phase 10 operational acceptance command.
+  - Added `MONGOYIA_OPERATIONAL_CONFIG_PHASE10_CHILD_CHECKS_V1` and self source coverage for the existing `--runChildChecks=1` child command list.
+  - Covered encrypted config, payment, PayPal runtime, SMTP, alert, launch, provider evidence, redacted export, production evidence, and go-live child gates through the Phase 10 marker check.
+  - Updated the Phase 10-15 aggregate acceptance command to require the Phase 10 child-check marker before passing child checks through.
+  - Updated the Phase 10 backlog notes and command table to document Phase 10.9.
+- Main files changed/added:
+  - `console/controllers/OperationalConfigPhase10AcceptanceController.php`
+  - `console/controllers/MongoyiaRequirementsClosureAcceptanceController.php`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l console/controllers/OperationalConfigPhase10AcceptanceController.php` passed.
+  - `php -l console/controllers/MongoyiaRequirementsClosureAcceptanceController.php` passed.
+  - Static marker checks confirmed `MONGOYIA_OPERATIONAL_CONFIG_PHASE10_ACCEPTANCE_V1`, `MONGOYIA_OPERATIONAL_CONFIG_PHASE10_CHILD_CHECKS_V1`, `runChildChecks`, `childCommands`, and `Phase 10.9` coverage.
+  - `git diff --check` reported no whitespace errors, only existing Windows line-ending conversion warnings.
+  - Full Yii console execution remains BaoTa-only because this local checkout lacks `vendor/autoload.php`.
+- Remaining issues:
+  - BaoTa/test server must rerun Phase 10 acceptance and total Phase 10-15 closure acceptance after deployment.
+  - Phase 10 browser/redacted-export evidence remains pending.
+  - Provider and production operations material may stay backend-afterfill for development acceptance; production remains `NO-GO` until accepted evidence and signoff gates pass.
+- Next stage:
+  - Commit and push this Phase 10 child-check marker patch, then reread the plan/log and continue with the next plan-listed readiness item.

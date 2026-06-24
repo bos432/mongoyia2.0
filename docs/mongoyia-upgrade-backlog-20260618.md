@@ -389,6 +389,8 @@ Phase 11.13 payment regression merchant-scope parity: `mall-payment-test/run` no
 
 Phase 11.14 payment regression diagnostic report: `mall-payment-test/run` now carries `MONGOYIA_MALL_PAYMENT_REGRESSION_DIAGNOSTIC_REPORT_V1` and writes a redacted Markdown diagnostic report with base URL, selected products, failure assertions, HTTP/body response summaries, and exception location when the regression is run directly or through Phase 11 acceptance. `payment-phase11-acceptance/run` now carries `MONGOYIA_PAYMENT_PHASE11_CHILD_DIAGNOSTIC_REPORT_V1`, passes a child `outputPath` into the base payment regression command, and records the child report path in the Phase 11 report so BaoTa/test-server failures can be debugged without exposing callback secrets, HMAC secrets, provider credentials, tokens, or signatures.
 
+Phase 11.15 payment regression user fixture fallback: `mall-payment-test/run` now carries `MONGOYIA_MALL_PAYMENT_REGRESSION_USER_FALLBACK_V1` and resolves a valid active user before creating regression orders. The command still honors `--userId` when that user exists and is active; otherwise it logs a warning, selects the first active user in the current database, writes both requested and resolved user IDs into the redacted diagnostic report, and fails clearly only when no active user exists. This keeps BaoTa/test-server payment regression independent of local fixture user IDs.
+
 Phase 12 acceptance command:
 
 ```bash

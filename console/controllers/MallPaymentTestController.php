@@ -2,6 +2,7 @@
 
 namespace console\controllers;
 
+use common\models\User;
 use common\models\mall\Order;
 use common\models\mall\OrderProduct;
 use common\models\mall\PaymentAttempt;
@@ -14,6 +15,7 @@ use yii\console\ExitCode;
 class MallPaymentTestController extends BaseController
 {
     public const DIAGNOSTIC_REPORT_VERSION = 'MONGOYIA_MALL_PAYMENT_REGRESSION_DIAGNOSTIC_REPORT_V1';
+    public const USER_FALLBACK_VERSION = 'MONGOYIA_MALL_PAYMENT_REGRESSION_USER_FALLBACK_V1';
 
     public $storeId = 5;
     public $baseUrl = 'http://127.0.0.1:8089';
@@ -31,6 +33,7 @@ class MallPaymentTestController extends BaseController
 
     private $failures = [];
     private $paymentRuntimeConfigs = [];
+    private $resolvedUserId = 0;
 
     public function options($actionID)
     {
@@ -54,6 +57,7 @@ class MallPaymentTestController extends BaseController
     {
         $products = [];
         try {
+            $this->resolvedUserId = $this->resolvePaymentUserId();
             $products = $this->loadProducts();
             if (count($products) < 2) {
                 $this->fail('Need at least two active products for regression.');
@@ -634,7 +638,7 @@ class MallPaymentTestController extends BaseController
         $order = new Order();
         $order->store_id = $storeId;
         $order->parent_id = $parentId;
-        $order->user_id = (int)$this->userId;
+        $order->user_id = $this->paymentUserId();
         $order->address_id = 0;
         $order->name = 'Mongoyia payment regression';
         $order->sn = $sn;
@@ -689,7 +693,7 @@ class MallPaymentTestController extends BaseController
         $orderProduct = new OrderProduct();
         $orderProduct->store_id = (int)$product->store_id;
         $orderProduct->parent_id = 0;
-        $orderProduct->user_id = (int)$this->userId;
+        $orderProduct->user_id = $this->paymentUserId();
         $orderProduct->order_id = $order->id;
         $orderProduct->product_id = $product->id;
         $orderProduct->product_attribute_value = '';
@@ -1045,6 +1049,39 @@ class MallPaymentTestController extends BaseController
         return array_slice($fallback, 0, 2);
     }
 
+    private function resolvePaymentUserId()
+    {
+        $requested = (int)$this->userId;
+        if ($requested > 0 && User::find()->where(['id' => $requested, 'status' => User::STATUS_ACTIVE])->exists()) {
+            return $requested;
+        }
+
+        if ($requested > 0) {
+            $this->stdout("WARN configured payment user {$requested} is missing or inactive; selecting active fallback user.\n");
+        }
+
+        $fallback = User::find()
+            ->select('id')
+            ->where(['status' => User::STATUS_ACTIVE])
+            ->orderBy(['id' => SORT_ASC])
+            ->scalar();
+
+        if (!$fallback) {
+            throw new \RuntimeException('No active user exists for payment regression order creation.');
+        }
+
+        return (int)$fallback;
+    }
+
+    private function paymentUserId()
+    {
+        if ((int)$this->resolvedUserId <= 0) {
+            $this->resolvedUserId = $this->resolvePaymentUserId();
+        }
+
+        return (int)$this->resolvedUserId;
+    }
+
     private function productStocks(array $products)
     {
         $stocks = [];
@@ -1154,7 +1191,8 @@ class MallPaymentTestController extends BaseController
             '- Version: ' . self::DIAGNOSTIC_REPORT_VERSION,
             '- Result: ' . strtoupper((string)$result),
             '- Base URL: ' . $this->redactDiagnosticText((string)$this->baseUrl),
-            '- User ID: ' . (int)$this->userId,
+            '- Requested user ID: ' . (int)$this->userId,
+            '- Resolved user ID: ' . (int)$this->resolvedUserId,
             '- Requested product IDs: ' . $this->redactDiagnosticText((string)$this->productIds),
             '- Amount: ' . $this->redactDiagnosticText((string)$this->amount),
             '- Generated at: ' . date('Y-m-d H:i:s'),

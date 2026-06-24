@@ -1,5 +1,35 @@
 # Development Log
 
+## 2026-06-24 Phase 11 Payment Regression User Fixture Fallback
+
+- Stage name: Phase 11.15 payment regression user fixture fallback
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md`, this log, and the latest BaoTa aggregate acceptance output before starting this stage.
+  - Used the new Phase 11.14 diagnostic output to identify the remaining hard failure: `mall-payment-test/run` was trying to create orders with default `userId=71`, but that user is missing or inactive on BaoTa, causing `Create order failed: {"user_id":["User ID is invalid."]}`.
+  - Added `MONGOYIA_MALL_PAYMENT_REGRESSION_USER_FALLBACK_V1` to `mall-payment-test/run`.
+  - Added `resolvePaymentUserId()` so the command still honors `--userId` when valid, but falls back to the first active user in the current database when the configured user is missing or inactive.
+  - Updated order and order-product fixture creation to use the resolved payment user ID.
+  - Updated the redacted diagnostic report to include both requested and resolved user IDs.
+  - Added Phase 11 acceptance source coverage for the user fallback guard.
+  - Updated the Phase 10-15 backlog notes with the Phase 11.15 behavior.
+- Main files changed/added:
+  - `console/controllers/MallPaymentTestController.php`
+  - `console/controllers/PaymentPhase11AcceptanceController.php`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l console/controllers/MallPaymentTestController.php` passed.
+  - `php -l console/controllers/PaymentPhase11AcceptanceController.php` passed.
+  - Static marker checks confirmed `Phase 11.15`, `MONGOYIA_MALL_PAYMENT_REGRESSION_USER_FALLBACK_V1`, `resolvePaymentUserId`, `selecting active fallback user`, and `Resolved user ID`.
+  - `git diff --check` reported no whitespace errors, only existing Windows line-ending conversion warnings.
+  - Full Yii console execution remains BaoTa-only because this local checkout lacks `vendor/autoload.php`.
+- Remaining issues:
+  - BaoTa/test server must pull this patch and rerun `mall-payment-test/run` plus total Phase 10-15 aggregate acceptance.
+  - If payment regression advances past user creation and exposes a new callback/stock/audit failure, continue fixing from the generated diagnostic report.
+  - Browser role-flow evidence for Phase 10/11/12/13/14/15 remains incomplete; production remains `NO-GO` until accepted evidence and GO/NO-GO gates pass.
+- Next stage:
+  - Commit and push this Phase 11 user fixture fallback patch, then continue based on the next BaoTa payment regression output.
+
 ## 2026-06-24 Phase 11 Payment Regression Diagnostic Report
 
 - Stage name: Phase 11.14 payment regression diagnostic report

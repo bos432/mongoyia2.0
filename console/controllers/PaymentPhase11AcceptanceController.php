@@ -288,6 +288,12 @@ class PaymentPhase11AcceptanceController extends Controller
             'writeDiagnosticReport',
             'response diagnostics are redacted',
         ]);
+        $this->requireFileContains('Base payment regression user fallback', 'console/controllers/MallPaymentTestController.php', [
+            'MONGOYIA_MALL_PAYMENT_REGRESSION_USER_FALLBACK_V1',
+            'resolvePaymentUserId',
+            'selecting active fallback user',
+            'Resolved user ID',
+        ]);
         $this->requireFileContains('Phase 11 accepted evidence path guard', 'console/controllers/PaymentPhase11AcceptanceController.php', [
             'MONGOYIA_ACCEPTED_EVIDENCE_PATH_GUARD_V1',
             'AcceptedEvidenceGuard',

@@ -1,5 +1,33 @@
 # Development Log
 
+## 2026-06-24 Phase 10 External Afterfill Acceptance Policy
+
+- Stage name: Phase 10.8 external provider/production evidence afterfill policy
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting the stage.
+  - Added `MONGOYIA_PHASE10_EXTERNAL_AFTERFILL_POLICY_V1` to the Phase 10 operational config acceptance command.
+  - Added `allowExternalAfterfill` and a separate `AFTERFILL` status so provider credentials/evidence and production operations signoff material can remain backend-afterfill items during development acceptance.
+  - Kept backend operations browser evidence and redacted export review as blocking `PENDING` development closure items.
+  - Added `MONGOYIA_PHASE10_15_EXTERNAL_AFTERFILL_POLICY_V1` to the Phase 10-15 aggregate acceptance command so aggregate reports parse and display `Afterfill pending` separately from blocking pending evidence.
+  - Updated generated BaoTa command templates and backlog text to pass `--allowExternalAfterfill=1` while keeping production `NO-GO` until real evidence is accepted.
+- Main files changed/added:
+  - `console/controllers/OperationalConfigPhase10AcceptanceController.php`
+  - `console/controllers/MongoyiaRequirementsClosureAcceptanceController.php`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l console/controllers/OperationalConfigPhase10AcceptanceController.php` passed.
+  - `php -l console/controllers/MongoyiaRequirementsClosureAcceptanceController.php` passed.
+  - Static marker checks confirmed `MONGOYIA_PHASE10_EXTERNAL_AFTERFILL_POLICY_V1`, `MONGOYIA_PHASE10_15_EXTERNAL_AFTERFILL_POLICY_V1`, `allowExternalAfterfill`, `AFTERFILL`, and `Afterfill pending` coverage in the Phase 10 command, aggregate command, and backlog.
+  - `git diff --check` reported no whitespace errors, only existing Windows line-ending conversion warnings.
+  - Full Yii console execution remains BaoTa-only because this local checkout lacks `vendor/autoload.php`.
+- Remaining issues:
+  - BaoTa/test server must rerun Phase 10 operational acceptance and Phase 10-15 total requirements closure acceptance after deployment.
+  - Browser evidence and redacted export review remain required for development closure.
+  - Real provider credentials/evidence and production operations signoffs remain backend-afterfill items; production remains `NO-GO` until accepted.
+- Next stage:
+  - Commit and push this Phase 10.8 afterfill policy patch, then reread the plan/log and continue with the next plan-listed readiness item.
+
 ## 2026-06-24 Phase 13/14 Product Edit-Ajax POST ID Guard
 
 - Stage name: Phase 13.33 / Phase 14.17 backend product edit-ajax POST id hardening

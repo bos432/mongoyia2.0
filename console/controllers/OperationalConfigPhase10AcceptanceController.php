@@ -8,11 +8,14 @@ use yii\console\ExitCode;
 
 class OperationalConfigPhase10AcceptanceController extends Controller
 {
+    public const EXTERNAL_AFTERFILL_POLICY_VERSION = 'MONGOYIA_PHASE10_EXTERNAL_AFTERFILL_POLICY_V1';
+
     public $baseUrl = 'https://demo2026.mongoyia.com';
     public $handoverDir = 'runtime/handover';
     public $outputPath = '';
     public $fixture = false;
     public $strict = false;
+    public $allowExternalAfterfill = true;
     public $runChildChecks = false;
     public $browserAccepted = false;
     public $providerEvidenceAccepted = false;
@@ -27,6 +30,7 @@ class OperationalConfigPhase10AcceptanceController extends Controller
     private $failures = 0;
     private $warnings = 0;
     private $pending = 0;
+    private $afterfillPending = 0;
 
     public function options($actionID)
     {
@@ -36,6 +40,7 @@ class OperationalConfigPhase10AcceptanceController extends Controller
             'outputPath',
             'fixture',
             'strict',
+            'allowExternalAfterfill',
             'runChildChecks',
             'browserAccepted',
             'providerEvidenceAccepted',
@@ -63,7 +68,7 @@ class OperationalConfigPhase10AcceptanceController extends Controller
         $path = $this->writeReport($result);
 
         $this->stdout("\nReport written to {$path}\n");
-        $this->stdout("Summary: {$this->failures} failure(s), {$this->warnings} warning(s), {$this->pending} pending.\n");
+        $this->stdout("Summary: {$this->failures} failure(s), {$this->warnings} warning(s), {$this->pending} pending, {$this->afterfillPending} afterfill pending.\n");
 
         if ($this->failures > 0 || ($this->strict && ($this->warnings > 0 || $this->pending > 0))) {
             return ExitCode::UNSPECIFIED_ERROR;
@@ -144,6 +149,12 @@ class OperationalConfigPhase10AcceptanceController extends Controller
             'mongoyia-operational-config-redacted-export-*.md',
             'mongoyia-production-go-live-gate-*.md',
         ]);
+        $this->requireFileContains('Phase 10 external afterfill policy', 'console/controllers/OperationalConfigPhase10AcceptanceController.php', [
+            'MONGOYIA_PHASE10_EXTERNAL_AFTERFILL_POLICY_V1',
+            'allowExternalAfterfill',
+            'AFTERFILL',
+            'Afterfill pending',
+        ]);
         $this->requireFileContains('Provider evidence backend page', 'backend/modules/mall/views/operational-config/index.php', [
             'data-mongoyia-operational-provider-evidence',
             '服务商证据验收',
@@ -186,14 +197,16 @@ class OperationalConfigPhase10AcceptanceController extends Controller
             $this->providerEvidenceAccepted,
             $this->providerEvidencePath,
             'QPay, LianLian, PayPal, SMTP, translation provider, and alert-recipient evidence is recorded without exposing secrets.',
-            'Record real or sandbox provider evidence references, then rerun with --providerEvidenceAccepted=1 and --providerEvidencePath=<path-or-ticket>.'
+            'Record real or sandbox provider evidence references in the backend afterfill flow, then rerun with --providerEvidenceAccepted=1 and --providerEvidencePath=<path-or-ticket>.',
+            true
         );
         $this->manualFlag(
             'Production operations evidence acceptance',
             $this->productionEvidenceAccepted,
             $this->productionEvidencePath,
             'Scheduler, backup restore, load, security, business, rollback, and launch-window signoffs are recorded.',
-            'Record production-style scheduler/backup/load/security/business evidence, then rerun with --productionEvidenceAccepted=1.'
+            'Record production-style scheduler/backup/load/security/business evidence through the backend afterfill flow, then rerun with --productionEvidenceAccepted=1.',
+            true
         );
         $this->manualFlag(
             'Redacted export review acceptance',
@@ -270,8 +283,10 @@ class OperationalConfigPhase10AcceptanceController extends Controller
             '- Failures: ' . $this->failures,
             '- Warnings: ' . $this->warnings,
             '- Pending: ' . $this->pending,
+            '- Afterfill pending: ' . $this->afterfillPending,
             '- Scope: Phase 7.6 backend operations config acceptance plus production readiness evidence gates.',
             '- Secret policy: no API keys, Basic Auth, private keys, SMTP passwords, HMAC secrets, callback payloads, or alert tokens may appear in this report.',
+            '- External afterfill policy: provider credentials, provider evidence, and production operations signoff evidence may remain AFTERFILL during development acceptance; production remains NO-GO until accepted.',
             '- Launch policy: production remains NO-GO until every manual evidence flag is accepted and downstream production go-live gate is PASS.',
             '',
             '## Checks',
@@ -302,6 +317,7 @@ class OperationalConfigPhase10AcceptanceController extends Controller
             '  --baseUrl=https://demo2026.mongoyia.com \\',
             '  --runChildChecks=1 \\',
             '  --fixture=1 \\',
+            '  --allowExternalAfterfill=1 \\',
             '  --strict=1 \\',
             '  --interactive=0',
             '```',
@@ -331,6 +347,7 @@ class OperationalConfigPhase10AcceptanceController extends Controller
             '  --baseUrl=https://demo2026.mongoyia.com \\',
             '  --runChildChecks=1 \\',
             '  --fixture=1 \\',
+            '  --allowExternalAfterfill=1 \\',
             '  --browserAccepted=1 --browserEvidencePath=runtime/handover/phase10-browser-evidence.md \\',
             '  --providerEvidenceAccepted=1 --providerEvidencePath=runtime/handover/phase10-provider-evidence.md \\',
             '  --productionEvidenceAccepted=1 --productionEvidencePath=runtime/handover/phase10-production-ops-evidence.md \\',
@@ -345,10 +362,15 @@ class OperationalConfigPhase10AcceptanceController extends Controller
         return $path;
     }
 
-    private function manualFlag(string $area, bool $accepted, string $evidence, string $passNotes, string $pendingNotes): void
+    private function manualFlag(string $area, bool $accepted, string $evidence, string $passNotes, string $pendingNotes, bool $externalAfterfill = false): void
     {
         if ($accepted) {
             $this->addCheck($area, 'PASS', $evidence !== '' ? $evidence : 'external evidence recorded', $passNotes);
+            return;
+        }
+
+        if ($externalAfterfill && $this->allowExternalAfterfill) {
+            $this->addCheck($area, 'AFTERFILL', $evidence !== '' ? $evidence : 'backend afterfill pending', $pendingNotes);
             return;
         }
 
@@ -386,6 +408,8 @@ class OperationalConfigPhase10AcceptanceController extends Controller
             $this->failures++;
         } elseif ($status === 'PENDING') {
             $this->pending++;
+        } elseif ($status === 'AFTERFILL') {
+            $this->afterfillPending++;
         } elseif ($status !== 'PASS') {
             $this->warnings++;
             $status = 'WARN';
@@ -405,7 +429,7 @@ class OperationalConfigPhase10AcceptanceController extends Controller
         if ($this->failures > 0) {
             return 'FAIL';
         }
-        if ($this->warnings > 0 || $this->pending > 0) {
+        if ($this->warnings > 0 || $this->pending > 0 || $this->afterfillPending > 0) {
             return 'WARN';
         }
 

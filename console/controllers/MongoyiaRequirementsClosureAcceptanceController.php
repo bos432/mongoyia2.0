@@ -9,12 +9,14 @@ use yii\console\ExitCode;
 class MongoyiaRequirementsClosureAcceptanceController extends Controller
 {
     public const VERSION = 'MONGOYIA_REQUIREMENTS_PHASE10_15_ACCEPTANCE_V1';
+    public const EXTERNAL_AFTERFILL_POLICY_VERSION = 'MONGOYIA_PHASE10_15_EXTERNAL_AFTERFILL_POLICY_V1';
 
     public $baseUrl = 'https://demo2026.mongoyia.com';
     public $handoverDir = 'runtime/handover';
     public $outputPath = '';
     public $fixture = false;
     public $strict = false;
+    public $allowExternalAfterfill = true;
     public $runChildChecks = false;
     public $phase10BrowserAccepted = false;
     public $phase10ProviderEvidenceAccepted = false;
@@ -79,6 +81,7 @@ class MongoyiaRequirementsClosureAcceptanceController extends Controller
     private $failures = 0;
     private $warnings = 0;
     private $pending = 0;
+    private $afterfillPending = 0;
 
     public function options($actionID)
     {
@@ -88,6 +91,7 @@ class MongoyiaRequirementsClosureAcceptanceController extends Controller
             'outputPath',
             'fixture',
             'strict',
+            'allowExternalAfterfill',
             'runChildChecks',
             'phase10BrowserAccepted',
             'phase10ProviderEvidenceAccepted',
@@ -162,7 +166,7 @@ class MongoyiaRequirementsClosureAcceptanceController extends Controller
         $path = $this->writeReport($result);
 
         $this->stdout("\nReport written to {$path}\n");
-        $this->stdout("Summary: {$this->failures} failure(s), {$this->warnings} warning(s), {$this->pending} pending.\n");
+        $this->stdout("Summary: {$this->failures} failure(s), {$this->warnings} warning(s), {$this->pending} pending, {$this->afterfillPending} afterfill pending.\n");
 
         if ($this->failures > 0 || ($this->strict && ($this->warnings > 0 || $this->pending > 0))) {
             return ExitCode::UNSPECIFIED_ERROR;
@@ -189,6 +193,12 @@ class MongoyiaRequirementsClosureAcceptanceController extends Controller
             ], $config['requiredMarkers'] ?? []);
             $this->requireFileContains($phase . ' acceptance command', $config['file'], $needles);
         }
+        $this->requireFileContains('Phase 10-15 external afterfill policy', 'console/controllers/MongoyiaRequirementsClosureAcceptanceController.php', [
+            'MONGOYIA_PHASE10_15_EXTERNAL_AFTERFILL_POLICY_V1',
+            'allowExternalAfterfill',
+            'Afterfill pending',
+            'AFTERFILL',
+        ]);
     }
 
     private function runPhaseAcceptanceCommands(): void
@@ -210,6 +220,9 @@ class MongoyiaRequirementsClosureAcceptanceController extends Controller
             }
             if (!empty($config['runChildChecks']) && $this->runChildChecks) {
                 $params['runChildChecks'] = 1;
+            }
+            if (!empty($config['allowExternalAfterfill'])) {
+                $params['allowExternalAfterfill'] = $this->allowExternalAfterfill ? 1 : 0;
             }
             foreach (($config['passthrough'] ?? []) as $localName => $childName) {
                 $value = $this->{$localName};
@@ -233,11 +246,12 @@ class MongoyiaRequirementsClosureAcceptanceController extends Controller
                 continue;
             }
 
-            $status = $summary['failures'] > 0 ? 'FAIL' : (($summary['warnings'] > 0 || $summary['pending'] > 0) ? 'PENDING' : 'PASS');
+            $status = $summary['failures'] > 0 ? 'FAIL' : (($summary['warnings'] > 0 || $summary['pending'] > 0) ? 'PENDING' : (($summary['afterfillPending'] ?? 0) > 0 ? 'AFTERFILL' : 'PASS'));
             $notes = 'Child result=' . $summary['result']
                 . ', failures=' . $summary['failures']
                 . ', warnings=' . $summary['warnings']
                 . ', pending=' . $summary['pending']
+                . ', afterfillPending=' . ($summary['afterfillPending'] ?? 0)
                 . '.';
             if ((int)$exitCode !== ExitCode::OK && $summary['failures'] === 0) {
                 $notes .= ' Command exit code was ' . (int)$exitCode . '; inspect child report for details.';
@@ -257,6 +271,7 @@ class MongoyiaRequirementsClosureAcceptanceController extends Controller
                 'baseUrl' => true,
                 'fixture' => true,
                 'runChildChecks' => true,
+                'allowExternalAfterfill' => true,
                 'passthrough' => [
                     'phase10BrowserAccepted' => 'browserAccepted',
                     'phase10ProviderEvidenceAccepted' => 'providerEvidenceAccepted',
@@ -399,6 +414,7 @@ class MongoyiaRequirementsClosureAcceptanceController extends Controller
         $failures = $this->matchReportValue($content, 'Failures');
         $warnings = $this->matchReportValue($content, 'Warnings');
         $pending = $this->matchReportValue($content, 'Pending');
+        $afterfillPending = $this->matchReportValue($content, 'Afterfill pending');
 
         if ($result === null || $failures === null || $warnings === null || $pending === null) {
             return null;
@@ -409,6 +425,7 @@ class MongoyiaRequirementsClosureAcceptanceController extends Controller
             'failures' => (int)$failures,
             'warnings' => (int)$warnings,
             'pending' => (int)$pending,
+            'afterfillPending' => $afterfillPending === null ? 0 : (int)$afterfillPending,
         ];
     }
 
@@ -438,10 +455,12 @@ class MongoyiaRequirementsClosureAcceptanceController extends Controller
             '- Fixture mode: ' . ($this->fixture ? 'yes' : 'no'),
             '- Child readiness checks: ' . ($this->runChildChecks ? 'yes' : 'no'),
             '- Strict mode: ' . ($this->strict ? 'yes' : 'no'),
+            '- External afterfill policy: ' . ($this->allowExternalAfterfill ? 'enabled' : 'disabled'),
             '- Evidence flag passthrough: supported for Phase 10 through Phase 15 child acceptance commands.',
             '- Failures: ' . $this->failures,
             '- Warnings: ' . $this->warnings,
             '- Pending: ' . $this->pending,
+            '- Afterfill pending: ' . $this->afterfillPending,
             '',
             '## Results',
             '',
@@ -471,6 +490,7 @@ class MongoyiaRequirementsClosureAcceptanceController extends Controller
             '  --baseUrl=https://demo2026.mongoyia.com \\',
             '  --fixture=1 \\',
             '  --runChildChecks=1 \\',
+            '  --allowExternalAfterfill=1 \\',
             '  --strict=1 \\',
             '  --interactive=0',
             '```',
@@ -487,6 +507,7 @@ class MongoyiaRequirementsClosureAcceptanceController extends Controller
             '',
             '- PASS means Phase 10-15 source coverage and accepted evidence gates are complete.',
             '- PENDING means code coverage exists but real browser/provider/production evidence still needs to be collected and accepted.',
+            '- AFTERFILL means external provider or production operations material is intentionally left for backend afterfill and does not block development acceptance.',
             '- FAIL means a source marker, child command, or generated child report is missing or broken.',
             '- Production remains NO-GO until Phase 10 provider, operations, redacted export, browser, and owner signoff evidence are accepted.',
             '',
@@ -527,6 +548,8 @@ class MongoyiaRequirementsClosureAcceptanceController extends Controller
             $this->failures++;
         } elseif ($status === 'PENDING') {
             $this->pending++;
+        } elseif ($status === 'AFTERFILL') {
+            $this->afterfillPending++;
         } elseif ($status !== 'PASS') {
             $this->warnings++;
             $status = 'WARN';
@@ -546,7 +569,7 @@ class MongoyiaRequirementsClosureAcceptanceController extends Controller
         if ($this->failures > 0) {
             return 'FAIL';
         }
-        if ($this->warnings > 0 || $this->pending > 0) {
+        if ($this->warnings > 0 || $this->pending > 0 || $this->afterfillPending > 0) {
             return 'WARN';
         }
 

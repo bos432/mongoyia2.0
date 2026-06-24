@@ -134,7 +134,7 @@ class DefaultController extends BaseController
     public function actionSearch()
     {
         $keyword = trim((string)Yii::$app->request->get('keyword', ''));
-        return $this->redirect(['/mall/category/view', 'keyword' => $keyword]);
+        return $this->redirect('/mall/category/view?keyword=' . rawurlencode($keyword));
     }
 
     /**
@@ -145,7 +145,7 @@ class DefaultController extends BaseController
     public function actionLogin()
     {
         if (!Yii::$app->user->isGuest) {
-            return $this->redirect(['/mall/user/order']);
+            return $this->redirect('/mall/user/order');
         }
         $oldSessionId = Yii::$app->session->id;
 
@@ -164,7 +164,7 @@ class DefaultController extends BaseController
         } else {
             $model->password = '';
 
-            return $this->render($this->action->id, [
+            return $this->renderFile(Yii::getAlias('@frontend/modules/mall/views/default/login.php'), [
                 'model' => $model,
             ]);
         }
@@ -392,7 +392,7 @@ class DefaultController extends BaseController
             return $this->refresh();
         }
 
-        return $this->render($this->action->id, [
+        return $this->renderFile(Yii::getAlias('@frontend/modules/mall/views/default/contact.php'), [
             'model' => $model,
         ]);
     }

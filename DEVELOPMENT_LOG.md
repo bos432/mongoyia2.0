@@ -9998,3 +9998,41 @@
   - External provider material remains backend-afterfill; production remains `NO-GO` until accepted evidence and signoff gates pass.
 - Next stage:
   - Push/deploy this defect-fix patch, then rerun the browser matrix and total closure acceptance on the BaoTa/test server.
+
+## 2026-06-24 Browser Acceptance Entry Route Follow-up
+
+- Stage name: Browser acceptance entry-route hardening after BaoTa pull
+- Completed:
+  - Reviewed BaoTa output after pulling commit `336467d`.
+  - Confirmed server `migrate/up` and the aggregate acceptance command currently fail at DB preflight because console DB connects as `reader` and receives `SQLSTATE[HY000] [1044] Access denied for user 'reader'@'127.0.0.1' to database 'demomongoyia'`.
+  - Used the right-side browser after deployment and confirmed the first defect-fix patch restored:
+    - `/backend/site/info`
+    - `/backend/base/setting/index`
+    - `/backend/mall/order-product/index`
+    - `/backend/mall/fx/index`
+    - `/backend/base/permission/index` with no captured `yiiGridView` console error
+    - `/api/v1/app-buyer/product?id=2` with `product_detail_safe_fallback_version`
+  - Browser probing still showed failures for `/backend/mall/default/index`, `/mall/default/search?keyword=111`, `/mall/user/index`, `/mall/user/coupon`, `/mall/default/login`, and `/mall/default/contact`.
+  - Added a follow-up hardening patch so `/backend/mall/default/index`, `/mall/default/search`, `/mall/user/index`, and logged-in `/mall/default/login` use explicit string redirects.
+  - Added an explicit module login fallback view and changed mall login/contact rendering to `renderFile()` so theme fallback issues cannot make these browser entry routes fail.
+  - Preserved the read-only contact boundary; the contact page still does not send SMTP mail until provider evidence is configured.
+- Main files changed/added:
+  - `backend/modules/mall/controllers/DefaultController.php`
+  - `frontend/modules/mall/controllers/DefaultController.php`
+  - `frontend/modules/mall/controllers/UserController.php`
+  - `frontend/modules/mall/views/default/login.php`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l backend/modules/mall/controllers/DefaultController.php` passed.
+  - `php -l frontend/modules/mall/controllers/DefaultController.php` passed.
+  - `php -l frontend/modules/mall/controllers/UserController.php` passed.
+  - `php -l frontend/modules/mall/views/default/login.php` passed.
+  - `php -l frontend/modules/mall/views/default/contact.php` passed.
+  - `git diff --check` reported no whitespace errors, only existing Windows line-ending conversion warnings.
+  - Browser validation of this follow-up patch is pending BaoTa pull.
+- Remaining issues:
+  - Console Yii commands remain blocked on the BaoTa DB credential issue until the server uses a DB account that can connect to `demomongoyia` and run migrations/readiness checks.
+  - BaoTa/test server must pull this follow-up patch, refresh cache/opcache if needed, and rerun the failing browser entry routes.
+  - Seller backend role-flow validation remains pending until logout/login can be retested after this patch is deployed.
+- Next stage:
+  - Commit and push this follow-up entry-route patch, then ask BaoTa to pull it and rerun the browser route probes plus the aggregate acceptance after fixing console DB credentials.

@@ -59,7 +59,7 @@ class UserController extends BaseController
 
     public function actionIndex()
     {
-        return $this->redirect(['/mall/user/order']);
+        return $this->redirect('/mall/user/order');
     }
 
     public function actionGetcode()

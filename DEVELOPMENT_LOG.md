@@ -1,5 +1,39 @@
 # Development Log
 
+## 2026-06-24 Phase 10-15 Accepted Evidence Secret Guard
+
+- Stage name: Phase 10-15 accepted evidence secret guard
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting the stage.
+  - Added shared `console\components\AcceptedEvidenceGuard` with `MONGOYIA_ACCEPTED_EVIDENCE_SECRET_GUARD_V1`.
+  - Added secret-like evidence reference detection for private-key material, Basic/Bearer authorization values, `client_secret`/`api_key`/`hmac_secret`/`webhook_secret`/password/token assignments, credentialed URLs, and secret query parameters.
+  - Wired Phase 10, 11, 12, 13, 14, and 15 manual evidence gates to reject sensitive evidence references before any raw value can be written to acceptance reports.
+  - Added child and aggregate source coverage for the shared guard component and `sensitive evidence path rejected` failure marker.
+  - Updated the upgrade backlog to document non-empty and non-secret evidence reference requirements for accepted Phase 10-15 manual gates.
+- Main files changed/added:
+  - `console/components/AcceptedEvidenceGuard.php`
+  - `console/controllers/OperationalConfigPhase10AcceptanceController.php`
+  - `console/controllers/PaymentPhase11AcceptanceController.php`
+  - `console/controllers/AccountNotificationPhase12AcceptanceController.php`
+  - `console/controllers/AppPhase13AcceptanceController.php`
+  - `console/controllers/LogisticsProductPhase14AcceptanceController.php`
+  - `console/controllers/DistributionSupportPhase15AcceptanceController.php`
+  - `console/controllers/MongoyiaRequirementsClosureAcceptanceController.php`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l` passed for the new guard component and all seven changed console acceptance controllers.
+  - Static marker checks confirmed child/aggregate coverage for `AcceptedEvidenceGuard`, `sensitive evidence path rejected`, `MONGOYIA_ACCEPTED_EVIDENCE_SECRET_GUARD_V1`, and the backlog note.
+  - Guard behavior test passed: a normal `runtime/handover/*.md` reference is accepted, while `client_secret` query-string and Basic Auth examples are detected as sensitive.
+  - `git diff --check` reported no whitespace errors, only existing Windows line-ending conversion warnings.
+  - Full Yii console execution remains BaoTa-only because this local checkout lacks `vendor/autoload.php`.
+- Remaining issues:
+  - BaoTa/test server must pull this patch and rerun Phase 10-15 aggregate acceptance.
+  - Browser/provider/APP/logistics/distributor evidence still needs to be collected as redacted reports or ticket references before accepted flags can be passed.
+  - Production remains `NO-GO` until real provider, operations, redacted export, browser, and owner signoff evidence are accepted.
+- Next stage:
+  - Commit and push this secret-guard patch, then reread the plan/log and continue with the next plan-listed browser evidence or acceptance blocker.
+
 ## 2026-06-24 Phase 10-15 Accepted Evidence Path Guard
 
 - Stage name: Phase 10-15 accepted evidence path guard

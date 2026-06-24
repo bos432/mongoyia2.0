@@ -2,6 +2,7 @@
 
 namespace console\controllers;
 
+use console\components\AcceptedEvidenceGuard;
 use Yii;
 use yii\console\Controller;
 use yii\console\ExitCode;
@@ -118,8 +119,15 @@ class AccountNotificationPhase12AcceptanceController extends Controller
         ]);
         $this->requireFileContains('Phase 12 accepted evidence path guard', 'console/controllers/AccountNotificationPhase12AcceptanceController.php', [
             'MONGOYIA_ACCEPTED_EVIDENCE_PATH_GUARD_V1',
+            'AcceptedEvidenceGuard',
             'missing accepted evidence path',
+            'sensitive evidence path rejected',
             'Accepted evidence flag requires a non-secret evidence path/reference.',
+        ]);
+        $this->requireFileContains('Accepted evidence secret guard component', 'console/components/AcceptedEvidenceGuard.php', [
+            'MONGOYIA_ACCEPTED_EVIDENCE_SECRET_GUARD_V1',
+            'sensitiveReason',
+            'secret query parameter',
         ]);
         $this->requireFileContains('Existing frontend password reset flow', 'frontend/controllers/SiteController.php', [
             'actionRequestPasswordReset',
@@ -637,6 +645,12 @@ class AccountNotificationPhase12AcceptanceController extends Controller
     private function manualFlag(string $area, bool $accepted, string $evidence, string $passNotes, string $pendingNotes, bool $externalAfterfill = false): void
     {
         $evidence = trim($evidence);
+        $sensitiveReason = AcceptedEvidenceGuard::sensitiveReason($evidence);
+        if ($sensitiveReason !== '') {
+            $this->addCheck($area, 'FAIL', 'sensitive evidence path rejected', 'Evidence path/reference appears to contain ' . $sensitiveReason . '. Pass a redacted report, ticket, or signed evidence reference instead.');
+            return;
+        }
+
         if ($accepted) {
             if ($evidence === '') {
                 $this->addCheck($area, 'FAIL', 'missing accepted evidence path', 'Accepted evidence flag requires a non-secret evidence path/reference. Pass the matching --*EvidencePath option after reviewer acceptance.');

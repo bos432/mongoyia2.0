@@ -15,6 +15,8 @@ use common\models\ModelSearch;
  */
 class CouponTypeController extends BaseController
 {
+    public const COUPON_ISSUE_POST_ID_GUARD_VERSION = 'MONGOYIA_COUPON_TYPE_ISSUE_POST_ID_GUARD_V1';
+
     /**
       * @var CouponType
       */
@@ -46,7 +48,8 @@ class CouponTypeController extends BaseController
 
     public function actionFhAjax()
     {
-        $id = Yii::$app->request->get('id');
+        $request = Yii::$app->request;
+        $id = $request->isPost ? (int)$request->post('id', 0) : (int)$request->get('id', 0);
         $model = $this->findModel($id);
         if (!$model) {
             return $this->redirectError(Yii::t('app', 'Invalid id'));
@@ -56,10 +59,13 @@ class CouponTypeController extends BaseController
 
         // ajax 校验
 //        $this->activeFormValidate($model);
-        if (Yii::$app->request->isPost) {
-            $uid = Yii::$app->request->post('uid');
-            $cid = Yii::$app->request->get('id');
-            $res = Yii::$app->db->createCommand()->insert('fb_mall_user_coupon',[
+        if ($request->isPost) {
+            $uid = (int)$request->post('uid', 0);
+            $cid = (int)$request->post('id', 0);
+            if ($uid <= 0 || $cid <= 0) {
+                return $this->redirectError(Yii::t('app', 'Invalid id'));
+            }
+            $res = Yii::$app->db->createCommand()->insert('{{%mall_user_coupon}}',[
                 'uid'=>$uid,
                 'cid'=>$cid
             ])->execute();

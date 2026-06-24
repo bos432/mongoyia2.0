@@ -459,6 +459,8 @@ Phase 13.30 seller APP write POST guard coverage: seller APP product save, order
 
 Phase 13.31 checkout POST coupon guard: PC/H5 checkout still accepts `cid` through GET for preview/navigation, but order creation now reads `cid` only from POST body data and the checkout form posts a hidden `cid` to `/mall/cart/checkout` without query parameters. PWA smoke, Phase 13 buyer readiness, Phase 13 aggregate acceptance, and total requirements closure acceptance cover `MONGOYIA_CART_CHECKOUT_POST_COUPON_GUARD_V1`.
 
+Phase 13.32 backend coupon issue POST id guard: backend coupon-type issue modal still opens through GET `id`, but the actual user-coupon issue write now reads both `uid` and `id` only from POST body data, posts the hidden coupon id to `/backend/mall/coupon-type/fh-ajax` without query parameters, and uses the prefixed `{{%mall_user_coupon}}` table name. Coupon closure readiness covers `MONGOYIA_COUPON_TYPE_ISSUE_POST_ID_GUARD_V1`.
+
 Phase 14 acceptance command:
 
 ```bash

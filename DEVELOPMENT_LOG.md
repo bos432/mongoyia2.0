@@ -1,5 +1,38 @@
 # Development Log
 
+## 2026-06-24 Phase 13 Backend Coupon Issue POST ID Guard
+
+- Stage name: Phase 13.32 backend coupon issue POST id guard
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting the stage.
+  - Added `MONGOYIA_COUPON_TYPE_ISSUE_POST_ID_GUARD_V1` to the backend coupon-type controller.
+  - Kept GET `id` support for opening the backend coupon issue modal.
+  - Hardened coupon issue writes so POST reads both `uid` and coupon `id` only from POST body data.
+  - Changed the issue modal form action and validation URL to `/backend/mall/coupon-type/fh-ajax` without query parameters and added a hidden POST `id`.
+  - Switched the insert target from hard-coded `fb_mall_user_coupon` to the prefixed `{{%mall_user_coupon}}` table name.
+  - Added coverage to `mongoyia-coupon-test/run`.
+  - Updated the Phase 13 backlog notes as Phase 13.32.
+- Main files changed/added:
+  - `backend/modules/mall/controllers/CouponTypeController.php`
+  - `backend/modules/mall/views/coupon-type/fh-ajax.php`
+  - `console/controllers/MongoyiaCouponTestController.php`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l backend/modules/mall/controllers/CouponTypeController.php` passed.
+  - `php -l backend/modules/mall/views/coupon-type/fh-ajax.php` passed.
+  - `php -l console/controllers/MongoyiaCouponTestController.php` passed.
+  - Static marker checks confirmed `MONGOYIA_COUPON_TYPE_ISSUE_POST_ID_GUARD_V1`, POST body `uid`, POST body coupon `id`, hidden form `id`, queryless form URLs, and Phase 13.32 backlog coverage.
+  - Static stale-code check found no remaining `fb_mall_user_coupon` or old URL-id coupon issue write in `CouponTypeController`.
+  - `git diff --check` reported no whitespace errors, only existing Windows line-ending conversion warnings.
+  - Full Yii console execution remains BaoTa-only because this local checkout lacks `vendor/autoload.php`.
+- Remaining issues:
+  - BaoTa/test server must rerun coupon closure, Phase 13 acceptance, and total requirements closure acceptance after deployment.
+  - Browser evidence should recheck the backend coupon issue modal and user coupon list after the server pulls this patch.
+  - Phase 10/11/12/13/14/15 external/provider/browser evidence gates remain pending; production remains `NO-GO`.
+- Next stage:
+  - Commit and push this Phase 13 backend coupon issue POST id guard patch, then reread the plan/log and continue with the next plan-listed readiness item.
+
 ## 2026-06-24 Phase 12 Social Auth ReturnUrl Guard
 
 - Stage name: Phase 12.20 social-auth returnUrl guard

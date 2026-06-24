@@ -96,7 +96,28 @@ class MongoyiaCouponTestController extends Controller
     private function checkBackendEntrances()
     {
         $this->section('Backend entrances');
-        $this->requireFileContains('@app/../backend/modules/mall/controllers/CouponTypeController.php', ['actionFhAjax', 'fb_mall_user_coupon']);
+        $this->requireFileContains('@app/../backend/modules/mall/controllers/CouponTypeController.php', [
+            'MONGOYIA_COUPON_TYPE_ISSUE_POST_ID_GUARD_V1',
+            'actionFhAjax',
+            "\$request->isPost ? (int)\$request->post('id', 0) : (int)\$request->get('id', 0)",
+            "post('uid', 0)",
+            "post('id', 0)",
+            '{{%mall_user_coupon}}',
+        ]);
+        $this->requireFileContains('@app/../backend/modules/mall/views/coupon-type/fh-ajax.php', [
+            'data-mongoyia-coupon-type-issue-post-id-guard',
+            "'action' => Url::to(['fh-ajax'])",
+            "'validationUrl' => Url::to(['fh-ajax'])",
+            "Html::hiddenInput('id'",
+        ]);
+        $this->requireFileNotContains('@app/../backend/modules/mall/controllers/CouponTypeController.php', [
+            "\$cid = Yii::\$app->request->get('id');",
+            'fb_mall_user_coupon',
+        ]);
+        $this->requireFileNotContains('@app/../backend/modules/mall/views/coupon-type/fh-ajax.php', [
+            "'validationUrl' => Url::to(['fh-ajax', 'id' =>",
+            "'action' => Url::to(['fh-ajax', 'id' =>",
+        ]);
         $this->requireFileContains('@app/../backend/modules/mall/views/coupon-type/index.php', ['Coupon']);
         $this->requireFileContains('@app/../backend/modules/mall/controllers/MerchantCouponController.php', [
             'MONGOYIA_MERCHANT_COUPON_POST_VERB_GUARD_V1',

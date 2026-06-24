@@ -19,6 +19,8 @@ use yii\web\ForbiddenHttpException;
  */
 class OrderProductController extends BaseController
 {
+    public const SHIPMENT_POST_ID_GUARD_VERSION = 'MONGOYIA_BACKEND_ORDER_PRODUCT_SHIPMENT_POST_ID_GUARD_V1';
+
     /**
       * @var Order
       */
@@ -52,7 +54,8 @@ class OrderProductController extends BaseController
     public function actionFhAjax()
     {
         $this->assertCanManageOrderProducts();
-        $id = Yii::$app->request->get('id');
+        $request = Yii::$app->request;
+        $id = $request->isPost ? $request->post('id', 0) : $request->get('id');
         $model = $this->findModel($id);
         if (!$model) {
             return $this->redirectError(Yii::t('app', 'Invalid id'));
@@ -62,8 +65,8 @@ class OrderProductController extends BaseController
 
         // ajax 校验
         $this->activeFormValidate($model);
-        if (Yii::$app->request->isPost && $model->load(Yii::$app->request->post())) {
-            $model->translating = Yii::$app->request->post($model->formName())['translating'] ?? 0;
+        if ($request->isPost && $model->load($request->post())) {
+            $model->translating = $request->post($model->formName())['translating'] ?? 0;
             $model->shipment_status = 80;
             $model->status = 80;
 //            echo '<pre/>';

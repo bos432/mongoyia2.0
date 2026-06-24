@@ -94,6 +94,17 @@ class MongoyiaLogisticsBasicTestController extends Controller
             "'action' => Url::to(['fh-ajax'])",
             "'validationUrl' => Url::to(['fh-ajax'])",
         ]);
+        $this->requireFileContains('@app/../backend/modules/mall/controllers/OrderProductController.php', [
+            'MONGOYIA_BACKEND_ORDER_PRODUCT_SHIPMENT_POST_ID_GUARD_V1',
+            '$request->isPost ? $request->post(\'id\', 0) : $request->get(\'id\')',
+            '$model->shipment_status = 80',
+        ]);
+        $this->requireFileContains('@app/../backend/modules/mall/views/order-product/fh-ajax.php', [
+            'data-mongoyia-order-product-shipment-post-id-guard',
+            "Html::hiddenInput('id'",
+            "'action' => Url::to(['fh-ajax'])",
+            "'validationUrl' => Url::to(['fh-ajax'])",
+        ]);
         $this->requireFileContains('@app/../backend/modules/mall/views/order/index.php', ['shipment_status']);
         $this->requireFileContains('@app/../backend/modules/mall/controllers/LogisticsMethodController.php', [
             'MONGOYIA_LOGISTICS_METHOD_SELECTION_POST_GUARD_V1',

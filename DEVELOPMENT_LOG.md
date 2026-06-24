@@ -1,5 +1,39 @@
 # Development Log
 
+## 2026-06-24 Phase 14 Order-Product Shipment POST ID Guard
+
+- Stage name: Phase 14.16 order-product shipment POST id hardening
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting the stage.
+  - Added `MONGOYIA_BACKEND_ORDER_PRODUCT_SHIPMENT_POST_ID_GUARD_V1` to the backend order-product controller.
+  - Kept GET `id` support for opening the backend order-product shipment modal.
+  - Hardened order-product shipment writes so POST submit and Ajax validation read the order-product `id` from POST body data.
+  - Changed the order-product shipment modal form action and validation URL to `/backend/mall/order-product/fh-ajax` without query parameters and added a hidden POST `id`.
+  - Added readiness coverage to logistics basic and Phase 14 aggregate acceptance.
+  - Updated the Phase 14 backlog notes as Phase 14.16.
+- Main files changed/added:
+  - `backend/modules/mall/controllers/OrderProductController.php`
+  - `backend/modules/mall/views/order-product/fh-ajax.php`
+  - `console/controllers/MongoyiaLogisticsBasicTestController.php`
+  - `console/controllers/LogisticsProductPhase14AcceptanceController.php`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l backend/modules/mall/controllers/OrderProductController.php` passed.
+  - `php -l backend/modules/mall/views/order-product/fh-ajax.php` passed.
+  - `php -l console/controllers/MongoyiaLogisticsBasicTestController.php` passed.
+  - `php -l console/controllers/LogisticsProductPhase14AcceptanceController.php` passed.
+  - Static marker checks confirmed `MONGOYIA_BACKEND_ORDER_PRODUCT_SHIPMENT_POST_ID_GUARD_V1`, POST body order-product `id`, hidden form `id`, queryless form URLs, and Phase 14.16 backlog coverage.
+  - Static stale-code check found no remaining order-product shipment `validationUrl`/`action` query-id form targets; the only remaining `request->get('id')` is the allowed GET modal-open branch.
+  - `git diff --check` reported no whitespace errors, only existing Windows line-ending conversion warnings.
+  - Full Yii console execution remains BaoTa-only because this local checkout lacks `vendor/autoload.php`.
+- Remaining issues:
+  - BaoTa/test server must rerun logistics basic, Phase 14 aggregate acceptance, and total requirements closure acceptance after deployment.
+  - Browser role-flow evidence should recheck the backend order-product shipment modal and submission after the server pulls this patch.
+  - Phase 10/11/12/13/14/15 external/provider/browser evidence gates remain pending; production remains `NO-GO`.
+- Next stage:
+  - Run local syntax/static checks, commit and push this Phase 14 order-product shipment POST id guard patch, then reread the plan/log and continue with the next plan-listed readiness item.
+
 ## 2026-06-24 Phase 14 Logistics Method Selection POST Guard
 
 - Stage name: Phase 14.15 logistics method selection POST guard

@@ -490,6 +490,8 @@ Phase 14.14 product review Ajax GET guard: product review list and review sortin
 
 Phase 14.15 logistics method selection POST guard: backend store logistics method select/unselect writes now use `MONGOYIA_LOGISTICS_METHOD_SELECTION_POST_GUARD_V1`, POST-only verb filters, POST-only `method_id` and `store_id` reads, and CSRF POST forms on the logistics-method page. Logistics basic and Phase 14 aggregate acceptance check this guard so store logistics selection cannot be triggered by plain GET links.
 
+Phase 14.16 order-product shipment POST id hardening: backend order-product shipment modal GET remains available for opening the form, but shipment submit and Ajax validation now post to `/backend/mall/order-product/fh-ajax` without a query-string id. The form carries a hidden POST `id` and `data-mongoyia-order-product-shipment-post-id-guard`; `OrderProductController::actionFhAjax()` reads the order-product id from POST for write requests through `MONGOYIA_BACKEND_ORDER_PRODUCT_SHIPMENT_POST_ID_GUARD_V1`. Logistics basic and Phase 14 aggregate acceptance cover the guard.
+
 Phase 15 acceptance command:
 
 ```bash

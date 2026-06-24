@@ -1,5 +1,28 @@
 # Development Log
 
+## 2026-06-24 Phase 13 Backlog Command Marker Fix
+
+- Stage name: Phase 13 buyer/seller backlog command marker fix
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting this stage.
+  - Investigated the BaoTa failures `Phase 13 backlog command list` in both buyer and seller APP/API readiness.
+  - Confirmed the Phase 13 command list already included `app-buyer-phase13-readiness/run` and `app-seller-phase13-readiness/run`, but the surrounding backlog text did not contain the exact reviewer-safe markers `buyer JSON APIs` and `seller JSON APIs`.
+  - Updated the Phase 13 acceptance section to explicitly document buyer JSON APIs and seller JSON APIs while preserving the existing scope and boundaries.
+- Main files changed/added:
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - Static checks confirmed `app-buyer-phase13-readiness/run`, `buyer JSON APIs`, `app-seller-phase13-readiness/run`, and `seller JSON APIs` are present in the backlog.
+  - `php -l console/controllers/AppBuyerPhase13ReadinessController.php` passed.
+  - `php -l console/controllers/AppSellerPhase13ReadinessController.php` passed.
+  - Full Yii console execution remains BaoTa-only because this local checkout lacks `vendor/autoload.php`.
+- Remaining issues:
+  - BaoTa/test server must pull this patch and rerun Phase 13 buyer/seller readiness and total Phase 10-15 aggregate acceptance.
+  - Other known BaoTa failures remain to be handled in later stages: Phase 11 base mall payment regression and Phase 15 existing withdrawal workflow.
+  - Browser role-flow evidence for Phase 10/11/12/13/14/15 remains incomplete; production remains `NO-GO` until accepted evidence and GO/NO-GO gates pass.
+- Next stage:
+  - Commit and push this Phase 13 backlog marker patch, then reread the plan/log and continue with the next BaoTa failure item.
+
 ## 2026-06-24 Phase 13/14 Product Favorite Render Guard Fix
 
 - Stage name: Phase 13/14 product/store favorite render guard fix

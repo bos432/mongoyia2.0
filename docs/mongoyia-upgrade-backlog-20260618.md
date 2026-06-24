@@ -385,6 +385,8 @@ Phase 11.11 payment child baseUrl propagation: `payment-phase11-acceptance/run` 
 
 Phase 11.12 payment callback regression parity: external payment callback actions now carry `MONGOYIA_PAYMENT_CALLBACK_CSRF_EXEMPTION_V1`, disabling CSRF for QPay/LianLian/PayPal webhook callback endpoints before parent request validation while retaining callback secret, HMAC, timestamp, IP, amount, audit, and idempotency guards. `mall-payment-test/run` now reads QPay/LianLian callback secret, HMAC secret, and timestamp window from the encrypted backend payment runtime config before falling back to legacy `.env` values, and reports HTTP status lines, transport errors, and response body excerpts when callback regression fails.
 
+Phase 11.13 payment regression merchant-scope parity: `mall-payment-test/run` now mirrors the frontend payment controller when selecting callback signing configuration. Single-store regression orders use that merchant's encrypted payment config only when the platform has enabled merchant payment configuration and the provider config is complete; multi-store or incomplete merchant config falls back to platform payment config. Failed regression checks are now also printed to stdout so parent acceptance output exposes the concrete HTTP/body/audit failure instead of only the aggregate `Base mall payment regression` row.
+
 Phase 12 acceptance command:
 
 ```bash

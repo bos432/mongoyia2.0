@@ -6,6 +6,7 @@ use common\models\mall\Order;
 use common\models\mall\OrderProduct;
 use common\models\mall\PaymentAttempt;
 use common\models\mall\Product;
+use common\services\mall\MerchantPaymentConfigService;
 use common\services\mall\OperationalPaymentConfigService;
 use Yii;
 use yii\console\ExitCode;
@@ -70,8 +71,10 @@ class MallPaymentTestController extends BaseController
         $this->runInvalidShipmentRegression($products);
 
         if ($this->failures) {
+            $this->stdout("\nFailed checks:\n");
             $this->stderr("\nFailed checks:\n");
             foreach ($this->failures as $failure) {
+                $this->stdout("- {$failure}\n");
                 $this->stderr("- {$failure}\n");
             }
             return ExitCode::UNSPECIFIED_ERROR;
@@ -723,7 +726,8 @@ class MallPaymentTestController extends BaseController
     {
         $url = rtrim($this->baseUrl, '/') . '/mall/payment/qpayres?id=' . urlencode($orderId);
         $body = http_build_query($payload);
-        $headers = $this->callbackHeaders('qpay', $orderId, $payload, null, $sign, $signatureOverride, $timestampOverride, 'application/x-www-form-urlencoded');
+        $storeId = $this->paymentProviderStoreId('qpay', (int)$orderId);
+        $headers = $this->callbackHeaders('qpay', $orderId, $payload, null, $sign, $signatureOverride, $timestampOverride, 'application/x-www-form-urlencoded', $storeId);
         return $this->postCallback($url, $body, $headers);
     }
 
@@ -731,20 +735,21 @@ class MallPaymentTestController extends BaseController
     {
         $url = rtrim($this->baseUrl, '/') . '/mall/payment/succeeded?id=' . urlencode($orderId);
         $body = json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
-        $headers = $this->callbackHeaders('lianlian', $orderId, [], $payload, $sign, $signatureOverride, $timestampOverride, 'application/json');
+        $storeId = $this->paymentProviderStoreId('lianlian', (int)$orderId);
+        $headers = $this->callbackHeaders('lianlian', $orderId, [], $payload, $sign, $signatureOverride, $timestampOverride, 'application/json', $storeId);
         return $this->postCallback($url, $body, $headers);
     }
 
-    private function callbackHeaders($provider, $orderId, array $post, ?array $raw, $sign, $signatureOverride, $timestampOverride, $contentType)
+    private function callbackHeaders($provider, $orderId, array $post, ?array $raw, $sign, $signatureOverride, $timestampOverride, $contentType, $storeId = 0)
     {
         $headers = "Content-Type: {$contentType}\r\n";
-        $callbackSecret = $this->callbackSecret($provider);
+        $callbackSecret = $this->callbackSecret($provider, (int)$storeId);
         if ($callbackSecret !== '') {
             $headers .= 'X-Mongoyia-Payment-Secret: ' . $this->headerValue($callbackSecret) . "\r\n";
         }
 
-        $secret = $this->callbackHmacSecret($provider);
-        $maxAge = $this->callbackMaxAgeSeconds($provider);
+        $secret = $this->callbackHmacSecret($provider, (int)$storeId);
+        $maxAge = $this->callbackMaxAgeSeconds($provider, (int)$storeId);
         if ($secret === '' && $maxAge <= 0) {
             return $headers;
         }
@@ -759,78 +764,143 @@ class MallPaymentTestController extends BaseController
         return $headers;
     }
 
-    private function callbackSecret($provider)
+    private function callbackSecret($provider, $storeId = 0)
     {
         if ($provider === 'qpay') {
             if ((string)$this->qpayCallbackSecret !== '') {
                 return (string)$this->qpayCallbackSecret;
             }
-            $runtime = $this->runtimePaymentConfigValue('qpay', 'callback_secret');
+            $runtime = $this->runtimePaymentConfigValue('qpay', 'callback_secret', (int)$storeId);
             return $runtime !== '' ? $runtime : (string)env('QPAY_CALLBACK_SECRET', '');
         }
 
         if ((string)$this->lianlianCallbackSecret !== '') {
             return (string)$this->lianlianCallbackSecret;
         }
-        $runtime = $this->runtimePaymentConfigValue('lianlian', 'callback_secret');
+        $runtime = $this->runtimePaymentConfigValue('lianlian', 'callback_secret', (int)$storeId);
         return $runtime !== '' ? $runtime : (string)env('LIANLIAN_CALLBACK_SECRET', '');
     }
 
-    private function callbackHmacSecret($provider)
+    private function callbackHmacSecret($provider, $storeId = 0)
     {
         if ($provider === 'qpay') {
             if ((string)$this->qpayCallbackHmacSecret !== '') {
                 return (string)$this->qpayCallbackHmacSecret;
             }
-            $runtime = $this->runtimePaymentConfigValue('qpay', 'callback_hmac_secret');
+            $runtime = $this->runtimePaymentConfigValue('qpay', 'callback_hmac_secret', (int)$storeId);
             return $runtime !== '' ? $runtime : (string)env('QPAY_CALLBACK_HMAC_SECRET', '');
         }
 
         if ((string)$this->lianlianCallbackHmacSecret !== '') {
             return (string)$this->lianlianCallbackHmacSecret;
         }
-        $runtime = $this->runtimePaymentConfigValue('lianlian', 'callback_hmac_secret');
+        $runtime = $this->runtimePaymentConfigValue('lianlian', 'callback_hmac_secret', (int)$storeId);
         return $runtime !== '' ? $runtime : (string)env('LIANLIAN_CALLBACK_HMAC_SECRET', '');
     }
 
-    private function callbackMaxAgeSeconds($provider)
+    private function callbackMaxAgeSeconds($provider, $storeId = 0)
     {
         if ($provider === 'qpay') {
             if ((int)$this->qpayCallbackMaxAgeSeconds > 0) {
                 return (int)$this->qpayCallbackMaxAgeSeconds;
             }
-            $runtime = $this->runtimePaymentConfigValue('qpay', 'callback_max_age_seconds');
+            $runtime = $this->runtimePaymentConfigValue('qpay', 'callback_max_age_seconds', (int)$storeId);
             return $runtime !== '' ? (int)$runtime : (int)env('QPAY_CALLBACK_MAX_AGE_SECONDS', 0);
         }
 
         if ((int)$this->lianlianCallbackMaxAgeSeconds > 0) {
             return (int)$this->lianlianCallbackMaxAgeSeconds;
         }
-        $runtime = $this->runtimePaymentConfigValue('lianlian', 'callback_max_age_seconds');
+        $runtime = $this->runtimePaymentConfigValue('lianlian', 'callback_max_age_seconds', (int)$storeId);
         return $runtime !== '' ? (int)$runtime : (int)env('LIANLIAN_CALLBACK_MAX_AGE_SECONDS', 0);
     }
 
-    private function runtimePaymentConfigValue($provider, $key)
+    private function runtimePaymentConfigValue($provider, $key, $storeId = 0)
     {
-        $config = $this->runtimePaymentConfig($provider);
+        $config = $this->runtimePaymentConfig($provider, (int)$storeId);
         return isset($config[$key]) ? trim((string)$config[$key]) : '';
     }
 
-    private function runtimePaymentConfig($provider)
+    private function runtimePaymentConfig($provider, $storeId = 0)
     {
         $provider = strtolower((string)$provider);
-        if (array_key_exists($provider, $this->paymentRuntimeConfigs)) {
-            return $this->paymentRuntimeConfigs[$provider];
+        $storeId = max(0, (int)$storeId);
+        $cacheKey = $provider . ':' . $storeId;
+        if (array_key_exists($cacheKey, $this->paymentRuntimeConfigs)) {
+            return $this->paymentRuntimeConfigs[$cacheKey];
         }
 
         try {
-            $this->paymentRuntimeConfigs[$provider] = (new OperationalPaymentConfigService())->runtimeConfig($provider);
+            $this->paymentRuntimeConfigs[$cacheKey] = (new OperationalPaymentConfigService())->runtimeConfig($provider, [], '', $storeId);
         } catch (\Throwable $e) {
-            $this->paymentRuntimeConfigs[$provider] = [];
+            $this->paymentRuntimeConfigs[$cacheKey] = [];
             Yii::warning($e->getMessage(), 'mall.payment_test.operational_config_failed');
         }
 
-        return $this->paymentRuntimeConfigs[$provider];
+        return $this->paymentRuntimeConfigs[$cacheKey];
+    }
+
+    private function paymentProviderStoreId($provider, $orderId)
+    {
+        $model = Order::findOne((int)$orderId);
+        if (!$model) {
+            return 0;
+        }
+
+        $storeId = $this->singleOrderStoreId($model);
+        if ($storeId <= 0) {
+            return 0;
+        }
+
+        try {
+            $merchantService = new MerchantPaymentConfigService();
+            if (!$merchantService->isAllowed($storeId)) {
+                return 0;
+            }
+
+            $paymentService = new OperationalPaymentConfigService();
+            $config = $paymentService->runtimeConfig((string)$provider, [], '', $storeId);
+            $check = $paymentService->checkProvider(
+                (string)$provider,
+                (string)($config['environment'] ?? 'test'),
+                false,
+                $storeId
+            );
+            $details = (array)($check['details'] ?? []);
+            if ((int)($details['enabled'] ?? 0) === 1 && empty($details['missing'])) {
+                return $storeId;
+            }
+        } catch (\Throwable $e) {
+            Yii::warning([
+                'provider' => $provider,
+                'order_id' => $orderId,
+                'store_id' => $storeId,
+                'error' => $e->getMessage(),
+            ], 'mall.payment_test.merchant_config_scope_failed');
+        }
+
+        return 0;
+    }
+
+    private function singleOrderStoreId(Order $model)
+    {
+        if ((int)$model->parent_id !== 0) {
+            return (int)$model->store_id;
+        }
+
+        $storeIds = Order::find()
+            ->select('store_id')
+            ->where(['parent_id' => $model->id])
+            ->andWhere(['>', 'store_id', 0])
+            ->distinct()
+            ->column();
+
+        if (!$storeIds && (int)$model->store_id > 0) {
+            $storeIds = [(int)$model->store_id];
+        }
+
+        $storeIds = array_values(array_unique(array_map('intval', $storeIds)));
+        return count($storeIds) === 1 ? (int)$storeIds[0] : 0;
     }
 
     private function headerValue($value)

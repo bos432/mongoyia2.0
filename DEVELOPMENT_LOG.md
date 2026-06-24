@@ -1,5 +1,34 @@
 # Development Log
 
+## 2026-06-24 Phase 11 Payment Regression Merchant Scope Parity
+
+- Stage name: Phase 11.13 payment regression merchant-scope parity
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md`, this log, and the latest BaoTa aggregate acceptance output before starting this stage.
+  - Confirmed Phase 11 source coverage now recognizes Phase 11.12, but BaoTa still reports `Base mall payment regression` as the only blocking failure.
+  - Updated `mall-payment-test/run` so callback signing config mirrors the frontend payment controller's merchant-scope choice: single-store orders use merchant encrypted payment config only when platform permission is enabled and provider config is complete; multi-store or incomplete merchant config falls back to platform config.
+  - Kept CLI-provided callback secret/HMAC options as explicit overrides for targeted regression runs.
+  - Printed the final failed-check summary to stdout as well as stderr so parent acceptance output can expose concrete callback HTTP/body/audit failures.
+  - Added Phase 11 source coverage for `MerchantPaymentConfigService`, `paymentProviderStoreId`, `singleOrderStoreId`, and stdout failed-check reporting.
+  - Updated the Phase 11 backlog notes with the Phase 11.13 behavior.
+- Main files changed/added:
+  - `console/controllers/MallPaymentTestController.php`
+  - `console/controllers/PaymentPhase11AcceptanceController.php`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l console/controllers/MallPaymentTestController.php` passed.
+  - `php -l console/controllers/PaymentPhase11AcceptanceController.php` passed.
+  - Static marker checks confirmed `MerchantPaymentConfigService`, `paymentProviderStoreId`, `singleOrderStoreId`, `runtimePaymentConfigValue`, `Failed checks`, `transport_error`, and `Phase 11.13` coverage.
+  - `git diff --check` reported no whitespace errors, only existing Windows line-ending conversion warnings.
+  - Full Yii console execution remains BaoTa-only because this local checkout lacks `vendor/autoload.php`.
+- Remaining issues:
+  - BaoTa/test server must pull this patch and rerun `mall-payment-test/run` plus total Phase 10-15 aggregate acceptance.
+  - If `mall-payment-test/run` still fails, parent command output should now include concrete failed-check lines for the next fix.
+  - Browser role-flow evidence for Phase 10/11/12/13/14/15 remains incomplete; production remains `NO-GO` until accepted evidence and GO/NO-GO gates pass.
+- Next stage:
+  - Commit and push this Phase 11 merchant-scope parity patch, then continue based on the next BaoTa payment regression output.
+
 ## 2026-06-24 Phase 11 Payment Callback Regression Parity
 
 - Stage name: Phase 11.12 payment callback regression parity

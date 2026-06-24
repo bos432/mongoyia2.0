@@ -151,10 +151,14 @@ class PaymentPhase11AcceptanceController extends Controller
         ]);
         $this->requireFileContains('Payment callback regression runtime config parity', 'console/controllers/MallPaymentTestController.php', [
             'OperationalPaymentConfigService',
+            'MerchantPaymentConfigService',
+            'paymentProviderStoreId',
+            'singleOrderStoreId',
             'runtimePaymentConfigValue',
             'callback_secret',
             'callback_hmac_secret',
             'callback_max_age_seconds',
+            'Failed checks',
             'transport_error',
         ]);
         $this->requireFileContains('Backend order refund POST guard', 'backend/modules/mall/controllers/OrderController.php', [

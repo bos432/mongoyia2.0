@@ -10,6 +10,7 @@ use Yii;
 class AppSellerController extends BaseController
 {
     public const VERSION = 'MONGOYIA_APP_SELLER_CONTROLLER_V1';
+    public const WRITE_POST_GUARD = 'MONGOYIA_APP_SELLER_WRITE_POST_GUARD_V1';
     public const SHIPMENT_POST_GUARD = 'MONGOYIA_APP_SELLER_SHIPMENT_POST_GUARD_V1';
 
     public $modelClass = Product::class;
@@ -32,7 +33,7 @@ class AppSellerController extends BaseController
     public function actionProducts()
     {
         return $this->runSellerAction(function (int $storeId) {
-            if (Yii::$app->request->isPost) {
+            if ($this->isWriteRequest()) {
                 return $this->sellerService()->saveProduct($storeId, Yii::$app->request->post());
             }
 
@@ -43,7 +44,7 @@ class AppSellerController extends BaseController
     public function actionOrders()
     {
         return $this->runSellerAction(function (int $storeId) {
-            if (Yii::$app->request->isPost) {
+            if ($this->isWriteRequest()) {
                 return $this->sellerService()->shipOrder($storeId, Yii::$app->request->post());
             }
 
@@ -79,7 +80,7 @@ class AppSellerController extends BaseController
     public function actionCoupons()
     {
         return $this->runSellerAction(function (int $storeId) {
-            if (Yii::$app->request->isPost) {
+            if ($this->isWriteRequest()) {
                 return $this->sellerService()->participateCoupon($storeId, Yii::$app->request->post());
             }
 
@@ -136,6 +137,11 @@ class AppSellerController extends BaseController
         }
 
         return $this->sellerService;
+    }
+
+    private function isWriteRequest(): bool
+    {
+        return Yii::$app->request->isPost;
     }
 
     private function apiError(string $message, int $statusCode): array

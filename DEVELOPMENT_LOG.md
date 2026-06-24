@@ -1,5 +1,36 @@
 # Development Log
 
+## 2026-06-24 Phase 13 Seller APP Write POST Guard Coverage
+
+- Stage name: Phase 13.30 seller APP write POST guard coverage
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting the stage.
+  - Added `MONGOYIA_APP_SELLER_WRITE_POST_GUARD_V1` to the seller APP API controller.
+  - Routed seller product save, order shipment alias, and coupon participation write branches through a shared `isWriteRequest()` helper.
+  - Kept seller APP GET list/read behavior unchanged and left the dedicated shipment endpoint's existing `SHIPMENT_REQUIRES_POST` guard in place.
+  - Added coverage to seller APP Phase 13 readiness and Phase 13 aggregate acceptance.
+  - Updated the Phase 13 backlog notes as Phase 13.30.
+- Main files changed/added:
+  - `api/modules/v1/controllers/AppSellerController.php`
+  - `console/controllers/AppSellerPhase13ReadinessController.php`
+  - `console/controllers/AppPhase13AcceptanceController.php`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l api/modules/v1/controllers/AppSellerController.php` passed.
+  - `php -l console/controllers/AppSellerPhase13ReadinessController.php` passed.
+  - `php -l console/controllers/AppPhase13AcceptanceController.php` passed.
+  - Static marker checks confirmed `MONGOYIA_APP_SELLER_WRITE_POST_GUARD_V1`, `isWriteRequest`, seller product/order/coupon actions, and Phase 13.30 backlog coverage.
+  - Static controller check confirmed product save, order shipment alias, and coupon participation branches call `$this->isWriteRequest()`.
+  - `git diff --check` reported no whitespace errors, only existing Windows line-ending conversion warnings.
+  - Full Yii console execution remains BaoTa-only because this local checkout lacks `vendor/autoload.php`.
+- Remaining issues:
+  - BaoTa/test server must rerun seller APP Phase 13 readiness, Phase 13 aggregate acceptance, and total requirements closure acceptance after deployment.
+  - Authenticated seller APP/H5 browser evidence should recheck product submission, order shipment, and coupon participation after the server pulls this patch.
+  - Phase 13 authenticated role-flow evidence remains pending; production remains `NO-GO`.
+- Next stage:
+  - Commit and push this Phase 13 seller APP write POST guard coverage patch, then reread the plan/log and continue with the next plan-listed readiness item.
+
 ## 2026-06-24 Phase 12 Social Auth Unbind POST Guard
 
 - Stage name: Phase 12.17 social-auth unbind POST guard

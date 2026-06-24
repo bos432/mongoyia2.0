@@ -449,6 +449,8 @@ Phase 13.28 product favorite GET-read/POST-write guard: PC/H5 product favorite a
 
 Phase 13.29 product review Ajax GET guard: PC/H5 product review list now uses `MONGOYIA_PRODUCT_REVIEW_AJAX_GET_GUARD_V1`, restricts `/mall/product/review` to GET, and reads `product_id`/`review_sort` only from query parameters because this endpoint is read-only. Favorite/review closure, PWA smoke, Phase 13 buyer readiness, and Phase 13 aggregate acceptance cover the guard.
 
+Phase 13.30 seller APP write POST guard coverage: seller APP product save, order shipment alias, and coupon participation writes now share `MONGOYIA_APP_SELLER_WRITE_POST_GUARD_V1` through `AppSellerController::isWriteRequest()`, while GET continues to serve list/read views. Seller APP readiness and Phase 13 aggregate acceptance check the guard so seller product, order, and coupon mutations remain POST-only.
+
 Phase 14 acceptance command:
 
 ```bash

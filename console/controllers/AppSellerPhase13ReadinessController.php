@@ -73,6 +73,7 @@ class AppSellerPhase13ReadinessController extends Controller
         ]);
         $this->requireFileContains('Seller APP API controller', 'api/modules/v1/controllers/AppSellerController.php', [
             'MONGOYIA_APP_SELLER_CONTROLLER_V1',
+            'MONGOYIA_APP_SELLER_WRITE_POST_GUARD_V1',
             'MONGOYIA_APP_SELLER_SHIPMENT_POST_GUARD_V1',
             'actionDashboard',
             'actionProducts',
@@ -86,6 +87,7 @@ class AppSellerPhase13ReadinessController extends Controller
             'actionStatistics',
             'actionDistribution',
             'sellerStoreId',
+            'isWriteRequest',
             'shipOrder',
             'saveProduct',
             'participateCoupon',

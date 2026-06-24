@@ -10036,3 +10036,27 @@
   - Seller backend role-flow validation remains pending until logout/login can be retested after this patch is deployed.
 - Next stage:
   - Commit and push this follow-up entry-route patch, then ask BaoTa to pull it and rerun the browser route probes plus the aggregate acceptance after fixing console DB credentials.
+
+## 2026-06-24 BaoTa Deployment DB Preflight Triage
+
+- Stage name: BaoTa deployment DB credential preflight triage
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting the stage.
+  - Reviewed BaoTa output after the server pulled commit `336467d`.
+  - Confirmed the remote `mongoyia/master` already contains follow-up commit `8dc6db4`, so the BaoTa server still needs one more `git pull` before browser route retesting.
+  - Confirmed `migrate/up` and `mongoyia-requirements-closure-acceptance/run --fixture=1 --runChildChecks=1 --strict=1 --allowExternalAfterfill=1` are blocked before child checks because the console DB account is `reader` and MySQL returns `SQLSTATE[HY000] [1044] Access denied for user 'reader'@'127.0.0.1' to database 'demomongoyia'`.
+  - Verified the aggregate acceptance command already contains `MONGOYIA_PHASE10_15_DB_ACCESS_PREFLIGHT_V1` and `DatabaseAcceptanceGuard`, which intentionally stops child checks when the console cannot access the configured database.
+- Main files changed/added:
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `git ls-remote mongoyia refs/heads/master` confirmed remote master is `8dc6db4008d37910d7ebaf8a27344ec5e898aef1`.
+  - `git show --stat --oneline -1` confirmed the latest pushed patch is `8dc6db4 Harden browser entry routes`.
+  - Read `console/components/DatabaseAcceptanceGuard.php` and confirmed the server error maps to the documented friendly remediation: fix BaoTa `.env` DB credentials or grant this MySQL user access, then rerun migrations and acceptance.
+  - No PHP source was changed in this triage stage.
+- Remaining issues:
+  - BaoTa/test server must run another `git pull` to deploy `8dc6db4` or the latest commit.
+  - BaoTa/test server DB configuration must use a user that can connect to `demomongoyia` and run migrations/readiness checks; do not paste or commit the DB password.
+  - After DB access is restored, rerun `migrate/up` and the aggregate closure acceptance command.
+  - Browser regression still needs to retest the fixed entry routes, backend logout, and seller login as `zhishichanquan`.
+- Next stage:
+  - Commit and push this deployment triage log, then continue after BaoTa pulls the latest code and DB credentials/grants are corrected.

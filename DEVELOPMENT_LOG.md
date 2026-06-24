@@ -9029,3 +9029,32 @@
   - Phase 10/11/12/13/14/15 external/provider/browser evidence gates remain pending; production remains `NO-GO`.
 - Next stage:
   - Commit and push this Phase 15 frontend distributor POST guard patch, then reread the plan/log and continue with the next plan-listed readiness item.
+
+## 2026-06-24 Phase 12 Account Provider Afterfill Policy
+
+- Stage name: Phase 12.21 account/notification provider afterfill policy
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting the stage.
+  - Added `MONGOYIA_PHASE12_ACCOUNT_PROVIDER_AFTERFILL_POLICY_V1` to the Phase 12 account/notification/language acceptance command.
+  - Added `--allowExternalAfterfill` support, `AFTERFILL` rows, and `Afterfill pending` reporting for Phase 12.
+  - Treated Google/Facebook provider callback evidence, email/SMS/security-code delivery evidence, and external APP/SMS/mail notification delivery evidence as backend-afterfill during development acceptance.
+  - Kept language review import/export evidence and browser role-flow evidence as normal blocking acceptance items.
+  - Passed the aggregate Phase 10-15 afterfill flag through to Phase 12 and required the Phase 12 afterfill marker in aggregate source coverage.
+  - Updated the Phase 10-15 backlog commands and Phase 12 notes to show `--allowExternalAfterfill=1`.
+- Main files changed/added:
+  - `console/controllers/AccountNotificationPhase12AcceptanceController.php`
+  - `console/controllers/MongoyiaRequirementsClosureAcceptanceController.php`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l console/controllers/AccountNotificationPhase12AcceptanceController.php` passed.
+  - `php -l console/controllers/MongoyiaRequirementsClosureAcceptanceController.php` passed.
+  - Static marker checks confirmed `MONGOYIA_PHASE12_ACCOUNT_PROVIDER_AFTERFILL_POLICY_V1`, `allowExternalAfterfill`, `AFTERFILL`, `Afterfill pending`, and `Phase 12.21` coverage.
+  - `git diff --check` reported no whitespace errors, only existing Windows line-ending conversion warnings.
+  - Full Yii console execution remains BaoTa-only because this local checkout lacks `vendor/autoload.php`.
+- Remaining issues:
+  - BaoTa/test server must rerun Phase 12 child readiness and total requirements closure acceptance after deployment.
+  - Phase 12 language review import/export evidence and browser role-flow evidence remain pending.
+  - Google/Facebook, email/SMS/security-code delivery, and APP/SMS/mail notification provider evidence may be completed later through backend afterfill; production remains `NO-GO` until accepted evidence and GO/NO-GO gates pass.
+- Next stage:
+  - Commit and push this Phase 12 afterfill policy patch, then reread the plan/log and continue with the next plan-listed readiness item.

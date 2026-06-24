@@ -314,9 +314,14 @@ class MongoyiaRequirementsClosureAcceptanceController extends Controller
                 'route' => 'account-notification-phase12-acceptance/run',
                 'file' => 'console/controllers/AccountNotificationPhase12AcceptanceController.php',
                 'version' => 'AccountNotificationPhase12AcceptanceController',
-                'baseUrl' => false,
+                'baseUrl' => true,
                 'fixture' => true,
                 'runChildChecks' => true,
+                'allowExternalAfterfill' => true,
+                'requiredMarkers' => [
+                    'MONGOYIA_PHASE12_ACCOUNT_PROVIDER_AFTERFILL_POLICY_V1',
+                    'Afterfill pending',
+                ],
                 'passthrough' => [
                     'phase12ThirdPartyLoginAccepted' => 'thirdPartyLoginAccepted',
                     'phase12PasswordRecoveryAccepted' => 'passwordRecoveryAccepted',

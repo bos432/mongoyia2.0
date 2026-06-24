@@ -9,12 +9,14 @@ use yii\console\ExitCode;
 class AccountNotificationPhase12AcceptanceController extends Controller
 {
     public const VERSION = 'MONGOYIA_ACCOUNT_NOTIFICATION_PHASE12_ACCEPTANCE_V1';
+    public const PROVIDER_AFTERFILL_POLICY_VERSION = 'MONGOYIA_PHASE12_ACCOUNT_PROVIDER_AFTERFILL_POLICY_V1';
 
     public $baseUrl = 'https://demo2026.mongoyia.com';
     public $handoverDir = 'runtime/handover';
     public $outputPath = '';
     public $fixture = false;
     public $strict = false;
+    public $allowExternalAfterfill = true;
     public $runChildChecks = false;
     public $thirdPartyLoginAccepted = false;
     public $passwordRecoveryAccepted = false;
@@ -31,6 +33,7 @@ class AccountNotificationPhase12AcceptanceController extends Controller
     private $failures = 0;
     private $warnings = 0;
     private $pending = 0;
+    private $afterfillPending = 0;
 
     public function options($actionID)
     {
@@ -40,6 +43,7 @@ class AccountNotificationPhase12AcceptanceController extends Controller
             'outputPath',
             'fixture',
             'strict',
+            'allowExternalAfterfill',
             'runChildChecks',
             'thirdPartyLoginAccepted',
             'passwordRecoveryAccepted',
@@ -72,7 +76,7 @@ class AccountNotificationPhase12AcceptanceController extends Controller
         $path = $this->writeReport($result);
 
         $this->stdout("\nReport written to {$path}\n");
-        $this->stdout("Summary: {$this->failures} failure(s), {$this->warnings} warning(s), {$this->pending} pending.\n");
+        $this->stdout("Summary: {$this->failures} failure(s), {$this->warnings} warning(s), {$this->pending} pending, {$this->afterfillPending} afterfill pending.\n");
 
         if ($this->failures > 0 || ($this->strict && ($this->warnings > 0 || $this->pending > 0))) {
             return ExitCode::UNSPECIFIED_ERROR;
@@ -91,6 +95,12 @@ class AccountNotificationPhase12AcceptanceController extends Controller
             'Facebook/Google login',
             'site/app notifications',
             'language review import/export',
+        ]);
+        $this->requireFileContains('Phase 12 account provider afterfill policy', 'console/controllers/AccountNotificationPhase12AcceptanceController.php', [
+            'MONGOYIA_PHASE12_ACCOUNT_PROVIDER_AFTERFILL_POLICY_V1',
+            'allowExternalAfterfill',
+            'AFTERFILL',
+            'Afterfill pending',
         ]);
         $this->requireFileContains('Existing frontend password reset flow', 'frontend/controllers/SiteController.php', [
             'actionRequestPasswordReset',
@@ -369,21 +379,24 @@ class AccountNotificationPhase12AcceptanceController extends Controller
             $this->thirdPartyLoginAccepted,
             $this->thirdPartyLoginEvidencePath,
             'Facebook and Google login, callback, bind/unbind, conflict handling, and operation logs were accepted.',
-            'Implement and validate Facebook/Google provider configuration, callbacks, account binding, unbinding, and safe error handling.'
+            'Complete Google/Facebook provider credentials, sandbox callback evidence, and binding/unbinding screenshots through backend afterfill before accepting this gate.',
+            true
         );
         $this->manualFlag(
             'Password recovery and security-code login acceptance',
             $this->passwordRecoveryAccepted,
             $this->passwordRecoveryEvidencePath,
             'Email/mobile recovery, verification/security-code login policies, backend switches, and operation logs were accepted.',
-            'Extend the existing email reset foundation with mobile/email verification-code policy, backend switches, and operation logs.'
+            'Complete email/SMS delivery provider evidence and security-code recovery evidence through backend afterfill before accepting this gate.',
+            true
         );
         $this->manualFlag(
             'Site/app notification acceptance',
             $this->notificationAccepted,
             $this->notificationEvidencePath,
             'Order, logistics, payment, service-reply, and complaint notifications were accepted with send logs.',
-            'Implement notification templates, event hooks, site/app delivery records, and provider test evidence.'
+            'Complete external APP/SMS/mail notification delivery evidence through backend afterfill before accepting this gate.',
+            true
         );
         $this->manualFlag(
             'Mongolian/English language review import/export acceptance',
@@ -516,8 +529,10 @@ class AccountNotificationPhase12AcceptanceController extends Controller
             '- Failures: ' . $this->failures,
             '- Warnings: ' . $this->warnings,
             '- Pending: ' . $this->pending,
+            '- Afterfill pending: ' . $this->afterfillPending,
             '- Scope: Facebook/Google login, password recovery/security-code policies, site/app notifications, and Mongolian/English review import/export.',
             '- Safety: this command does not call external identity providers, send real notifications, mutate users, write credentials, or store provider secrets.',
+            '- External afterfill policy: ' . ($this->allowExternalAfterfill ? 'enabled' : 'disabled'),
             '- Production boundary: provider credentials, mail/SMS/APP push routes, and human language signoff remain external evidence until accepted.',
             '',
             '## Checks',
@@ -554,6 +569,7 @@ class AccountNotificationPhase12AcceptanceController extends Controller
             '  --baseUrl=https://demo2026.mongoyia.com \\',
             '  --runChildChecks=1 \\',
             '  --fixture=1 \\',
+            '  --allowExternalAfterfill=1 \\',
             '  --interactive=0',
             '```',
             '',
@@ -582,6 +598,7 @@ class AccountNotificationPhase12AcceptanceController extends Controller
             '  --baseUrl=https://demo2026.mongoyia.com \\',
             '  --runChildChecks=1 \\',
             '  --fixture=1 \\',
+            '  --allowExternalAfterfill=1 \\',
             '  --thirdPartyLoginAccepted=1 --thirdPartyLoginEvidencePath=runtime/handover/phase12-third-party-login-evidence.md \\',
             '  --passwordRecoveryAccepted=1 --passwordRecoveryEvidencePath=runtime/handover/phase12-password-recovery-evidence.md \\',
             '  --notificationAccepted=1 --notificationEvidencePath=runtime/handover/phase12-notification-evidence.md \\',
@@ -597,10 +614,15 @@ class AccountNotificationPhase12AcceptanceController extends Controller
         return $path;
     }
 
-    private function manualFlag(string $area, bool $accepted, string $evidence, string $passNotes, string $pendingNotes): void
+    private function manualFlag(string $area, bool $accepted, string $evidence, string $passNotes, string $pendingNotes, bool $externalAfterfill = false): void
     {
         if ($accepted) {
             $this->addCheck($area, 'PASS', $evidence !== '' ? $evidence : 'external evidence recorded', $passNotes);
+            return;
+        }
+
+        if ($externalAfterfill && $this->allowExternalAfterfill) {
+            $this->addCheck($area, 'AFTERFILL', $evidence !== '' ? $evidence : 'backend afterfill pending', $pendingNotes);
             return;
         }
 
@@ -656,6 +678,8 @@ class AccountNotificationPhase12AcceptanceController extends Controller
             $this->failures++;
         } elseif ($status === 'PENDING') {
             $this->pending++;
+        } elseif ($status === 'AFTERFILL') {
+            $this->afterfillPending++;
         } elseif ($status !== 'PASS') {
             $this->warnings++;
             $status = 'WARN';
@@ -675,7 +699,7 @@ class AccountNotificationPhase12AcceptanceController extends Controller
         if ($this->failures > 0) {
             return 'FAIL';
         }
-        if ($this->warnings > 0 || $this->pending > 0) {
+        if ($this->warnings > 0 || $this->pending > 0 || $this->afterfillPending > 0) {
             return 'WARN';
         }
 

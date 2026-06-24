@@ -9,12 +9,14 @@ use yii\console\ExitCode;
 class PaymentPhase11AcceptanceController extends Controller
 {
     public const VERSION = 'MONGOYIA_PAYMENT_PHASE11_ACCEPTANCE_V1';
+    public const PROVIDER_AFTERFILL_POLICY_VERSION = 'MONGOYIA_PHASE11_PAYMENT_PROVIDER_AFTERFILL_POLICY_V1';
 
     public $baseUrl = 'https://demo2026.mongoyia.com';
     public $handoverDir = 'runtime/handover';
     public $outputPath = '';
     public $fixture = false;
     public $strict = false;
+    public $allowExternalAfterfill = true;
     public $runChildChecks = false;
     public $sandboxAccepted = false;
     public $merchantConfigAccepted = false;
@@ -31,6 +33,7 @@ class PaymentPhase11AcceptanceController extends Controller
     private $failures = 0;
     private $warnings = 0;
     private $pending = 0;
+    private $afterfillPending = 0;
 
     public function options($actionID)
     {
@@ -40,6 +43,7 @@ class PaymentPhase11AcceptanceController extends Controller
             'outputPath',
             'fixture',
             'strict',
+            'allowExternalAfterfill',
             'runChildChecks',
             'sandboxAccepted',
             'merchantConfigAccepted',
@@ -69,7 +73,7 @@ class PaymentPhase11AcceptanceController extends Controller
         $path = $this->writeReport($result);
 
         $this->stdout("\nReport written to {$path}\n");
-        $this->stdout("Summary: {$this->failures} failure(s), {$this->warnings} warning(s), {$this->pending} pending.\n");
+        $this->stdout("Summary: {$this->failures} failure(s), {$this->warnings} warning(s), {$this->pending} pending, {$this->afterfillPending} afterfill pending.\n");
 
         if ($this->failures > 0 || ($this->strict && ($this->warnings > 0 || $this->pending > 0))) {
             return ExitCode::UNSPECIFIED_ERROR;
@@ -236,6 +240,12 @@ class PaymentPhase11AcceptanceController extends Controller
             'MONGOYIA_PAYPAL_PHASE11_RUNTIME_SUPERSEDES_PHASE6_NOGO_V1',
             'PayPal final read-only go/no-go gate',
         ]);
+        $this->requireFileContains('Phase 11 payment provider afterfill policy', 'console/controllers/PaymentPhase11AcceptanceController.php', [
+            'MONGOYIA_PHASE11_PAYMENT_PROVIDER_AFTERFILL_POLICY_V1',
+            'allowExternalAfterfill',
+            'AFTERFILL',
+            'Afterfill pending',
+        ]);
     }
 
     private function checkManualAcceptanceInputs(): void
@@ -246,7 +256,8 @@ class PaymentPhase11AcceptanceController extends Controller
             $this->sandboxAccepted,
             $this->sandboxEvidencePath,
             'Sandbox create, return/cancel, webhook/callback, duplicate callback, amount mismatch, and disabled-channel cases were accepted.',
-            'Complete QPay, LianLian, and PayPal sandbox provider evidence before accepting this gate.'
+            'Complete QPay, LianLian, and PayPal sandbox provider evidence through backend afterfill before accepting this gate.',
+            true
         );
         $this->manualFlag(
             'Merchant encrypted payment configuration acceptance',
@@ -331,8 +342,10 @@ class PaymentPhase11AcceptanceController extends Controller
             '- Failures: ' . $this->failures,
             '- Warnings: ' . $this->warnings,
             '- Pending: ' . $this->pending,
+            '- Afterfill pending: ' . $this->afterfillPending,
             '- Scope: QPay, LianLian, PayPal sandbox flow, live enablement guard, merchant encrypted payment configuration, payment statistics, and callback/audit coverage.',
             '- Safety boundary: this acceptance command is read-only and must not enable live payment, call payment providers, mutate orders, mutate funds, or store secrets.',
+            '- External afterfill policy: QPay, LianLian, and PayPal sandbox provider material may remain AFTERFILL during development acceptance; live payment stays blocked until accepted evidence exists.',
             '- Production boundary: Phase 10 production readiness remains NO-GO until real provider and operations evidence are accepted.',
             '- MONGOYIA_PAYPAL_PHASE11_RUNTIME_SUPERSEDES_PHASE6_NOGO_V1: Phase 11 PayPal Orders/Webhook runtime acceptance supersedes the old Phase 6 PayPal final read-only go/no-go gate as a child check; production live enablement still remains blocked by Phase 10 evidence and explicit accepted flags.',
             '',
@@ -365,6 +378,7 @@ class PaymentPhase11AcceptanceController extends Controller
             '  --baseUrl=https://demo2026.mongoyia.com \\',
             '  --runChildChecks=1 \\',
             '  --fixture=1 \\',
+            '  --allowExternalAfterfill=1 \\',
             '  --strict=1 \\',
             '  --interactive=0',
             '```',
@@ -394,6 +408,7 @@ class PaymentPhase11AcceptanceController extends Controller
             '  --baseUrl=https://demo2026.mongoyia.com \\',
             '  --runChildChecks=1 \\',
             '  --fixture=1 \\',
+            '  --allowExternalAfterfill=1 \\',
             '  --sandboxAccepted=1 --sandboxEvidencePath=runtime/handover/phase11-sandbox-payment-evidence.md \\',
             '  --merchantConfigAccepted=1 --merchantConfigEvidencePath=runtime/handover/phase11-merchant-payment-config-evidence.md \\',
             '  --statsAccepted=1 --statsEvidencePath=runtime/handover/phase11-payment-statistics-evidence.md \\',
@@ -409,10 +424,15 @@ class PaymentPhase11AcceptanceController extends Controller
         return $path;
     }
 
-    private function manualFlag(string $area, bool $accepted, string $evidence, string $passNotes, string $pendingNotes): void
+    private function manualFlag(string $area, bool $accepted, string $evidence, string $passNotes, string $pendingNotes, bool $externalAfterfill = false): void
     {
         if ($accepted) {
             $this->addCheck($area, 'PASS', $evidence !== '' ? $evidence : 'external evidence recorded', $passNotes);
+            return;
+        }
+
+        if ($externalAfterfill && $this->allowExternalAfterfill) {
+            $this->addCheck($area, 'AFTERFILL', $evidence !== '' ? $evidence : 'backend afterfill pending', $pendingNotes);
             return;
         }
 
@@ -469,6 +489,8 @@ class PaymentPhase11AcceptanceController extends Controller
             $this->failures++;
         } elseif ($status === 'PENDING') {
             $this->pending++;
+        } elseif ($status === 'AFTERFILL') {
+            $this->afterfillPending++;
         } elseif ($status !== 'PASS') {
             $this->warnings++;
             $status = 'WARN';
@@ -488,7 +510,7 @@ class PaymentPhase11AcceptanceController extends Controller
         if ($this->failures > 0) {
             return 'FAIL';
         }
-        if ($this->warnings > 0 || $this->pending > 0) {
+        if ($this->warnings > 0 || $this->pending > 0 || $this->afterfillPending > 0) {
             return 'WARN';
         }
 

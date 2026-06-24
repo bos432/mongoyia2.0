@@ -1,5 +1,33 @@
 # Development Log
 
+## 2026-06-24 Phase 11 Payment Provider Afterfill Policy
+
+- Stage name: Phase 11.9 QPay/LianLian/PayPal sandbox provider afterfill policy
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting the stage.
+  - Added `MONGOYIA_PHASE11_PAYMENT_PROVIDER_AFTERFILL_POLICY_V1` to the Phase 11 payment acceptance command.
+  - Added `allowExternalAfterfill`, separate `AFTERFILL` status, and `Afterfill pending` reporting for QPay/LianLian/PayPal sandbox provider material.
+  - Kept merchant payment configuration, payment statistics, callback/audit regression, and browser role-flow evidence as blocking `PENDING` development closure items.
+  - Wired the Phase 10-15 aggregate acceptance command to pass `allowExternalAfterfill` into Phase 11 and require the new Phase 11 afterfill marker.
+  - Updated backlog text and BaoTa command examples to pass `--allowExternalAfterfill=1` while keeping live payment blocked until Phase 10 and Phase 11 evidence is accepted.
+- Main files changed/added:
+  - `console/controllers/PaymentPhase11AcceptanceController.php`
+  - `console/controllers/MongoyiaRequirementsClosureAcceptanceController.php`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l console/controllers/PaymentPhase11AcceptanceController.php` passed.
+  - `php -l console/controllers/MongoyiaRequirementsClosureAcceptanceController.php` passed.
+  - Static marker checks confirmed `MONGOYIA_PHASE11_PAYMENT_PROVIDER_AFTERFILL_POLICY_V1`, `allowExternalAfterfill`, `AFTERFILL`, `Afterfill pending`, and Phase 11.9 backlog coverage.
+  - `git diff --check` reported no whitespace errors, only existing Windows line-ending conversion warnings.
+  - Full Yii console execution remains BaoTa-only because this local checkout lacks `vendor/autoload.php`.
+- Remaining issues:
+  - BaoTa/test server must rerun Phase 11 payment acceptance and Phase 10-15 total requirements closure acceptance after deployment.
+  - Merchant payment configuration, payment statistics, callback/audit regression, and browser payment role-flow evidence remain required for development closure.
+  - Real QPay/LianLian/PayPal sandbox provider material remains a backend-afterfill item; live payment remains blocked until accepted.
+- Next stage:
+  - Commit and push this Phase 11.9 payment-provider afterfill policy patch, then reread the plan/log and continue with the next plan-listed readiness item.
+
 ## 2026-06-24 Phase 10 External Afterfill Acceptance Policy
 
 - Stage name: Phase 10.8 external provider/production evidence afterfill policy

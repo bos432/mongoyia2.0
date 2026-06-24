@@ -291,6 +291,11 @@ class MongoyiaRequirementsClosureAcceptanceController extends Controller
                 'baseUrl' => true,
                 'fixture' => true,
                 'runChildChecks' => true,
+                'allowExternalAfterfill' => true,
+                'requiredMarkers' => [
+                    'MONGOYIA_PHASE11_PAYMENT_PROVIDER_AFTERFILL_POLICY_V1',
+                    'Afterfill pending',
+                ],
                 'passthrough' => [
                     'phase11SandboxAccepted' => 'sandboxAccepted',
                     'phase11MerchantConfigAccepted' => 'merchantConfigAccepted',

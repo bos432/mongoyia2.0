@@ -1,5 +1,33 @@
 # Development Log
 
+## 2026-06-24 Backend Logout Link GET Bypass Hardening
+
+- Stage name: Backend logout link GET bypass hardening
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log after BaoTa pulled commit `0b37ddf`.
+  - Used the right-side browser to reload `/backend/` and confirmed the deployed page now contains the shared hidden POST logout form and two `data-backend-logout="1"` links.
+  - Found that the visible logout links still exposed `/backend/site/logout` in `href`, so the browser treated a click as a navigation to the logout URL before the POST handler could be verified.
+  - Changed both backend logout anchors to `href="javascript:;"` and kept the actual logout endpoint only in the hidden POST form.
+  - Added inline fallback submission so logout still posts `#backend-logout-form` even if the delegated global handler is unavailable.
+  - Kept `SiteController::actionLogout()` POST-only; no GET logout route, production GO action, provider call, payment/refund/payout/logistics action, approval action, or business mutation was added.
+- Main files changed/added:
+  - `backend/views/site/header.php`
+  - `backend/views/site/content.php`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - Browser inspection before this patch confirmed deployed `0b37ddf` had `formMethod=post`, `formAction=/backend/site/logout`, and visible admin session `admin`.
+  - Browser click verification was blocked by the in-app browser URL safety policy because the old logout anchors still pointed directly at `/backend/site/logout`.
+  - `php -l backend/views/site/header.php` passed.
+  - `php -l backend/views/site/content.php` passed.
+  - Static marker check passed for `data-backend-logout`, `backend-logout-form`, `href="javascript:;"`, and `MONGOYIA_BACKEND_LOGOUT_DELEGATED_POST_V1`.
+  - `git diff --check` reported no whitespace errors, only existing Windows line-ending conversion warnings for the touched PHP view files.
+- Remaining issues:
+  - BaoTa/test server must pull this follow-up patch and reload `/backend/`.
+  - After deployment, recheck the DOM shows logout anchors no longer expose `/backend/site/logout`; browser/user logout can then be verified without a GET-link path.
+  - Independent seller role-flow validation with `zhishichanquan / 123456` remains pending until admin session switching is confirmed.
+- Next stage:
+  - Commit and push this follow-up patch, then have BaoTa pull it and continue browser validation for logout and seller backend pages.
+
 ## 2026-06-24 Backend Logout POST Session Fix
 
 - Stage name: Backend logout delegated POST session fix

@@ -109,7 +109,7 @@ $store = $this->context->store;
                 <!-- Menu Footer-->
                 <li class="user-footer">
                     <a href="#" class="btn btn-default btn-flat" data-methods="post" onclick="fbPrompt('<?= Url::to(['/site/clear-cache']); ?>'); return false;"><?= Yii::t('app', 'Clear Cache'); ?></a>
-                    <a href="<?= Url::to(['/site/logout']); ?>" class="btn btn-default btn-flat float-right" data-backend-logout="1" onclick="event.preventDefault(); if (window.mongoyiaBackendLogout) { window.mongoyiaBackendLogout(event); }"><?= Yii::t('app', 'Logout'); ?></a>
+                    <a href="javascript:;" class="btn btn-default btn-flat float-right" data-backend-logout="1" onclick="event.preventDefault(); return window.mongoyiaBackendLogout ? window.mongoyiaBackendLogout(event) : (document.getElementById('backend-logout-form') && document.getElementById('backend-logout-form').submit(), false);"><?= Yii::t('app', 'Logout'); ?></a>
                 </li>
             </ul>
         </li>

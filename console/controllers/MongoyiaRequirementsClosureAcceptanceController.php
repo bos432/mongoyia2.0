@@ -401,7 +401,11 @@ class MongoyiaRequirementsClosureAcceptanceController extends Controller
                 'version' => 'MONGOYIA_DISTRIBUTION_SUPPORT_PHASE15_ACCEPTANCE_V1',
                 'baseUrl' => false,
                 'fixture' => true,
-                'runChildChecks' => false,
+                'runChildChecks' => true,
+                'requiredMarkers' => [
+                    'MONGOYIA_DISTRIBUTION_SUPPORT_PHASE15_CHILD_CHECKS_V1',
+                    'runChildChecks',
+                ],
                 'passthrough' => [
                     'phase15TrainingAccepted' => 'trainingAccepted',
                     'phase15PromotionAccepted' => 'promotionAccepted',

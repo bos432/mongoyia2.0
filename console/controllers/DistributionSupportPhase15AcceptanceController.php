@@ -2,17 +2,20 @@
 
 namespace console\controllers;
 
+use Yii;
 use yii\console\Controller;
 use yii\console\ExitCode;
 
 class DistributionSupportPhase15AcceptanceController extends Controller
 {
     public const VERSION = 'MONGOYIA_DISTRIBUTION_SUPPORT_PHASE15_ACCEPTANCE_V1';
+    public const CHILD_CHECKS_VERSION = 'MONGOYIA_DISTRIBUTION_SUPPORT_PHASE15_CHILD_CHECKS_V1';
 
     public $handoverDir = 'runtime/handover';
     public $outputPath = '';
     public $fixture = false;
     public $strict = false;
+    public $runChildChecks = false;
     public $trainingAccepted = false;
     public $promotionAccepted = false;
     public $downloadTrackingAccepted = false;
@@ -36,6 +39,7 @@ class DistributionSupportPhase15AcceptanceController extends Controller
             'outputPath',
             'fixture',
             'strict',
+            'runChildChecks',
             'trainingAccepted',
             'promotionAccepted',
             'downloadTrackingAccepted',
@@ -56,6 +60,9 @@ class DistributionSupportPhase15AcceptanceController extends Controller
         $this->checkSourceCoverage();
         if ($this->fixture) {
             $this->checkPlannedScopeMatrix();
+        }
+        if ($this->runChildChecks) {
+            $this->runChildChecks();
         }
         $this->checkManualAcceptanceInputs();
 
@@ -78,6 +85,14 @@ class DistributionSupportPhase15AcceptanceController extends Controller
         $this->requireFileContains('Phase 15 backlog registration', 'docs/mongoyia-upgrade-backlog-20260618.md', [
             'Distributor training and operations support center',
             'distribution-support-phase15-acceptance/run',
+        ]);
+        $this->requireFileContains('Phase 15 child readiness wiring', 'console/controllers/DistributionSupportPhase15AcceptanceController.php', [
+            'MONGOYIA_DISTRIBUTION_SUPPORT_PHASE15_CHILD_CHECKS_V1',
+            'runChildChecks',
+            'childCommands',
+            'distribution-support-content-phase15-readiness/run',
+            'distribution-material-phase15-readiness/run',
+            'distribution-signoff-phase15-readiness/run',
         ]);
         $this->requireFileContains('Existing distributor frontend center', 'web/resources/mall/default/views/user/distribution.php', [
             'Distribution Center',
@@ -281,6 +296,37 @@ class DistributionSupportPhase15AcceptanceController extends Controller
         );
     }
 
+    private function runChildChecks(): void
+    {
+        $this->section('Phase 15 child readiness commands');
+        foreach ($this->childCommands() as $label => $config) {
+            $params = ['interactive' => 0];
+            if ($this->fixture && !empty($config['fixture'])) {
+                $params['fixture'] = 1;
+            }
+
+            try {
+                $exitCode = Yii::$app->runAction($config['route'], $params);
+                if ((int)$exitCode === ExitCode::OK) {
+                    $this->addCheck($label, 'PASS', $config['route'], 'Child readiness command passed.');
+                } else {
+                    $this->addCheck($label, 'FAIL', $config['route'], 'Child readiness command returned exit code ' . (int)$exitCode . '.');
+                }
+            } catch (\Throwable $e) {
+                $this->addCheck($label, 'FAIL', $config['route'], 'Child readiness command failed: ' . $e->getMessage());
+            }
+        }
+    }
+
+    private function childCommands(): array
+    {
+        return [
+            'Distributor support content readiness' => ['route' => 'distribution-support-content-phase15-readiness/run', 'fixture' => true],
+            'Distributor promotion material readiness' => ['route' => 'distribution-material-phase15-readiness/run', 'fixture' => true],
+            'Distributor payout/signoff evidence readiness' => ['route' => 'distribution-signoff-phase15-readiness/run', 'fixture' => true],
+        ];
+    }
+
     private function writeReport(string $result): string
     {
         $path = $this->outputPath !== '' ? $this->resolvePath($this->outputPath) : $this->defaultReportPath();
@@ -298,6 +344,7 @@ class DistributionSupportPhase15AcceptanceController extends Controller
             '- Failures: ' . $this->failures,
             '- Warnings: ' . $this->warnings,
             '- Pending: ' . $this->pending,
+            '- Child readiness checks: ' . ($this->runChildChecks ? 'yes' : 'no'),
             '- Scope: distributor training, FAQ/support content, multilingual promotion materials, material download tracking, and payout/invite reward signoff evidence.',
             '- Safety: this command is an evidence gate and does not approve commissions, create withdrawals, write fund logs, change payment state, or trigger real payouts.',
             '',
@@ -327,7 +374,7 @@ class DistributionSupportPhase15AcceptanceController extends Controller
             '/www/server/php/83/bin/php yii distribution-support-content-phase15-readiness/run --fixture=1 --interactive=0',
             '/www/server/php/83/bin/php yii distribution-material-phase15-readiness/run --fixture=1 --interactive=0',
             '/www/server/php/83/bin/php yii distribution-signoff-phase15-readiness/run --fixture=1 --interactive=0',
-            '/www/server/php/83/bin/php yii distribution-support-phase15-acceptance/run --fixture=1 --interactive=0',
+            '/www/server/php/83/bin/php yii distribution-support-phase15-acceptance/run --fixture=1 --runChildChecks=1 --interactive=0',
             '```',
             '',
             'MONGOYIA_PHASE10_15_CHILD_DEPLOY_CACHE_REFRESH_V1: pull fast-forward changes, print the deployed commit, flush Yii cache, and restart PHP-FPM before collecting Phase 15 distributor browser evidence.',
@@ -350,6 +397,7 @@ class DistributionSupportPhase15AcceptanceController extends Controller
             '```bash',
             '/www/server/php/83/bin/php yii distribution-support-phase15-acceptance/run \\',
             '  --fixture=1 \\',
+            '  --runChildChecks=1 \\',
             '  --trainingAccepted=1 --trainingEvidencePath=runtime/handover/phase15-training-evidence.md \\',
             '  --promotionAccepted=1 --promotionEvidencePath=runtime/handover/phase15-promotion-evidence.md \\',
             '  --downloadTrackingAccepted=1 --downloadTrackingEvidencePath=runtime/handover/phase15-download-evidence.md \\',

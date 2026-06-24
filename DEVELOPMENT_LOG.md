@@ -9087,3 +9087,31 @@
   - Real logistics provider and real tracking evidence may be completed later through backend afterfill; production remains `NO-GO` until accepted evidence and GO/NO-GO gates pass.
 - Next stage:
   - Commit and push this Phase 14 afterfill policy patch, then reread the plan/log and continue with the next plan-listed readiness item.
+
+## 2026-06-24 Phase 15 Distributor Support Child Checks
+
+- Stage name: Phase 15.9 distributor support child readiness wiring
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting the stage.
+  - Added `MONGOYIA_DISTRIBUTION_SUPPORT_PHASE15_CHILD_CHECKS_V1` to the Phase 15 distributor support acceptance command.
+  - Added `--runChildChecks` support to `distribution-support-phase15-acceptance/run`.
+  - Wired the Phase 15 acceptance command to run support content, promotion material, and signoff evidence readiness children when requested.
+  - Updated the Phase 10-15 aggregate acceptance command to pass child readiness checks through to Phase 15.
+  - Updated the Phase 15 backlog commands and notes to show `--runChildChecks=1`.
+- Main files changed/added:
+  - `console/controllers/DistributionSupportPhase15AcceptanceController.php`
+  - `console/controllers/MongoyiaRequirementsClosureAcceptanceController.php`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l console/controllers/DistributionSupportPhase15AcceptanceController.php` passed.
+  - `php -l console/controllers/MongoyiaRequirementsClosureAcceptanceController.php` passed.
+  - Static marker checks confirmed `MONGOYIA_DISTRIBUTION_SUPPORT_PHASE15_CHILD_CHECKS_V1`, `runChildChecks`, `childCommands`, and `Phase 15.9` coverage.
+  - `git diff --check` reported no whitespace errors, only existing Windows line-ending conversion warnings.
+  - Full Yii console execution remains BaoTa-only because this local checkout lacks `vendor/autoload.php`.
+- Remaining issues:
+  - BaoTa/test server must rerun Phase 15 child readiness, Phase 15 acceptance, and total requirements closure acceptance after deployment.
+  - Phase 15 browser role-flow evidence remains pending.
+  - Production remains `NO-GO` until accepted evidence and GO/NO-GO gates pass.
+- Next stage:
+  - Commit and push this Phase 15 child-check wiring patch, then reread the plan/log and continue with the next plan-listed readiness item.

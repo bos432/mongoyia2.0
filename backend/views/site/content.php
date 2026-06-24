@@ -32,8 +32,8 @@ use common\helpers\Url;
                 <li class="J_tabCloseOther"><a><?= Yii::t('app', 'Close Other Tab') ?></a></li>
             </ul>
         </div>
-        <?= Html::beginForm(Url::to(['/site/logout']), 'post', ['class' => 'roll-nav roll-right J_tabExit backend-logout-tab-form', 'style' => 'margin:0;', 'data-mongoyia-backend-logout-inline-form' => '1']) ?>
-            <button type="submit" class="backend-logout-tab-button" style="width:70px;height:41px;border:0;background:transparent;outline:none;" data-mongoyia-backend-logout-inline-submit="1"><i class="nav-icon fas fa-sign-out-alt"></i> <?= Yii::t('app', 'Logout') ?></button>
+        <?= Html::beginForm(Url::to(['/site/logout']), 'post', ['class' => 'roll-nav roll-right backend-logout-tab-form', 'style' => 'margin:0;background:#fff;height:41px;width:70px;outline:none;', 'data-mongoyia-backend-logout-inline-form' => '1']) ?>
+            <button type="submit" class="backend-logout-tab-button" style="width:70px;height:41px;border:0;background:transparent;outline:none;" onclick="if (this.form) { HTMLFormElement.prototype.submit.call(this.form); } return false;" data-mongoyia-backend-logout-inline-submit="1" data-mongoyia-backend-logout-native-form-submit="1"><i class="nav-icon fas fa-sign-out-alt"></i> <?= Yii::t('app', 'Logout') ?></button>
         <?= Html::endForm() ?>
     </div>
     <div class="J_mainContent" id="content-main">

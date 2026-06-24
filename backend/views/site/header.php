@@ -110,7 +110,7 @@ $store = $this->context->store;
                 <li class="user-footer">
                     <a href="#" class="btn btn-default btn-flat" data-methods="post" onclick="fbPrompt('<?= Url::to(['/site/clear-cache']); ?>'); return false;"><?= Yii::t('app', 'Clear Cache'); ?></a>
                     <?= Html::beginForm(Url::to(['/site/logout']), 'post', ['class' => 'float-right', 'style' => 'display:inline;', 'data-mongoyia-backend-logout-inline-form' => '1']) ?>
-                        <button type="submit" class="btn btn-default btn-flat" data-mongoyia-backend-logout-inline-submit="1"><?= Yii::t('app', 'Logout'); ?></button>
+                        <button type="submit" class="btn btn-default btn-flat" onclick="if (this.form) { HTMLFormElement.prototype.submit.call(this.form); } return false;" data-mongoyia-backend-logout-inline-submit="1" data-mongoyia-backend-logout-native-form-submit="1"><?= Yii::t('app', 'Logout'); ?></button>
                     <?= Html::endForm() ?>
                 </li>
             </ul>
@@ -140,6 +140,7 @@ $store = $this->context->store;
 <!-- /.navbar -->
 
 <!-- MONGOYIA_BACKEND_LOGOUT_INLINE_POST_FORM_V1 -->
+<!-- MONGOYIA_BACKEND_LOGOUT_NATIVE_FORM_SUBMIT_FALLBACK_V2 -->
 
 <script type="text/html" id="topMessage">
     <div class="dropdown-item" data-index="{{id}}">

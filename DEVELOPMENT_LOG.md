@@ -1,5 +1,33 @@
 # Development Log
 
+## 2026-06-24 Backend Logout Native Form Submit Fallback
+
+- Stage name: Backend logout native form submit fallback
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log after BaoTa pulled commit `8953315`.
+  - Used the right-side browser to inspect `/backend/` and confirmed deployed `8953315` rendered two inline POST logout forms with CSRF tokens, had `MONGOYIA_BACKEND_LOGOUT_INLINE_POST_FORM_V1`, and no longer had the old hidden `backend-logout-form` or delegated logout markers.
+  - Browser-clicked both visible logout paths, including the user dropdown logout button and the tab-bar logout button, but the session still remained as `admin`.
+  - Added `MONGOYIA_BACKEND_LOGOUT_NATIVE_FORM_SUBMIT_FALLBACK_V2` and `data-mongoyia-backend-logout-native-form-submit` markers.
+  - Added a target-level `onclick` fallback that calls `HTMLFormElement.prototype.submit.call(this.form)` on the button's own POST form, so logout no longer depends on native submit propagation, an external `form=` association, or delegated JavaScript.
+  - Removed `J_tabExit` from the tab-bar form class and preserved the same width/height/background styling inline to avoid any legacy shell click binding tied to that class.
+  - Kept `SiteController::actionLogout()` POST-only; no GET logout route, provider call, production GO action, payment/refund/payout/logistics action, approval action, fund mutation, or stock mutation was added.
+- Main files changed/added:
+  - `backend/views/site/header.php`
+  - `backend/views/site/content.php`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - Browser validation against deployed `8953315` before this patch: inline form source markers passed, but both actual logout clicks left `https://demo2026.mongoyia.com/backend/` logged in as `admin`.
+  - `php -l backend/views/site/header.php` passed.
+  - `php -l backend/views/site/content.php` passed.
+  - Static marker check passed for `MONGOYIA_BACKEND_LOGOUT_NATIVE_FORM_SUBMIT_FALLBACK_V2`, `data-mongoyia-backend-logout-native-form-submit`, and the updated `backend-logout-tab-form` without the `J_tabExit` class.
+  - `git diff --check -- backend/views/site/header.php backend/views/site/content.php` reported no whitespace errors, only existing Windows line-ending conversion warnings for the touched PHP view files.
+- Remaining issues:
+  - BaoTa/test server must pull this V2 fallback patch and reload `/backend/`.
+  - After deployment, browser-click logout again and confirm the session reaches `/backend/site/login`.
+  - Independent seller role-flow validation with `zhishichanquan / 123456` remains pending until admin logout/session switching is confirmed.
+- Next stage:
+  - Commit and push this patch, then have BaoTa pull it and continue browser validation for logout and seller backend pages.
+
 ## 2026-06-24 Backend Logout Inline POST Forms
 
 - Stage name: Backend logout inline POST form fallback

@@ -268,9 +268,10 @@ class PaymentPhase11AcceptanceController extends Controller
             'Accepted evidence flag requires a non-secret evidence path/reference.',
         ]);
         $this->requireFileContains('Accepted evidence secret guard component', 'console/components/AcceptedEvidenceGuard.php', [
-            'MONGOYIA_ACCEPTED_EVIDENCE_SECRET_GUARD_V1',
+            'MONGOYIA_ACCEPTED_EVIDENCE_SECRET_GUARD_V2',
             'sensitiveReason',
             'secret query parameter',
+            'standalone credential token',
         ]);
     }
 

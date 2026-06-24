@@ -114,9 +114,10 @@ class LogisticsProductPhase14AcceptanceController extends Controller
             'Accepted evidence flag requires a non-secret evidence path/reference.',
         ]);
         $this->requireFileContains('Accepted evidence secret guard component', 'console/components/AcceptedEvidenceGuard.php', [
-            'MONGOYIA_ACCEPTED_EVIDENCE_SECRET_GUARD_V1',
+            'MONGOYIA_ACCEPTED_EVIDENCE_SECRET_GUARD_V2',
             'sensitiveReason',
             'secret query parameter',
+            'standalone credential token',
         ]);
         $this->requireFileContains('Phase 14 logistics provider afterfill policy', 'console/controllers/LogisticsProductPhase14AcceptanceController.php', [
             'MONGOYIA_PHASE14_LOGISTICS_PROVIDER_AFTERFILL_POLICY_V1',

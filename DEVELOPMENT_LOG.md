@@ -1,5 +1,38 @@
 # Development Log
 
+## 2026-06-24 Phase 10-15 Accepted Evidence Standalone Token Guard
+
+- Stage name: Phase 10-15 accepted evidence standalone token guard
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting the stage.
+  - Upgraded accepted evidence secret detection to `MONGOYIA_ACCEPTED_EVIDENCE_SECRET_GUARD_V2`.
+  - Added standalone credential-token detection for common raw token forms such as `sk-...`, `xox...`, `ghp_...`, `ya29...`, and `AIza...`.
+  - Updated Phase 10-15 child and aggregate source coverage to require the V2 guard and `standalone credential token` marker.
+  - Updated the upgrade backlog to document that standalone provider tokens are rejected before they can be written to reports.
+- Main files changed/added:
+  - `console/components/AcceptedEvidenceGuard.php`
+  - `console/controllers/OperationalConfigPhase10AcceptanceController.php`
+  - `console/controllers/PaymentPhase11AcceptanceController.php`
+  - `console/controllers/AccountNotificationPhase12AcceptanceController.php`
+  - `console/controllers/AppPhase13AcceptanceController.php`
+  - `console/controllers/LogisticsProductPhase14AcceptanceController.php`
+  - `console/controllers/DistributionSupportPhase15AcceptanceController.php`
+  - `console/controllers/MongoyiaRequirementsClosureAcceptanceController.php`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l` passed for the guard component and all seven changed console acceptance controllers.
+  - Guard behavior test passed: normal `runtime/handover/*.md` references remain allowed, while `client_secret`, Basic Auth, and standalone `sk-...` examples are detected as sensitive.
+  - Static checks confirmed active controllers/backlog use `MONGOYIA_ACCEPTED_EVIDENCE_SECRET_GUARD_V2`, require `standalone credential token`, and no active controller/backlog still references the old V1 marker.
+  - `git diff --check` reported no whitespace errors, only existing Windows line-ending conversion warnings.
+  - Full Yii console execution remains BaoTa-only because this local checkout lacks `vendor/autoload.php`.
+- Remaining issues:
+  - BaoTa/test server must pull this patch and rerun Phase 10-15 aggregate acceptance.
+  - Browser/provider/APP/logistics/distributor evidence still needs to be collected as redacted reports or ticket references before accepted flags can be passed.
+  - Production remains `NO-GO` until real provider, operations, redacted export, browser, and owner signoff evidence are accepted.
+- Next stage:
+  - Commit and push this V2 token-guard patch, then reread the plan/log and continue with the next plan-listed browser evidence or acceptance blocker.
+
 ## 2026-06-24 Phase 10-15 Accepted Evidence Secret Guard
 
 - Stage name: Phase 10-15 accepted evidence secret guard

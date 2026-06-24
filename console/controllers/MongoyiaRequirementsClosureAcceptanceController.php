@@ -209,9 +209,10 @@ class MongoyiaRequirementsClosureAcceptanceController extends Controller
             'Use matching `*EvidencePath` options',
         ]);
         $this->requireFileContains('Accepted evidence secret guard component', 'console/components/AcceptedEvidenceGuard.php', [
-            'MONGOYIA_ACCEPTED_EVIDENCE_SECRET_GUARD_V1',
+            'MONGOYIA_ACCEPTED_EVIDENCE_SECRET_GUARD_V2',
             'sensitiveReason',
             'secret query parameter',
+            'standalone credential token',
         ]);
     }
 
@@ -552,7 +553,7 @@ class MongoyiaRequirementsClosureAcceptanceController extends Controller
             '## Accepted Evidence Passthrough',
             '',
             'After browser, provider, APP package, logistics, language review, and distributor evidence is collected, pass the accepted flags to this aggregate command with phase-prefixed options such as `--phase10BrowserAccepted=1`, `--phase11SandboxAccepted=1`, `--phase12ThirdPartyLoginAccepted=1`, `--phase13AppAccepted=1`, `--phase14BrowserAccepted=1`, and `--phase15TrainingAccepted=1`.',
-            'Use matching `*EvidencePath` options for Markdown reports, tickets, or signed evidence references; accepted flags without a matching non-empty evidence path fail through MONGOYIA_PHASE10_15_ACCEPTED_EVIDENCE_PATH_GUARD_V1 / MONGOYIA_ACCEPTED_EVIDENCE_PATH_GUARD_V1, and secret-like references fail through MONGOYIA_ACCEPTED_EVIDENCE_SECRET_GUARD_V1 before the raw value can be written to the report. Never pass raw secrets, provider credentials, callback payloads, private keys, SMTP passwords, Basic Auth values, or HMAC secrets as evidence-path values.',
+            'Use matching `*EvidencePath` options for Markdown reports, tickets, or signed evidence references; accepted flags without a matching non-empty evidence path fail through MONGOYIA_PHASE10_15_ACCEPTED_EVIDENCE_PATH_GUARD_V1 / MONGOYIA_ACCEPTED_EVIDENCE_PATH_GUARD_V1, and secret-like references fail through MONGOYIA_ACCEPTED_EVIDENCE_SECRET_GUARD_V2 before the raw value can be written to the report. Never pass raw secrets, provider credentials, callback payloads, private keys, SMTP passwords, Basic Auth values, or HMAC secrets as evidence-path values.',
             '',
             '## Acceptance Boundary',
             '',

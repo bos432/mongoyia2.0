@@ -28,6 +28,7 @@ class ProductController extends BaseController
 {
     public const CONSULTATION_POST_ID_GUARD_VERSION = 'MONGOYIA_PRODUCT_CONSULTATION_POST_ID_GUARD_V1';
     public const FAVORITE_POST_READ_GUARD_VERSION = 'MONGOYIA_PRODUCT_FAVORITE_POST_READ_GUARD_V1';
+    public const REVIEW_AJAX_GET_GUARD_VERSION = 'MONGOYIA_PRODUCT_REVIEW_AJAX_GET_GUARD_V1';
 
     public function behaviors()
     {
@@ -37,6 +38,7 @@ class ProductController extends BaseController
                 'actions' => [
                     'favorite' => ['GET', 'POST'],
                     'store-favorite' => ['GET', 'POST'],
+                    'review' => ['GET'],
                 ],
             ],
         ];
@@ -332,7 +334,8 @@ class ProductController extends BaseController
             return $this->error();
         }
 
-        $productId = Yii::$app->request->get('product_id', Yii::$app->request->post('product_id'));
+        // MONGOYIA_PRODUCT_REVIEW_AJAX_GET_GUARD_V1: review list is read-only Ajax GET.
+        $productId = (int)Yii::$app->request->get('product_id', 0);
         if (!$productId) {
             return $this->error(-1);
         }

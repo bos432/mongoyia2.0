@@ -90,10 +90,12 @@ class FavoriteReviewPhase14ReadinessController extends Controller
         ]);
         $this->requireFileContains('Frontend product store favorite', 'frontend/modules/mall/controllers/ProductController.php', [
             'MONGOYIA_PRODUCT_FAVORITE_POST_READ_GUARD_V1',
+            'MONGOYIA_PRODUCT_REVIEW_AJAX_GET_GUARD_V1',
             'actionStoreFavorite',
             'StoreFavorite',
             "'favorite' => ['GET', 'POST']",
             "'store-favorite' => ['GET', 'POST']",
+            "'review' => ['GET']",
             "post('product_id', 0)",
             "get('product_id', 0)",
             "post('store_id', 0)",
@@ -103,6 +105,7 @@ class FavoriteReviewPhase14ReadinessController extends Controller
         $this->requireFileNotContains('Frontend product/store favorite has no stale id reads or missing view render', 'frontend/modules/mall/controllers/ProductController.php', [
             "post('product_id');",
             "get('product_id');",
+            "get('product_id', Yii::\$app->request->post('product_id'))",
             "post('store_id');",
             "get('store_id');",
             'return $this->render($this->action->id,',

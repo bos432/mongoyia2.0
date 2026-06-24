@@ -132,9 +132,16 @@ class AppBuyerPhase13ReadinessController extends Controller
             "get('store_id', 0)",
             'return $this->error(-1);',
         ]);
+        $this->requireFileContains('Buyer web product review Ajax GET guard', 'frontend/modules/mall/controllers/ProductController.php', [
+            'MONGOYIA_PRODUCT_REVIEW_AJAX_GET_GUARD_V1',
+            "'review' => ['GET']",
+            "get('product_id', 0)",
+            "get('review_sort', 'newest')",
+        ]);
         $this->requireFileNotContains('Buyer web product/store favorite has no stale id reads or missing view render', 'frontend/modules/mall/controllers/ProductController.php', [
             "post('product_id');",
             "get('product_id');",
+            "get('product_id', Yii::\$app->request->post('product_id'))",
             "post('store_id');",
             "get('store_id');",
             'return $this->render($this->action->id,',

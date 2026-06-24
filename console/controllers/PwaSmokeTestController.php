@@ -185,8 +185,10 @@ class PwaSmokeTestController extends Controller
         ]);
         $this->requireFileContains('frontend/modules/mall/controllers/ProductController.php', [
             'MONGOYIA_PRODUCT_FAVORITE_POST_READ_GUARD_V1',
+            'MONGOYIA_PRODUCT_REVIEW_AJAX_GET_GUARD_V1',
             "'favorite' => ['GET', 'POST']",
             "'store-favorite' => ['GET', 'POST']",
+            "'review' => ['GET']",
             "post('product_id', 0)",
             "get('product_id', 0)",
             "post('store_id', 0)",

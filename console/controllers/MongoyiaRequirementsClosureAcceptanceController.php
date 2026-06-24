@@ -329,6 +329,9 @@ class MongoyiaRequirementsClosureAcceptanceController extends Controller
                 'runChildChecks' => true,
                 'allowExternalAfterfill' => true,
                 'requiredMarkers' => [
+                    'MONGOYIA_ACCOUNT_NOTIFICATION_PHASE12_CHILD_CHECKS_V1',
+                    'runChildChecks',
+                    'childCommands',
                     'MONGOYIA_PHASE12_ACCOUNT_PROVIDER_AFTERFILL_POLICY_V1',
                     'Afterfill pending',
                 ],

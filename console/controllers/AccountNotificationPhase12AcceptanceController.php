@@ -10,6 +10,7 @@ class AccountNotificationPhase12AcceptanceController extends Controller
 {
     public const VERSION = 'MONGOYIA_ACCOUNT_NOTIFICATION_PHASE12_ACCEPTANCE_V1';
     public const PROVIDER_AFTERFILL_POLICY_VERSION = 'MONGOYIA_PHASE12_ACCOUNT_PROVIDER_AFTERFILL_POLICY_V1';
+    public const CHILD_CHECKS_VERSION = 'MONGOYIA_ACCOUNT_NOTIFICATION_PHASE12_CHILD_CHECKS_V1';
 
     public $baseUrl = 'https://demo2026.mongoyia.com';
     public $handoverDir = 'runtime/handover';
@@ -101,6 +102,18 @@ class AccountNotificationPhase12AcceptanceController extends Controller
             'allowExternalAfterfill',
             'AFTERFILL',
             'Afterfill pending',
+        ]);
+        $this->requireFileContains('Phase 12 child readiness wiring', 'console/controllers/AccountNotificationPhase12AcceptanceController.php', [
+            'MONGOYIA_ACCOUNT_NOTIFICATION_PHASE12_CHILD_CHECKS_V1',
+            'runChildChecks',
+            'childCommands',
+            'identity-config-readiness/run',
+            'social-auth-runtime-readiness/run',
+            'account-security-readiness/run',
+            'account-security-code-readiness/run',
+            'notification-phase12-readiness/run',
+            'language-review-phase12-readiness/run',
+            'operational-config-mail-test/run',
         ]);
         $this->requireFileContains('Existing frontend password reset flow', 'frontend/controllers/SiteController.php', [
             'actionRequestPasswordReset',
@@ -530,6 +543,7 @@ class AccountNotificationPhase12AcceptanceController extends Controller
             '- Warnings: ' . $this->warnings,
             '- Pending: ' . $this->pending,
             '- Afterfill pending: ' . $this->afterfillPending,
+            '- Child readiness checks: ' . ($this->runChildChecks ? 'yes' : 'no'),
             '- Scope: Facebook/Google login, password recovery/security-code policies, site/app notifications, and Mongolian/English review import/export.',
             '- Safety: this command does not call external identity providers, send real notifications, mutate users, write credentials, or store provider secrets.',
             '- External afterfill policy: ' . ($this->allowExternalAfterfill ? 'enabled' : 'disabled'),

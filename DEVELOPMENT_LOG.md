@@ -9227,3 +9227,31 @@
   - QPay/LianLian/PayPal sandbox provider material may stay backend-afterfill for development acceptance; live payment remains blocked until Phase 10/11 accepted evidence exists.
 - Next stage:
   - Commit and push this Phase 11 child-check marker patch, then reread the plan/log and continue with the next plan-listed readiness item.
+
+## 2026-06-24 Phase 12 Account Notification Child Checks
+
+- Stage name: Phase 12.22 account/notification child readiness source coverage
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting the stage.
+  - Added `MONGOYIA_ACCOUNT_NOTIFICATION_PHASE12_CHILD_CHECKS_V1` to the Phase 12 account/notification/language acceptance command.
+  - Added self source coverage for the existing `--runChildChecks=1` child command list.
+  - Covered identity config, social-auth runtime, account-security policy, security-code runtime, notification send-log, language review, and operational mail readiness child gates.
+  - Updated the Phase 10-15 aggregate acceptance command to require the Phase 12 child-check marker before passing child checks through.
+  - Updated the Phase 12 backlog notes and command table to document Phase 12.22.
+- Main files changed/added:
+  - `console/controllers/AccountNotificationPhase12AcceptanceController.php`
+  - `console/controllers/MongoyiaRequirementsClosureAcceptanceController.php`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l console/controllers/AccountNotificationPhase12AcceptanceController.php` passed.
+  - `php -l console/controllers/MongoyiaRequirementsClosureAcceptanceController.php` passed.
+  - Static marker checks confirmed `MONGOYIA_ACCOUNT_NOTIFICATION_PHASE12_CHILD_CHECKS_V1`, `runChildChecks`, `childCommands`, `language-review-phase12-readiness/run`, and `Phase 12.22` coverage.
+  - `git diff --check` reported no whitespace errors, only existing Windows line-ending conversion warnings.
+  - Full Yii console execution remains BaoTa-only because this local checkout lacks `vendor/autoload.php`.
+- Remaining issues:
+  - BaoTa/test server must rerun Phase 12 acceptance and total Phase 10-15 closure acceptance after deployment.
+  - Phase 12 language review import/export evidence and browser role-flow evidence remain pending.
+  - Google/Facebook, email/SMS/security-code delivery, and APP/SMS/mail notification provider material may stay backend-afterfill for development acceptance; production remains `NO-GO` until accepted evidence and signoff gates pass.
+- Next stage:
+  - Commit and push this Phase 12 child-check marker patch, then reread the plan/log and continue with the next plan-listed readiness item.

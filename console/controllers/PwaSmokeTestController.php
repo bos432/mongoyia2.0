@@ -143,7 +143,10 @@ class PwaSmokeTestController extends Controller
         }
         $this->requireFileContains('frontend/modules/mall/controllers/DefaultController.php', [
             'MONGOYIA_FRONTEND_LOGOUT_POST_GUARD_V1',
+            'MONGOYIA_FRONTEND_LOGIN_RETURN_URL_GUARD_V1',
             "'logout' => ['POST']",
+            'safeLoginReturnUrl',
+            "redirect(\$returnUrl)",
         ]);
         $this->requireFileContains('web/resources/mall/default/views/layouts/nav.php', [
             'data-method' => 'post',

@@ -110,8 +110,13 @@ class AccountNotificationPhase12AcceptanceController extends Controller
         ]);
         $this->requireFileContains('Frontend mall logout POST guard', 'frontend/modules/mall/controllers/DefaultController.php', [
             'MONGOYIA_FRONTEND_LOGOUT_POST_GUARD_V1',
+            'MONGOYIA_FRONTEND_LOGIN_RETURN_URL_GUARD_V1',
             'VerbFilter',
             "'logout' => ['POST']",
+            'safeLoginReturnUrl',
+            "redirect(\$returnUrl)",
+            "strpos(\$returnUrl, '//') === 0",
+            "preg_match('/^[a-z][a-z0-9+.-]*:/i'",
         ]);
         $this->requireFileContains('Frontend mall logout POST links', 'web/resources/mall/default/views/layouts/nav.php', [
             'data-method' => 'post',

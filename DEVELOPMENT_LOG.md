@@ -1,5 +1,37 @@
 # Development Log
 
+## 2026-06-24 Phase 12 Mall Login ReturnUrl Guard
+
+- Stage name: Phase 12.19 frontend mall login returnUrl guard
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting the stage.
+  - Added `MONGOYIA_FRONTEND_LOGIN_RETURN_URL_GUARD_V1` to the frontend mall default controller.
+  - Hardened `/mall/default/login` so successful login redirects only to safe single-slash site-relative `returnUrl` values.
+  - Rejected absolute URLs, protocol-relative URLs, non-path values, and newline-bearing values before redirecting.
+  - Kept normal product/payment/login return paths compatible because existing callers use site-relative paths.
+  - Added source coverage to Phase 12 account/notification/language acceptance and PWA smoke.
+  - Updated the Phase 12 backlog notes as Phase 12.19.
+- Main files changed/added:
+  - `frontend/modules/mall/controllers/DefaultController.php`
+  - `console/controllers/AccountNotificationPhase12AcceptanceController.php`
+  - `console/controllers/PwaSmokeTestController.php`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l frontend/modules/mall/controllers/DefaultController.php` passed.
+  - `php -l console/controllers/AccountNotificationPhase12AcceptanceController.php` passed.
+  - `php -l console/controllers/PwaSmokeTestController.php` passed.
+  - Static marker checks confirmed `MONGOYIA_FRONTEND_LOGIN_RETURN_URL_GUARD_V1`, `safeLoginReturnUrl`, safe redirect usage, external/protocol-relative rejection, and Phase 12.19 backlog coverage.
+  - Static stale-code check found no remaining direct `redirect(Yii::$app->request->get('returnUrl'))` in the frontend mall default controller.
+  - `git diff --check` reported no whitespace errors, only existing Windows line-ending conversion warnings.
+  - Full Yii console execution remains BaoTa-only because this local checkout lacks `vendor/autoload.php`.
+- Remaining issues:
+  - BaoTa/test server must rerun Phase 12 acceptance, PWA smoke, and total requirements closure acceptance after deployment.
+  - Browser role-flow evidence should recheck login from product/payment pages and ensure safe `returnUrl` paths still return correctly.
+  - External Google/Facebook/SMS/provider evidence remains gated; production remains `NO-GO`.
+- Next stage:
+  - Commit and push this Phase 12 mall login returnUrl guard patch, then reread the plan/log and continue with the next plan-listed readiness item.
+
 ## 2026-06-24 Phase 13 Checkout POST Coupon Guard
 
 - Stage name: Phase 13.31 checkout POST coupon guard

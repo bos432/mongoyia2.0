@@ -404,6 +404,8 @@ Phase 12.17 social-auth unbind POST guard: Google/Facebook account unbinding now
 
 Phase 12.18 social-auth unbind POST provider body support: `/social-auth/unbind` keeps the POST-only guard and now accepts `provider` from POST body data when the route/query parameter is absent, so future account pages can use CSRF-protected hidden-provider forms. Identity-config readiness, social-auth runtime readiness, and Phase 12 aggregate acceptance check the POST provider read.
 
+Phase 12.19 frontend mall login returnUrl guard: `/mall/default/login` now filters login `returnUrl` through `MONGOYIA_FRONTEND_LOGIN_RETURN_URL_GUARD_V1`, allowing only single-slash site-relative paths and rejecting absolute, protocol-relative, or newline-bearing redirect targets. Phase 12 aggregate acceptance and PWA smoke cover the guard so normal product/payment return paths keep working without an open redirect.
+
 Phase 13 acceptance command:
 
 ```bash

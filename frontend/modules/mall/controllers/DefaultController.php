@@ -27,6 +27,7 @@ use yii\web\BadRequestHttpException;
 class DefaultController extends BaseController
 {
     public const FRONTEND_LOGOUT_POST_GUARD_VERSION = 'MONGOYIA_FRONTEND_LOGOUT_POST_GUARD_V1';
+    public const FRONTEND_LOGIN_RETURN_URL_GUARD_VERSION = 'MONGOYIA_FRONTEND_LOGIN_RETURN_URL_GUARD_V1';
 
     public $likeAttributes = ['name'];
 
@@ -157,8 +158,9 @@ class DefaultController extends BaseController
 //        exit();
         if ($model->load(Yii::$app->request->post()) && $model->login()) {
             $this->afterLogin($oldSessionId);
-            if (Yii::$app->request->get('returnUrl')) {
-                return $this->redirect(Yii::$app->request->get('returnUrl'));
+            $returnUrl = $this->safeLoginReturnUrl((string)Yii::$app->request->get('returnUrl', ''));
+            if ($returnUrl !== '') {
+                return $this->redirect($returnUrl);
             }
             return $this->goBack();
         } else {
@@ -194,6 +196,19 @@ class DefaultController extends BaseController
             }
         }
         return true;
+    }
+
+    private function safeLoginReturnUrl(string $returnUrl): string
+    {
+        $returnUrl = trim($returnUrl);
+        if ($returnUrl === '' || strpos($returnUrl, '/') !== 0 || strpos($returnUrl, '//') === 0) {
+            return '';
+        }
+        if (preg_match('/^[a-z][a-z0-9+.-]*:/i', $returnUrl) || preg_match('/[\r\n]/', $returnUrl)) {
+            return '';
+        }
+
+        return $returnUrl;
     }
 
     /**

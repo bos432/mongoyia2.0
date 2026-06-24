@@ -1,5 +1,28 @@
 # Development Log
 
+## 2026-06-24 Phase 13/14 Product Favorite Render Guard Fix
+
+- Stage name: Phase 13/14 product/store favorite render guard fix
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md`, this log, and the BaoTa aggregate acceptance output before starting this stage.
+  - Investigated the shared Phase 13 buyer readiness and Phase 14 favorite/review readiness failure: `Frontend product/store favorite has no stale id reads or missing view render`.
+  - Found that `ProductController::actionView()` still used `return $this->render($this->action->id, ...)`, which matched the forbidden missing-view-render marker used by the favorite/store-favorite guard checks.
+  - Changed the product detail action to explicitly render `view`, keeping the existing page behavior while removing the unsafe dynamic render marker from the controller.
+- Main files changed/added:
+  - `frontend/modules/mall/controllers/ProductController.php`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l frontend/modules/mall/controllers/ProductController.php` passed.
+  - Static negative checks found no `return $this->render($this->action->id,` marker in `ProductController.php`.
+  - Static negative checks found no stale `post('product_id');`, `get('product_id');`, `post('store_id');`, or `get('store_id');` identifier reads in `ProductController.php`.
+  - Full Yii console execution remains BaoTa-only because this local checkout lacks `vendor/autoload.php`.
+- Remaining issues:
+  - BaoTa/test server must pull this patch and rerun Phase 13 buyer readiness, Phase 14 favorite/review readiness, and total Phase 10-15 aggregate acceptance.
+  - Other known BaoTa failures remain to be handled in later stages: Phase 11 base mall payment regression, Phase 13 backlog command list checks, and Phase 15 existing withdrawal workflow.
+  - Browser role-flow evidence for Phase 10/11/12/13/14/15 remains incomplete; production remains `NO-GO` until accepted evidence and GO/NO-GO gates pass.
+- Next stage:
+  - Commit and push this Phase 13/14 favorite render guard fix, then reread the plan/log and continue with the next BaoTa failure item.
+
 ## 2026-06-24 Phase 10-15 BaoTa Deployment Freshness Recheck After d4de5d0
 
 - Stage name: Phase 10-15 BaoTa deployment freshness recheck after latest log commit

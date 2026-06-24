@@ -129,7 +129,7 @@ class ProductController extends BaseController
             $arrProductParamIds = ArrayHelper::getColumn($productParams, 'param_id');
         }
 
-        return $this->render($this->action->id, [
+        return $this->render('view', [
             'model' => $model,
             'attributes' => $attributes,
             'mapProductAttributeItemAttributeItemIdLabel' => $mapProductAttributeItemAttributeItemIdLabel,

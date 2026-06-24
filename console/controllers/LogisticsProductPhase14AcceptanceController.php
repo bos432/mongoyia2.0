@@ -93,6 +93,21 @@ class LogisticsProductPhase14AcceptanceController extends Controller
             'SELECTION_ENABLED',
             'logistics_method_id',
         ]);
+        $this->requireFileContains('Backend logistics method selection POST guard', 'backend/modules/mall/controllers/LogisticsMethodController.php', [
+            'MONGOYIA_LOGISTICS_METHOD_SELECTION_POST_GUARD_V1',
+            "'select'] = ['post']",
+            "'unselect'] = ['post']",
+            "post('method_id', 0)",
+            "post('store_id', 0)",
+            "get('store_id', 0)",
+        ]);
+        $this->requireFileContains('Backend logistics method selection UI posts CSRF forms', 'backend/modules/mall/views/logistics-method/index.php', [
+            'data-mongoyia-logistics-method-selection-post-guard',
+            "Html::hiddenInput('method_id'",
+            "Html::hiddenInput('store_id'",
+            "Url::to(['select'])",
+            "Url::to(['unselect'])",
+        ]);
         $this->requireFileContains('Existing order logistics foundation', 'common/models/mall/OrderBase.php', [
             'SHIPMENT_STATUS_UNSHIPPED',
             'SHIPMENT_STATUS_SHIPPING',

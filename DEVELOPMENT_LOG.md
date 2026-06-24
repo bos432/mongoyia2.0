@@ -1,5 +1,39 @@
 # Development Log
 
+## 2026-06-24 Phase 14 Logistics Method Selection POST Guard
+
+- Stage name: Phase 14.15 logistics method selection POST guard
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting the stage.
+  - Added `MONGOYIA_LOGISTICS_METHOD_SELECTION_POST_GUARD_V1` to the backend logistics-method controller.
+  - Restricted backend logistics method `select` and `unselect` actions to POST.
+  - Changed logistics selection writes to read `method_id` and platform `store_id` from POST body data only while preserving GET `store_id` for read-only store switching on the index page.
+  - Replaced the logistics method select/unselect GET action links with CSRF-protected POST forms and hidden `method_id`/`store_id` fields.
+  - Added readiness coverage to logistics basic and Phase 14 aggregate acceptance.
+  - Updated the Phase 14 backlog notes as Phase 14.15.
+- Main files changed/added:
+  - `backend/modules/mall/controllers/LogisticsMethodController.php`
+  - `backend/modules/mall/views/logistics-method/index.php`
+  - `console/controllers/MongoyiaLogisticsBasicTestController.php`
+  - `console/controllers/LogisticsProductPhase14AcceptanceController.php`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l backend/modules/mall/controllers/LogisticsMethodController.php` passed.
+  - `php -l backend/modules/mall/views/logistics-method/index.php` passed.
+  - `php -l console/controllers/MongoyiaLogisticsBasicTestController.php` passed.
+  - `php -l console/controllers/LogisticsProductPhase14AcceptanceController.php` passed.
+  - Static marker checks confirmed `MONGOYIA_LOGISTICS_METHOD_SELECTION_POST_GUARD_V1`, POST-only `select`/`unselect` verb filters, POST body `method_id`/`store_id`, form markers, and Phase 14.15 backlog coverage.
+  - Static stale-code check found no remaining logistics method select/unselect `Html::edit()` URL-id links or `request->get('method_id')` write reads in the changed controller/view/readiness files.
+  - `git diff --check` reported no whitespace errors, only existing Windows line-ending conversion warnings.
+  - Full Yii console execution remains BaoTa-only because this local checkout lacks `vendor/autoload.php`.
+- Remaining issues:
+  - BaoTa/test server must rerun logistics basic, Phase 14 aggregate acceptance, and total requirements closure acceptance after deployment.
+  - Browser role-flow evidence should recheck the backend logistics method page, store switching, selecting, and unselecting a logistics method after the server pulls this patch.
+  - Phase 10/11/12/13/14/15 external/provider/browser evidence gates remain pending; production remains `NO-GO`.
+- Next stage:
+  - Run local syntax/static checks, commit and push this Phase 14 logistics method selection POST guard patch, then reread the plan/log and continue with the next plan-listed readiness item.
+
 ## 2026-06-24 Phase 13 Backend Coupon Issue POST ID Guard
 
 - Stage name: Phase 13.32 backend coupon issue POST id guard

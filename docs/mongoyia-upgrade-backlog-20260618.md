@@ -488,6 +488,8 @@ Phase 14.13 product/store favorite GET-read/POST-write guard: product favorite a
 
 Phase 14.14 product review Ajax GET guard: product review list and review sorting remain read-only Ajax GET, `/mall/product/review` is explicitly GET-only, and the old GET/POST `product_id` fallback is removed. Favorite/review readiness and Phase 14 aggregate acceptance cover `MONGOYIA_PRODUCT_REVIEW_AJAX_GET_GUARD_V1`.
 
+Phase 14.15 logistics method selection POST guard: backend store logistics method select/unselect writes now use `MONGOYIA_LOGISTICS_METHOD_SELECTION_POST_GUARD_V1`, POST-only verb filters, POST-only `method_id` and `store_id` reads, and CSRF POST forms on the logistics-method page. Logistics basic and Phase 14 aggregate acceptance check this guard so store logistics selection cannot be triggered by plain GET links.
+
 Phase 15 acceptance command:
 
 ```bash

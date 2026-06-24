@@ -73,9 +73,19 @@ $this->params['breadcrumbs'][] = $this->title;
                             </td>
                             <td>
                                 <?php if ($selected): ?>
-                                    <?= Html::edit(['unselect', 'method_id' => $method['id'], 'store_id' => $storeId], '取消选择', ['class' => 'btn btn-warning btn-sm']) ?>
+                                    <form method="post" action="<?= \yii\helpers\Url::to(['unselect']) ?>" class="d-inline" data-mongoyia-logistics-method-selection-post-guard="1">
+                                        <?= Html::hiddenInput(Yii::$app->request->csrfParam, Yii::$app->request->csrfToken) ?>
+                                        <?= Html::hiddenInput('method_id', (int)$method['id']) ?>
+                                        <?= Html::hiddenInput('store_id', (int)$storeId) ?>
+                                        <button type="submit" class="btn btn-warning btn-sm">取消选择</button>
+                                    </form>
                                 <?php else: ?>
-                                    <?= Html::edit(['select', 'method_id' => $method['id'], 'store_id' => $storeId], '选择', ['class' => 'btn btn-success btn-sm']) ?>
+                                    <form method="post" action="<?= \yii\helpers\Url::to(['select']) ?>" class="d-inline" data-mongoyia-logistics-method-selection-post-guard="1">
+                                        <?= Html::hiddenInput(Yii::$app->request->csrfParam, Yii::$app->request->csrfToken) ?>
+                                        <?= Html::hiddenInput('method_id', (int)$method['id']) ?>
+                                        <?= Html::hiddenInput('store_id', (int)$storeId) ?>
+                                        <button type="submit" class="btn btn-success btn-sm">选择</button>
+                                    </form>
                                 <?php endif; ?>
                                 <?php if ($isPlatformOperator): ?>
                                     <?= Html::edit(['edit', 'id' => $method['id']], Yii::t('app', 'Edit'), ['class' => 'btn btn-default btn-sm']) ?>

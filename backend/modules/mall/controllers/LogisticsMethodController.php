@@ -10,7 +10,18 @@ use yii\web\ForbiddenHttpException;
 
 class LogisticsMethodController extends BaseController
 {
+    public const SELECTION_POST_GUARD_VERSION = 'MONGOYIA_LOGISTICS_METHOD_SELECTION_POST_GUARD_V1';
+
     public $modelClass = LogisticsMethod::class;
+
+    public function behaviors()
+    {
+        $behaviors = parent::behaviors();
+        $behaviors['verbs']['actions']['select'] = ['post'];
+        $behaviors['verbs']['actions']['unselect'] = ['post'];
+
+        return $behaviors;
+    }
 
     public function actionIndex()
     {
@@ -58,7 +69,7 @@ class LogisticsMethodController extends BaseController
     private function setStoreMethod(string $selectionStatus)
     {
         $storeId = $this->resolveStoreId();
-        $methodId = (int)Yii::$app->request->get('method_id');
+        $methodId = (int)Yii::$app->request->post('method_id', 0);
         $method = LogisticsMethod::find()
             ->where(['id' => $methodId])
             ->andWhere(['>', 'status', BaseModel::STATUS_DELETED])
@@ -92,7 +103,9 @@ class LogisticsMethodController extends BaseController
     private function resolveStoreId(): int
     {
         if ($this->isMallPlatformOperator()) {
-            $requested = (int)Yii::$app->request->get('store_id', 0);
+            $requested = Yii::$app->request->isPost
+                ? (int)Yii::$app->request->post('store_id', 0)
+                : (int)Yii::$app->request->get('store_id', 0);
             if ($requested > 0) {
                 return $requested;
             }

@@ -95,8 +95,23 @@ class MongoyiaLogisticsBasicTestController extends Controller
             "'validationUrl' => Url::to(['fh-ajax'])",
         ]);
         $this->requireFileContains('@app/../backend/modules/mall/views/order/index.php', ['shipment_status']);
-        $this->requireFileContains('@app/../backend/modules/mall/controllers/LogisticsMethodController.php', ['actionIndex', 'actionSelect', 'actionUnselect']);
-        $this->requireFileContains('@app/../backend/modules/mall/views/logistics-method/index.php', ['物流方式', '店铺选择']);
+        $this->requireFileContains('@app/../backend/modules/mall/controllers/LogisticsMethodController.php', [
+            'MONGOYIA_LOGISTICS_METHOD_SELECTION_POST_GUARD_V1',
+            "'select'] = ['post']",
+            "'unselect'] = ['post']",
+            "post('method_id', 0)",
+            "post('store_id', 0)",
+            "get('store_id', 0)",
+        ]);
+        $this->requireFileContains('@app/../backend/modules/mall/views/logistics-method/index.php', [
+            '物流方式',
+            '店铺选择',
+            'data-mongoyia-logistics-method-selection-post-guard',
+            "Html::hiddenInput('method_id'",
+            "Html::hiddenInput('store_id'",
+            "Url::to(['select'])",
+            "Url::to(['unselect'])",
+        ]);
         $this->requireFileContains('@app/../backend/modules/mall/views/logistics-method/edit.php', ['编辑物流方式', 'fee_per_kg']);
         $this->checkPermission('/mall/logistics-method/index');
     }

@@ -290,7 +290,7 @@ class UserController extends BaseController
     public function actionDistributionWithdraw()
     {
         $userId = (int)Yii::$app->user->id;
-        $result = (new DistributionWithdrawService())->apply($userId, [], true, 'frontend distribution withdraw request');
+        $result = (new DistributionWithdrawService())->requestWithdraw($userId, [], true, 'frontend distribution withdraw request');
         if ((int)$result['created'] <= 0) {
             return $this->redirectError($result['skippedReason'] ?: Yii::t('app', 'No eligible records'), ['/mall/user/distribution']);
         }

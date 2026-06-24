@@ -1,5 +1,32 @@
 # Development Log
 
+## 2026-06-24 Phase 15 Withdrawal Workflow Marker Fix
+
+- Stage name: Phase 15 existing withdrawal workflow marker fix
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting this stage.
+  - Investigated the BaoTa Phase 15 failure `Existing withdrawal workflow`.
+  - Added `DistributionWithdrawService::requestWithdraw()` as a named withdrawal-request workflow entry that delegates to the existing audited `apply()` implementation.
+  - Updated the frontend distributor withdrawal action to call `requestWithdraw()` so the code path matches the Phase 15 acceptance marker while preserving pending-review behavior.
+  - Confirmed the change does not approve withdrawals, write fund logs, or trigger real payouts; it only creates the same pending withdrawal request as before.
+- Main files changed/added:
+  - `common/services/mall/DistributionWithdrawService.php`
+  - `frontend/modules/mall/controllers/UserController.php`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l common/services/mall/DistributionWithdrawService.php` passed.
+  - `php -l frontend/modules/mall/controllers/UserController.php` passed.
+  - `php -l console/controllers/DistributionSupportPhase15AcceptanceController.php` passed.
+  - Static checks confirmed `class DistributionWithdrawService`, `WITHDRAW_STATUS_PENDING`, and `requestWithdraw` markers are present.
+  - Static checks confirmed the frontend distributor withdrawal action calls `requestWithdraw()`.
+  - Full Yii console execution remains BaoTa-only because this local checkout lacks `vendor/autoload.php`.
+- Remaining issues:
+  - BaoTa/test server must pull this patch and rerun Phase 15 distributor support acceptance and total Phase 10-15 aggregate acceptance.
+  - Known remaining BaoTa failure after local fixes: Phase 11 base mall payment regression still needs investigation.
+  - Browser role-flow evidence for Phase 10/11/12/13/14/15 remains incomplete; production remains `NO-GO` until accepted evidence and GO/NO-GO gates pass.
+- Next stage:
+  - Commit and push this Phase 15 withdrawal workflow marker fix, then reread the plan/log and continue with the Phase 11 payment regression failure.
+
 ## 2026-06-24 Phase 13 Backlog Command Marker Fix
 
 - Stage name: Phase 13 buyer/seller backlog command marker fix

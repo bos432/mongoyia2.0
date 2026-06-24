@@ -108,6 +108,11 @@ class DistributionWithdrawService
         return $result;
     }
 
+    public function requestWithdraw(int $distributorId, array $commissionIds = [], bool $apply = false, string $remark = ''): array
+    {
+        return $this->apply($distributorId, $commissionIds, $apply, $remark);
+    }
+
     public function audit(int $withdrawId, string $action, bool $apply = false, int $auditorId = 1, string $remark = ''): array
     {
         $action = strtolower(trim($action));

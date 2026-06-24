@@ -1,5 +1,28 @@
 # Development Log
 
+## 2026-06-24 Phase 10-15 BaoTa Deployment Freshness Recheck After d4de5d0
+
+- Stage name: Phase 10-15 BaoTa deployment freshness recheck after latest log commit
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before checking the next acceptance step.
+  - Confirmed local branch `mongoyia-sanitized-master` remains clean except for the unrelated untracked `docs/mongoyia-operational-config-provider-setup-guide.md`.
+  - Confirmed local HEAD is `d4de5d0` and GitHub remote `mongoyia/master` points to `d4de5d0a3528abeb4b72f3d40efa7733f412f6a4`.
+  - Re-probed `https://demo2026.mongoyia.com/mall` with no-cache headers and a unique cache-busting query parameter.
+  - The deployed page still returned `main.js?v=1.1.3`, no `MONGOYIA_PHASE13_ASSET_CACHE_BUST_V2` marker, and stale `/mall/cart` links, so browser-facing Phase 13 and aggregate Phase 10-15 validation remain blocked by the BaoTa/test-server deployment state.
+- Main files changed/added:
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `git rev-parse --short HEAD` returned `d4de5d0`.
+  - `git ls-remote --heads mongoyia master` returned `d4de5d0a3528abeb4b72f3d40efa7733f412f6a4`.
+  - Cache-busted HTTP probe for `/mall?codex_cache_bust=...` found `mall main.js version: 1.1.3`, no asset-bust marker, and stale cart links.
+  - Full Yii/browser acceptance was not rerun locally because the BaoTa deployment is stale and this checkout lacks `vendor/autoload.php`.
+- Remaining issues:
+  - BaoTa/test server must pull commit `d4de5d0` or newer, run migrations, flush Yii cache, restart PHP-FPM/opcache, and rerun aggregate acceptance before browser role-flow validation can continue.
+  - Browser role-flow evidence for Phase 10/11/12/13/14/15 remains incomplete until the test server serves fresh code/assets.
+  - Production remains `NO-GO` until accepted evidence and GO/NO-GO gates pass.
+- Next stage:
+  - After BaoTa refresh, rerun `mongoyia-requirements-closure-acceptance/run --baseUrl=https://demo2026.mongoyia.com --fixture=1 --runChildChecks=1 --allowExternalAfterfill=1 --strict=1 --interactive=0`, then continue browser role-flow validation and fix any in-scope failures.
+
 ## 2026-06-24 Phase 10-15 BaoTa Deployment Freshness Recheck
 
 - Stage name: Phase 10-15 BaoTa deployment freshness recheck

@@ -2,6 +2,7 @@
 
 namespace console\controllers;
 
+use console\components\DatabaseAcceptanceGuard;
 use Yii;
 use yii\console\Controller;
 use yii\console\ExitCode;
@@ -11,6 +12,7 @@ class MongoyiaRequirementsClosureAcceptanceController extends Controller
     public const VERSION = 'MONGOYIA_REQUIREMENTS_PHASE10_15_ACCEPTANCE_V1';
     public const EXTERNAL_AFTERFILL_POLICY_VERSION = 'MONGOYIA_PHASE10_15_EXTERNAL_AFTERFILL_POLICY_V1';
     public const ACCEPTED_EVIDENCE_PATH_GUARD_VERSION = 'MONGOYIA_PHASE10_15_ACCEPTED_EVIDENCE_PATH_GUARD_V1';
+    public const DB_ACCESS_PREFLIGHT_VERSION = 'MONGOYIA_PHASE10_15_DB_ACCESS_PREFLIGHT_V1';
 
     public $baseUrl = 'https://demo2026.mongoyia.com';
     public $handoverDir = 'runtime/handover';
@@ -160,8 +162,19 @@ class MongoyiaRequirementsClosureAcceptanceController extends Controller
         $this->baseUrl = rtrim((string)$this->baseUrl, '/');
         $this->stdout("Mongoyia Phase 10-15 requirements closure acceptance\n");
 
+        $dbReady = $this->checkDatabasePreflight();
         $this->checkSourceCoverage();
-        $this->runPhaseAcceptanceCommands();
+        if ($dbReady) {
+            $this->runPhaseAcceptanceCommands();
+        } else {
+            $this->section('Phase acceptance commands');
+            $this->addCheck(
+                'Phase 10-15 child acceptance skipped',
+                'FAIL',
+                'database preflight',
+                'Child acceptance commands need a DB-enabled console user. Fix the BaoTa database credentials/grants, run migrations, clear cache, then rerun this aggregate command.'
+            );
+        }
 
         $result = $this->result();
         $path = $this->writeReport($result);
@@ -208,12 +221,56 @@ class MongoyiaRequirementsClosureAcceptanceController extends Controller
             'MONGOYIA_ACCEPTED_EVIDENCE_PATH_GUARD_V1',
             'Use matching `*EvidencePath` options',
         ]);
+        $this->requireFileContains('Phase 10-15 DB access preflight', 'console/components/DatabaseAcceptanceGuard.php', [
+            'MONGOYIA_PHASE10_15_DB_ACCESS_PREFLIGHT_V1',
+            'Console database access was denied',
+            'safeConnectionSummary',
+        ]);
+        $this->requireFileContains('Phase 10-15 DB preflight wiring', 'console/controllers/MongoyiaRequirementsClosureAcceptanceController.php', [
+            'MONGOYIA_PHASE10_15_DB_ACCESS_PREFLIGHT_V1',
+            'DatabaseAcceptanceGuard',
+            'checkDatabasePreflight',
+            'Phase 10-15 child acceptance skipped',
+        ]);
         $this->requireFileContains('Accepted evidence secret guard component', 'console/components/AcceptedEvidenceGuard.php', [
             'MONGOYIA_ACCEPTED_EVIDENCE_SECRET_GUARD_V2',
             'sensitiveReason',
             'secret query parameter',
             'standalone credential token',
         ]);
+    }
+
+    private function checkDatabasePreflight(): bool
+    {
+        $this->section('Database preflight');
+        if (!$this->fixture && !$this->runChildChecks) {
+            $this->addCheck(
+                'Console DB access preflight',
+                'PASS',
+                'not required',
+                'Fixture and child readiness checks are disabled, so no DB preflight is required for this source-only run.'
+            );
+            return true;
+        }
+
+        $result = DatabaseAcceptanceGuard::preflight();
+        if (!empty($result['ok'])) {
+            $this->addCheck(
+                'Console DB access preflight',
+                'PASS',
+                $result['diagnostic'] ?? 'database connection',
+                $result['message'] ?? 'Console database access is available.'
+            );
+            return true;
+        }
+
+        $this->addCheck(
+            'Console DB access preflight',
+            'FAIL',
+            $result['diagnostic'] ?? 'database connection',
+            $result['message'] ?? 'Console database access is unavailable.'
+        );
+        return false;
     }
 
     private function runPhaseAcceptanceCommands(): void
@@ -509,6 +566,7 @@ class MongoyiaRequirementsClosureAcceptanceController extends Controller
             '- Strict mode: ' . ($this->strict ? 'yes' : 'no'),
             '- External afterfill policy: ' . ($this->allowExternalAfterfill ? 'enabled' : 'disabled'),
             '- Evidence flag passthrough: supported for Phase 10 through Phase 15 child acceptance commands.',
+            '- DB preflight: fixture and child-readiness mode require a DB-enabled console user before child phase commands run.',
             '- Failures: ' . $this->failures,
             '- Warnings: ' . $this->warnings,
             '- Pending: ' . $this->pending,
@@ -549,6 +607,7 @@ class MongoyiaRequirementsClosureAcceptanceController extends Controller
             '',
             'This aggregate gate is read-only. It does not store provider secrets, call real payment/logistics/social providers by itself, change payment state, create withdrawals, approve reviews, or switch production traffic.',
             'MONGOYIA_PHASE10_15_DEPLOY_CACHE_REFRESH_V1: the BaoTa verification command pulls only fast-forward changes, prints the deployed commit, flushes Yii cache, and restarts PHP-FPM before browser-facing acceptance probes so stale PHP/opcache/page output cannot be mistaken for a business-flow failure.',
+            'MONGOYIA_PHASE10_15_DB_ACCESS_PREFLIGHT_V1: fixture and child readiness checks require the BaoTa console `.env` database user to connect to the configured database and read schema metadata. External provider credentials can be backend-afterfill, but broken DB credentials/grants are an environment blocker and must be fixed before automated child acceptance can run.',
             '',
             '## Accepted Evidence Passthrough',
             '',

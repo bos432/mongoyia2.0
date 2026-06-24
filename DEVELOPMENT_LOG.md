@@ -1,5 +1,33 @@
 # Development Log
 
+## 2026-06-24 Phase 10-15 Aggregate DB Access Preflight
+
+- Stage name: Phase 10-15 aggregate DB access preflight and diagnostics
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md`, this log, and the latest BaoTa aggregate acceptance output before starting this stage.
+  - Identified the current hard failures as a BaoTa console database environment issue: Yii is connecting as MySQL user `reader`, and that user is denied access to the configured `demomongoyia` database.
+  - Added `MONGOYIA_PHASE10_15_DB_ACCESS_PREFLIGHT_V1` so the aggregate Phase 10-15 acceptance command checks console DB connectivity and schema lookup before running child phase commands in fixture/child-readiness mode.
+  - Added a redacted DB diagnostic summary with username/host/port/dbname only; it never prints DB passwords or provider secrets.
+  - Made the aggregate command skip noisy child phase execution after a failed DB preflight and emit a single actionable failure explaining that external provider material may be backend-afterfill, but broken DB credentials/grants are an environment blocker.
+  - Updated the Phase 10-15 backlog text so this DB-preflight boundary is part of the development plan.
+- Main files changed/added:
+  - `console/components/DatabaseAcceptanceGuard.php`
+  - `console/controllers/MongoyiaRequirementsClosureAcceptanceController.php`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l console/components/DatabaseAcceptanceGuard.php` passed.
+  - `php -l console/controllers/MongoyiaRequirementsClosureAcceptanceController.php` passed.
+  - Static marker checks confirmed `MONGOYIA_PHASE10_15_DB_ACCESS_PREFLIGHT_V1`, `DatabaseAcceptanceGuard`, `checkDatabasePreflight`, and the access-denied diagnostic markers.
+  - `git diff --check` reported no whitespace errors, only existing Windows line-ending conversion warnings.
+  - Full Yii console execution remains BaoTa-only because this local checkout lacks `vendor/autoload.php`.
+- Remaining issues:
+  - BaoTa `.env` or MySQL grants must be corrected so the console DB user can connect to `demomongoyia` and read schema metadata; external provider credentials can be added later through backend afterfill, but DB access itself cannot be afterfilled.
+  - After DB access is fixed, rerun migrations and the aggregate acceptance to reveal any remaining real Phase 10-15 business/evidence gaps.
+  - Browser role-flow evidence for Phase 10/11/12/13/14/15 is still incomplete; production remains `NO-GO` until accepted evidence and GO/NO-GO gates pass.
+- Next stage:
+  - Commit and push this DB preflight patch, ask BaoTa to pull and rerun the aggregate command. If preflight passes, continue with the next plan-listed acceptance/evidence gap; if it fails, fix the BaoTa DB credentials/grants first.
+
 ## 2026-06-24 Phase 11 Payment Regression Encrypted Config Parity
 
 - Stage name: Phase 11.16 payment regression encrypted-config parity

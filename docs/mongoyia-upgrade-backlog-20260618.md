@@ -402,6 +402,8 @@ Phase 12.16 frontend security-code POST guard: the web frontend security-code re
 
 Phase 12.17 social-auth unbind POST guard: Google/Facebook account unbinding now uses `MONGOYIA_SOCIAL_AUTH_UNBIND_POST_GUARD_V1` and restricts `/social-auth/unbind` to POST while keeping OAuth redirect, callback, and bind flows browser-redirect compatible. Identity-config readiness, social-auth runtime readiness, and Phase 12 aggregate acceptance check the guard so third-party account bindings cannot be removed by a plain GET link.
 
+Phase 12.18 social-auth unbind POST provider body support: `/social-auth/unbind` keeps the POST-only guard and now accepts `provider` from POST body data when the route/query parameter is absent, so future account pages can use CSRF-protected hidden-provider forms. Identity-config readiness, social-auth runtime readiness, and Phase 12 aggregate acceptance check the POST provider read.
+
 Phase 13 acceptance command:
 
 ```bash

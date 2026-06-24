@@ -173,6 +173,7 @@ class AccountNotificationPhase12AcceptanceController extends Controller
             'actionBind',
             'actionUnbind',
             "'unbind' => ['POST']",
+            "post('provider', '')",
             'SocialIdentityService',
             'SOCIAL_AUTH_DISABLED',
             'require_existing_session_before_first_login',

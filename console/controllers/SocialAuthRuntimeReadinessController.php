@@ -75,6 +75,7 @@ class SocialAuthRuntimeReadinessController extends Controller
             'actionBind',
             'actionUnbind',
             "'unbind' => ['POST']",
+            "post('provider', '')",
             'providerEnabled',
             'SOCIAL_AUTH_DISABLED',
             'SOCIAL_AUTH_UNAVAILABLE',

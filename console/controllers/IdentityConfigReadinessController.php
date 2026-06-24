@@ -93,6 +93,7 @@ class IdentityConfigReadinessController extends Controller
             'actionBind',
             'actionUnbind',
             "'unbind' => ['POST']",
+            "post('provider', '')",
             'third_party_login_requires_provider_acceptance',
             'provider_secret_never_logged',
         ]);

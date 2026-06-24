@@ -1,5 +1,36 @@
 # Development Log
 
+## 2026-06-24 Phase 12 Social Auth Unbind Provider POST Body
+
+- Stage name: Phase 12.18 social-auth unbind POST provider body support
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting the stage.
+  - Kept `/social-auth/unbind` restricted to POST from Phase 12.17.
+  - Added POST body `provider` fallback for account unbinding when the route/query parameter is absent.
+  - Added coverage to identity-config readiness, social-auth runtime readiness, and Phase 12 aggregate acceptance.
+  - Updated the Phase 12 backlog notes as Phase 12.18.
+- Main files changed/added:
+  - `frontend/controllers/SocialAuthController.php`
+  - `console/controllers/IdentityConfigReadinessController.php`
+  - `console/controllers/SocialAuthRuntimeReadinessController.php`
+  - `console/controllers/AccountNotificationPhase12AcceptanceController.php`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l frontend/controllers/SocialAuthController.php` passed.
+  - `php -l console/controllers/IdentityConfigReadinessController.php` passed.
+  - `php -l console/controllers/SocialAuthRuntimeReadinessController.php` passed.
+  - `php -l console/controllers/AccountNotificationPhase12AcceptanceController.php` passed.
+  - Static marker checks confirmed `MONGOYIA_SOCIAL_AUTH_UNBIND_POST_GUARD_V1`, POST-only unbind coverage, POST body `provider` read, and Phase 12.18 backlog coverage.
+  - `git diff --check` reported no whitespace errors, only existing Windows line-ending conversion warnings.
+  - Full Yii console execution remains BaoTa-only because this local checkout lacks `vendor/autoload.php`.
+- Remaining issues:
+  - BaoTa/test server must rerun identity-config readiness, social-auth runtime readiness, Phase 12 acceptance, and total requirements closure acceptance after deployment.
+  - Browser/provider evidence still needs real Google/Facebook sandbox credentials to validate bind/unbind conflict flows.
+  - Phase 12 third-party login evidence remains external; production remains `NO-GO`.
+- Next stage:
+  - Commit and push this Phase 12 social-auth unbind provider POST body patch, then reread the plan/log and continue with the next plan-listed readiness item.
+
 ## 2026-06-24 Phase 13 Seller APP Write POST Guard Coverage
 
 - Stage name: Phase 13.30 seller APP write POST guard coverage

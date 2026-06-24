@@ -111,6 +111,7 @@ class SocialAuthController extends BaseController
             return $this->redirect(['/site/login', 'returnUrl' => Yii::$app->request->getUrl()]);
         }
 
+        $provider = $provider !== '' ? $provider : (string)Yii::$app->request->post('provider', '');
         $provider = $this->normalizeProvider($provider);
         try {
             (new SocialIdentityService())->unbind($provider, (int)Yii::$app->user->id);

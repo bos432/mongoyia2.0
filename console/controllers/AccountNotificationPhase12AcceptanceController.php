@@ -219,9 +219,12 @@ class AccountNotificationPhase12AcceptanceController extends Controller
         $this->requireFileContains('Account security frontend boundary', 'frontend/controllers/AccountSecurityController.php', [
             'MONGOYIA_ACCOUNT_SECURITY_BOUNDARY_V1',
             'MONGOYIA_ACCOUNT_SECURITY_CODE_RUNTIME_V1',
+            'MONGOYIA_FRONTEND_SECURITY_CODE_POST_GUARD_V1',
             'AccountSecurityCodeService',
             'actionRequestCode',
             'actionLoginCode',
+            "'request-code' => ['POST']",
+            "'login-code' => ['POST']",
             'SECURITY_CODE_POLICY_GATE',
             'SECURITY_CODE_RUNTIME_GATE',
         ]);

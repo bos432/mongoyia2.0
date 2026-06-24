@@ -398,6 +398,8 @@ Phase 12.14 security-code API POST guard: `/api/site/security-code-request` and 
 
 Phase 12.15 frontend logout POST guard: PC/H5 buyer logout now uses `MONGOYIA_FRONTEND_LOGOUT_POST_GUARD_V1`, restricts `/mall/default/logout` to POST, and changes the mall header/mobile logout links to Yii `data-method="post"` links with stable guard markers. Phase 12 aggregate acceptance and PWA smoke check the guard so account session logout cannot be triggered by a plain GET link.
 
+Phase 12.16 frontend security-code POST guard: the web frontend security-code request/login endpoints now use `MONGOYIA_FRONTEND_SECURITY_CODE_POST_GUARD_V1`, restrict `/account-security/request-code` and `/account-security/login-code` to POST, and read `target`/`code` only from POST body data. Account-security readiness, security-code readiness, and Phase 12 aggregate acceptance check the guard so verification-code delivery and login cannot be triggered through query strings.
+
 Phase 13 acceptance command:
 
 ```bash

@@ -86,11 +86,15 @@ class AccountSecurityReadinessController extends Controller
         $this->requireFileContains('Frontend account security boundary controller', 'frontend/controllers/AccountSecurityController.php', [
             'MONGOYIA_ACCOUNT_SECURITY_BOUNDARY_V1',
             'MONGOYIA_ACCOUNT_SECURITY_CODE_RUNTIME_V1',
+            'MONGOYIA_FRONTEND_SECURITY_CODE_POST_GUARD_V1',
             'SECURITY_CODE_POLICY_GATE',
             'SECURITY_CODE_RUNTIME_GATE',
             'AccountSecurityCodeService',
+            'VerbFilter',
             'actionRequestCode',
             'actionLoginCode',
+            "'request-code' => ['POST']",
+            "'login-code' => ['POST']",
             'SECURITY_CODE_LOGIN_DISABLED',
             'SECURITY_CODE_DELIVERY_RESERVED',
         ]);

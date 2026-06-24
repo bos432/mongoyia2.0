@@ -1,5 +1,38 @@
 # Development Log
 
+## 2026-06-24 Phase 12 Frontend Security-Code POST Guard
+
+- Stage name: Phase 12.16 frontend security-code POST guard
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting the stage.
+  - Added `MONGOYIA_FRONTEND_SECURITY_CODE_POST_GUARD_V1` to the frontend account-security controller.
+  - Restricted `/account-security/request-code` and `/account-security/login-code` to POST through `VerbFilter`.
+  - Changed frontend security-code `target` and `code` reads to use POST body data only.
+  - Added coverage to account-security readiness, account-security-code readiness, and Phase 12 aggregate acceptance.
+  - Updated the Phase 12 backlog notes as Phase 12.16.
+- Main files changed/added:
+  - `frontend/controllers/AccountSecurityController.php`
+  - `console/controllers/AccountSecurityReadinessController.php`
+  - `console/controllers/AccountSecurityCodeReadinessController.php`
+  - `console/controllers/AccountNotificationPhase12AcceptanceController.php`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l frontend/controllers/AccountSecurityController.php` passed.
+  - `php -l console/controllers/AccountSecurityReadinessController.php` passed.
+  - `php -l console/controllers/AccountSecurityCodeReadinessController.php` passed.
+  - `php -l console/controllers/AccountNotificationPhase12AcceptanceController.php` passed.
+  - Static marker checks confirmed `MONGOYIA_FRONTEND_SECURITY_CODE_POST_GUARD_V1`, POST-only `request-code`/`login-code`, POST body reads, and Phase 12.16 backlog coverage.
+  - Static stale-code check found no remaining `$request->get($name, ...)` fallback in the frontend account-security controller.
+  - `git diff --check` reported no whitespace errors, only existing Windows line-ending conversion warnings.
+  - Full Yii console execution remains BaoTa-only because this local checkout lacks `vendor/autoload.php`.
+- Remaining issues:
+  - BaoTa/test server must rerun account-security readiness, account-security-code readiness, Phase 12 acceptance, and total requirements closure acceptance after deployment.
+  - Browser role-flow evidence should recheck email security-code request/login in PC/H5/APP after the server pulls this patch and mail policy is enabled.
+  - External SMS/APP security-code delivery evidence remains gated; production remains `NO-GO`.
+- Next stage:
+  - Commit and push this Phase 12 frontend security-code POST guard patch, then reread the plan/log and continue with the next plan-listed readiness item.
+
 ## 2026-06-24 Phase 12 Frontend Logout POST Guard
 
 - Stage name: Phase 12.15 frontend logout POST guard

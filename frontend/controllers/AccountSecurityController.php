@@ -4,15 +4,30 @@ namespace frontend\controllers;
 
 use common\services\mall\AccountSecurityCodeService;
 use Yii;
+use yii\filters\VerbFilter;
 use yii\web\Response;
 
 class AccountSecurityController extends BaseController
 {
     public const MONGOYIA_ACCOUNT_SECURITY_BOUNDARY_V1 = 'MONGOYIA_ACCOUNT_SECURITY_BOUNDARY_V1';
     public const MONGOYIA_ACCOUNT_SECURITY_CODE_RUNTIME_V1 = 'MONGOYIA_ACCOUNT_SECURITY_CODE_RUNTIME_V1';
+    public const FRONTEND_SECURITY_CODE_POST_GUARD_VERSION = 'MONGOYIA_FRONTEND_SECURITY_CODE_POST_GUARD_V1';
     public const SECURITY_CODE_POLICY_GATE = 'security_code_login_requires_delivery_provider_and_audit';
     public const SECURITY_CODE_RUNTIME_GATE = 'security_code_delivery_storage_runtime_enabled_email_only';
     public const SECURITY_CODE_DELIVERY_RESERVED = 'SECURITY_CODE_DELIVERY_RESERVED';
+
+    public function behaviors()
+    {
+        return [
+            'verbs' => [
+                'class' => VerbFilter::className(),
+                'actions' => [
+                    'request-code' => ['POST'],
+                    'login-code' => ['POST'],
+                ],
+            ],
+        ];
+    }
 
     public function actionRequestCode($channel = 'email')
     {
@@ -95,10 +110,7 @@ class AccountSecurityController extends BaseController
     private function requestValue(string $name): string
     {
         $request = Yii::$app->request;
-        $value = $request->post($name, null);
-        if ($value === null) {
-            $value = $request->get($name, '');
-        }
+        $value = $request->post($name, '');
 
         return trim((string)$value);
     }

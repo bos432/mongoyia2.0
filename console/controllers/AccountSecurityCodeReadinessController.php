@@ -75,11 +75,20 @@ class AccountSecurityCodeReadinessController extends Controller
         ]);
         $this->requireFileContains('Frontend security-code runtime controller', 'frontend/controllers/AccountSecurityController.php', [
             'MONGOYIA_ACCOUNT_SECURITY_CODE_RUNTIME_V1',
+            'MONGOYIA_FRONTEND_SECURITY_CODE_POST_GUARD_V1',
             'AccountSecurityCodeService',
+            'VerbFilter',
             'actionRequestCode',
             'actionLoginCode',
+            "'request-code' => ['POST']",
+            "'login-code' => ['POST']",
             'statusCodeForResult',
             'SECURITY_CODE_RUNTIME_GATE',
+            'post($name, \'\')',
+        ]);
+        $this->requireFileNotContains('Frontend security-code endpoints have no GET fallback secrets', 'frontend/controllers/AccountSecurityController.php', [
+            'request->get($name',
+            'get($name, \'\')',
         ]);
         $this->requireFileContains('API security-code token handoff', 'api/controllers/SiteController.php', [
             'MONGOYIA_SECURITY_CODE_API_POST_GUARD_V1',

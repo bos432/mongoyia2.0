@@ -9115,3 +9115,31 @@
   - Production remains `NO-GO` until accepted evidence and GO/NO-GO gates pass.
 - Next stage:
   - Commit and push this Phase 15 child-check wiring patch, then reread the plan/log and continue with the next plan-listed readiness item.
+
+## 2026-06-24 Phase 14 Logistics Product Child Checks
+
+- Stage name: Phase 14.19 logistics/product child readiness wiring
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting the stage.
+  - Added `MONGOYIA_LOGISTICS_PRODUCT_PHASE14_CHILD_CHECKS_V1` to the Phase 14 logistics/product acceptance command.
+  - Added `--runChildChecks` support to `logistics-product-phase14-acceptance/run`.
+  - Wired the Phase 14 acceptance command to run logistics provider, tracking sync, inventory/shipping, search/video, and favorite/review readiness children when requested.
+  - Updated the Phase 10-15 aggregate acceptance command to pass child readiness checks through to Phase 14.
+  - Updated the Phase 14 backlog commands and notes to show `--runChildChecks=1`.
+- Main files changed/added:
+  - `console/controllers/LogisticsProductPhase14AcceptanceController.php`
+  - `console/controllers/MongoyiaRequirementsClosureAcceptanceController.php`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l console/controllers/LogisticsProductPhase14AcceptanceController.php` passed.
+  - `php -l console/controllers/MongoyiaRequirementsClosureAcceptanceController.php` passed.
+  - Static marker checks confirmed `MONGOYIA_LOGISTICS_PRODUCT_PHASE14_CHILD_CHECKS_V1`, `runChildChecks`, `childCommands`, and `Phase 14.19` coverage.
+  - `git diff --check` reported no whitespace errors, only existing Windows line-ending conversion warnings.
+  - Full Yii console execution remains BaoTa-only because this local checkout lacks `vendor/autoload.php`.
+- Remaining issues:
+  - BaoTa/test server must rerun Phase 14 child readiness, Phase 14 acceptance, and total requirements closure acceptance after deployment.
+  - Phase 14 SKU/inventory, search/video, favorite/review, and browser role-flow evidence remain pending.
+  - Production remains `NO-GO` until accepted evidence and GO/NO-GO gates pass.
+- Next stage:
+  - Commit and push this Phase 14 child-check wiring patch, then reread the plan/log and continue with the next plan-listed readiness item.

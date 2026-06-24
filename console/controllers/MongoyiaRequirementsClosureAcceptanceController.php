@@ -373,9 +373,11 @@ class MongoyiaRequirementsClosureAcceptanceController extends Controller
                 'version' => 'MONGOYIA_LOGISTICS_PRODUCT_PHASE14_ACCEPTANCE_V1',
                 'baseUrl' => false,
                 'fixture' => true,
-                'runChildChecks' => false,
+                'runChildChecks' => true,
                 'allowExternalAfterfill' => true,
                 'requiredMarkers' => [
+                    'MONGOYIA_LOGISTICS_PRODUCT_PHASE14_CHILD_CHECKS_V1',
+                    'runChildChecks',
                     'MONGOYIA_PHASE14_LOGISTICS_PROVIDER_AFTERFILL_POLICY_V1',
                     'Afterfill pending',
                 ],

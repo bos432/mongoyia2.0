@@ -2,6 +2,7 @@
 
 namespace console\controllers;
 
+use Yii;
 use yii\console\Controller;
 use yii\console\ExitCode;
 
@@ -9,12 +10,14 @@ class LogisticsProductPhase14AcceptanceController extends Controller
 {
     public const VERSION = 'MONGOYIA_LOGISTICS_PRODUCT_PHASE14_ACCEPTANCE_V1';
     public const PROVIDER_AFTERFILL_POLICY_VERSION = 'MONGOYIA_PHASE14_LOGISTICS_PROVIDER_AFTERFILL_POLICY_V1';
+    public const CHILD_CHECKS_VERSION = 'MONGOYIA_LOGISTICS_PRODUCT_PHASE14_CHILD_CHECKS_V1';
 
     public $handoverDir = 'runtime/handover';
     public $outputPath = '';
     public $fixture = false;
     public $strict = false;
     public $allowExternalAfterfill = true;
+    public $runChildChecks = false;
     public $providerAdapterAccepted = false;
     public $trackingSyncAccepted = false;
     public $skuInventoryAccepted = false;
@@ -42,6 +45,7 @@ class LogisticsProductPhase14AcceptanceController extends Controller
             'fixture',
             'strict',
             'allowExternalAfterfill',
+            'runChildChecks',
             'providerAdapterAccepted',
             'trackingSyncAccepted',
             'skuInventoryAccepted',
@@ -65,6 +69,9 @@ class LogisticsProductPhase14AcceptanceController extends Controller
         if ($this->fixture) {
             $this->checkPlannedScopeMatrix();
         }
+        if ($this->runChildChecks) {
+            $this->runChildChecks();
+        }
         $this->checkManualAcceptanceInputs();
 
         $result = $this->result();
@@ -86,6 +93,16 @@ class LogisticsProductPhase14AcceptanceController extends Controller
         $this->requireFileContains('Phase 14 backlog registration', 'docs/mongoyia-upgrade-backlog-20260618.md', [
             'Logistics provider adapters, tracking sync, SKU generation',
             'logistics-product-phase14-acceptance/run',
+        ]);
+        $this->requireFileContains('Phase 14 child readiness wiring', 'console/controllers/LogisticsProductPhase14AcceptanceController.php', [
+            'MONGOYIA_LOGISTICS_PRODUCT_PHASE14_CHILD_CHECKS_V1',
+            'runChildChecks',
+            'childCommands',
+            'logistics-provider-phase14-readiness/run',
+            'logistics-tracking-phase14-readiness/run',
+            'product-inventory-phase14-readiness/run',
+            'product-search-video-phase14-readiness/run',
+            'favorite-review-phase14-readiness/run',
         ]);
         $this->requireFileContains('Phase 14 logistics provider afterfill policy', 'console/controllers/LogisticsProductPhase14AcceptanceController.php', [
             'MONGOYIA_PHASE14_LOGISTICS_PROVIDER_AFTERFILL_POLICY_V1',
@@ -368,6 +385,39 @@ class LogisticsProductPhase14AcceptanceController extends Controller
         );
     }
 
+    private function runChildChecks(): void
+    {
+        $this->section('Phase 14 child readiness commands');
+        foreach ($this->childCommands() as $label => $config) {
+            $params = ['interactive' => 0];
+            if ($this->fixture && !empty($config['fixture'])) {
+                $params['fixture'] = 1;
+            }
+
+            try {
+                $exitCode = Yii::$app->runAction($config['route'], $params);
+                if ((int)$exitCode === ExitCode::OK) {
+                    $this->addCheck($label, 'PASS', $config['route'], 'Child readiness command passed.');
+                } else {
+                    $this->addCheck($label, 'FAIL', $config['route'], 'Child readiness command returned exit code ' . (int)$exitCode . '.');
+                }
+            } catch (\Throwable $e) {
+                $this->addCheck($label, 'FAIL', $config['route'], 'Child readiness command failed: ' . $e->getMessage());
+            }
+        }
+    }
+
+    private function childCommands(): array
+    {
+        return [
+            'Logistics provider adapter readiness' => ['route' => 'logistics-provider-phase14-readiness/run', 'fixture' => true],
+            'Logistics tracking sync readiness' => ['route' => 'logistics-tracking-phase14-readiness/run', 'fixture' => true],
+            'Product inventory/shipping readiness' => ['route' => 'product-inventory-phase14-readiness/run', 'fixture' => true],
+            'Product search/video readiness' => ['route' => 'product-search-video-phase14-readiness/run', 'fixture' => true],
+            'Favorite/review moderation readiness' => ['route' => 'favorite-review-phase14-readiness/run', 'fixture' => true],
+        ];
+    }
+
     private function writeReport(string $result): string
     {
         $path = $this->outputPath !== '' ? $this->resolvePath($this->outputPath) : $this->defaultReportPath();
@@ -386,6 +436,7 @@ class LogisticsProductPhase14AcceptanceController extends Controller
             '- Warnings: ' . $this->warnings,
             '- Pending: ' . $this->pending,
             '- Afterfill pending: ' . $this->afterfillPending,
+            '- Child readiness checks: ' . ($this->runChildChecks ? 'yes' : 'no'),
             '- Scope: logistics provider adapters, tracking sync, SKU generation, shipping timeout/deposit deduction, inventory location, search filters, product video, store favorite, and review moderation.',
             '- Safety: this command is an evidence gate and does not call providers, mutate logistics rows, deduct funds, change stock, alter reviews, or enable live logistics credentials.',
             '- External afterfill policy: ' . ($this->allowExternalAfterfill ? 'enabled' : 'disabled'),
@@ -418,7 +469,7 @@ class LogisticsProductPhase14AcceptanceController extends Controller
             '/www/server/php/83/bin/php yii product-inventory-phase14-readiness/run --fixture=1 --interactive=0',
             '/www/server/php/83/bin/php yii product-search-video-phase14-readiness/run --fixture=1 --interactive=0',
             '/www/server/php/83/bin/php yii favorite-review-phase14-readiness/run --fixture=1 --interactive=0',
-            '/www/server/php/83/bin/php yii logistics-product-phase14-acceptance/run --fixture=1 --allowExternalAfterfill=1 --interactive=0',
+            '/www/server/php/83/bin/php yii logistics-product-phase14-acceptance/run --fixture=1 --runChildChecks=1 --allowExternalAfterfill=1 --interactive=0',
             '```',
             '',
             'MONGOYIA_PHASE10_15_CHILD_DEPLOY_CACHE_REFRESH_V1: pull fast-forward changes, print the deployed commit, flush Yii cache, and restart PHP-FPM before collecting Phase 14 logistics/product/favorite/review browser evidence.',
@@ -442,6 +493,7 @@ class LogisticsProductPhase14AcceptanceController extends Controller
             '```bash',
             '/www/server/php/83/bin/php yii logistics-product-phase14-acceptance/run \\',
             '  --fixture=1 \\',
+            '  --runChildChecks=1 \\',
             '  --allowExternalAfterfill=1 \\',
             '  --providerAdapterAccepted=1 --providerEvidencePath=runtime/handover/phase14-provider-evidence.md \\',
             '  --trackingSyncAccepted=1 --trackingEvidencePath=runtime/handover/phase14-tracking-evidence.md \\',

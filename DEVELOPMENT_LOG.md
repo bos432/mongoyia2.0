@@ -1,5 +1,31 @@
 # Development Log
 
+## 2026-06-24 Backend Logout POST Session Fix
+
+- Stage name: Backend logout delegated POST session fix
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md`, this log, and the latest BaoTa aggregate acceptance output before starting.
+  - Reviewed the latest BaoTa output showing Phase 10-15 aggregate acceptance has `0 failure(s), 0 warning(s), 6 pending, 0 afterfill pending`; remaining rows are accepted evidence/browser/manual gates, not hard source failures.
+  - Hardened backend logout for both platform shell and seller shell by moving the hidden POST logout form into the shared backend header.
+  - Added a delegated capture-phase click handler for `data-backend-logout="1"` so the tab-bar `J_tabExit` plugin click handling cannot swallow logout.
+  - Kept `SiteController::actionLogout()` POST-only; no GET logout route, production GO action, payment/refund/payout/logistics/provider call, approval action, or business mutation was added.
+- Main files changed/added:
+  - `backend/views/site/header.php`
+  - `backend/views/site/content.php`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l backend/views/site/header.php` passed.
+  - `php -l backend/views/site/content.php` passed.
+  - Static marker check passed for `MONGOYIA_BACKEND_LOGOUT_DELEGATED_POST_V1`, `data-backend-logout`, `backend-logout-form`, and `mongoyiaBackendLogout`.
+  - `git diff --check` reported no whitespace errors, only existing Windows line-ending conversion warnings for the touched PHP view files.
+  - Full Yii and browser verification remain BaoTa/browser steps after the server pulls this commit.
+- Remaining issues:
+  - BaoTa/test server must pull this logout fix, then browser-click logout from the backend shell and confirm the session reaches `/backend/site/login`.
+  - After admin logout works, login seller `zhishichanquan / 123456` and complete the independent seller backend role-flow validation.
+  - External provider evidence and production launch signoffs remain backend-afterfill; production stays `NO-GO`.
+- Next stage:
+  - Commit and push this patch, then rerun the browser logout and seller-role validation on `https://demo2026.mongoyia.com`.
+
 ## 2026-06-24 Local Development Manual
 
 - Stage name: Local Mongoyia development manual

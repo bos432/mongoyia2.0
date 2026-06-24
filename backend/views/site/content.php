@@ -32,16 +32,13 @@ use common\helpers\Url;
                 <li class="J_tabCloseOther"><a><?= Yii::t('app', 'Close Other Tab') ?></a></li>
             </ul>
         </div>
-        <a href="<?= Url::to(['/site/logout']); ?>" class="roll-nav roll-right J_tabExit" onclick="event.preventDefault(); document.getElementById('backend-logout-form').submit();"><i class="nav-icon fas fa-sign-out-alt"></i> <?= Yii::t('app', 'Logout') ?></a>
+        <a href="<?= Url::to(['/site/logout']); ?>" class="roll-nav roll-right J_tabExit" data-backend-logout="1" onclick="event.preventDefault(); if (window.mongoyiaBackendLogout) { window.mongoyiaBackendLogout(event); }"><i class="nav-icon fas fa-sign-out-alt"></i> <?= Yii::t('app', 'Logout') ?></a>
     </div>
     <div class="J_mainContent" id="content-main">
         <!--默认主页需在对应的页面显示iframe元素上添加name="iframe0"和data-id="默认主页的url"-->
         <iframe class="J_iframe" name="iframe0" width="100%" height="100%" data-src="<?= Url::to(['/site/info'], false, false); ?>" frameborder="0" data-id="<?= Url::to(['/site/info'], false, false); ?>" seamless></iframe>
     </div>
 </div>
-
-<?= Html::beginForm(Url::to(['/site/logout']), 'post', ['id' => 'backend-logout-form', 'style' => 'display:none']) ?>
-<?= Html::endForm() ?>
 
 <footer class="main-footer">
     <strong>Version <?= Yii::$app->params['system_version'] ?>  Copyright &copy; <?= date('Y') ?>.</strong> All rights reserved.

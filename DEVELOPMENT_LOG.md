@@ -1,5 +1,55 @@
 # Development Log
 
+## 2026-06-24 Phase 10-15 Final Browser Closure Validation
+
+- Stage name: Phase 10-15 final browser closure validation after BaoTa aggregate acceptance
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md`, this log, and the latest BaoTa aggregate acceptance output before starting this stage.
+  - Reviewed BaoTa aggregate report `/www/wwwroot/demo2026.mongoyia.com/runtime/handover/mongoyia-requirements-closure-acceptance-20260624-063340.md`.
+  - Confirmed the aggregate Phase 10-15 development gate reports `0 failure(s), 0 warning(s), 0 pending, 4 afterfill pending`.
+  - Used the right-side in-app browser against `https://demo2026.mongoyia.com` for a final main-flow smoke across platform admin, customer-service, buyer, distributor, and seller/platform management surfaces.
+  - Confirmed platform/admin pages open and render without captured page console errors: backend home, operations config, merchant payment config, payment statistics, identity config, account security, notification log, customer-service workbench, product management, logistics methods, review moderation, and distributor operations.
+  - Confirmed buyer-facing pages open and preserve state: storefront home, product detail `id=2`, customer-service chat, cart, and distributor center.
+  - Submitted a real buyer customer-service test message through the browser and refreshed the page to confirm the message persisted in chat history.
+  - Kept all high-risk operations read-only: no real payment, refund, payout, review approval, production GO, provider API call, fund mutation, stock mutation, or live logistics action was triggered.
+- Main files changed/added:
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - Verification time: 2026-06-24 13:40-13:48 +08:00.
+  - Verification environment: right-side in-app browser, BaoTa test server `https://demo2026.mongoyia.com`, deployed backend version text `1.1.5`.
+  - Browser validation steps:
+    - Opened `/backend/` as the existing platform admin session and confirmed the backend shell displayed `admin` with no login form.
+    - Opened `/backend/mall/operational-config/index`, `/backend/mall/operational-config/merchant-payment`, `/backend/mall/payment-stat/index`, `/backend/mall/operational-config/identity-config`, `/backend/mall/operational-config/account-security`, and `/backend/mall/notification-log/index`.
+    - Opened `/backend/mall/kf/index`, `/backend/mall/product/index`, `/backend/mall/logistics-method/index`, `/backend/mall/review/index`, and `/backend/mall/distribution-distributor/index`.
+    - Opened `/`, `/mall/product/view?id=2`, `/mall/chat/index?gid=2`, `/mall/cart/index`, and `/mall/user/distribution`.
+    - Sent buyer chat message `Codex final acceptance chat 2026-06-24T05-40-39-243Z`, refreshed `/mall/chat/index?gid=2`, and confirmed the message remained visible.
+  - Input test data summary:
+    - Buyer chat message: `Codex final acceptance chat 2026-06-24T05-40-39-243Z`.
+    - Existing preserved buyer/cart context: frontend user shown as `codex_fron..`, cart row `Codex Test Product 1781945133`.
+    - Existing backend test accounts remain available: platform `codex_platform_backend_test_5`, seller `zhishichanquan`.
+  - Passed:
+    - Server aggregate development acceptance is clean: no failures, warnings, or blocking pending rows.
+    - Phase 10 operations/config/GO-NO-GO pages render; production remains `NO-GO` until external evidence is accepted.
+    - Phase 11 merchant payment config and payment statistics render; callback regression passed on BaoTa.
+    - Phase 12 identity/account/notification pages render; language and notification foundations are present.
+    - Phase 13 buyer H5 pages render, cart state is visible, and server buyer/seller APP/API child checks passed.
+    - Phase 14 logistics/product/review pages render and child readiness checks passed.
+    - Phase 15 distributor backend and distributor center render, with training/material/signoff readiness covered by BaoTa checks.
+    - Customer-service chat send and refresh persistence passed with no captured page console errors.
+  - Found issues:
+    - Current backend browser session stayed logged in as `admin` after clicking the generated `/backend/site/logout` POST links, so an independent browser switch to seller account `zhishichanquan` was not completed in this pass.
+    - The operational config page contains legitimate password/HMAC/secret configuration fields; crude text scanning can falsely classify those words as errors, so acceptance should rely on route rendering, source markers, and server checks instead.
+    - External provider credentials/evidence and production launch signoff materials remain as the four backend-afterfill items.
+  - Whether it reaches launch standard:
+    - Phase 10-15 code, development acceptance, simulated/sandbox-safe flows, and main browser smoke are complete enough for continued上线准备.
+    - Formal production上线 remains `NO-GO` by design until the four afterfill items are completed in the backend: real provider credentials/evidence, real logistics/tracking evidence, third-party/mail/SMS notification evidence, and production operations/business signoff material.
+- Remaining issues:
+  - Complete external afterfill in the backend encrypted configuration/evidence pages before any production GO decision.
+  - Recheck seller browser login/switching in a fresh browser session or after backend logout behavior is reviewed.
+  - Keep provider secrets out of git and do not enable live payment/logistics/social providers before Phase 10 production gates are accepted.
+- Next stage:
+  - Commit and push this final validation log. If the user provides completed backend afterfill evidence later, rerun the aggregate acceptance and perform a production GO/NO-GO review.
+
 ## 2026-06-24 Phase 10-15 Browser Evidence Acceptance Package
 
 - Stage name: Phase 10-15 browser/development evidence acceptance package

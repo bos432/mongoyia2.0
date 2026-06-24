@@ -1,5 +1,39 @@
 # Development Log
 
+## 2026-06-24 Backend Logout POST Switch Page
+
+- Stage name: Backend logout POST switch page V4
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting the stage.
+  - Used the right-side browser against deployed `e229210` and confirmed the backend shell still shows `admin`, with two tokenized switch logout links and `MONGOYIA_BACKEND_LOGOUT_TOKENIZED_SWITCH_LINK_V3`.
+  - Browser-clicking the tokenized switch link was blocked by the in-app browser URL safety policy, so the implementation was changed to avoid exposing a session token in the URL.
+  - Added `/backend/site/switch-login` as an authenticated same-origin bridge page that renders a CSRF-protected POST form to `/backend/site/logout` and auto-submits it, with a visible submit fallback.
+  - Changed both visible backend logout entries to `/backend/site/switch-login` and replaced the old token markers with `MONGOYIA_BACKEND_LOGOUT_POST_SWITCH_PAGE_V4` / `data-mongoyia-backend-logout-post-switch-*`.
+  - Removed the `logout_switch_token` / `backendLogoutSwitchToken` code path from the touched backend logout views and login action; `/backend/site/logout` remains POST-only.
+  - Did not trigger real payment, refund, payout, logistics provider calls, SMTP delivery, provider API calls, review approval, commission approval, withdrawal approval, stock/fund mutation, or production GO.
+- Main files changed/added:
+  - `backend/controllers/SiteController.php`
+  - `backend/views/site/header.php`
+  - `backend/views/site/content.php`
+  - `backend/views/site/switch-login.php`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l backend/controllers/SiteController.php` passed.
+  - `php -l backend/views/site/header.php` passed.
+  - `php -l backend/views/site/content.php` passed.
+  - `php -l backend/views/site/switch-login.php` passed.
+  - Static marker check passed for `MONGOYIA_BACKEND_LOGOUT_POST_SWITCH_PAGE_V4`, `data-mongoyia-backend-logout-post-switch-*`, and `/site/switch-login`.
+  - Static cleanup check found no `logout_switch_token`, `backendLogoutSwitchToken`, or `data-mongoyia-backend-logout-switch-link` remnants in the touched backend logout files.
+  - `git diff --check -- backend/controllers/SiteController.php backend/views/site/header.php backend/views/site/content.php backend/views/site/switch-login.php` reported no whitespace errors, only existing Windows line-ending conversion warnings.
+  - Full Yii console and deployed browser verification remain BaoTa-only after pull because this local checkout lacks `vendor/autoload.php`.
+- Remaining issues:
+  - BaoTa/test server must pull this V4 patch, refresh PHP/opcache if needed, and reload `/backend/`.
+  - After deployment, browser-click logout again and confirm it reaches `/backend/site/login`.
+  - Independent seller role-flow validation with `zhishichanquan / 123456` remains pending until admin logout/session switching is confirmed.
+  - External provider material remains backend-afterfill; production remains `NO-GO` until accepted evidence and signoff gates pass.
+- Next stage:
+  - Commit and push this V4 patch, then have BaoTa pull it and continue browser validation for logout and seller backend pages.
+
 ## 2026-06-24 Backend Logout Tokenized Switch Link
 
 - Stage name: Backend logout tokenized switch-login fallback

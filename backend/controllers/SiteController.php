@@ -41,7 +41,7 @@ class SiteController extends BaseController
                         'allow' => true,
                     ],
                     [
-                        'actions' => ['logout', 'index', 'info', 'log', 'change-password', 'me', 'clear-cache', 'stat', 'statt', 'color'],
+                        'actions' => ['logout', 'switch-login', 'index', 'info', 'log', 'change-password', 'me', 'clear-cache', 'stat', 'statt', 'color'],
                         'allow' => true,
                         'roles' => ['@'],
                     ],
@@ -180,16 +180,6 @@ class SiteController extends BaseController
     {
         $this->layout = 'main-login';
 
-        $logoutSwitchToken = Yii::$app->request->get('logout_switch_token');
-        if (!Yii::$app->user->isGuest && $logoutSwitchToken) {
-            $sessionToken = Yii::$app->session->get('backendLogoutSwitchToken');
-            if ($sessionToken && hash_equals((string)$sessionToken, (string)$logoutSwitchToken)) {
-                Yii::$app->session->remove('backendLogoutSwitchToken');
-                Yii::$app->user->logout(true);
-                return $this->redirect(['/site/login']);
-            }
-        }
-
         if (!Yii::$app->user->isGuest) {
             return $this->goHome();
         }
@@ -253,6 +243,21 @@ class SiteController extends BaseController
         return $this->render('login', [
             'model' => $model,
         ]);
+    }
+
+    /**
+     * Render a same-origin POST logout bridge for browser/user account switching.
+     *
+     * @return string|Response
+     */
+    public function actionSwitchLogin()
+    {
+        if (Yii::$app->user->isGuest) {
+            return $this->redirect(['/site/login']);
+        }
+
+        $this->layout = false;
+        return $this->render('switch-login');
     }
 
     /**

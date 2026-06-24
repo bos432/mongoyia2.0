@@ -4,12 +4,7 @@ use yii\helpers\Inflector;
 use yii\bootstrap4\Breadcrumbs;
 use common\helpers\Url;
 
-$backendLogoutSwitchToken = Yii::$app->session->get('backendLogoutSwitchToken');
-if (!$backendLogoutSwitchToken) {
-    $backendLogoutSwitchToken = Yii::$app->security->generateRandomString(32);
-    Yii::$app->session->set('backendLogoutSwitchToken', $backendLogoutSwitchToken);
-}
-$backendLogoutSwitchUrl = Url::to(['/site/login', 'logout_switch_token' => $backendLogoutSwitchToken]);
+$backendLogoutSwitchUrl = Url::to(['/site/switch-login']);
 
 ?>
 
@@ -39,7 +34,7 @@ $backendLogoutSwitchUrl = Url::to(['/site/login', 'logout_switch_token' => $back
                 <li class="J_tabCloseOther"><a><?= Yii::t('app', 'Close Other Tab') ?></a></li>
             </ul>
         </div>
-        <?= Html::a('<i class="nav-icon fas fa-sign-out-alt"></i> ' . Html::encode(Yii::t('app', 'Logout')), $backendLogoutSwitchUrl, ['class' => 'roll-nav roll-right backend-logout-tab-link', 'style' => 'margin:0;background:#fff;height:41px;width:70px;outline:none;', 'data-mongoyia-backend-logout-switch-link' => '1']) ?>
+        <?= Html::a('<i class="nav-icon fas fa-sign-out-alt"></i> ' . Html::encode(Yii::t('app', 'Logout')), $backendLogoutSwitchUrl, ['class' => 'roll-nav roll-right backend-logout-tab-link', 'style' => 'margin:0;background:#fff;height:41px;width:70px;outline:none;', 'data-mongoyia-backend-logout-post-switch-link' => '1']) ?>
     </div>
     <div class="J_mainContent" id="content-main">
         <!--默认主页需在对应的页面显示iframe元素上添加name="iframe0"和data-id="默认主页的url"-->

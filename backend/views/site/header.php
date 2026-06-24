@@ -8,12 +8,7 @@ use common\models\base\Lang;
 
 $store = $this->context->store;
 !isset($type) && $type = 'admin';
-$backendLogoutSwitchToken = Yii::$app->session->get('backendLogoutSwitchToken');
-if (!$backendLogoutSwitchToken) {
-    $backendLogoutSwitchToken = Yii::$app->security->generateRandomString(32);
-    Yii::$app->session->set('backendLogoutSwitchToken', $backendLogoutSwitchToken);
-}
-$backendLogoutSwitchUrl = Url::to(['/site/login', 'logout_switch_token' => $backendLogoutSwitchToken]);
+$backendLogoutSwitchUrl = Url::to(['/site/switch-login']);
 
 ?>
 
@@ -115,7 +110,7 @@ $backendLogoutSwitchUrl = Url::to(['/site/login', 'logout_switch_token' => $back
                 <!-- Menu Footer-->
                 <li class="user-footer">
                     <a href="#" class="btn btn-default btn-flat" data-methods="post" onclick="fbPrompt('<?= Url::to(['/site/clear-cache']); ?>'); return false;"><?= Yii::t('app', 'Clear Cache'); ?></a>
-                    <?= Html::a(Yii::t('app', 'Logout'), $backendLogoutSwitchUrl, ['class' => 'btn btn-default btn-flat float-right', 'data-mongoyia-backend-logout-switch-link' => '1']) ?>
+                    <?= Html::a(Yii::t('app', 'Logout'), $backendLogoutSwitchUrl, ['class' => 'btn btn-default btn-flat float-right', 'data-mongoyia-backend-logout-post-switch-link' => '1']) ?>
                 </li>
             </ul>
         </li>
@@ -145,7 +140,7 @@ $backendLogoutSwitchUrl = Url::to(['/site/login', 'logout_switch_token' => $back
 
 <!-- MONGOYIA_BACKEND_LOGOUT_INLINE_POST_FORM_V1 -->
 <!-- MONGOYIA_BACKEND_LOGOUT_NATIVE_FORM_SUBMIT_FALLBACK_V2 -->
-<!-- MONGOYIA_BACKEND_LOGOUT_TOKENIZED_SWITCH_LINK_V3 -->
+<!-- MONGOYIA_BACKEND_LOGOUT_POST_SWITCH_PAGE_V4 -->
 
 <script type="text/html" id="topMessage">
     <div class="dropdown-item" data-index="{{id}}">

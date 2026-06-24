@@ -342,8 +342,10 @@ class MongoyiaRequirementsClosureAcceptanceController extends Controller
                 'version' => 'MONGOYIA_APP_PHASE13_ACCEPTANCE_V1',
                 'baseUrl' => true,
                 'fixture' => true,
-                'runChildChecks' => false,
+                'runChildChecks' => true,
                 'requiredMarkers' => [
+                    'MONGOYIA_APP_PHASE13_CHILD_CHECKS_V1',
+                    'runChildChecks',
                     'MONGOYIA_PHASE13_DEPLOYED_ASSET_FRESHNESS_V1',
                     'checkDeployedAssetFreshness',
                     'MONGOYIA_CART_LINK_NORMALIZER_V1',

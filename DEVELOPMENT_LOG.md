@@ -9143,3 +9143,31 @@
   - Production remains `NO-GO` until accepted evidence and GO/NO-GO gates pass.
 - Next stage:
   - Commit and push this Phase 14 child-check wiring patch, then reread the plan/log and continue with the next plan-listed readiness item.
+
+## 2026-06-24 Phase 13 APP Child Checks
+
+- Stage name: Phase 13.34 APP child readiness wiring
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting the stage.
+  - Added `MONGOYIA_APP_PHASE13_CHILD_CHECKS_V1` to the Phase 13 APP acceptance command.
+  - Added `--runChildChecks` support to `app-phase13-acceptance/run`.
+  - Wired the Phase 13 acceptance command to run buyer APP/API, seller APP/API, and APP auth/token readiness children when requested.
+  - Updated the Phase 10-15 aggregate acceptance command to pass child readiness checks through to Phase 13.
+  - Updated the Phase 13 backlog commands and notes to show `--runChildChecks=1`.
+- Main files changed/added:
+  - `console/controllers/AppPhase13AcceptanceController.php`
+  - `console/controllers/MongoyiaRequirementsClosureAcceptanceController.php`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l console/controllers/AppPhase13AcceptanceController.php` passed.
+  - `php -l console/controllers/MongoyiaRequirementsClosureAcceptanceController.php` passed.
+  - Static marker checks confirmed `MONGOYIA_APP_PHASE13_CHILD_CHECKS_V1`, `runChildChecks`, `childCommands`, and `Phase 13.34` coverage.
+  - `git diff --check` reported no whitespace errors, only existing Windows line-ending conversion warnings.
+  - Full Yii console execution remains BaoTa-only because this local checkout lacks `vendor/autoload.php`.
+- Remaining issues:
+  - BaoTa/test server must rerun Phase 13 child readiness, Phase 13 acceptance, and total requirements closure acceptance after deployment.
+  - Phase 13 authenticated H5/browser role-flow and APP development package evidence remain pending.
+  - Production remains `NO-GO` until accepted evidence and GO/NO-GO gates pass.
+- Next stage:
+  - Commit and push this Phase 13 child-check wiring patch, then reread the plan/log and continue with the next plan-listed readiness item.

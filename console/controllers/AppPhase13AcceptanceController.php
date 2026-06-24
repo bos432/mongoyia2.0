@@ -2,12 +2,14 @@
 
 namespace console\controllers;
 
+use Yii;
 use yii\console\Controller;
 use yii\console\ExitCode;
 
 class AppPhase13AcceptanceController extends Controller
 {
     public const VERSION = 'MONGOYIA_APP_PHASE13_ACCEPTANCE_V1';
+    public const CHILD_CHECKS_VERSION = 'MONGOYIA_APP_PHASE13_CHILD_CHECKS_V1';
 
     public $baseUrl = 'https://demo2026.mongoyia.com';
     public $productPath = '/product-codex-test-product-1781945133';
@@ -16,6 +18,7 @@ class AppPhase13AcceptanceController extends Controller
     public $outputPath = '';
     public $fixture = false;
     public $strict = false;
+    public $runChildChecks = false;
     public $buyerApiAccepted = false;
     public $sellerApiAccepted = false;
     public $browserAccepted = false;
@@ -40,6 +43,7 @@ class AppPhase13AcceptanceController extends Controller
             'outputPath',
             'fixture',
             'strict',
+            'runChildChecks',
             'buyerApiAccepted',
             'sellerApiAccepted',
             'browserAccepted',
@@ -63,6 +67,9 @@ class AppPhase13AcceptanceController extends Controller
         if ($this->fixture) {
             $this->checkRouteMatrix();
         }
+        if ($this->runChildChecks) {
+            $this->runChildChecks();
+        }
         $this->checkManualAcceptanceInputs();
 
         $result = $this->result();
@@ -84,6 +91,14 @@ class AppPhase13AcceptanceController extends Controller
         $this->requireFileContains('Phase 13 backlog registration', 'docs/mongoyia-upgrade-backlog-20260618.md', [
             'Full buyer and seller APP completion',
             'app-phase13-acceptance/run',
+        ]);
+        $this->requireFileContains('Phase 13 child readiness wiring', 'console/controllers/AppPhase13AcceptanceController.php', [
+            'MONGOYIA_APP_PHASE13_CHILD_CHECKS_V1',
+            'runChildChecks',
+            'childCommands',
+            'app-buyer-phase13-readiness/run',
+            'app-seller-phase13-readiness/run',
+            'app-auth-phase13-readiness/run',
         ]);
         $this->requireFileContains('uni-app package manifest', 'apps/mongoyia-customer-chat-uniapp/package.json', [
             'mongoyia-customer-chat-uniapp',
@@ -566,6 +581,37 @@ class AppPhase13AcceptanceController extends Controller
         );
     }
 
+    private function runChildChecks(): void
+    {
+        $this->section('Phase 13 child readiness commands');
+        foreach ($this->childCommands() as $label => $config) {
+            $params = ['interactive' => 0];
+            if ($this->fixture && !empty($config['fixture'])) {
+                $params['fixture'] = 1;
+            }
+
+            try {
+                $exitCode = Yii::$app->runAction($config['route'], $params);
+                if ((int)$exitCode === ExitCode::OK) {
+                    $this->addCheck($label, 'PASS', $config['route'], 'Child readiness command passed.');
+                } else {
+                    $this->addCheck($label, 'FAIL', $config['route'], 'Child readiness command returned exit code ' . (int)$exitCode . '.');
+                }
+            } catch (\Throwable $e) {
+                $this->addCheck($label, 'FAIL', $config['route'], 'Child readiness command failed: ' . $e->getMessage());
+            }
+        }
+    }
+
+    private function childCommands(): array
+    {
+        return [
+            'Buyer APP/API readiness' => ['route' => 'app-buyer-phase13-readiness/run', 'fixture' => true],
+            'Seller APP/API readiness' => ['route' => 'app-seller-phase13-readiness/run', 'fixture' => true],
+            'APP auth/token readiness' => ['route' => 'app-auth-phase13-readiness/run', 'fixture' => true],
+        ];
+    }
+
     private function pageMarkers(): array
     {
         return [
@@ -655,6 +701,7 @@ class AppPhase13AcceptanceController extends Controller
             '- Failures: ' . $this->failures,
             '- Warnings: ' . $this->warnings,
             '- Pending: ' . $this->pending,
+            '- Child readiness checks: ' . ($this->runChildChecks ? 'yes' : 'no'),
             '- Scope: buyer APP, seller APP workbench, buyer cart stale-row guard, cart-index fallback guard, cart checkout URL parameter builder, cached cart-link normalizer, deployed H5 asset/product/cart-route freshness, buyer received-order review submission, audited seller product create/edit, seller coupon participation join/leave, seller store/logistics/deposit/statistics/distribution overview, shared backend APIs, customer-service entry, H5 development package, and role-flow evidence.',
             '- Safety: this command does not mutate orders, carts, products, shipment rows, funds, stock, or credentials.',
             '- Boundary: Phase 13 verifies the APP route shell, buyer cart stale-row cleanup before checkout/rendering, buyer checkout URL parameter generation, buyer checkout write, buyer received-order review submit with pending moderation, seller shipment write, seller product create/edit submission, and seller platform coupon participation join/leave. Seller product writes are forced inactive/submitted for platform review, review submissions are not public until backend approval, and coupon participation writes do not issue coupons or mutate orders. Browser/APP role-flow evidence remains pending until later acceptance.',
@@ -686,7 +733,7 @@ class AppPhase13AcceptanceController extends Controller
             '/www/server/php/83/bin/php yii app-buyer-phase13-readiness/run --fixture=1 --interactive=0',
             '/www/server/php/83/bin/php yii app-seller-phase13-readiness/run --fixture=1 --interactive=0',
             '/www/server/php/83/bin/php yii app-auth-phase13-readiness/run --fixture=1 --interactive=0',
-            '/www/server/php/83/bin/php yii app-phase13-acceptance/run --baseUrl=' . $this->baseUrl . ' --fixture=1 --interactive=0',
+            '/www/server/php/83/bin/php yii app-phase13-acceptance/run --baseUrl=' . $this->baseUrl . ' --fixture=1 --runChildChecks=1 --interactive=0',
             '```',
             '',
             'MONGOYIA_PHASE10_15_CHILD_DEPLOY_CACHE_REFRESH_V1: pull fast-forward changes, print the deployed commit, flush Yii cache, and restart PHP-FPM before collecting Phase 13 H5/APP browser evidence.',
@@ -712,6 +759,7 @@ class AppPhase13AcceptanceController extends Controller
             '```bash',
             '/www/server/php/83/bin/php yii app-phase13-acceptance/run \\',
             '  --fixture=1 \\',
+            '  --runChildChecks=1 \\',
             '  --buyerApiAccepted=1 --buyerEvidencePath=runtime/handover/phase13-buyer-api-evidence.md \\',
             '  --sellerApiAccepted=1 --sellerEvidencePath=runtime/handover/phase13-seller-api-evidence.md \\',
             '  --browserAccepted=1 --browserEvidencePath=runtime/handover/phase13-browser-evidence.md \\',

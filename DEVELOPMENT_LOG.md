@@ -9199,3 +9199,31 @@
   - Provider and production operations material may stay backend-afterfill for development acceptance; production remains `NO-GO` until accepted evidence and signoff gates pass.
 - Next stage:
   - Commit and push this Phase 10 child-check marker patch, then reread the plan/log and continue with the next plan-listed readiness item.
+
+## 2026-06-24 Phase 11 Payment Child Checks
+
+- Stage name: Phase 11.10 payment child readiness source coverage
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting the stage.
+  - Added `MONGOYIA_PAYMENT_PHASE11_CHILD_CHECKS_V1` to the Phase 11 payment acceptance command.
+  - Added self source coverage for the existing `--runChildChecks=1` child command list.
+  - Covered operational payment config, PayPal runtime, base mall payment regression, payment callback readiness, payment statistics, and callback regression readiness child gates.
+  - Updated the Phase 10-15 aggregate acceptance command to require the Phase 11 child-check marker before passing child checks through.
+  - Updated the Phase 11 backlog notes and command table to document Phase 11.10.
+- Main files changed/added:
+  - `console/controllers/PaymentPhase11AcceptanceController.php`
+  - `console/controllers/MongoyiaRequirementsClosureAcceptanceController.php`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l console/controllers/PaymentPhase11AcceptanceController.php` passed.
+  - `php -l console/controllers/MongoyiaRequirementsClosureAcceptanceController.php` passed.
+  - Static marker checks confirmed `MONGOYIA_PAYMENT_PHASE11_CHILD_CHECKS_V1`, `runChildChecks`, `childCommands`, `payment-callback-regression-readiness/run`, and `Phase 11.10` coverage.
+  - `git diff --check` reported no whitespace errors, only existing Windows line-ending conversion warnings.
+  - Full Yii console execution remains BaoTa-only because this local checkout lacks `vendor/autoload.php`.
+- Remaining issues:
+  - BaoTa/test server must rerun Phase 11 acceptance and total Phase 10-15 closure acceptance after deployment.
+  - Phase 11 merchant payment configuration, payment statistics, callback/audit browser evidence, and manual acceptance flags remain pending.
+  - QPay/LianLian/PayPal sandbox provider material may stay backend-afterfill for development acceptance; live payment remains blocked until Phase 10/11 accepted evidence exists.
+- Next stage:
+  - Commit and push this Phase 11 child-check marker patch, then reread the plan/log and continue with the next plan-listed readiness item.

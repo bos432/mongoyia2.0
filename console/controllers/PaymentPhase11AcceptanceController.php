@@ -10,6 +10,7 @@ class PaymentPhase11AcceptanceController extends Controller
 {
     public const VERSION = 'MONGOYIA_PAYMENT_PHASE11_ACCEPTANCE_V1';
     public const PROVIDER_AFTERFILL_POLICY_VERSION = 'MONGOYIA_PHASE11_PAYMENT_PROVIDER_AFTERFILL_POLICY_V1';
+    public const CHILD_CHECKS_VERSION = 'MONGOYIA_PAYMENT_PHASE11_CHILD_CHECKS_V1';
 
     public $baseUrl = 'https://demo2026.mongoyia.com';
     public $handoverDir = 'runtime/handover';
@@ -246,6 +247,17 @@ class PaymentPhase11AcceptanceController extends Controller
             'AFTERFILL',
             'Afterfill pending',
         ]);
+        $this->requireFileContains('Phase 11 child readiness wiring', 'console/controllers/PaymentPhase11AcceptanceController.php', [
+            'MONGOYIA_PAYMENT_PHASE11_CHILD_CHECKS_V1',
+            'runChildChecks',
+            'childCommands',
+            'operational-config-payment-test/run',
+            'operational-config-paypal-test/run',
+            'mall-payment-test/run',
+            'mongoyia-payment-callback-readiness/run',
+            'payment-stat-readiness/run',
+            'payment-callback-regression-readiness/run',
+        ]);
     }
 
     private function checkManualAcceptanceInputs(): void
@@ -343,6 +355,7 @@ class PaymentPhase11AcceptanceController extends Controller
             '- Warnings: ' . $this->warnings,
             '- Pending: ' . $this->pending,
             '- Afterfill pending: ' . $this->afterfillPending,
+            '- Child readiness checks: ' . ($this->runChildChecks ? 'yes' : 'no'),
             '- Scope: QPay, LianLian, PayPal sandbox flow, live enablement guard, merchant encrypted payment configuration, payment statistics, and callback/audit coverage.',
             '- Safety boundary: this acceptance command is read-only and must not enable live payment, call payment providers, mutate orders, mutate funds, or store secrets.',
             '- External afterfill policy: QPay, LianLian, and PayPal sandbox provider material may remain AFTERFILL during development acceptance; live payment stays blocked until accepted evidence exists.',

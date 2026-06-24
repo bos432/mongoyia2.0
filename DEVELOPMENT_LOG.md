@@ -1,5 +1,39 @@
 # Development Log
 
+## 2026-06-24 Phase 12 Social Auth ReturnUrl Guard
+
+- Stage name: Phase 12.20 social-auth returnUrl guard
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting the stage.
+  - Added `MONGOYIA_SOCIAL_AUTH_RETURN_URL_GUARD_V1` to `SocialIdentityService`.
+  - Hardened OAuth state `returnUrl` so Google/Facebook callback redirects only to safe single-slash site-relative paths.
+  - Rejected absolute URLs, protocol-relative URLs, non-path values, and newline-bearing values before storing callback state.
+  - Exposed the return-url policy in `runtimeReadiness()`.
+  - Added coverage to identity-config readiness, social-auth runtime readiness, and Phase 12 aggregate acceptance.
+  - Updated the Phase 12 backlog notes as Phase 12.20.
+- Main files changed/added:
+  - `common/services/mall/SocialIdentityService.php`
+  - `console/controllers/IdentityConfigReadinessController.php`
+  - `console/controllers/SocialAuthRuntimeReadinessController.php`
+  - `console/controllers/AccountNotificationPhase12AcceptanceController.php`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l common/services/mall/SocialIdentityService.php` passed.
+  - `php -l console/controllers/IdentityConfigReadinessController.php` passed.
+  - `php -l console/controllers/SocialAuthRuntimeReadinessController.php` passed.
+  - `php -l console/controllers/AccountNotificationPhase12AcceptanceController.php` passed.
+  - Static marker checks confirmed `MONGOYIA_SOCIAL_AUTH_RETURN_URL_GUARD_V1`, `safeReturnUrl`, protocol-relative rejection, scheme rejection, `return_url_policy`, and Phase 12.20 backlog coverage.
+  - Static stale-code check found no remaining old `^https?:\/\/`-only return-url filter in `SocialIdentityService`.
+  - `git diff --check` reported no whitespace errors, only existing Windows line-ending conversion warnings.
+  - Full Yii console execution remains BaoTa-only because this local checkout lacks `vendor/autoload.php`.
+- Remaining issues:
+  - BaoTa/test server must rerun identity-config readiness, social-auth runtime readiness, Phase 12 acceptance, and total requirements closure acceptance after deployment.
+  - Browser/provider evidence still needs Google/Facebook sandbox credentials to validate real redirect, callback, bind, and unbind flows.
+  - External provider evidence remains gated; production remains `NO-GO`.
+- Next stage:
+  - Commit and push this Phase 12 social-auth returnUrl guard patch, then reread the plan/log and continue with the next plan-listed readiness item.
+
 ## 2026-06-24 Phase 12 Mall Login ReturnUrl Guard
 
 - Stage name: Phase 12.19 frontend mall login returnUrl guard

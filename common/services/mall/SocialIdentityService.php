@@ -15,6 +15,7 @@ class SocialIdentityService
     public const SESSION_KEY_PREFIX = 'mongoyia_social_auth_state_';
     public const BIND_POLICY_REQUIRE_EXISTING_SESSION = 'require_existing_session_before_first_login';
     public const PROVIDER_RESPONSE_ERROR_POLICY = 'provider_response_errors_are_sanitized';
+    public const RETURN_URL_GUARD_VERSION = 'MONGOYIA_SOCIAL_AUTH_RETURN_URL_GUARD_V1';
 
     private $configService;
 
@@ -131,6 +132,7 @@ class SocialIdentityService
             'providers' => array_keys($this->configService->providerDefinitions()),
             'bind_policy' => self::BIND_POLICY_REQUIRE_EXISTING_SESSION,
             'secret_logging_policy' => 'provider_secret_never_logged',
+            'return_url_policy' => self::RETURN_URL_GUARD_VERSION,
         ];
     }
 
@@ -399,7 +401,10 @@ class SocialIdentityService
     private function safeReturnUrl(string $returnUrl): string
     {
         $returnUrl = trim($returnUrl);
-        if ($returnUrl === '' || preg_match('/^https?:\/\//i', $returnUrl)) {
+        if ($returnUrl === '' || strpos($returnUrl, '/') !== 0 || strpos($returnUrl, '//') === 0) {
+            return '';
+        }
+        if (preg_match('/^[a-z][a-z0-9+.-]*:/i', $returnUrl) || preg_match('/[\r\n]/', $returnUrl)) {
             return '';
         }
 

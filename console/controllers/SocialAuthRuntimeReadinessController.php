@@ -56,10 +56,15 @@ class SocialAuthRuntimeReadinessController extends Controller
         $this->section('Source coverage');
         $this->requireFileContains('Social identity runtime service', 'common/services/mall/SocialIdentityService.php', [
             'MONGOYIA_SOCIAL_IDENTITY_RUNTIME_V1',
+            'MONGOYIA_SOCIAL_AUTH_RETURN_URL_GUARD_V1',
             'BIND_POLICY_REQUIRE_EXISTING_SESSION',
             'authorizationUrl',
             'handleCallback',
             'bindIdentity',
+            'safeReturnUrl',
+            "strpos(\$returnUrl, '//') === 0",
+            "preg_match('/^[a-z][a-z0-9+.-]*:/i'",
+            "'return_url_policy' => self::RETURN_URL_GUARD_VERSION",
             'provider_secret_never_logged',
             'PROVIDER_RESPONSE_ERROR_POLICY',
             'provider_response_errors_are_sanitized',

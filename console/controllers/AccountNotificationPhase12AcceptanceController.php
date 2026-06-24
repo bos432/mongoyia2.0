@@ -185,9 +185,14 @@ class AccountNotificationPhase12AcceptanceController extends Controller
         ]);
         $this->requireFileContains('Third-party login runtime service', 'common/services/mall/SocialIdentityService.php', [
             'MONGOYIA_SOCIAL_IDENTITY_RUNTIME_V1',
+            'MONGOYIA_SOCIAL_AUTH_RETURN_URL_GUARD_V1',
             'authorizationUrl',
             'handleCallback',
             'bindIdentity',
+            'safeReturnUrl',
+            "strpos(\$returnUrl, '//') === 0",
+            "preg_match('/^[a-z][a-z0-9+.-]*:/i'",
+            "'return_url_policy' => self::RETURN_URL_GUARD_VERSION",
             'provider_secret_never_logged',
             'provider_response_errors_are_sanitized',
             'decodeProviderJson',

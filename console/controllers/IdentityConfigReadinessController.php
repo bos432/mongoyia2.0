@@ -97,6 +97,13 @@ class IdentityConfigReadinessController extends Controller
             'third_party_login_requires_provider_acceptance',
             'provider_secret_never_logged',
         ]);
+        $this->requireFileContains('Social auth returnUrl guard', 'common/services/mall/SocialIdentityService.php', [
+            'MONGOYIA_SOCIAL_AUTH_RETURN_URL_GUARD_V1',
+            'safeReturnUrl',
+            "strpos(\$returnUrl, '//') === 0",
+            "preg_match('/^[a-z][a-z0-9+.-]*:/i'",
+            "'return_url_policy' => self::RETURN_URL_GUARD_VERSION",
+        ]);
         $this->requireFileContains('Identity config permission migration', 'console/migrations/m260623_162000_mongoyia_identity_config_permission.php', [
             '/mall/operational-config/identity-config*',
             '/mall/operational-config/save-identity-config*',

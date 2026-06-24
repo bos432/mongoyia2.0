@@ -406,6 +406,8 @@ Phase 12.18 social-auth unbind POST provider body support: `/social-auth/unbind`
 
 Phase 12.19 frontend mall login returnUrl guard: `/mall/default/login` now filters login `returnUrl` through `MONGOYIA_FRONTEND_LOGIN_RETURN_URL_GUARD_V1`, allowing only single-slash site-relative paths and rejecting absolute, protocol-relative, or newline-bearing redirect targets. Phase 12 aggregate acceptance and PWA smoke cover the guard so normal product/payment return paths keep working without an open redirect.
 
+Phase 12.20 social-auth returnUrl guard: Google/Facebook OAuth state now filters `returnUrl` through `MONGOYIA_SOCIAL_AUTH_RETURN_URL_GUARD_V1`, allowing only single-slash site-relative paths and rejecting absolute, protocol-relative, non-path, or newline-bearing targets before callback redirect. Identity-config readiness, social-auth runtime readiness, and Phase 12 aggregate acceptance cover the guard.
+
 Phase 13 acceptance command:
 
 ```bash

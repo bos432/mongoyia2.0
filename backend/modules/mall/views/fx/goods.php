@@ -11,15 +11,11 @@ use yii\helpers\Inflector;
 /* @var $dataProvider yii\data\ActiveDataProvider */
 /* @var $searchModel common\models\ModelSearch */
 /* @var $fxbfb common\models\ModelSearch */
+/* @var $fxSettingNotice string */
 
 $this->title = Yii::t('app', 'Orders');
 $this->params['breadcrumbs'][] = $this->title;
 
-function fxamount($amount){
-//    return (float)$amount/100;
-    $fxbfb = (int)(new \yii\db\Query)->from('fb_base_setting')->where(['id'=>884590952113504256])->one()['value'];
-    return number_format($amount/100 * $fxbfb,2);
-};
 //echo '<pre/>';
 //var_dump($fxbfb);exit();
 ?>
@@ -37,6 +33,9 @@ function fxamount($amount){
                 </div>
             </div>
             <div class="card-body">
+                <?php if (!empty($fxSettingNotice)) { ?>
+                    <div class="alert alert-warning"><?= Html::encode($fxSettingNotice) ?></div>
+                <?php } ?>
                 <?//= $this->render('@backend/views/site/_select', ['model' => $searchModel, 'dataProvider' => $dataProvider]) ?>
 
                 <?= GridView::widget([
@@ -50,11 +49,11 @@ function fxamount($amount){
                         ],
 
                         'id',
-                        ['attribute' => 'store_id', 'visible' => $this->context->isAdmin(), 'value' => function ($model) { return $model->store->name; }, 'filter' => Html::activeDropDownList($searchModel, 'store_id', $this->context->getStoresIdName(), ['class' => 'form-control', 'prompt' => Yii::t('app', 'Please Filter')]),],
+                        ['attribute' => 'store_id', 'visible' => $this->context->isAdmin(), 'value' => function ($model) { return $model->store->name ?? ''; }, 'filter' => Html::activeDropDownList($searchModel, 'store_id', $this->context->getStoresIdName(), ['class' => 'form-control', 'prompt' => Yii::t('app', 'Please Filter')]),],
                         'name',
                         'sku',
                         'price',
-                        ['attribute' => 'yj', 'format' => 'raw', 'value' => function ($model) { return fxamount($model->price); }],
+                        ['attribute' => 'yj', 'format' => 'raw', 'value' => function ($model) use ($fxbfb) { return number_format((float)$model->price / 100 * (int)$fxbfb, 2); }],
                         //                        ['attribute' => 'user_id', 'value' => function ($model) { return $model->user->email; }, 'filter' => true],
                         // ['attribute' => 'name', 'format' => 'raw', 'value' => function ($model) { return Html::field('name', $model->name); }, 'filter' => true,],
 //                        'sn',

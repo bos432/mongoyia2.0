@@ -1,5 +1,26 @@
 # Development Log
 
+## 2026-06-24 Local Development Manual
+
+- Stage name: Local Mongoyia development manual
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md`, this log, existing guide/handover document names, and current git status before starting.
+  - Added a local Chinese development manual for future maintainers, covering the repo workflow, read-before-work rule, local and BaoTa validation commands, Phase 10-15 quick reference, browser acceptance, external-afterfill policy, database/migration rules, security boundaries, troubleshooting, and handover document index.
+  - Kept real provider credentials, passwords, API keys, OAuth secrets, payment private keys, and production signoff material out of the manual.
+  - Did not touch the unrelated untracked provider setup guide `docs/mongoyia-operational-config-provider-setup-guide.md`.
+- Main files changed/added:
+  - `docs/mongoyia-development-manual-zh-CN.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - Marker grep passed for `MONGOYIA_DEVELOPMENT_MANUAL_V1`, Phase 10-15 quick reference, BaoTa validation, external-afterfill policy, and production launch boundary sections.
+  - `git diff --check` reported no whitespace errors, only existing Windows line-ending conversion warnings for `DEVELOPMENT_LOG.md`.
+  - Full Yii console acceptance is not needed for this documentation-only local stage.
+- Remaining issues:
+  - The manual is local-only unless the user later asks to commit/push it.
+  - Production remains `NO-GO` until external afterfill and signoff material are completed in the backend.
+- Next stage:
+  - If the user wants this local manual versioned, commit and optionally push `docs/mongoyia-development-manual-zh-CN.md` plus this log entry.
+
 ## 2026-06-24 Phase 10-15 Final Browser Closure Validation
 
 - Stage name: Phase 10-15 final browser closure validation after BaoTa aggregate acceptance
@@ -9883,3 +9904,97 @@
   - External QPay/LianLian/PayPal sandbox provider material may remain backend-afterfill for development acceptance; live payment remains blocked until Phase 10/11 evidence is accepted.
 - Next stage:
   - Commit and push this Phase 11 product fixture fallback patch, then continue from BaoTa acceptance output or the next plan-listed browser/evidence readiness item.
+
+## 2026-06-24 Full Requirements Browser Validation
+
+- Stage name: Phase 10-15 full browser validation against original requirement surfaces
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md`, `DEVELOPMENT_LOG.md`, and the original requirement headings before validation.
+  - Used the right-side in-app browser against `https://demo2026.mongoyia.com`.
+  - Confirmed backend platform session is logged in as `admin` and frontend buyer session is logged in as `codex_fron..`.
+  - Browser-opened backend surfaces for system/user/role/permission/log/schedule/store, mall order/product/category/merchant/coupon/stat, logistics/deposit/settlement/payment, operational config, identity/account security, notification log, customer service, review moderation, and distribution support.
+  - Browser-opened frontend buyer/H5 surfaces for home, product search, product detail, cart, checkout, orders, favorites, history, address, distributor center, customer-service chat, signup, password reset, help, FAQ, and contact.
+  - Browser-opened APP JSON endpoints for buyer home/categories/search/suggestions/cart/orders/coupons/favorites/notifications/reviews and seller dashboard/products/orders/logistics/coupons/statistics/distribution auth boundary.
+  - Performed safe preserved-data interactions:
+    - Added product `11111` (`id=2`) to the buyer cart and verified the cart page shows it after navigation.
+    - Sent customer-service chat message `Codex full browser validation chat 2026-06-24T2026-06-24T06-24-39-966Z`.
+    - Refreshed the chat page and verified the message persisted.
+    - Opened backend `/backend/mall/kf/index` and verified the latest chat message appears in the platform customer-service workbench.
+  - Performed a 390x844 mobile viewport smoke for home, product, cart, checkout, chat, distributor center, backend customer service, backend product, and backend distributor pages.
+  - Did not trigger real payment, refund, payout, production GO, provider API calls, logistics provider calls, review approval, commission approval, withdrawal approval, or other high-risk money/stock mutations.
+- Main files changed/added:
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - Validation time: 2026-06-24 14:29:14 +08:00.
+  - Validation environment: right-side in-app browser, `https://demo2026.mongoyia.com`, backend session `admin`, frontend buyer session `codex_fron..`, desktop viewport plus 390x844 mobile viewport.
+  - Route matrix: 85 route/API page probes were attempted across backend, frontend, and APP JSON surfaces.
+  - Mobile viewport smoke: 9/9 tested pages opened; frontend mobile pages did not show horizontal overflow; backend customer-service three-column page opened but has horizontal overflow at 390px.
+  - Safe interaction checks passed for product add-to-cart, cart list refresh, customer-service chat send, chat refresh persistence, and backend customer-service workbench visibility.
+  - Correct product search route `/mall/category/view?keyword=111` passed; the older `/mall/default/search?keyword=111` route renders blank.
+  - Buyer review API with correct AJAX/API parameters passed through `/api/v1/app-buyer/reviews?product_id=2`; direct `/mall/product/review?id=2` is an invalid direct-page probe and returns an operation-failed JSON response.
+  - Seller APP endpoints correctly return 401 without a valid seller `access-token`; independent seller browser login was not completed because the visible backend logout control did not actually end the `admin` session.
+- Found issues:
+  - `/backend/base/setting/index` fails browser navigation with `net::ERR_HTTP_RESPONSE_CODE_FAILURE`.
+  - `/backend/mall/default/index` fails browser navigation with `net::ERR_HTTP_RESPONSE_CODE_FAILURE`.
+  - `/backend/mall/order-product/index` renders a server error page.
+  - `/backend/mall/fx/index` renders a server error page; the newer distribution pages work.
+  - `/backend/base/permission/index` renders but logs `TypeError: jQuery(...).yiiGridView is not a function`.
+  - `/mall/default/search?keyword=111` renders blank; actual working search route is `/mall/category/view?keyword=111`.
+  - `/mall/user/index`, `/mall/user/coupon`, `/mall/default/login`, and `/mall/default/contact` fail browser navigation in the current logged-in buyer session with `net::ERR_HTTP_RESPONSE_CODE_FAILURE`.
+  - `/api/v1/app-buyer/product?id=2` fails browser navigation with `net::ERR_HTTP_RESPONSE_CODE_FAILURE`, while buyer home/search/reviews endpoints respond.
+  - Backend logout link `/backend/site/logout` is visible but clicking it leaves the session as `admin`, so seller-role backend browser validation could not be completed through a clean browser login switch.
+  - APP JSON endpoints opened directly in the browser are displayed as XML by Yii content negotiation; API payloads are readable, but this direct-browser view is not a polished app-facing JSON display.
+- Whether it reaches production-ready online standard:
+  - No. Core buyer cart/chat and most admin/customer-service/distribution/operations surfaces are usable, but the navigation/server-error issues above, incomplete independent seller browser-role validation, and external provider afterfill/production `NO-GO` gates prevent declaring full online readiness.
+- Remaining issues:
+  - Fix the failing backend/frontend/API routes and rerun the browser matrix.
+  - Fix backend logout or provide a clean seller-browser session path, then rerun seller backend role-flow validation with `zhishichanquan`.
+  - Continue keeping payment/logistics/OAuth/SMTP/translation/provider materials as backend afterfill until real evidence is uploaded and GO/NO-GO becomes `GO`.
+- Next stage:
+  - Start a focused defect-fix stage for the route/browser failures found in this validation, then repeat the full browser validation and record the new evidence.
+
+## 2026-06-24 Browser Acceptance Defect Fixes
+
+- Stage name: Browser acceptance P0/P1/P2 route and session hardening
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting the stage.
+  - Fixed `/backend/base/setting/index` so missing `parent_id` auto-selects the first accessible setting parent and renders an empty state instead of `goBack()`.
+  - Fixed `/backend/mall/default/index` to redirect to the stable `/backend/site/info` dashboard.
+  - Hardened `/backend/mall/order-product/index` by removing the wrong `yii\httpclient\debug\SearchModel`, avoiding ambiguous ordering, and guarding `product_amount=0` division in both totals and row display.
+  - Hardened legacy `/backend/mall/fx/index` and `/backend/mall/fx/goods` by removing the hard-coded distribution-percent row dependency and using a safe default plus warning when the config is absent.
+  - Fixed `/mall/default/search?keyword=...` to redirect to `/mall/category/view?keyword=...`, and `/mall/user/index` plus logged-in `/mall/default/login` to redirect to `/mall/user/order`.
+  - Reworked `/mall/user/coupon` to use a direct user-coupon join so empty or populated coupon lists can render without relation-alias failures.
+  - Added a read-only `/mall/default/contact` fallback view and disabled SMTP send attempts until provider evidence is configured.
+  - Made direct `/mall/product/review` GET return a clear JSON error while keeping the review list Ajax/API-only.
+  - Hardened `/api/v1/app-buyer/product?id=...` with store-scope fallback and safe product/SKU field reads for missing or nullable product media/detail fields.
+  - Changed backend logout controls to submit a hidden POST form and registered Yii GridView assets in the backend bundle for `/backend/base/permission/index`.
+  - Did not trigger real payment, refund, payout, logistics provider calls, SMTP delivery, provider API calls, review approval, commission approval, withdrawal approval, or production GO.
+- Main files changed/added:
+  - `backend/modules/base/controllers/SettingController.php`
+  - `backend/modules/base/views/setting/index.php`
+  - `backend/modules/mall/controllers/DefaultController.php`
+  - `backend/modules/mall/controllers/OrderProductController.php`
+  - `backend/modules/mall/controllers/FxController.php`
+  - `backend/modules/mall/views/order-product/index.php`
+  - `backend/modules/mall/views/fx/index.php`
+  - `backend/modules/mall/views/fx/goods.php`
+  - `backend/assets/AppAsset.php`
+  - `backend/views/site/header.php`
+  - `backend/views/site/content.php`
+  - `frontend/modules/mall/controllers/DefaultController.php`
+  - `frontend/modules/mall/controllers/UserController.php`
+  - `frontend/modules/mall/controllers/ProductController.php`
+  - `frontend/modules/mall/views/default/contact.php`
+  - `common/services/mall/AppBuyerApiService.php`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l` passed for all changed PHP controllers, views, the backend asset bundle, and `common/services/mall/AppBuyerApiService.php`.
+  - Static marker checks confirmed `findFirstAccessibleParentSettingTypeId`, `MONGOYIA_APP_BUYER_PRODUCT_DETAIL_SAFE_FALLBACK_V1`, `backend-logout-form`, `GridViewAsset`, read-only contact form messaging, distribution-percent fallback messaging, and review direct-GET JSON messaging.
+  - `git diff --check` reported no whitespace errors, only existing Windows line-ending conversion warnings.
+  - Full Yii console execution remains BaoTa-only because this local checkout lacks `vendor/autoload.php`.
+- Remaining issues:
+  - BaoTa/test server must pull this patch, run migrations/cache/opcache refresh if needed, and rerun the Phase 10-15 aggregate acceptance command.
+  - Right-side browser regression still needs to verify the fixed backend pages, frontend pages, APP product API, backend logout, and seller login as `zhishichanquan`.
+  - External provider material remains backend-afterfill; production remains `NO-GO` until accepted evidence and signoff gates pass.
+- Next stage:
+  - Push/deploy this defect-fix patch, then rerun the browser matrix and total closure acceptance on the BaoTa/test server.

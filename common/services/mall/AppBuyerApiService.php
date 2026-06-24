@@ -29,6 +29,7 @@ class AppBuyerApiService
     public const CATEGORY_STORE_SCOPE_VERSION = 'MONGOYIA_APP_BUYER_CATEGORY_STORE_SCOPE_V1';
     public const PRODUCT_STORE_SCOPE_VERSION = 'MONGOYIA_APP_BUYER_PRODUCT_STORE_SCOPE_V1';
     public const CART_FAVORITE_STORE_SCOPE_VERSION = 'MONGOYIA_APP_BUYER_CART_FAVORITE_STORE_SCOPE_V1';
+    public const PRODUCT_DETAIL_SAFE_FALLBACK_VERSION = 'MONGOYIA_APP_BUYER_PRODUCT_DETAIL_SAFE_FALLBACK_V1';
 
     private $searchVideoService;
 
@@ -167,7 +168,14 @@ class AppBuyerApiService
 
     public function product(int $id, int $userId = 0, int $storeId = 0): array
     {
+        if ($id <= 0) {
+            throw new \RuntimeException('Product ID is required.');
+        }
+
         $product = $this->publicProductQuery($storeId)->andWhere(['id' => $id])->one();
+        if (!$product && $storeId > 0) {
+            $product = $this->publicProductQuery(0)->andWhere(['id' => $id])->one();
+        }
         if (!$product) {
             throw new \RuntimeException('Product not found.');
         }
@@ -190,6 +198,7 @@ class AppBuyerApiService
         return [
             'version' => self::VERSION,
             'product_store_scope_version' => self::PRODUCT_STORE_SCOPE_VERSION,
+            'product_detail_safe_fallback_version' => self::PRODUCT_DETAIL_SAFE_FALLBACK_VERSION,
             'product' => $this->productDetail($product),
             'skus' => array_map([$this, 'skuSummary'], ProductSku::find()
                 ->where(['product_id' => $id])
@@ -200,8 +209,8 @@ class AppBuyerApiService
             'favorite' => $favorite,
             'store_favorite' => $storeFavorite,
             'store' => [
-                'id' => (int)$product->store_id,
-                'name' => (string)($product->store->name ?? ''),
+                'id' => (int)$this->modelValue($product, 'store_id', 0),
+                'name' => $this->storeName($product),
             ],
             'customer_service' => [
                 'route' => '/pages/chat/index',
@@ -1009,21 +1018,21 @@ class AppBuyerApiService
     private function productSummary(Product $product): array
     {
         return [
-            'id' => (int)$product->id,
-            'product_id' => (int)$product->id,
-            'store_id' => (int)$product->store_id,
-            'category_id' => (int)$product->category_id,
-            'brand_id' => (int)$product->brand_id,
-            'name' => (string)$product->name,
-            'sku' => (string)$product->sku,
-            'thumb' => (string)$product->thumb,
-            'image' => (string)$product->image,
-            'price' => number_format((float)$product->price, 2, '.', ''),
-            'market_price' => number_format((float)$product->market_price, 2, '.', ''),
-            'stock' => (int)$product->stock,
-            'sales' => (int)$product->sales,
-            'reviews' => (int)$product->reviews,
-            'star' => (float)$product->star,
+            'id' => (int)$this->modelValue($product, 'id', 0),
+            'product_id' => (int)$this->modelValue($product, 'id', 0),
+            'store_id' => (int)$this->modelValue($product, 'store_id', 0),
+            'category_id' => (int)$this->modelValue($product, 'category_id', 0),
+            'brand_id' => (int)$this->modelValue($product, 'brand_id', 0),
+            'name' => (string)$this->modelValue($product, 'name', ''),
+            'sku' => (string)$this->modelValue($product, 'sku', ''),
+            'thumb' => (string)$this->modelValue($product, 'thumb', ''),
+            'image' => (string)$this->modelValue($product, 'image', ''),
+            'price' => number_format((float)$this->modelValue($product, 'price', 0), 2, '.', ''),
+            'market_price' => number_format((float)$this->modelValue($product, 'market_price', 0), 2, '.', ''),
+            'stock' => (int)$this->modelValue($product, 'stock', 0),
+            'sales' => (int)$this->modelValue($product, 'sales', 0),
+            'reviews' => (int)$this->modelValue($product, 'reviews', 0),
+            'star' => (float)$this->modelValue($product, 'star', 0),
             'has_video' => $this->productVideoUrl($product) !== '',
         ];
     }
@@ -1031,28 +1040,28 @@ class AppBuyerApiService
     private function productDetail(Product $product): array
     {
         return array_merge($this->productSummary($product), [
-            'brief' => (string)$product->brief,
-            'description' => strip_tags((string)$product->content),
-            'images' => $this->decodeImages($product->images),
+            'brief' => (string)$this->modelValue($product, 'brief', ''),
+            'description' => strip_tags((string)$this->modelValue($product, 'content', '')),
+            'images' => $this->decodeImages($this->modelValue($product, 'images', '')),
             'video_url' => $this->productVideoUrl($product),
             'video' => $this->searchVideoService()->videoPayload($this->productVideoUrl($product)),
-            'seo_url' => (string)$product->seo_url,
-            'brand_id' => (int)$product->brand_id,
+            'seo_url' => (string)$this->modelValue($product, 'seo_url', ''),
+            'brand_id' => (int)$this->modelValue($product, 'brand_id', 0),
         ]);
     }
 
     private function skuSummary(ProductSku $sku): array
     {
         return [
-            'id' => (int)$sku->id,
-            'product_id' => (int)$sku->product_id,
-            'name' => (string)$sku->name,
-            'attribute_value' => (string)$sku->attribute_value,
-            'thumb' => (string)$sku->thumb,
-            'price' => number_format((float)$sku->price, 2, '.', ''),
-            'market_price' => number_format((float)$sku->market_price, 2, '.', ''),
-            'sku' => (string)$sku->sku,
-            'stock' => (int)$sku->stock,
+            'id' => (int)$this->modelValue($sku, 'id', 0),
+            'product_id' => (int)$this->modelValue($sku, 'product_id', 0),
+            'name' => (string)$this->modelValue($sku, 'name', ''),
+            'attribute_value' => (string)$this->modelValue($sku, 'attribute_value', ''),
+            'thumb' => (string)$this->modelValue($sku, 'thumb', ''),
+            'price' => number_format((float)$this->modelValue($sku, 'price', 0), 2, '.', ''),
+            'market_price' => number_format((float)$this->modelValue($sku, 'market_price', 0), 2, '.', ''),
+            'sku' => (string)$this->modelValue($sku, 'sku', ''),
+            'stock' => (int)$this->modelValue($sku, 'stock', 0),
         ];
     }
 
@@ -1270,6 +1279,35 @@ class AppBuyerApiService
         }
 
         return array_values(array_filter(array_map('trim', explode(',', $text))));
+    }
+
+    private function modelValue($model, string $attribute, $default = null)
+    {
+        try {
+            if (is_object($model) && method_exists($model, 'hasAttribute') && $model->hasAttribute($attribute)) {
+                $value = $model->getAttribute($attribute);
+                return $value === null ? $default : $value;
+            }
+            if (is_object($model) && isset($model->{$attribute})) {
+                return $model->{$attribute};
+            }
+            if (is_array($model) && array_key_exists($attribute, $model)) {
+                return $model[$attribute] === null ? $default : $model[$attribute];
+            }
+        } catch (\Throwable $e) {
+            return $default;
+        }
+
+        return $default;
+    }
+
+    private function storeName(Product $product): string
+    {
+        try {
+            return (string)($product->store->name ?? '');
+        } catch (\Throwable $e) {
+            return '';
+        }
     }
 
     private function optionalFloat($value): ?float

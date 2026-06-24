@@ -57,7 +57,7 @@ class SettingController extends BaseController
     {
         $parentId = Yii::$app->request->get('parent_id');
         if (!$parentId) {
-            return $this->goBack();
+            $parentId = $this->findFirstAccessibleParentSettingTypeId();
         }
 
         $storeId = Yii::$app->request->get('store_id', $this->getStoreId());
@@ -70,13 +70,28 @@ class SettingController extends BaseController
             ->orderBy(['sort' => SORT_ASC, 'id' => SORT_ASC])
             ->asArray()
             ->all();
-        if (!count($settingTypes)) {
-            return $this->goBack();
-        }
 
         return $this->render($this->action->id, [
             'settingTypes' => [['children' => $settingTypes]],
         ]);
+    }
+
+    private function findFirstAccessibleParentSettingTypeId(): int
+    {
+        $roleCode = (int)Yii::$app->authSystem->getRoleCode();
+        $routeCode = (int)Yii::$app->storeSystem->getRouteCode();
+        $row = SettingType::find()
+            ->alias('parent')
+            ->select(['parent.id'])
+            ->innerJoin(SettingType::tableName() . ' child', 'child.parent_id = parent.id')
+            ->where(['parent.status' => SettingType::STATUS_ACTIVE, 'child.status' => SettingType::STATUS_ACTIVE])
+            ->andWhere('child.support_role & ' . $roleCode . ' = ' . $roleCode)
+            ->andWhere(['or', 'child.support_system & 1 = 1', 'child.support_system & ' . $routeCode . ' = ' . $routeCode])
+            ->orderBy(['parent.sort' => SORT_ASC, 'parent.id' => SORT_ASC])
+            ->asArray()
+            ->one();
+
+        return (int)($row['id'] ?? 0);
     }
 
     /**

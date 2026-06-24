@@ -13,6 +13,6 @@ class DefaultController extends BaseController
      */
     public function actionIndex()
     {
-        return $this->goHome();
+        return $this->redirect(['/site/info']);
     }
 }

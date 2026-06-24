@@ -133,10 +133,8 @@ class DefaultController extends BaseController
 
     public function actionSearch()
     {
-        $keyword = Yii::$app->request->get('keyword');
-        if (!$keyword) {
-            return $this->goBack();
-        }
+        $keyword = trim((string)Yii::$app->request->get('keyword', ''));
+        return $this->redirect(['/mall/category/view', 'keyword' => $keyword]);
     }
 
     /**
@@ -147,7 +145,7 @@ class DefaultController extends BaseController
     public function actionLogin()
     {
         if (!Yii::$app->user->isGuest) {
-            return $this->goHome();
+            return $this->redirect(['/mall/user/order']);
         }
         $oldSessionId = Yii::$app->session->id;
 
@@ -388,13 +386,9 @@ class DefaultController extends BaseController
     public function actionContact()
     {
         $model = new ContactForm();
-        if ($model->load(Yii::$app->request->post()) && $model->validate()) {
-            if ($model->sendEmail(Yii::$app->params['adminEmail'])) {
-                Yii::$app->session->setFlash('success', 'Thank you for contacting us. We will respond to you as soon as possible.');
-            } else {
-                Yii::$app->session->setFlash('error', 'There was an error sending your message.');
-            }
-
+        if (Yii::$app->request->isPost) {
+            $model->load(Yii::$app->request->post());
+            Yii::$app->session->setFlash('info', Yii::t('app', 'Contact form is read-only until SMTP provider evidence is configured.'));
             return $this->refresh();
         }
 

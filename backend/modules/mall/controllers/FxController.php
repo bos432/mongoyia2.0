@@ -120,12 +120,14 @@ class FxController extends BaseController
 
         $this->filterParams($params);
         $dataProvider = $searchModel->search($params,true);
-        $fxbfb = (int)(new \yii\db\Query)->from('fb_base_setting')->where(['id'=>884590952113504256])->one()['value'];
+        $fxSetting = $this->distributionPercentSetting();
+        $fxbfb = $fxSetting['percent'];
 //        echo '<pre/>';
 //        var_dump($fxbfb);exit();
         return $this->render(Yii::$app->request->get('view') ?? $this->viewFile ?? $this->action->id, [
             'dataProvider' => $dataProvider,
             'fxbfb'=>$fxbfb,
+            'fxSettingNotice' => $fxSetting['notice'],
             'searchModel' => $searchModel,
             'sa'=>$sa,
         ]);exit();
@@ -151,10 +153,12 @@ class FxController extends BaseController
         $params = Yii::$app->request->queryParams;
         $params['ModelSearch']['status'] = 1;
         $dataProvider = $searchModel->search($params);
-        $fxbfb = (int)(new \yii\db\Query)->from('fb_base_setting')->where(['id'=>884590952113504256])->one()['value'];
+        $fxSetting = $this->distributionPercentSetting();
+        $fxbfb = $fxSetting['percent'];
         return $this->render(Yii::$app->request->get('view') ?? $this->viewFile ?? $this->action->id, [
             'dataProvider' => $dataProvider,
             'fxbfb'=>$fxbfb,
+            'fxSettingNotice' => $fxSetting['notice'],
             'searchModel' => $searchModel,
         ]);exit();
     }
@@ -194,6 +198,31 @@ class FxController extends BaseController
         return $this->renderAjax(Yii::$app->request->get('view') ?? $this->viewFile ?? $this->action->id, [
             'model' => $model,
         ]);
+    }
+
+    private function distributionPercentSetting(): array
+    {
+        $query = (new \yii\db\Query())->from('{{%base_setting}}');
+        $row = (clone $query)->where(['id' => 884590952113504256])->one();
+        if (!$row) {
+            $row = (clone $query)
+                ->where(['code' => ['mall_fx_percent', 'mall_distribution_percent', 'distribution_percent', 'fxbfb']])
+                ->orderBy(['id' => SORT_ASC])
+                ->one();
+        }
+
+        $percent = isset($row['value']) ? (int)$row['value'] : 0;
+        if ($percent <= 0) {
+            return [
+                'percent' => 0,
+                'notice' => Yii::t('app', 'Distribution percent setting is missing; commission preview uses 0.'),
+            ];
+        }
+
+        return [
+            'percent' => $percent,
+            'notice' => '',
+        ];
     }
 
 }

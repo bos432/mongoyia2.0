@@ -59,7 +59,7 @@ class UserController extends BaseController
 
     public function actionIndex()
     {
-        return $this->goHome();
+        return $this->redirect(['/mall/user/order']);
     }
 
     public function actionGetcode()
@@ -112,20 +112,21 @@ class UserController extends BaseController
 
     public function actionCoupon()
     {
+        $query = CouponType::find()
+            ->alias('ct')
+            ->innerJoin('{{%mall_user_coupon}} uc', 'uc.cid = ct.id AND uc.uid = :uid', [':uid' => Yii::$app->user->id])
+            ->where(['ct.status' => CouponType::STATUS_ACTIVE])
+            ->orderBy(['ct.id' => SORT_DESC])
+            ->groupBy(['ct.id']);
+
+        $dataProvider = new \yii\data\ActiveDataProvider([
+            'query' => $query,
+            'pagination' => ['pageSize' => 10],
+        ]);
         $searchModel = new ModelSearch([
             'model' => CouponType::class,
             'scenario' => 'default',
-            'relations' => ['userCouopn' => ['uid']],
-            'groupBy'=>['id'],
-            'pageSize'=>10
         ]);
-
-        $params = Yii::$app->request->queryParams;
-        $params['ModelSearch']['user_coupon.uid'] = Yii::$app->user->id;
-//        $params['ModelSearch']['store_id'] = $this->getStoreId();
-//        $params['ModelSearch']['user_id'] = Yii::$app->user->id;
-        $params['ModelSearch']['status'] = '1';
-        $dataProvider = $searchModel->search($params);
 
         return $this->render($this->action->id, [
             'dataProvider' => $dataProvider,

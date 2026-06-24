@@ -27,6 +27,9 @@ $this->params['breadcrumbs'][] = $this->title;
     <div class="col-md-12 bg-white border-1" style="border-radius: 3px;">
         <div class="tab-content p-3" id="vert-tabs-tabContent">
             <h5 class="text-right"><?= Html::aHelp(Yii::$app->params['helpUrl'][Yii::$app->language][$this->context->module->id . '_' . $this->context->id . '_' . Yii::$app->request->get('parent_id', '')] ?? null) ?></h5>
+            <?php if (empty($settingTypes) || empty($settingTypes[0]['children'])) { ?>
+                <div class="text-center text-muted p-5"><?= Yii::t('app', 'No Data') ?></div>
+            <?php } ?>
             <?php foreach ($settingTypes as $k => $settingType) { ?>
                 <div class="tab-pane text-left fade <?php if ($k == 0) echo 'active show'; ?>" id="setting_type_<?= $settingType['id'] ?? 0 ?>" role="tabpanel">
                     <div class="panel-body">

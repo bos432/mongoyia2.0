@@ -58,7 +58,11 @@ $isPlatformOperator = $this->context->isMallPlatformOperator();
                         ['attribute' => 'amount', 'value' => function ($model) {
 //                            echo '<pre/>';
 //                            var_dump($model);exit();
-                            return '$'.number_format($model['amount']/$model['product_amount']*$model['price'],2);
+                            $productAmount = (float)($model['product_amount'] ?? 0);
+                            if ($productAmount <= 0) {
+                                return '$0.00';
+                            }
+                            return '$'.number_format((float)($model['amount'] ?? 0) / $productAmount * (float)($model['price'] ?? 0), 2);
                         }],
 //                    return $model->product->store_id; }],
 //                        ['attribute' => 'store_id', 'visible' => $this->context->isAdmin(), 'value' => function ($model) {

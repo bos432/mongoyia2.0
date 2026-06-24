@@ -19,6 +19,7 @@ class AppAsset extends AssetBundle
     ];
     public $depends = [
         'yii\web\YiiAsset',
+        'yii\grid\GridViewAsset',
         'common\widgets\adminlte\AdminlteAsset',
         'common\widgets\funboot\assets\AppAsset',
         'backend\assets\I18nAsset',

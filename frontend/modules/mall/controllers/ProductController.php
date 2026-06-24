@@ -331,13 +331,23 @@ class ProductController extends BaseController
     public function actionReview()
     {
         if (!Yii::$app->request->isAjax) {
-            return $this->error();
+            Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
+            return [
+                'code' => 400,
+                'msg' => Yii::t('app', 'Review list is available through Ajax/API with product_id.'),
+                'data' => [],
+            ];
         }
 
         // MONGOYIA_PRODUCT_REVIEW_AJAX_GET_GUARD_V1: review list is read-only Ajax GET.
         $productId = (int)Yii::$app->request->get('product_id', 0);
         if (!$productId) {
-            return $this->error(-1);
+            Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
+            return [
+                'code' => 400,
+                'msg' => Yii::t('app', 'Missing product_id.'),
+                'data' => [],
+            ];
         }
         $product = Product::findOne([ 'id' => $productId]);
         if (!$product) {

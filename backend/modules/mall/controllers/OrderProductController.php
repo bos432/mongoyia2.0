@@ -8,7 +8,6 @@ use Yii;
 use common\models\mall\Order;
 use common\models\ModelSearch;
 use yii\data\ActiveDataProvider;
-use yii\httpclient\debug\SearchModel;
 use yii\web\ForbiddenHttpException;
 
 /**
@@ -101,17 +100,10 @@ class OrderProductController extends BaseController
                 'store_id' => 'fb_mall_order_product.store_id',
                 'created_at'=>'fb_mall_order_product.created_at'
             ])
-            ->joinWith([
-                'order'=>function($query){
-                    $query->select(['product_amount','amount']);
-                },
-                'product'=>function($query){
-                    $query->select(['store_id']);
-                }
-            ])
+            ->joinWith(['order'], false)
             ->where(['=', 'fb_mall_order.payment_status', 40])
             ->asArray()
-            ->orderBy(['id' => SORT_DESC]);
+            ->orderBy(['fb_mall_order_product.id' => SORT_DESC]);
 
         if (!$this->isMallPlatformOperator()) {
             $query->andWhere(['fb_mall_order_product.store_id' => $this->getStoreId()]);
@@ -134,7 +126,11 @@ class OrderProductController extends BaseController
 
         $total = 0;
         foreach ($query->all() as $v) {
-            $total += round($v['amount']/$v['product_amount']*$v['price'],2);
+            $productAmount = (float)($v['product_amount'] ?? 0);
+            if ($productAmount <= 0) {
+                continue;
+            }
+            $total += round((float)($v['amount'] ?? 0) / $productAmount * (float)($v['price'] ?? 0), 2);
         }
         $total = number_format($total,2);
 
@@ -142,7 +138,10 @@ class OrderProductController extends BaseController
             'query' => $query,
             'pagination' => false
         ]);
-        $searchModel = new SearchModel();
+        $searchModel = new ModelSearch([
+            'model' => $this->modelClass,
+            'scenario' => 'default',
+        ]);
         return $this->render(Yii::$app->request->get('view') ?? $this->viewFile ?? $this->action->id, [
             'dataProvider' => $dataProvider,
             'searchModel'=>$searchModel,
@@ -157,7 +156,7 @@ class OrderProductController extends BaseController
                 'fb_store.id',
                 'fb_store.name AS store_name',
                 'total_actual_amount' => new \yii\db\Expression(
-                    'SUM((fb_mall_order.amount / fb_mall_order.product_amount) * fb_mall_order_product.price)'
+                    'SUM(CASE WHEN fb_mall_order.product_amount > 0 THEN (fb_mall_order.amount / fb_mall_order.product_amount) * fb_mall_order_product.price ELSE 0 END)'
                 ),
             ])
             ->joinWith(['orderProducts' => function($query) {
@@ -206,7 +205,10 @@ class OrderProductController extends BaseController
             'query' => $query,
             'pagination' => false
         ]);
-        $searchModel = new SearchModel();
+        $searchModel = new ModelSearch([
+            'model' => $this->modelClass,
+            'scenario' => 'default',
+        ]);
         return $this->render(Yii::$app->request->get('view') ?? $this->viewFile ?? $this->action->id, [
             'dataProvider' => $dataProvider,
             'searchModel'=>$searchModel

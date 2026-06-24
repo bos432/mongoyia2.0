@@ -109,7 +109,9 @@ $store = $this->context->store;
                 <!-- Menu Footer-->
                 <li class="user-footer">
                     <a href="#" class="btn btn-default btn-flat" data-methods="post" onclick="fbPrompt('<?= Url::to(['/site/clear-cache']); ?>'); return false;"><?= Yii::t('app', 'Clear Cache'); ?></a>
-                    <button type="submit" form="backend-logout-form" class="btn btn-default btn-flat float-right" data-mongoyia-backend-logout-native-submit="1"><?= Yii::t('app', 'Logout'); ?></button>
+                    <?= Html::beginForm(Url::to(['/site/logout']), 'post', ['class' => 'float-right', 'style' => 'display:inline;', 'data-mongoyia-backend-logout-inline-form' => '1']) ?>
+                        <button type="submit" class="btn btn-default btn-flat" data-mongoyia-backend-logout-inline-submit="1"><?= Yii::t('app', 'Logout'); ?></button>
+                    <?= Html::endForm() ?>
                 </li>
             </ul>
         </li>
@@ -137,77 +139,7 @@ $store = $this->context->store;
 </nav>
 <!-- /.navbar -->
 
-<!-- MONGOYIA_BACKEND_LOGOUT_NATIVE_SUBMIT_BUTTON_V1 -->
-<?= Html::beginForm(Url::to(['/site/logout']), 'post', ['id' => 'backend-logout-form', 'style' => 'display:none', 'data-backend-logout-form' => '1']) ?>
-<?= Html::endForm() ?>
-
-<script>
-// MONGOYIA_BACKEND_LOGOUT_DELEGATED_POST_V1
-(function () {
-    var logoutUrl = <?= \yii\helpers\Json::htmlEncode(Url::to(['/site/logout'])) ?>;
-
-    function appendCsrf(form) {
-        var param = document.querySelector('meta[name="csrf-param"]');
-        var token = document.querySelector('meta[name="csrf-token"]');
-        if (!param || !token || form.querySelector('input[name="' + param.content + '"]')) {
-            return;
-        }
-
-        var input = document.createElement('input');
-        input.type = 'hidden';
-        input.name = param.content;
-        input.value = token.content;
-        form.appendChild(input);
-    }
-
-    function submitLogout() {
-        var form = document.getElementById('backend-logout-form');
-        if (!form) {
-            form = document.createElement('form');
-            form.id = 'backend-logout-form';
-            form.method = 'post';
-            form.action = logoutUrl;
-            form.style.display = 'none';
-            document.body.appendChild(form);
-            appendCsrf(form);
-        }
-
-        if (form.dataset.submitting === '1') {
-            return;
-        }
-
-        form.dataset.submitting = '1';
-        if (window.HTMLFormElement && HTMLFormElement.prototype.submit) {
-            HTMLFormElement.prototype.submit.call(form);
-        } else {
-            form.submit();
-        }
-    }
-
-    window.mongoyiaBackendLogout = function (event) {
-        if (event) {
-            event.preventDefault();
-            event.stopPropagation();
-            if (event.stopImmediatePropagation) {
-                event.stopImmediatePropagation();
-            }
-        }
-        submitLogout();
-        return false;
-    };
-
-    document.addEventListener('click', function (event) {
-        var target = event.target;
-        while (target && target !== document) {
-            if (target.getAttribute && target.getAttribute('data-backend-logout') === '1') {
-                window.mongoyiaBackendLogout(event);
-                return;
-            }
-            target = target.parentNode;
-        }
-    }, true);
-})();
-</script>
+<!-- MONGOYIA_BACKEND_LOGOUT_INLINE_POST_FORM_V1 -->
 
 <script type="text/html" id="topMessage">
     <div class="dropdown-item" data-index="{{id}}">

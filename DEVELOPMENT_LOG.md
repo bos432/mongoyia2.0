@@ -1,5 +1,32 @@
 # Development Log
 
+## 2026-06-24 Backend Logout Inline POST Forms
+
+- Stage name: Backend logout inline POST form fallback
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log after BaoTa pulled commit `f84ffc0`.
+  - Reviewed the deployed-browser result for `f84ffc0`: the backend shell rendered native external submit buttons and a hidden POST form with CSRF, but clicking the visible tab-bar logout still left the browser session as `admin`.
+  - Replaced both backend logout controls with inline `Html::beginForm(..., 'post')` forms so each visible logout button submits its own POST form directly, without depending on an external `form=` association or JavaScript-triggered submission.
+  - Removed the old shared hidden `#backend-logout-form` and delegated logout JavaScript from the backend header.
+  - Added `MONGOYIA_BACKEND_LOGOUT_INLINE_POST_FORM_V1`, `data-mongoyia-backend-logout-inline-form`, and `data-mongoyia-backend-logout-inline-submit` markers for future source/readiness checks.
+  - Kept `SiteController::actionLogout()` POST-only; no GET logout route, provider call, production GO action, payment/refund/payout/logistics action, approval action, fund mutation, or stock mutation was added.
+- Main files changed/added:
+  - `backend/views/site/header.php`
+  - `backend/views/site/content.php`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l backend/views/site/header.php` passed.
+  - `php -l backend/views/site/content.php` passed.
+  - Static marker check passed for `MONGOYIA_BACKEND_LOGOUT_INLINE_POST_FORM_V1`, `data-mongoyia-backend-logout-inline-form`, and `data-mongoyia-backend-logout-inline-submit`.
+  - Static cleanup check confirmed the old hidden `backend-logout-form`, `data-backend-logout`, and `mongoyiaBackendLogout` markers are no longer present in the backend header/content logout views.
+  - `git diff --check -- backend/views/site/header.php backend/views/site/content.php` reported no whitespace errors, only existing Windows line-ending conversion warnings for the touched PHP view files.
+- Remaining issues:
+  - BaoTa/test server must pull this inline-form patch and reload `/backend/`.
+  - After deployment, browser-click logout again and confirm the session reaches `/backend/site/login`.
+  - Independent seller role-flow validation with `zhishichanquan / 123456` remains pending until admin logout/session switching is confirmed.
+- Next stage:
+  - Commit and push this patch, then have BaoTa pull it and continue browser validation for logout and seller backend pages.
+
 ## 2026-06-24 Backend Logout Native Submit Button
 
 - Stage name: Backend logout native submit button hardening

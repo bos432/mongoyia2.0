@@ -1,5 +1,31 @@
 # Development Log
 
+## 2026-06-24 Phase 11 Payment Child BaseUrl Propagation
+
+- Stage name: Phase 11 payment child baseUrl propagation
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md`, this log, and the BaoTa aggregate acceptance output before starting this stage.
+  - Investigated the Phase 11 child failure `Base mall payment regression`.
+  - Found the child command was running `mall-payment-test/run` with its local default `http://127.0.0.1:8089` instead of the aggregate command's BaoTa/test-server `--baseUrl`.
+  - Added `MONGOYIA_PAYMENT_PHASE11_CHILD_BASE_URL_PROPAGATION_V1` to `payment-phase11-acceptance/run`.
+  - Passed the current Phase 11 `baseUrl` into HTTP-oriented child commands `mall-payment-test/run` and `mongoyia-payment-callback-readiness/run`.
+  - Updated the Phase 11 backlog to document the BaoTa/test-server baseUrl propagation behavior.
+- Main files changed/added:
+  - `console/controllers/PaymentPhase11AcceptanceController.php`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l console/controllers/PaymentPhase11AcceptanceController.php` passed.
+  - Static checks confirmed `MONGOYIA_PAYMENT_PHASE11_CHILD_BASE_URL_PROPAGATION_V1`, `params['baseUrl']`, `mall-payment-test/run`, and `mongoyia-payment-callback-readiness/run` coverage in the Phase 11 acceptance controller.
+  - Static checks confirmed `Phase 11.11`, the baseUrl propagation marker, and the `127.0.0.1:8089` fallback explanation are documented in the backlog.
+  - Full Yii console execution remains BaoTa-only because this local checkout lacks `vendor/autoload.php`.
+- Remaining issues:
+  - BaoTa/test server must pull this patch and rerun Phase 11 payment acceptance plus total Phase 10-15 aggregate acceptance.
+  - If `mall-payment-test/run` still fails after using the correct HTTPS base URL, inspect the generated child report/output for provider callback or fixture-data issues.
+  - Browser role-flow evidence for Phase 10/11/12/13/14/15 remains incomplete; production remains `NO-GO` until accepted evidence and GO/NO-GO gates pass.
+- Next stage:
+  - Commit and push this Phase 11 baseUrl propagation patch, then ask BaoTa/test server to rerun the aggregate acceptance and continue with any remaining concrete failures.
+
 ## 2026-06-24 Phase 15 Withdrawal Workflow Marker Fix
 
 - Stage name: Phase 15 existing withdrawal workflow marker fix

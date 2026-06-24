@@ -12,6 +12,7 @@ class PaymentPhase11AcceptanceController extends Controller
     public const VERSION = 'MONGOYIA_PAYMENT_PHASE11_ACCEPTANCE_V1';
     public const PROVIDER_AFTERFILL_POLICY_VERSION = 'MONGOYIA_PHASE11_PAYMENT_PROVIDER_AFTERFILL_POLICY_V1';
     public const CHILD_CHECKS_VERSION = 'MONGOYIA_PAYMENT_PHASE11_CHILD_CHECKS_V1';
+    public const CHILD_BASE_URL_VERSION = 'MONGOYIA_PAYMENT_PHASE11_CHILD_BASE_URL_PROPAGATION_V1';
     public const ACCEPTED_EVIDENCE_PATH_GUARD_VERSION = 'MONGOYIA_ACCEPTED_EVIDENCE_PATH_GUARD_V1';
 
     public $baseUrl = 'https://demo2026.mongoyia.com';
@@ -251,8 +252,10 @@ class PaymentPhase11AcceptanceController extends Controller
         ]);
         $this->requireFileContains('Phase 11 child readiness wiring', 'console/controllers/PaymentPhase11AcceptanceController.php', [
             'MONGOYIA_PAYMENT_PHASE11_CHILD_CHECKS_V1',
+            'MONGOYIA_PAYMENT_PHASE11_CHILD_BASE_URL_PROPAGATION_V1',
             'runChildChecks',
             'childCommands',
+            "params['baseUrl']",
             'operational-config-payment-test/run',
             'operational-config-paypal-test/run',
             'mall-payment-test/run',
@@ -325,6 +328,9 @@ class PaymentPhase11AcceptanceController extends Controller
             if ($this->fixture && !empty($config['fixture'])) {
                 $params['fixture'] = 1;
             }
+            if (!empty($config['baseUrl'])) {
+                $params['baseUrl'] = $this->baseUrl;
+            }
 
             try {
                 $exitCode = Yii::$app->runAction($route, $params);
@@ -344,8 +350,8 @@ class PaymentPhase11AcceptanceController extends Controller
         return [
             'Operational payment config center' => ['route' => 'operational-config-payment-test/run', 'fixture' => true],
             'PayPal runtime paths' => ['route' => 'operational-config-paypal-test/run', 'fixture' => true],
-            'Base mall payment regression' => ['route' => 'mall-payment-test/run', 'fixture' => false],
-            'Payment callback readiness' => ['route' => 'mongoyia-payment-callback-readiness/run', 'fixture' => false],
+            'Base mall payment regression' => ['route' => 'mall-payment-test/run', 'fixture' => false, 'baseUrl' => true],
+            'Payment callback readiness' => ['route' => 'mongoyia-payment-callback-readiness/run', 'fixture' => false, 'baseUrl' => true],
             'Payment statistics readiness' => ['route' => 'payment-stat-readiness/run', 'fixture' => true],
             'Payment callback regression readiness' => ['route' => 'payment-callback-regression-readiness/run', 'fixture' => true],
         ];

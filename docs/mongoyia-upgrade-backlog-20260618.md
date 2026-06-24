@@ -381,6 +381,8 @@ Phase 11.9 payment provider afterfill policy: QPay/LianLian/PayPal sandbox provi
 
 Phase 11.10 payment child readiness wiring marker: `payment-phase11-acceptance/run` now carries `MONGOYIA_PAYMENT_PHASE11_CHILD_CHECKS_V1` and self-checks the child command list for operational payment config, PayPal runtime, base payment regression, payment callback readiness, payment statistics, and callback regression readiness. The aggregate Phase 10-15 acceptance source coverage requires this marker before it passes `--runChildChecks=1` through to Phase 11.
 
+Phase 11.11 payment child baseUrl propagation: `payment-phase11-acceptance/run` now carries `MONGOYIA_PAYMENT_PHASE11_CHILD_BASE_URL_PROPAGATION_V1` and passes the current `--baseUrl` into browser/HTTP-oriented child commands such as `mall-payment-test/run` and `mongoyia-payment-callback-readiness/run`, so BaoTa/test-server acceptance does not fall back to the local default `http://127.0.0.1:8089` when validating payment callbacks.
+
 Phase 12 acceptance command:
 
 ```bash

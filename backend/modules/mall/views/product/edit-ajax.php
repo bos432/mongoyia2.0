@@ -14,7 +14,11 @@ use common\models\mall\Product as ActiveModel;
 $form = ActiveForm::begin([
     'id' => $model->formName(),
     'enableAjaxValidation' => true,
-    'validationUrl' => Url::to(['edit-ajax', 'id' => $model['id']]),
+    'action' => Url::to(['edit-ajax']),
+    'validationUrl' => Url::to(['edit-ajax']),
+    'options' => [
+        'data-mongoyia-product-edit-ajax-post-id-guard' => '1',
+    ],
     'fieldConfig' => [
         'template' => "<div class='col-sm-2 text-sm-right'>{label}</div><div class='col-sm-10'>{input}\n{hint}\n{error}</div>",
     ],
@@ -26,6 +30,7 @@ $hasProductVideoField = method_exists($model, 'hasAttribute') && $model->hasAttr
         <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
     </div>
     <div class="modal-body">
+        <?= Html::hiddenInput('id', (int)$model['id']) ?>
         <?= $form->field($model, 'category_id')->textInput(['maxlength' => true]) ?>
         <?= $form->field($model, 'name')->textInput(['maxlength' => true]) ?>
         <?= $form->field($model, 'sku')->textInput(['maxlength' => true]) ?>

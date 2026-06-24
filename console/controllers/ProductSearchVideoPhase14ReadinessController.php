@@ -95,6 +95,17 @@ class ProductSearchVideoPhase14ReadinessController extends Controller
             'video_url',
             'data-mongoyia-phase14-product-video-admin',
         ]);
+        $this->requireFileContains('Backend product edit modal video field POST id guard', 'backend/modules/mall/controllers/ProductController.php', [
+            'MONGOYIA_PRODUCT_EDIT_AJAX_POST_ID_GUARD_V1',
+            '$request->isPost ? $request->post(\'id\', 0) : $request->get(\'id\')',
+        ]);
+        $this->requireFileContains('Backend product edit modal posts hidden id', 'backend/modules/mall/views/product/edit-ajax.php', [
+            'data-mongoyia-product-edit-ajax-post-id-guard',
+            'data-mongoyia-phase14-product-video-admin',
+            "Html::hiddenInput('id'",
+            "'action' => Url::to(['edit-ajax'])",
+            "'validationUrl' => Url::to(['edit-ajax'])",
+        ]);
         $this->requireFileContains('PC product video display', 'web/resources/mall/default/views/product/view.php', [
             'data-mongoyia-phase14-product-video',
             'product-details-video',

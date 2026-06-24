@@ -32,6 +32,7 @@ use yii\web\NotFoundHttpException;
 class ProductController extends BaseController
 {
     public const AUDIT_VERB_GUARD_VERSION = 'MONGOYIA_PRODUCT_AUDIT_POST_VERB_GUARD_V1';
+    public const EDIT_AJAX_POST_ID_GUARD_VERSION = 'MONGOYIA_PRODUCT_EDIT_AJAX_POST_ID_GUARD_V1';
 
     /**
      * @var bool
@@ -152,6 +153,40 @@ class ProductController extends BaseController
             'dataProvider' => $dataProvider,
             'searchModel' => $searchModel,
             'sa'=>$sa
+        ]);
+    }
+
+    public function actionEditAjax()
+    {
+        $request = Yii::$app->request;
+        $id = $request->isPost ? $request->post('id', 0) : $request->get('id');
+        $model = $this->findModel($id);
+        if (!$model) {
+            return $this->redirectError(Yii::t('app', 'Invalid id'));
+        }
+
+        $this->beforeEdit($id, $model);
+
+        $this->activeFormValidate($model);
+        if ($request->isPost && $model->load($request->post())) {
+            $model->translating = $request->post($model->formName())['translating'] ?? 0;
+
+            if ($this->beforeEditSave($id, $model)) {
+                if (!$model->save()) {
+                    return $this->redirectError($this->getError($model));
+                }
+            } else {
+                return $this->redirectError(Yii::t('app', 'Something wrong'));
+            }
+
+            $this->afterEdit($id, $model);
+            $this->clearCache();
+            return $this->redirectSuccess();
+        }
+
+        $this->beforeEditRender($id, $model);
+        return $this->renderAjax($request->get('view') ?? $this->viewFile ?? $this->action->id, [
+            'model' => $model,
         ]);
     }
 

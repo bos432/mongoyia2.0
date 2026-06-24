@@ -345,6 +345,7 @@ class AppPhase13AcceptanceController extends Controller
             'MONGOYIA_APP_SELLER_SHIPMENT_POST_GUARD_V1',
             'MONGOYIA_BACKEND_ORDER_SHIPMENT_POST_ID_GUARD_V1',
             'MONGOYIA_PRODUCT_AUDIT_POST_VERB_GUARD_V1',
+            'MONGOYIA_PRODUCT_EDIT_AJAX_POST_ID_GUARD_V1',
             'MONGOYIA_MERCHANT_COUPON_POST_VERB_GUARD_V1',
             'MONGOYIA_MERCHANT_COUPON_STORE_ID_POST_GUARD_V1',
             'MONGOYIA_STORE_PROFILE_POST_STORE_ID_GUARD_V1',
@@ -361,6 +362,20 @@ class AppPhase13AcceptanceController extends Controller
             "Html::hiddenInput('id'",
             "'action' => Url::to(['fh-ajax'])",
             "'validationUrl' => Url::to(['fh-ajax'])",
+        ]);
+        $this->requireFileContains('Backend product edit modal POST id guard', 'backend/modules/mall/controllers/ProductController.php', [
+            'MONGOYIA_PRODUCT_EDIT_AJAX_POST_ID_GUARD_V1',
+            '$request->isPost ? $request->post(\'id\', 0) : $request->get(\'id\')',
+        ]);
+        $this->requireFileContains('Backend product edit modal posts hidden id', 'backend/modules/mall/views/product/edit-ajax.php', [
+            'data-mongoyia-product-edit-ajax-post-id-guard',
+            "Html::hiddenInput('id'",
+            "'action' => Url::to(['edit-ajax'])",
+            "'validationUrl' => Url::to(['edit-ajax'])",
+        ]);
+        $this->requireFileNotContains('Backend product edit modal has no query-id form targets', 'backend/modules/mall/views/product/edit-ajax.php', [
+            "'validationUrl' => Url::to(['edit-ajax', 'id' =>",
+            "'action' => Url::to(['edit-ajax', 'id' =>",
         ]);
         $this->requireFileNotContains('Seller backend merchant coupon store_id has no POST/GET fallback', 'backend/modules/mall/controllers/MerchantCouponController.php', [
             "post('store_id', Yii::\$app->request->get('store_id', 0))",

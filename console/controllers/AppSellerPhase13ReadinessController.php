@@ -127,9 +127,21 @@ class AppSellerPhase13ReadinessController extends Controller
         ]);
         $this->requireFileContains('Backend product audit actions use POST forms', 'backend/modules/mall/controllers/ProductController.php', [
             'MONGOYIA_PRODUCT_AUDIT_POST_VERB_GUARD_V1',
+            'MONGOYIA_PRODUCT_EDIT_AJAX_POST_ID_GUARD_V1',
             "'approve'] = ['post']",
             "'reject'] = ['post']",
+            '$request->isPost ? $request->post(\'id\', 0) : $request->get(\'id\')',
             "post('id', 0)",
+        ]);
+        $this->requireFileContains('Backend product edit modal posts hidden id', 'backend/modules/mall/views/product/edit-ajax.php', [
+            'data-mongoyia-product-edit-ajax-post-id-guard',
+            "Html::hiddenInput('id'",
+            "'action' => Url::to(['edit-ajax'])",
+            "'validationUrl' => Url::to(['edit-ajax'])",
+        ]);
+        $this->requireFileNotContains('Backend product edit modal has no query-id form targets', 'backend/modules/mall/views/product/edit-ajax.php', [
+            "'validationUrl' => Url::to(['edit-ajax', 'id' =>",
+            "'action' => Url::to(['edit-ajax', 'id' =>",
         ]);
         $this->requireFileContains('Backend product audit UI posts CSRF forms', 'backend/modules/mall/views/product/index.php', [
             'data-mongoyia-product-audit-post-guard',

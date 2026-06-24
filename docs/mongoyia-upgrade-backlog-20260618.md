@@ -463,6 +463,8 @@ Phase 13.31 checkout POST coupon guard: PC/H5 checkout still accepts `cid` throu
 
 Phase 13.32 backend coupon issue POST id guard: backend coupon-type issue modal still opens through GET `id`, but the actual user-coupon issue write now reads both `uid` and `id` only from POST body data, posts the hidden coupon id to `/backend/mall/coupon-type/fh-ajax` without query parameters, and uses the prefixed `{{%mall_user_coupon}}` table name. Coupon closure readiness covers `MONGOYIA_COUPON_TYPE_ISSUE_POST_ID_GUARD_V1`.
 
+Phase 13.33 backend product edit-ajax POST id hardening: backend product basic-info modal GET remains available for opening the form, but submit and Ajax validation now post to `/backend/mall/product/edit-ajax` without a query-string id. The form carries a hidden POST `id` and `data-mongoyia-product-edit-ajax-post-id-guard`; `ProductController::actionEditAjax()` reads the product id from POST for write requests through `MONGOYIA_PRODUCT_EDIT_AJAX_POST_ID_GUARD_V1`. Seller APP readiness and Phase 13 aggregate acceptance cover the guard.
+
 Phase 14 acceptance command:
 
 ```bash
@@ -493,6 +495,8 @@ Phase 14.14 product review Ajax GET guard: product review list and review sortin
 Phase 14.15 logistics method selection POST guard: backend store logistics method select/unselect writes now use `MONGOYIA_LOGISTICS_METHOD_SELECTION_POST_GUARD_V1`, POST-only verb filters, POST-only `method_id` and `store_id` reads, and CSRF POST forms on the logistics-method page. Logistics basic and Phase 14 aggregate acceptance check this guard so store logistics selection cannot be triggered by plain GET links.
 
 Phase 14.16 order-product shipment POST id hardening: backend order-product shipment modal GET remains available for opening the form, but shipment submit and Ajax validation now post to `/backend/mall/order-product/fh-ajax` without a query-string id. The form carries a hidden POST `id` and `data-mongoyia-order-product-shipment-post-id-guard`; `OrderProductController::actionFhAjax()` reads the order-product id from POST for write requests through `MONGOYIA_BACKEND_ORDER_PRODUCT_SHIPMENT_POST_ID_GUARD_V1`. Logistics basic and Phase 14 aggregate acceptance cover the guard.
+
+Phase 14.17 backend product video edit-ajax POST id coverage: the same backend product edit modal that exposes `video_url` for Phase 14 now uses `MONGOYIA_PRODUCT_EDIT_AJAX_POST_ID_GUARD_V1`, hidden POST `id`, and queryless form targets. Product search/video readiness and Phase 14 aggregate acceptance cover the guard so product/video edits cannot depend on query-string ids for write requests.
 
 Phase 15 acceptance command:
 

@@ -1,5 +1,43 @@
 # Development Log
 
+## 2026-06-24 Phase 13/14 Product Edit-Ajax POST ID Guard
+
+- Stage name: Phase 13.33 / Phase 14.17 backend product edit-ajax POST id hardening
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting the stage.
+  - Added `MONGOYIA_PRODUCT_EDIT_AJAX_POST_ID_GUARD_V1` to the backend product controller.
+  - Kept GET `id` support for opening the backend product basic-info modal.
+  - Hardened backend product edit-ajax submit and Ajax validation so write requests read product `id` from POST body data.
+  - Changed the product edit modal form action and validation URL to `/backend/mall/product/edit-ajax` without query parameters and added a hidden POST `id`.
+  - Added readiness coverage to Phase 13 seller/aggregate acceptance and Phase 14 product search/video aggregate acceptance because the modal also exposes `video_url`.
+  - Updated the Phase 13 and Phase 14 backlog notes as Phase 13.33 and Phase 14.17.
+- Main files changed/added:
+  - `backend/modules/mall/controllers/ProductController.php`
+  - `backend/modules/mall/views/product/edit-ajax.php`
+  - `console/controllers/AppSellerPhase13ReadinessController.php`
+  - `console/controllers/AppPhase13AcceptanceController.php`
+  - `console/controllers/ProductSearchVideoPhase14ReadinessController.php`
+  - `console/controllers/LogisticsProductPhase14AcceptanceController.php`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l backend/modules/mall/controllers/ProductController.php` passed.
+  - `php -l backend/modules/mall/views/product/edit-ajax.php` passed.
+  - `php -l console/controllers/AppSellerPhase13ReadinessController.php` passed.
+  - `php -l console/controllers/AppPhase13AcceptanceController.php` passed.
+  - `php -l console/controllers/ProductSearchVideoPhase14ReadinessController.php` passed.
+  - `php -l console/controllers/LogisticsProductPhase14AcceptanceController.php` passed.
+  - Static marker checks confirmed `MONGOYIA_PRODUCT_EDIT_AJAX_POST_ID_GUARD_V1`, POST body product `id`, hidden form `id`, queryless form URLs, and Phase 13.33/14.17 backlog coverage.
+  - Static stale-code check found no remaining product edit-ajax `validationUrl`/`action` query-id form targets in the changed view.
+  - `git diff --check` reported no whitespace errors, only existing Windows line-ending conversion warnings.
+  - Full Yii console execution remains BaoTa-only because this local checkout lacks `vendor/autoload.php`.
+- Remaining issues:
+  - BaoTa/test server must rerun Phase 13 seller/aggregate readiness, Phase 14 product search/video aggregate readiness, and total requirements closure acceptance after deployment.
+  - Browser role-flow evidence should recheck the backend product edit modal, including product video edits, after the server pulls this patch.
+  - Phase 10/11/12/13/14/15 external/provider/browser evidence gates remain pending; external provider credentials are now treated as backend-afterfill items and production remains `NO-GO` until real evidence is accepted.
+- Next stage:
+  - Commit and push this Phase 13/14 product edit-ajax POST id guard patch, then reread the plan/log and continue with the next plan-listed readiness item.
+
 ## 2026-06-24 Phase 4 Legacy FX Shipment POST ID Guard
 
 - Stage name: Phase 4.1 legacy FX shipment POST id hardening

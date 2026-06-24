@@ -180,6 +180,16 @@ class SiteController extends BaseController
     {
         $this->layout = 'main-login';
 
+        $logoutSwitchToken = Yii::$app->request->get('logout_switch_token');
+        if (!Yii::$app->user->isGuest && $logoutSwitchToken) {
+            $sessionToken = Yii::$app->session->get('backendLogoutSwitchToken');
+            if ($sessionToken && hash_equals((string)$sessionToken, (string)$logoutSwitchToken)) {
+                Yii::$app->session->remove('backendLogoutSwitchToken');
+                Yii::$app->user->logout(true);
+                return $this->redirect(['/site/login']);
+            }
+        }
+
         if (!Yii::$app->user->isGuest) {
             return $this->goHome();
         }

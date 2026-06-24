@@ -4,6 +4,13 @@ use yii\helpers\Inflector;
 use yii\bootstrap4\Breadcrumbs;
 use common\helpers\Url;
 
+$backendLogoutSwitchToken = Yii::$app->session->get('backendLogoutSwitchToken');
+if (!$backendLogoutSwitchToken) {
+    $backendLogoutSwitchToken = Yii::$app->security->generateRandomString(32);
+    Yii::$app->session->set('backendLogoutSwitchToken', $backendLogoutSwitchToken);
+}
+$backendLogoutSwitchUrl = Url::to(['/site/login', 'logout_switch_token' => $backendLogoutSwitchToken]);
+
 ?>
 
 <!-- 去除双滚动条 但是左侧栏目下滚动太深无法可见，如果要左侧栏目一直可见去掉样式代码 -->
@@ -32,9 +39,7 @@ use common\helpers\Url;
                 <li class="J_tabCloseOther"><a><?= Yii::t('app', 'Close Other Tab') ?></a></li>
             </ul>
         </div>
-        <?= Html::beginForm(Url::to(['/site/logout']), 'post', ['class' => 'roll-nav roll-right backend-logout-tab-form', 'style' => 'margin:0;background:#fff;height:41px;width:70px;outline:none;', 'data-mongoyia-backend-logout-inline-form' => '1']) ?>
-            <button type="submit" class="backend-logout-tab-button" style="width:70px;height:41px;border:0;background:transparent;outline:none;" onclick="if (this.form) { HTMLFormElement.prototype.submit.call(this.form); } return false;" data-mongoyia-backend-logout-inline-submit="1" data-mongoyia-backend-logout-native-form-submit="1"><i class="nav-icon fas fa-sign-out-alt"></i> <?= Yii::t('app', 'Logout') ?></button>
-        <?= Html::endForm() ?>
+        <?= Html::a('<i class="nav-icon fas fa-sign-out-alt"></i> ' . Html::encode(Yii::t('app', 'Logout')), $backendLogoutSwitchUrl, ['class' => 'roll-nav roll-right backend-logout-tab-link', 'style' => 'margin:0;background:#fff;height:41px;width:70px;outline:none;', 'data-mongoyia-backend-logout-switch-link' => '1']) ?>
     </div>
     <div class="J_mainContent" id="content-main">
         <!--默认主页需在对应的页面显示iframe元素上添加name="iframe0"和data-id="默认主页的url"-->

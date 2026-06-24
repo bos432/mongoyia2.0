@@ -1,5 +1,35 @@
 # Development Log
 
+## 2026-06-24 Backend Logout Tokenized Switch Link
+
+- Stage name: Backend logout tokenized switch-login fallback
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log after BaoTa pulled commit `f0cbad7`.
+  - Used the right-side browser to inspect `/backend/?codex_reload=f0cbad7` and confirmed deployed V2 markers, two native-submit logout controls, and removal of the `J_tabExit` class.
+  - Browser-clicked the user dropdown logout and the top tab-bar logout via locator/coordinate paths; both still left the page logged in as `admin`, so this backend shell is still not reliably submitting logout forms from those controls.
+  - Added `MONGOYIA_BACKEND_LOGOUT_TOKENIZED_SWITCH_LINK_V3`.
+  - Added a session-scoped `backendLogoutSwitchToken` and changed visible backend logout controls to tokenized links targeting `/backend/site/login?logout_switch_token=...`.
+  - Updated `SiteController::actionLogin()` so a logged-in user is only logged out when the supplied token matches the session token; invalid or missing tokens continue to the existing logged-in `goHome()` behavior.
+  - Kept `/backend/site/logout` POST-only; no naked GET logout endpoint, provider call, production GO action, payment/refund/payout/logistics action, approval action, fund mutation, or stock mutation was added.
+- Main files changed/added:
+  - `backend/controllers/SiteController.php`
+  - `backend/views/site/header.php`
+  - `backend/views/site/content.php`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - Browser validation against deployed `f0cbad7` before this patch: V2 source markers passed, but locator and coordinate clicks still left `https://demo2026.mongoyia.com/backend/?codex_reload=f0cbad7` logged in as `admin`.
+  - `php -l backend/controllers/SiteController.php` passed.
+  - `php -l backend/views/site/header.php` passed.
+  - `php -l backend/views/site/content.php` passed.
+  - Static marker check passed for `MONGOYIA_BACKEND_LOGOUT_TOKENIZED_SWITCH_LINK_V3`, `data-mongoyia-backend-logout-switch-link`, `logout_switch_token`, and `backendLogoutSwitchToken`.
+  - Static guard check confirmed `/backend/site/logout` remains POST-only.
+- Remaining issues:
+  - BaoTa/test server must pull this V3 tokenized switch-link patch and reload `/backend/`.
+  - After deployment, browser-click logout again and confirm the session reaches `/backend/site/login`.
+  - Independent seller role-flow validation with `zhishichanquan / 123456` remains pending until admin logout/session switching is confirmed.
+- Next stage:
+  - Commit and push this patch, then have BaoTa pull it and continue browser validation for logout and seller backend pages.
+
 ## 2026-06-24 Backend Logout Native Form Submit Fallback
 
 - Stage name: Backend logout native form submit fallback

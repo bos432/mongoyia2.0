@@ -1,5 +1,33 @@
 # Development Log
 
+## 2026-06-24 Backend Logout Native Submit Button
+
+- Stage name: Backend logout native submit button hardening
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log after BaoTa pulled commit `0932570`.
+  - Used the right-side browser to reload `/backend/` and confirmed the deployed logout anchors no longer expose `/backend/site/logout`; both had `href="javascript:;"`, and the hidden POST form pointed to `/backend/site/logout`.
+  - Browser-clicked the tab-bar logout entry and observed the form was marked as submitting but the admin session remained visible, so JavaScript-triggered form submission is still unreliable in this browser/runtime path.
+  - Replaced both logout anchors with native `button type="submit" form="backend-logout-form"` controls, keeping the hidden POST form as the only route to logout.
+  - Added `MONGOYIA_BACKEND_LOGOUT_NATIVE_SUBMIT_BUTTON_V1` and `data-mongoyia-backend-logout-native-submit` markers for future source/readiness checks.
+  - Kept `SiteController::actionLogout()` POST-only; no GET logout route, production GO action, provider call, payment/refund/payout/logistics action, approval action, or business mutation was added.
+- Main files changed/added:
+  - `backend/views/site/header.php`
+  - `backend/views/site/content.php`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - Browser inspection before this patch confirmed deployed `0932570` had `href="javascript:;"`, `formMethod=post`, `formAction=/backend/site/logout`, and visible admin session `admin`.
+  - Browser click on the JavaScript-driven logout entry did not end the admin session, which led to this native submit-button follow-up.
+  - `php -l backend/views/site/header.php` passed.
+  - `php -l backend/views/site/content.php` passed.
+  - Static marker check passed for `MONGOYIA_BACKEND_LOGOUT_NATIVE_SUBMIT_BUTTON_V1`, `data-mongoyia-backend-logout-native-submit`, `form="backend-logout-form"`, and `backend-logout-form`.
+  - `git diff --check` reported no whitespace errors, only existing Windows line-ending conversion warnings for the touched PHP view files.
+- Remaining issues:
+  - BaoTa/test server must pull this native submit-button patch and reload `/backend/`.
+  - After deployment, browser-click the native submit button and confirm the admin session reaches `/backend/site/login`.
+  - Independent seller role-flow validation with `zhishichanquan / 123456` remains pending until admin session switching is confirmed.
+- Next stage:
+  - Commit and push this patch, then have BaoTa pull it and continue browser validation for logout and seller backend pages.
+
 ## 2026-06-24 Backend Logout Link GET Bypass Hardening
 
 - Stage name: Backend logout link GET bypass hardening

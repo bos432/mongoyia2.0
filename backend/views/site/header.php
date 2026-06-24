@@ -109,7 +109,7 @@ $store = $this->context->store;
                 <!-- Menu Footer-->
                 <li class="user-footer">
                     <a href="#" class="btn btn-default btn-flat" data-methods="post" onclick="fbPrompt('<?= Url::to(['/site/clear-cache']); ?>'); return false;"><?= Yii::t('app', 'Clear Cache'); ?></a>
-                    <a href="javascript:;" class="btn btn-default btn-flat float-right" data-backend-logout="1" onclick="event.preventDefault(); return window.mongoyiaBackendLogout ? window.mongoyiaBackendLogout(event) : (document.getElementById('backend-logout-form') && document.getElementById('backend-logout-form').submit(), false);"><?= Yii::t('app', 'Logout'); ?></a>
+                    <button type="submit" form="backend-logout-form" class="btn btn-default btn-flat float-right" data-mongoyia-backend-logout-native-submit="1"><?= Yii::t('app', 'Logout'); ?></button>
                 </li>
             </ul>
         </li>
@@ -137,6 +137,7 @@ $store = $this->context->store;
 </nav>
 <!-- /.navbar -->
 
+<!-- MONGOYIA_BACKEND_LOGOUT_NATIVE_SUBMIT_BUTTON_V1 -->
 <?= Html::beginForm(Url::to(['/site/logout']), 'post', ['id' => 'backend-logout-form', 'style' => 'display:none', 'data-backend-logout-form' => '1']) ?>
 <?= Html::endForm() ?>
 

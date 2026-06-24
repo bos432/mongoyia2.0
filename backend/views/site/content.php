@@ -32,7 +32,7 @@ use common\helpers\Url;
                 <li class="J_tabCloseOther"><a><?= Yii::t('app', 'Close Other Tab') ?></a></li>
             </ul>
         </div>
-        <a href="javascript:;" class="roll-nav roll-right J_tabExit" data-backend-logout="1" onclick="event.preventDefault(); return window.mongoyiaBackendLogout ? window.mongoyiaBackendLogout(event) : (document.getElementById('backend-logout-form') && document.getElementById('backend-logout-form').submit(), false);"><i class="nav-icon fas fa-sign-out-alt"></i> <?= Yii::t('app', 'Logout') ?></a>
+        <button type="submit" form="backend-logout-form" class="roll-nav roll-right J_tabExit" data-mongoyia-backend-logout-native-submit="1"><i class="nav-icon fas fa-sign-out-alt"></i> <?= Yii::t('app', 'Logout') ?></button>
     </div>
     <div class="J_mainContent" id="content-main">
         <!--默认主页需在对应的页面显示iframe元素上添加name="iframe0"和data-id="默认主页的url"-->

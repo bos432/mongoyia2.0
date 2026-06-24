@@ -3,6 +3,8 @@
 namespace console\controllers;
 
 use common\models\User;
+use common\models\Store;
+use common\models\mall\Category;
 use common\models\mall\Order;
 use common\models\mall\OrderProduct;
 use common\models\mall\PaymentAttempt;
@@ -17,6 +19,7 @@ class MallPaymentTestController extends BaseController
     public const DIAGNOSTIC_REPORT_VERSION = 'MONGOYIA_MALL_PAYMENT_REGRESSION_DIAGNOSTIC_REPORT_V1';
     public const USER_FALLBACK_VERSION = 'MONGOYIA_MALL_PAYMENT_REGRESSION_USER_FALLBACK_V1';
     public const NO_LEGACY_ENV_FALLBACK_VERSION = 'MONGOYIA_MALL_PAYMENT_REGRESSION_NO_LEGACY_ENV_FALLBACK_V1';
+    public const PRODUCT_FIXTURE_FALLBACK_VERSION = 'MONGOYIA_MALL_PAYMENT_REGRESSION_PRODUCT_FIXTURE_FALLBACK_V1';
 
     public $storeId = 5;
     public $baseUrl = 'http://127.0.0.1:8089';
@@ -600,7 +603,7 @@ class MallPaymentTestController extends BaseController
         $sn = $prefix . '-' . date('YmdHis') . '-' . mt_rand(1000, 9999);
         $transaction = Yii::$app->db->beginTransaction();
         try {
-            $parent = $this->createOrder(0, (int)$this->storeId, $sn, (float)$this->amount, count($products));
+            $parent = $this->createOrder(0, $this->paymentParentStoreId($products), $sn, (float)$this->amount, count($products));
             $children = [];
             $childAmount = round((float)$this->amount / count($products), 2);
             $remaining = (float)$this->amount;
@@ -1043,7 +1046,178 @@ class MallPaymentTestController extends BaseController
             }
         }
 
-        return array_slice($fallback, 0, 2);
+        $selected = array_slice($fallback, 0, 2);
+        if (count($selected) >= 2) {
+            return $selected;
+        }
+
+        $this->stdout("WARN active high-stock payment products are insufficient; creating or replenishing REGPAY fixture products.\n");
+        return $this->ensurePaymentFixtureProducts();
+    }
+
+    private function ensurePaymentFixtureProducts()
+    {
+        $storeId = $this->fixtureStoreId();
+        $this->storeId = $storeId;
+        $categoryId = $this->fixtureCategoryId();
+        $products = [];
+        foreach (['A', 'B'] as $suffix) {
+            $sku = 'REGPAY-FIXTURE-' . $suffix;
+            $product = Product::find()->where(['sku' => $sku])->one();
+            if (!$product) {
+                $this->insertPaymentFixtureProduct($sku, $storeId, $categoryId, $suffix);
+                $product = Product::find()->where(['sku' => $sku])->one();
+            } else {
+                $product->store_id = $storeId;
+                $product->category_id = $categoryId;
+                $product->stock = max((int)$product->stock, 200);
+                $product->price = (float)$product->price > 0 ? (float)$product->price : 1.00;
+                $product->market_price = (float)$product->market_price > 0 ? (float)$product->market_price : 1.00;
+                $product->audit_status = 'approved';
+                $product->audit_remark = 'REGPAY payment regression fixture';
+                $product->reviewed_at = time();
+                $product->reviewer_id = 0;
+                $product->status = Product::STATUS_ACTIVE;
+                if (!$product->save(false)) {
+                    throw new \RuntimeException('Update payment fixture product failed: ' . json_encode($product->errors, JSON_UNESCAPED_UNICODE));
+                }
+            }
+
+            if ($product) {
+                $products[] = $product;
+            }
+        }
+
+        if (count($products) < 2) {
+            throw new \RuntimeException('Unable to create two payment regression fixture products.');
+        }
+
+        return $products;
+    }
+
+    private function paymentParentStoreId(array $products)
+    {
+        $preferred = (int)$this->storeId;
+        if ($preferred > 0 && Store::find()->where(['id' => $preferred])->exists()) {
+            return $preferred;
+        }
+
+        foreach ($products as $product) {
+            $storeId = (int)$product->store_id;
+            if ($storeId > 0 && Store::find()->where(['id' => $storeId])->exists()) {
+                return $storeId;
+            }
+        }
+
+        return $this->fixtureStoreId();
+    }
+
+    private function insertPaymentFixtureProduct($sku, $storeId, $categoryId, $suffix)
+    {
+        $now = time();
+        $this->insertRow('{{%mall_product}}', [
+            'store_id' => $storeId,
+            'category_id' => $categoryId,
+            'name' => 'REGPAY Fixture Product ' . $suffix,
+            'sku' => $sku,
+            'stock_code' => $sku,
+            'stock' => 200,
+            'stock_warning' => 10,
+            'shipment_timeout_hours' => 72,
+            'shipment_timeout_deduct_fee' => 0,
+            'weight' => 0,
+            'volume' => 0,
+            'price' => 1.00,
+            'market_price' => 1.00,
+            'cost_price' => 0,
+            'wholesale_price' => 0,
+            'thumb' => '',
+            'image' => '',
+            'images' => '',
+            'video_url' => '',
+            'tags' => '',
+            'brief' => 'Payment regression fixture product',
+            'content' => 'Payment regression fixture product',
+            'seo_url' => '',
+            'seo_title' => '',
+            'seo_keywords' => '',
+            'seo_description' => '',
+            'brand_id' => 0,
+            'vendor_id' => 0,
+            'attribute_set_id' => 0,
+            'param_id' => 0,
+            'star' => 5,
+            'reviews' => 0,
+            'sales' => 0,
+            'click' => 0,
+            'type' => Product::TYPE_NEW,
+            'audit_status' => 'approved',
+            'audit_remark' => 'REGPAY payment regression fixture',
+            'reviewed_at' => $now,
+            'reviewer_id' => 0,
+            'sort' => Product::SORT_DEFAULT,
+            'status' => Product::STATUS_ACTIVE,
+            'created_at' => $now,
+            'updated_at' => $now,
+            'created_by' => 0,
+            'updated_by' => 0,
+        ]);
+    }
+
+    private function fixtureStoreId()
+    {
+        $preferred = (int)$this->storeId;
+        if ($preferred > 0 && Store::find()->where(['id' => $preferred, 'status' => Store::STATUS_ACTIVE])->exists()) {
+            return $preferred;
+        }
+
+        $storeId = Store::find()
+            ->select('id')
+            ->where(['status' => Store::STATUS_ACTIVE])
+            ->orderBy(['id' => SORT_ASC])
+            ->scalar();
+        if (!$storeId) {
+            throw new \RuntimeException('No active store exists for payment regression fixture products.');
+        }
+
+        return (int)$storeId;
+    }
+
+    private function fixtureCategoryId()
+    {
+        $categoryId = Category::find()
+            ->select('id')
+            ->where(['status' => Category::STATUS_ACTIVE])
+            ->orderBy(['sort' => SORT_DESC, 'id' => SORT_ASC])
+            ->scalar();
+        if (!$categoryId) {
+            throw new \RuntimeException('No active category exists for payment regression fixture products.');
+        }
+
+        return (int)$categoryId;
+    }
+
+    private function insertRow($table, array $values)
+    {
+        $schema = Yii::$app->db->schema->getTableSchema($table, true);
+        if (!$schema) {
+            throw new \RuntimeException("Missing table {$table}.");
+        }
+        foreach ($schema->columns as $name => $column) {
+            if ($column->autoIncrement || array_key_exists($name, $values)) {
+                continue;
+            }
+            if ($column->defaultValue !== null) {
+                $values[$name] = $column->defaultValue;
+            } elseif ($column->allowNull) {
+                $values[$name] = null;
+            } else {
+                $values[$name] = in_array($column->type, ['integer', 'bigint', 'smallint', 'decimal', 'float', 'double'], true) ? 0 : '';
+            }
+        }
+
+        Yii::$app->db->createCommand()->insert($table, array_intersect_key($values, $schema->columns))->execute();
+        return (int)Yii::$app->db->getLastInsertID();
     }
 
     private function resolvePaymentUserId()

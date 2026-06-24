@@ -9746,3 +9746,32 @@
   - External provider material remains backend-afterfill; production remains `NO-GO` until accepted evidence and signoff gates pass.
 - Next stage:
   - Commit and push this browser smoke evidence, then continue with BaoTa aggregate acceptance output or the next plan-listed local/browser readiness item.
+
+## 2026-06-24 Phase 11 Payment Product Fixture Fallback
+
+- Stage name: Phase 11.17 payment regression product fixture fallback
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting the stage.
+  - Reviewed BaoTa aggregate acceptance output; the remaining hard failure is `Base mall payment regression` because the test server has fewer than two active high-stock products.
+  - Added `MONGOYIA_MALL_PAYMENT_REGRESSION_PRODUCT_FIXTURE_FALLBACK_V1` to `mall-payment-test/run`.
+  - When configured product IDs and active high-stock fallback products are insufficient, the payment regression command now creates or replenishes two dedicated `REGPAY-FIXTURE-*` active products with approved audit status, positive price, and stock reserved for regression.
+  - Added parent-order store fallback so payment regression orders use an existing store if the configured default store ID is missing in the BaoTa/test dataset.
+  - Added Phase 11 acceptance source coverage for the new product fixture fallback.
+  - Updated the upgrade backlog with the Phase 11.17 note.
+- Main files changed/added:
+  - `console/controllers/MallPaymentTestController.php`
+  - `console/controllers/PaymentPhase11AcceptanceController.php`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l console/controllers/MallPaymentTestController.php` passed.
+  - `php -l console/controllers/PaymentPhase11AcceptanceController.php` passed.
+  - Static marker checks confirmed `MONGOYIA_MALL_PAYMENT_REGRESSION_PRODUCT_FIXTURE_FALLBACK_V1`, `ensurePaymentFixtureProducts`, `REGPAY-FIXTURE`, `active high-stock payment products are insufficient`, `paymentParentStoreId`, and `Phase 11.17` coverage.
+  - `git diff --check` reported no whitespace errors, only existing Windows line-ending conversion warnings.
+  - Full Yii console execution remains BaoTa-only because this local checkout lacks `vendor/autoload.php`.
+- Remaining issues:
+  - BaoTa/test server must pull this patch, run migrations/cache refresh if needed, and rerun `mall-payment-test/run` plus the total Phase 10-15 closure acceptance.
+  - Phase 11 still needs merchant payment configuration, payment statistics, callback/audit browser evidence, and browser role-flow evidence before accepted evidence flags can be set.
+  - External QPay/LianLian/PayPal sandbox provider material may remain backend-afterfill for development acceptance; live payment remains blocked until Phase 10/11 evidence is accepted.
+- Next stage:
+  - Commit and push this Phase 11 product fixture fallback patch, then continue from BaoTa acceptance output or the next plan-listed browser/evidence readiness item.

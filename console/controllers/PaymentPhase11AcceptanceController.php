@@ -299,6 +299,12 @@ class PaymentPhase11AcceptanceController extends Controller
             'backend encrypted callback_hmac_secret is empty',
             'runtimePaymentConfigValue',
         ]);
+        $this->requireFileContains('Base payment regression product fixture fallback', 'console/controllers/MallPaymentTestController.php', [
+            'MONGOYIA_MALL_PAYMENT_REGRESSION_PRODUCT_FIXTURE_FALLBACK_V1',
+            'ensurePaymentFixtureProducts',
+            'REGPAY-FIXTURE',
+            'active high-stock payment products are insufficient',
+        ]);
         $this->requireFileContains('Phase 11 accepted evidence path guard', 'console/controllers/PaymentPhase11AcceptanceController.php', [
             'MONGOYIA_ACCEPTED_EVIDENCE_PATH_GUARD_V1',
             'AcceptedEvidenceGuard',

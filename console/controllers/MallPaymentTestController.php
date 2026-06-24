@@ -16,6 +16,7 @@ class MallPaymentTestController extends BaseController
 {
     public const DIAGNOSTIC_REPORT_VERSION = 'MONGOYIA_MALL_PAYMENT_REGRESSION_DIAGNOSTIC_REPORT_V1';
     public const USER_FALLBACK_VERSION = 'MONGOYIA_MALL_PAYMENT_REGRESSION_USER_FALLBACK_V1';
+    public const NO_LEGACY_ENV_FALLBACK_VERSION = 'MONGOYIA_MALL_PAYMENT_REGRESSION_NO_LEGACY_ENV_FALLBACK_V1';
 
     public $storeId = 5;
     public $baseUrl = 'http://127.0.0.1:8089';
@@ -253,7 +254,7 @@ class MallPaymentTestController extends BaseController
     private function runQpayHmacProtection(array $products)
     {
         if ($this->callbackHmacSecret('qpay') === '') {
-            $this->stdout("WARN QPay HMAC protection checks skipped; QPAY_CALLBACK_HMAC_SECRET is empty.\n");
+            $this->stdout("WARN QPay HMAC protection checks skipped; backend encrypted callback_hmac_secret is empty.\n");
             return;
         }
 
@@ -380,7 +381,7 @@ class MallPaymentTestController extends BaseController
     private function runLianlianHmacProtection(array $products)
     {
         if ($this->callbackHmacSecret('lianlian') === '') {
-            $this->stdout("WARN LianLian HMAC protection checks skipped; LIANLIAN_CALLBACK_HMAC_SECRET is empty.\n");
+            $this->stdout("WARN LianLian HMAC protection checks skipped; backend encrypted callback_hmac_secret is empty.\n");
             return;
         }
 
@@ -794,15 +795,13 @@ class MallPaymentTestController extends BaseController
             if ((string)$this->qpayCallbackSecret !== '') {
                 return (string)$this->qpayCallbackSecret;
             }
-            $runtime = $this->runtimePaymentConfigValue('qpay', 'callback_secret', (int)$storeId);
-            return $runtime !== '' ? $runtime : (string)env('QPAY_CALLBACK_SECRET', '');
+            return $this->runtimePaymentConfigValue('qpay', 'callback_secret', (int)$storeId);
         }
 
         if ((string)$this->lianlianCallbackSecret !== '') {
             return (string)$this->lianlianCallbackSecret;
         }
-        $runtime = $this->runtimePaymentConfigValue('lianlian', 'callback_secret', (int)$storeId);
-        return $runtime !== '' ? $runtime : (string)env('LIANLIAN_CALLBACK_SECRET', '');
+        return $this->runtimePaymentConfigValue('lianlian', 'callback_secret', (int)$storeId);
     }
 
     private function callbackHmacSecret($provider, $storeId = 0)
@@ -811,15 +810,13 @@ class MallPaymentTestController extends BaseController
             if ((string)$this->qpayCallbackHmacSecret !== '') {
                 return (string)$this->qpayCallbackHmacSecret;
             }
-            $runtime = $this->runtimePaymentConfigValue('qpay', 'callback_hmac_secret', (int)$storeId);
-            return $runtime !== '' ? $runtime : (string)env('QPAY_CALLBACK_HMAC_SECRET', '');
+            return $this->runtimePaymentConfigValue('qpay', 'callback_hmac_secret', (int)$storeId);
         }
 
         if ((string)$this->lianlianCallbackHmacSecret !== '') {
             return (string)$this->lianlianCallbackHmacSecret;
         }
-        $runtime = $this->runtimePaymentConfigValue('lianlian', 'callback_hmac_secret', (int)$storeId);
-        return $runtime !== '' ? $runtime : (string)env('LIANLIAN_CALLBACK_HMAC_SECRET', '');
+        return $this->runtimePaymentConfigValue('lianlian', 'callback_hmac_secret', (int)$storeId);
     }
 
     private function callbackMaxAgeSeconds($provider, $storeId = 0)
@@ -829,14 +826,14 @@ class MallPaymentTestController extends BaseController
                 return (int)$this->qpayCallbackMaxAgeSeconds;
             }
             $runtime = $this->runtimePaymentConfigValue('qpay', 'callback_max_age_seconds', (int)$storeId);
-            return $runtime !== '' ? (int)$runtime : (int)env('QPAY_CALLBACK_MAX_AGE_SECONDS', 0);
+            return $runtime !== '' ? (int)$runtime : 0;
         }
 
         if ((int)$this->lianlianCallbackMaxAgeSeconds > 0) {
             return (int)$this->lianlianCallbackMaxAgeSeconds;
         }
         $runtime = $this->runtimePaymentConfigValue('lianlian', 'callback_max_age_seconds', (int)$storeId);
-        return $runtime !== '' ? (int)$runtime : (int)env('LIANLIAN_CALLBACK_MAX_AGE_SECONDS', 0);
+        return $runtime !== '' ? (int)$runtime : 0;
     }
 
     private function runtimePaymentConfigValue($provider, $key, $storeId = 0)

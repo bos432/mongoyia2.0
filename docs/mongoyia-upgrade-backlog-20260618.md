@@ -391,6 +391,8 @@ Phase 11.14 payment regression diagnostic report: `mall-payment-test/run` now ca
 
 Phase 11.15 payment regression user fixture fallback: `mall-payment-test/run` now carries `MONGOYIA_MALL_PAYMENT_REGRESSION_USER_FALLBACK_V1` and resolves a valid active user before creating regression orders. The command still honors `--userId` when that user exists and is active; otherwise it logs a warning, selects the first active user in the current database, writes both requested and resolved user IDs into the redacted diagnostic report, and fails clearly only when no active user exists. This keeps BaoTa/test-server payment regression independent of local fixture user IDs.
 
+Phase 11.16 payment regression encrypted-config parity: `mall-payment-test/run` now carries `MONGOYIA_MALL_PAYMENT_REGRESSION_NO_LEGACY_ENV_FALLBACK_V1` and mirrors the current frontend runtime boundary by reading callback secret, HMAC secret, and timestamp window only from backend encrypted operational payment configuration unless an explicit CLI override is supplied. Legacy `.env` callback values no longer cause the regression command to expect HMAC enforcement when the frontend controller is not enforcing it, while backend-configured HMAC still triggers missing/invalid signature rejection checks.
+
 Phase 12 acceptance command:
 
 ```bash

@@ -294,6 +294,11 @@ class PaymentPhase11AcceptanceController extends Controller
             'selecting active fallback user',
             'Resolved user ID',
         ]);
+        $this->requireFileContains('Base payment regression no legacy env fallback', 'console/controllers/MallPaymentTestController.php', [
+            'MONGOYIA_MALL_PAYMENT_REGRESSION_NO_LEGACY_ENV_FALLBACK_V1',
+            'backend encrypted callback_hmac_secret is empty',
+            'runtimePaymentConfigValue',
+        ]);
         $this->requireFileContains('Phase 11 accepted evidence path guard', 'console/controllers/PaymentPhase11AcceptanceController.php', [
             'MONGOYIA_ACCEPTED_EVIDENCE_PATH_GUARD_V1',
             'AcceptedEvidenceGuard',

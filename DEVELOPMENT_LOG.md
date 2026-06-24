@@ -1,5 +1,36 @@
 # Development Log
 
+## 2026-06-24 Phase 11 Payment Regression Encrypted Config Parity
+
+- Stage name: Phase 11.16 payment regression encrypted-config parity
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md`, this log, and the latest BaoTa aggregate acceptance output before starting this stage.
+  - Used the new BaoTa payment regression diagnostics to identify the next hard failure: the regression command expected QPay/LianLian missing or invalid HMAC callbacks to be rejected, but the frontend controller accepted them because the active backend encrypted runtime config did not require HMAC.
+  - Confirmed the mismatch came from `mall-payment-test/run` still falling back to legacy `.env` callback secret/HMAC/timestamp values, while the Phase 10/11 frontend runtime boundary now reads payment callback runtime data from backend encrypted operational config.
+  - Added `MONGOYIA_MALL_PAYMENT_REGRESSION_NO_LEGACY_ENV_FALLBACK_V1` to `mall-payment-test/run`.
+  - Removed legacy `.env` fallback from the payment regression command for callback secret, callback HMAC secret, and callback timestamp max-age, while keeping explicit CLI overrides available for targeted tests.
+  - Updated HMAC skip warnings to state that backend encrypted `callback_hmac_secret` is empty.
+  - Added Phase 11 acceptance source coverage for the no-legacy-env-fallback boundary.
+  - Updated the Phase 10-15 backlog notes with the Phase 11.16 behavior.
+- Main files changed/added:
+  - `console/controllers/MallPaymentTestController.php`
+  - `console/controllers/PaymentPhase11AcceptanceController.php`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l console/controllers/MallPaymentTestController.php` passed.
+  - `php -l console/controllers/PaymentPhase11AcceptanceController.php` passed.
+  - Static marker checks confirmed `Phase 11.16`, `MONGOYIA_MALL_PAYMENT_REGRESSION_NO_LEGACY_ENV_FALLBACK_V1`, and `backend encrypted callback_hmac_secret is empty`.
+  - Static check confirmed `MallPaymentTestController.php` no longer contains `env(`.
+  - `git diff --check` reported no whitespace errors, only existing Windows line-ending conversion warnings.
+  - Full Yii console execution remains BaoTa-only because this local checkout lacks `vendor/autoload.php`.
+- Remaining issues:
+  - BaoTa/test server must pull this patch and rerun `mall-payment-test/run` plus total Phase 10-15 aggregate acceptance.
+  - If payment regression exposes another callback/stock/audit failure, continue from the generated diagnostic report.
+  - Browser role-flow evidence for Phase 10/11/12/13/14/15 remains incomplete; production remains `NO-GO` until accepted evidence and GO/NO-GO gates pass.
+- Next stage:
+  - Commit and push this Phase 11 encrypted-config parity patch, then continue based on the next BaoTa payment regression output.
+
 ## 2026-06-24 Phase 11 Payment Regression User Fixture Fallback
 
 - Stage name: Phase 11.15 payment regression user fixture fallback

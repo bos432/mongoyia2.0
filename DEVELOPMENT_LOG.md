@@ -1,5 +1,29 @@
 # Development Log
 
+## 2026-06-24 Phase 10-15 BaoTa Deployment Freshness Recheck
+
+- Stage name: Phase 10-15 BaoTa deployment freshness recheck
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before checking the next acceptance step.
+  - Confirmed local branch `mongoyia-sanitized-master` remains clean except for the unrelated untracked `docs/mongoyia-operational-config-provider-setup-guide.md`.
+  - Confirmed GitHub remote `mongoyia/master` points to pushed commit `785bfe5f1414ad70d6221049a9f1af6cedf5ccc2`.
+  - Probed `https://demo2026.mongoyia.com/mall` with no-cache headers and with a unique cache-busting query parameter.
+  - Both probes still returned `main.js?v=1.1.3` and stale `/mall/cart` links instead of the expected `main.js?v=1.1.5`, so Phase 13/aggregate browser-facing validation remains blocked by the BaoTa/test-server deployment state rather than local code.
+- Main files changed/added:
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `git rev-parse --short HEAD` returned `785bfe5`.
+  - `git ls-remote --heads mongoyia master` returned `785bfe5f1414ad70d6221049a9f1af6cedf5ccc2`.
+  - HTTP probe for `/mall` found `mall main.js version: 1.1.3` and stale cart links.
+  - Cache-busted HTTP probe for `/mall?codex_cache_bust=...` also found `mall main.js version: 1.1.3`, no `MONGOYIA_PHASE13_ASSET_CACHE_BUST_V2` marker, and stale cart links.
+  - Full Yii/browser acceptance was not rerun locally because the BaoTa deployment is stale and this checkout lacks `vendor/autoload.php`.
+- Remaining issues:
+  - BaoTa/test server must pull commit `785bfe5` or newer, run migrations, flush Yii cache, restart PHP-FPM/opcache, and rerun aggregate acceptance before browser role-flow validation can continue.
+  - Browser role-flow evidence for Phase 10/11/12/13/14/15 remains incomplete until the test server serves fresh code/assets.
+  - Production remains `NO-GO` until accepted evidence and GO/NO-GO gates pass.
+- Next stage:
+  - After BaoTa refresh, rerun `mongoyia-requirements-closure-acceptance/run --baseUrl=https://demo2026.mongoyia.com --fixture=1 --runChildChecks=1 --allowExternalAfterfill=1 --strict=1 --interactive=0`, then continue browser role-flow validation and fix any in-scope failures.
+
 ## 2026-06-24 Phase 10-15 BaoTa Deployment Refresh Blocker
 
 - Stage name: Phase 10-15 BaoTa deployment refresh blocker

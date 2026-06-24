@@ -1,5 +1,35 @@
 # Development Log
 
+## 2026-06-24 Phase 10-15 Browser Evidence Acceptance Package
+
+- Stage name: Phase 10-15 browser/development evidence acceptance package
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md`, this log, and the latest BaoTa aggregate acceptance output before starting this stage.
+  - Confirmed the latest BaoTa aggregate acceptance has no hard failures: `0 failure(s), 0 warning(s), 6 pending, 0 afterfill pending`; remaining blockers are manual/browser/evidence acceptance gates rather than code readiness failures.
+  - Used the right-side in-app browser for a clean read-only validation pass against Phase 10-15 backend and frontend entry points.
+  - Confirmed 16 pages opened with expected markers and no captured browser console errors: operations config, merchant payment config, payment statistics, identity config, account security, notification log, customer-service workbench, product list, logistics method, review moderation, distributor operations, storefront home, product detail, chat, cart, and distributor center.
+  - Verified the uni-app/H5 package evidence locally: `package.json` includes `dev:h5`/`build:h5`, `src/pages.json` contains buyer/seller/login/chat routes, `node_modules` exists, and `dist/index.html` plus H5 assets exist.
+  - Added a non-secret evidence report with the BaoTa command result, browser route matrix, APP/H5 package evidence, known boundaries, and an aggregate accepted-evidence command.
+  - Updated the Phase 10-15 backlog so the evidence package is discoverable from the development plan.
+  - Kept external provider credentials, real logistics/social/mail/SMS/payment evidence, and production launch signoffs as backend-afterfill; production remains `NO-GO`.
+- Main files changed/added:
+  - `docs/mongoyia-phase10-15-browser-acceptance-20260624.md`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - BaoTa output reviewed: aggregate report `/www/wwwroot/demo2026.mongoyia.com/runtime/handover/mongoyia-requirements-closure-acceptance-20260624-061529.md` showed `0 failure(s), 0 warning(s), 6 pending, 0 afterfill pending`.
+  - Browser read-only pass against `https://demo2026.mongoyia.com` completed at 2026-06-24 13:25 +08:00 with all 16 checked pages reporting expected markers and `0` console errors.
+  - APP/H5 package artifact checks confirmed `apps/mongoyia-customer-chat-uniapp/dist/index.html` and `dist/assets/*` are present.
+  - A temporary mobile viewport attempt still reported the default `1280x720` viewport in the in-app browser, so no mobile-breakpoint visual pass is claimed in this stage.
+  - Full local Yii execution remains BaoTa-only because this local checkout lacks `vendor/autoload.php`.
+- Remaining issues:
+  - BaoTa/test server must pull this evidence commit and rerun the aggregate command with accepted evidence flags from `docs/mongoyia-phase10-15-browser-acceptance-20260624.md`.
+  - External provider credentials/evidence and production operations signoffs still need to be completed later through backend encrypted configuration/evidence pages.
+  - Production remains `NO-GO`; this evidence package is development/browser acceptance, not production launch approval.
+  - Final multi-role browser flow still needs to be run after the accepted-evidence aggregate command reports zero blocking pending rows.
+- Next stage:
+  - Commit and push this evidence package, have BaoTa run the aggregate accepted-evidence command, then continue with any remaining pending/failure output or proceed to final five-role browser validation.
+
 ## 2026-06-24 Phase 10-15 Aggregate DB Access Preflight
 
 - Stage name: Phase 10-15 aggregate DB access preflight and diagnostics

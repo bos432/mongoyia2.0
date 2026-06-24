@@ -207,6 +207,8 @@ class AppBuyerPhase13ReadinessController extends Controller
         ]);
         $this->requireFileContains('Buyer web cart link normalizer', 'web/resources/mall/default/js/main.js', [
             'MONGOYIA_CART_LINK_NORMALIZER_V1',
+            'MONGOYIA_CART_LINK_NORMALIZER_AFTER_MENU_V1',
+            'normalizeMallCartLinks',
             '/mall/cart/index',
         ]);
         $this->requireFileContains('Buyer product add-cart redirects to cart index', 'web/resources/mall/default/views/product/view.php', [
@@ -228,8 +230,8 @@ class AppBuyerPhase13ReadinessController extends Controller
             "href='/mall/cart'",
         ]);
         $this->requireFileContains('Buyer web asset cache-bust version', 'common/config/params.php', [
-            'MONGOYIA_PHASE13_ASSET_CACHE_BUST_V1',
-            "'system_version' => '1.1.4'",
+            'MONGOYIA_PHASE13_ASSET_CACHE_BUST_V2',
+            "'system_version' => '1.1.5'",
         ]);
         $this->requireFileContains('Buyer APP API controller', 'api/modules/v1/controllers/AppBuyerController.php', [
             'MONGOYIA_APP_BUYER_CONTROLLER_V1',

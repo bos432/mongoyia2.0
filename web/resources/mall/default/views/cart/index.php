@@ -10,10 +10,16 @@ use common\models\mall\AttributeItem;
 /* @var $discount float */
 /* @var $total float */
 /* @var $cartProducts array */
+/* @var $cid int */
 
 $this->title = Yii::t('mall', 'Shopping Cart');
 $this->params['breadcrumbs'][] = $this->title;
+$models = $models ?? [];
 $cartProducts = $cartProducts ?? [];
+$productAmount = $productAmount ?? 0;
+$discount = $discount ?? 0;
+$total = $total ?? 0;
+$cid = isset($cid) ? (int)$cid : 0;
 ?>
 
 <section class="page-section shop-cart" data-mongoyia-mobile-ui="cart">
@@ -131,7 +137,7 @@ $cartProducts = $cartProducts ?? [];
                     <h6><?= Yii::t('mall', 'Cart Total') ?></h6>
                     <ul>
                         <li><?= Yii::t('app', 'Subtotal') ?> <span><?= $this->context->getNumberByCurrency($productAmount) ?></span></li>
-                        <?php if ($discount <> 0) { ?><li><li><?= Yii::t('app', 'Discount') ?> <span><?= $this->context->getNumberByCurrency($discount) ?></span></li><?php } ?>
+                        <?php if ($discount <> 0) { ?><li><?= Yii::t('app', 'Discount') ?> <span><?= $this->context->getNumberByCurrency($discount) ?></span></li><?php } ?>
                         <li><?= Yii::t('app', 'Total') ?> <span><?= $this->context->getNumberByCurrency($total) ?></span></li>
                     </ul>
                     <?php

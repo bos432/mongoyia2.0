@@ -362,6 +362,7 @@ class MongoyiaRequirementsClosureAcceptanceController extends Controller
                     'MONGOYIA_PHASE13_DEPLOYED_ASSET_FRESHNESS_V1',
                     'checkDeployedAssetFreshness',
                     'MONGOYIA_CART_LINK_NORMALIZER_V1',
+                    'MONGOYIA_CART_LINK_NORMALIZER_AFTER_MENU_V1',
                     'MONGOYIA_CART_CHECKOUT_URL_PARAMS_V1',
                     'MONGOYIA_CART_AJAX_POST_GUARD_V1',
                     'MONGOYIA_CART_CHECKOUT_POST_COUPON_GUARD_V1',

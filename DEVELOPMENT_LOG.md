@@ -1,5 +1,42 @@
 # Development Log
 
+## 2026-06-24 Phase 13 Cart Browser Blocker Hardening
+
+- Stage name: Phase 13.35 cart browser blocker hardening
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting the stage.
+  - Rechecked the right-side browser against `https://demo2026.mongoyia.com/mall`; the page opens, but the deployed output still serves `/resources/mall/default/js/main.js?v=1.1.3` and contains stale `/mall/cart` links, so browser cart validation remains blocked until BaoTa serves fresh code/assets.
+  - Added `MONGOYIA_CART_LINK_NORMALIZER_AFTER_MENU_V1` so public mall `main.js` reruns `/mall/cart` to `/mall/cart/index` normalization after mobile menu cloning and on later DOM insertions.
+  - Bumped the mall H5 asset version to `1.1.5` through `MONGOYIA_PHASE13_ASSET_CACHE_BUST_V2`.
+  - Hardened the cart index view with fallback defaults for `models`, totals, discount, and `cid`, and fixed the duplicate discount `<li>` markup.
+  - Updated Phase 13 buyer readiness, Phase 13 aggregate acceptance, Phase 10-15 aggregate source coverage, and the upgrade backlog to require the new cart-link after-menu and asset-bust markers.
+- Main files changed/added:
+  - `web/resources/mall/default/js/main.js`
+  - `web/resources/mall/default/views/cart/index.php`
+  - `common/config/params.php`
+  - `console/controllers/AppBuyerPhase13ReadinessController.php`
+  - `console/controllers/AppPhase13AcceptanceController.php`
+  - `console/controllers/MongoyiaRequirementsClosureAcceptanceController.php`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l frontend/modules/mall/controllers/CartController.php` passed.
+  - `php -l web/resources/mall/default/views/cart/index.php` passed.
+  - `php -l common/config/params.php` passed.
+  - `php -l console/controllers/AppBuyerPhase13ReadinessController.php` passed.
+  - `php -l console/controllers/AppPhase13AcceptanceController.php` passed.
+  - `php -l console/controllers/MongoyiaRequirementsClosureAcceptanceController.php` passed.
+  - Static marker checks confirmed `MONGOYIA_CART_LINK_NORMALIZER_AFTER_MENU_V1`, `normalizeMallCartLinks`, `MONGOYIA_PHASE13_ASSET_CACHE_BUST_V2`, and `system_version` `1.1.5` coverage.
+  - Static negative checks found no duplicate `<li><li>` or direct `?cid=` concatenation in `web/resources/mall/default/views/cart/index.php`, and no old Phase 13 asset-bust marker/version remains in the active config/readiness files.
+  - `git diff --check` reported no whitespace errors, only existing Windows line-ending conversion warnings.
+  - Full Yii console execution remains BaoTa-only because this local checkout lacks `vendor/autoload.php`.
+- Remaining issues:
+  - BaoTa/test server must pull this commit, run migrations, flush Yii cache, restart PHP-FPM/opcache, and rerun Phase 13 plus total Phase 10-15 acceptance.
+  - Current deployed browser output is still stale (`main.js?v=1.1.3`); buyer cart/checkout browser validation cannot close until the deployed page serves the new `1.1.5` asset and `/mall/cart/index` route opens.
+  - Phase 10/11/12/13/14/15 browser role-flow evidence remains incomplete; production remains `NO-GO` until real evidence and signoff gates pass.
+- Next stage:
+  - Commit and push this Phase 13.35 cart browser hardening patch, then reread the plan/log and continue with BaoTa aggregate output or the next plan-listed browser evidence item.
+
 ## 2026-06-24 Phase 11 Payment Provider Afterfill Policy
 
 - Stage name: Phase 11.9 QPay/LianLian/PayPal sandbox provider afterfill policy

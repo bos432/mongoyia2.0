@@ -68,6 +68,22 @@ $(document).ready(function () {
     $('select').niceSelect();
 
     // MONGOYIA_CART_LINK_NORMALIZER_V1: tolerate stale cached header fragments.
+    normalizeMallCartLinks();
+
+    // MONGOYIA_CART_LINK_NORMALIZER_AFTER_MENU_V1: catch links cloned by mobile menus.
+    setTimeout(normalizeMallCartLinks, 0);
+    setTimeout(normalizeMallCartLinks, 300);
+    if (window.MutationObserver && document.body) {
+        var cartLinkNormalizeTimer = null;
+        var cartLinkObserver = new MutationObserver(function () {
+            clearTimeout(cartLinkNormalizeTimer);
+            cartLinkNormalizeTimer = setTimeout(normalizeMallCartLinks, 50);
+        });
+        cartLinkObserver.observe(document.body, {childList: true, subtree: true});
+    }
+});
+
+function normalizeMallCartLinks() {
     $('a[href="/mall/cart"], a[href$="/mall/cart"]').each(function () {
         var href = $(this).attr('href') || '';
         if (href === '/mall/cart') {
@@ -76,7 +92,7 @@ $(document).ready(function () {
             $(this).attr('href', href + '/index');
         }
     });
-});
+}
 
 function changeURLArg(url, arg, argVal){
     var pattern= arg + '=([^&]*)';

@@ -6,6 +6,7 @@ use common\models\mall\Order;
 use common\models\mall\OrderProduct;
 use common\models\mall\PaymentAttempt;
 use common\models\mall\Product;
+use common\services\mall\OperationalPaymentConfigService;
 use Yii;
 use yii\console\ExitCode;
 
@@ -16,12 +17,15 @@ class MallPaymentTestController extends BaseController
     public $userId = 71;
     public $productIds = '90,102';
     public $amount = '1.00';
+    public $qpayCallbackSecret = '';
+    public $lianlianCallbackSecret = '';
     public $qpayCallbackHmacSecret = '';
     public $lianlianCallbackHmacSecret = '';
     public $qpayCallbackMaxAgeSeconds = 0;
     public $lianlianCallbackMaxAgeSeconds = 0;
 
     private $failures = [];
+    private $paymentRuntimeConfigs = [];
 
     public function options($actionID)
     {
@@ -30,6 +34,8 @@ class MallPaymentTestController extends BaseController
             'userId',
             'productIds',
             'amount',
+            'qpayCallbackSecret',
+            'lianlianCallbackSecret',
             'qpayCallbackHmacSecret',
             'lianlianCallbackHmacSecret',
             'qpayCallbackMaxAgeSeconds',
@@ -732,6 +738,11 @@ class MallPaymentTestController extends BaseController
     private function callbackHeaders($provider, $orderId, array $post, ?array $raw, $sign, $signatureOverride, $timestampOverride, $contentType)
     {
         $headers = "Content-Type: {$contentType}\r\n";
+        $callbackSecret = $this->callbackSecret($provider);
+        if ($callbackSecret !== '') {
+            $headers .= 'X-Mongoyia-Payment-Secret: ' . $this->headerValue($callbackSecret) . "\r\n";
+        }
+
         $secret = $this->callbackHmacSecret($provider);
         $maxAge = $this->callbackMaxAgeSeconds($provider);
         if ($secret === '' && $maxAge <= 0) {
@@ -748,22 +759,83 @@ class MallPaymentTestController extends BaseController
         return $headers;
     }
 
+    private function callbackSecret($provider)
+    {
+        if ($provider === 'qpay') {
+            if ((string)$this->qpayCallbackSecret !== '') {
+                return (string)$this->qpayCallbackSecret;
+            }
+            $runtime = $this->runtimePaymentConfigValue('qpay', 'callback_secret');
+            return $runtime !== '' ? $runtime : (string)env('QPAY_CALLBACK_SECRET', '');
+        }
+
+        if ((string)$this->lianlianCallbackSecret !== '') {
+            return (string)$this->lianlianCallbackSecret;
+        }
+        $runtime = $this->runtimePaymentConfigValue('lianlian', 'callback_secret');
+        return $runtime !== '' ? $runtime : (string)env('LIANLIAN_CALLBACK_SECRET', '');
+    }
+
     private function callbackHmacSecret($provider)
     {
         if ($provider === 'qpay') {
-            return (string)($this->qpayCallbackHmacSecret ?: env('QPAY_CALLBACK_HMAC_SECRET', ''));
+            if ((string)$this->qpayCallbackHmacSecret !== '') {
+                return (string)$this->qpayCallbackHmacSecret;
+            }
+            $runtime = $this->runtimePaymentConfigValue('qpay', 'callback_hmac_secret');
+            return $runtime !== '' ? $runtime : (string)env('QPAY_CALLBACK_HMAC_SECRET', '');
         }
 
-        return (string)($this->lianlianCallbackHmacSecret ?: env('LIANLIAN_CALLBACK_HMAC_SECRET', ''));
+        if ((string)$this->lianlianCallbackHmacSecret !== '') {
+            return (string)$this->lianlianCallbackHmacSecret;
+        }
+        $runtime = $this->runtimePaymentConfigValue('lianlian', 'callback_hmac_secret');
+        return $runtime !== '' ? $runtime : (string)env('LIANLIAN_CALLBACK_HMAC_SECRET', '');
     }
 
     private function callbackMaxAgeSeconds($provider)
     {
         if ($provider === 'qpay') {
-            return (int)($this->qpayCallbackMaxAgeSeconds ?: env('QPAY_CALLBACK_MAX_AGE_SECONDS', 0));
+            if ((int)$this->qpayCallbackMaxAgeSeconds > 0) {
+                return (int)$this->qpayCallbackMaxAgeSeconds;
+            }
+            $runtime = $this->runtimePaymentConfigValue('qpay', 'callback_max_age_seconds');
+            return $runtime !== '' ? (int)$runtime : (int)env('QPAY_CALLBACK_MAX_AGE_SECONDS', 0);
         }
 
-        return (int)($this->lianlianCallbackMaxAgeSeconds ?: env('LIANLIAN_CALLBACK_MAX_AGE_SECONDS', 0));
+        if ((int)$this->lianlianCallbackMaxAgeSeconds > 0) {
+            return (int)$this->lianlianCallbackMaxAgeSeconds;
+        }
+        $runtime = $this->runtimePaymentConfigValue('lianlian', 'callback_max_age_seconds');
+        return $runtime !== '' ? (int)$runtime : (int)env('LIANLIAN_CALLBACK_MAX_AGE_SECONDS', 0);
+    }
+
+    private function runtimePaymentConfigValue($provider, $key)
+    {
+        $config = $this->runtimePaymentConfig($provider);
+        return isset($config[$key]) ? trim((string)$config[$key]) : '';
+    }
+
+    private function runtimePaymentConfig($provider)
+    {
+        $provider = strtolower((string)$provider);
+        if (array_key_exists($provider, $this->paymentRuntimeConfigs)) {
+            return $this->paymentRuntimeConfigs[$provider];
+        }
+
+        try {
+            $this->paymentRuntimeConfigs[$provider] = (new OperationalPaymentConfigService())->runtimeConfig($provider);
+        } catch (\Throwable $e) {
+            $this->paymentRuntimeConfigs[$provider] = [];
+            Yii::warning($e->getMessage(), 'mall.payment_test.operational_config_failed');
+        }
+
+        return $this->paymentRuntimeConfigs[$provider];
+    }
+
+    private function headerValue($value)
+    {
+        return str_replace(["\r", "\n"], '', (string)$value);
     }
 
     private function callbackSignature($secret, array $get, array $post, ?array $raw, $timestamp)
@@ -820,11 +892,19 @@ class MallPaymentTestController extends BaseController
             ],
         ]);
 
+        error_clear_last();
         $content = @file_get_contents($url, false, $context);
+        $transportError = '';
+        if ($content === false) {
+            $lastError = error_get_last();
+            $transportError = is_array($lastError) ? (string)($lastError['message'] ?? '') : '';
+        }
+
         $status = 0;
         if (isset($http_response_header[0]) && preg_match('/\s(\d{3})\s/', $http_response_header[0], $matches)) {
             $status = (int)$matches[1];
         }
+        $responseHeaders = isset($http_response_header) && is_array($http_response_header) ? array_values($http_response_header) : [];
 
         if ($content === false) {
             $content = '';
@@ -834,6 +914,8 @@ class MallPaymentTestController extends BaseController
             'status' => $status,
             'body' => trim($content),
             'url' => $url,
+            'headers' => $responseHeaders,
+            'transport_error' => $transportError,
         ];
     }
 
@@ -885,15 +967,33 @@ class MallPaymentTestController extends BaseController
     private function assertHttp(array $response, $expected, $label)
     {
         if ((int)$response['status'] !== (int)$expected) {
-            $this->fail($label . " expected HTTP {$expected}, got {$response['status']} from {$response['url']} body={$response['body']}");
+            $this->fail($label . " expected HTTP {$expected}; " . $this->responseSummary($response));
         }
     }
 
     private function assertBody(array $response, $expected, $label)
     {
         if (strtoupper($response['body']) !== strtoupper($expected)) {
-            $this->fail($label . " expected body {$expected}, got {$response['body']}");
+            $this->fail($label . " expected body {$expected}; " . $this->responseSummary($response));
         }
+    }
+
+    private function responseSummary(array $response)
+    {
+        $body = preg_replace('/\s+/', ' ', (string)($response['body'] ?? ''));
+        if (strlen($body) > 500) {
+            $body = substr($body, 0, 500) . '...';
+        }
+
+        $headers = (array)($response['headers'] ?? []);
+        $statusLine = $headers ? (string)$headers[0] : '';
+        $error = trim((string)($response['transport_error'] ?? ''));
+
+        return 'got HTTP ' . (int)($response['status'] ?? 0)
+            . ' from ' . (string)($response['url'] ?? '')
+            . ($statusLine !== '' ? " statusLine={$statusLine}" : '')
+            . ($error !== '' ? " transportError={$error}" : '')
+            . " body={$body}";
     }
 
     private function assertSameInt($expected, $actual, $label)

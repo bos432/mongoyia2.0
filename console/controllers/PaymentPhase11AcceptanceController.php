@@ -139,12 +139,23 @@ class PaymentPhase11AcceptanceController extends Controller
             'overflow-wrap: anywhere',
         ]);
         $this->requireFileContains('Payment callback safety guards', 'frontend/modules/mall/controllers/PaymentController.php', [
+            'MONGOYIA_PAYMENT_CALLBACK_CSRF_EXEMPTION_V1',
+            "['qpayres', 'succeeded', 'paypal-webhook']",
+            'enableCsrfValidation = false',
             'assertPaidAmountMatches',
             'paymentCallbackLockName',
             'PaymentAttempt::RESULT_IGNORED',
             'Duplicate PayPal webhook ignored',
             'Duplicate paid callback ignored',
             'paymentGatewayResponse',
+        ]);
+        $this->requireFileContains('Payment callback regression runtime config parity', 'console/controllers/MallPaymentTestController.php', [
+            'OperationalPaymentConfigService',
+            'runtimePaymentConfigValue',
+            'callback_secret',
+            'callback_hmac_secret',
+            'callback_max_age_seconds',
+            'transport_error',
         ]);
         $this->requireFileContains('Backend order refund POST guard', 'backend/modules/mall/controllers/OrderController.php', [
             'MONGOYIA_BACKEND_ORDER_REFUND_POST_GUARD_V1',

@@ -1,5 +1,36 @@
 # Development Log
 
+## 2026-06-24 Phase 11 Payment Callback Regression Parity
+
+- Stage name: Phase 11.12 payment callback regression parity
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md`, this log, and the BaoTa aggregate acceptance output before starting this stage.
+  - Investigated the remaining BaoTa failure `Base mall payment regression` after Phase 11.11 baseUrl propagation.
+  - Added `MONGOYIA_PAYMENT_CALLBACK_CSRF_EXEMPTION_V1` so QPay/LianLian/PayPal external callback endpoints disable CSRF before parent request validation while retaining existing callback secret, HMAC, timestamp, IP, amount, audit, and idempotency guards.
+  - Updated `mall-payment-test/run` to read QPay/LianLian callback secret, HMAC secret, and timestamp window from encrypted backend payment runtime config before falling back to legacy `.env` values.
+  - Improved `mall-payment-test/run` HTTP diagnostics so callback failures report HTTP status line, transport error, and a trimmed response body excerpt.
+  - Added Phase 11 acceptance source coverage for the callback CSRF boundary and regression runtime-config parity.
+  - Updated the Phase 11 backlog notes with the Phase 11.12 behavior.
+- Main files changed/added:
+  - `frontend/modules/mall/controllers/PaymentController.php`
+  - `console/controllers/MallPaymentTestController.php`
+  - `console/controllers/PaymentPhase11AcceptanceController.php`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l console/controllers/MallPaymentTestController.php` passed.
+  - `php -l frontend/modules/mall/controllers/PaymentController.php` passed.
+  - `php -l console/controllers/PaymentPhase11AcceptanceController.php` passed.
+  - Static marker checks confirmed `MONGOYIA_PAYMENT_CALLBACK_CSRF_EXEMPTION_V1`, `runtimePaymentConfigValue`, `callback_secret`, `callback_hmac_secret`, `callback_max_age_seconds`, `transport_error`, and `Phase 11.12` coverage.
+  - `git diff --check` reported no whitespace errors, only existing Windows line-ending conversion warnings.
+  - Full Yii console execution remains BaoTa-only because this local checkout lacks `vendor/autoload.php`.
+- Remaining issues:
+  - BaoTa/test server must pull this patch, run migrations/cache refresh/PHP-FPM restart as needed, and rerun Phase 11 payment acceptance plus total Phase 10-15 aggregate acceptance.
+  - If `mall-payment-test/run` still fails, the next server output should now include exact HTTP status/body/transport diagnostics for the concrete failing callback.
+  - Browser role-flow evidence for Phase 10/11/12/13/14/15 remains incomplete; production remains `NO-GO` until accepted evidence and GO/NO-GO gates pass.
+- Next stage:
+  - Commit and push this Phase 11 callback regression parity patch, then ask BaoTa/test server to rerun the aggregate acceptance and continue with any remaining concrete failures.
+
 ## 2026-06-24 Phase 11 Payment Child BaseUrl Propagation
 
 - Stage name: Phase 11 payment child baseUrl propagation

@@ -383,6 +383,8 @@ Phase 11.10 payment child readiness wiring marker: `payment-phase11-acceptance/r
 
 Phase 11.11 payment child baseUrl propagation: `payment-phase11-acceptance/run` now carries `MONGOYIA_PAYMENT_PHASE11_CHILD_BASE_URL_PROPAGATION_V1` and passes the current `--baseUrl` into browser/HTTP-oriented child commands such as `mall-payment-test/run` and `mongoyia-payment-callback-readiness/run`, so BaoTa/test-server acceptance does not fall back to the local default `http://127.0.0.1:8089` when validating payment callbacks.
 
+Phase 11.12 payment callback regression parity: external payment callback actions now carry `MONGOYIA_PAYMENT_CALLBACK_CSRF_EXEMPTION_V1`, disabling CSRF for QPay/LianLian/PayPal webhook callback endpoints before parent request validation while retaining callback secret, HMAC, timestamp, IP, amount, audit, and idempotency guards. `mall-payment-test/run` now reads QPay/LianLian callback secret, HMAC secret, and timestamp window from the encrypted backend payment runtime config before falling back to legacy `.env` values, and reports HTTP status lines, transport errors, and response body excerpts when callback regression fails.
+
 Phase 12 acceptance command:
 
 ```bash

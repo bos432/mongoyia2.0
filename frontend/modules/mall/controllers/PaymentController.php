@@ -39,6 +39,7 @@ class PaymentController extends BaseController
     public const MONGOYIA_PAYMENT_CHANNEL_SELECTOR_V1 = 'MONGOYIA_PAYMENT_CHANNEL_SELECTOR_V1';
     public const MONGOYIA_MERCHANT_PAYMENT_RUNTIME_SCOPE_V1 = 'MONGOYIA_MERCHANT_PAYMENT_RUNTIME_SCOPE_V1';
     public const MONGOYIA_PAYMENT_RUNTIME_NO_SECRET_ENV_FALLBACK_V1 = 'MONGOYIA_PAYMENT_RUNTIME_NO_SECRET_ENV_FALLBACK_V1';
+    public const MONGOYIA_PAYMENT_CALLBACK_CSRF_EXEMPTION_V1 = 'MONGOYIA_PAYMENT_CALLBACK_CSRF_EXEMPTION_V1';
 
     public $modelClass = Order::class;
 
@@ -1020,6 +1021,9 @@ class PaymentController extends BaseController
     }
     public function beforeAction($action)
     {
+        if (in_array($action->id, ['qpayres', 'succeeded', 'paypal-webhook'], true)) {
+            $this->enableCsrfValidation = false;
+        }
 
         $result = parent::beforeAction($action);
         return $result;

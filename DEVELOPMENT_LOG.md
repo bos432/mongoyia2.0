@@ -1,5 +1,39 @@
 # Development Log
 
+## 2026-06-24 Phase 12 Frontend Logout POST Guard
+
+- Stage name: Phase 12.15 frontend logout POST guard
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting the stage.
+  - Added `MONGOYIA_FRONTEND_LOGOUT_POST_GUARD_V1` to the frontend mall default controller.
+  - Restricted `/mall/default/logout` to POST through a frontend `VerbFilter`.
+  - Changed both PC/H5 mall header logout links from plain GET anchors to Yii `data-method="post"` links.
+  - Added stable `data-mongoyia-frontend-logout-post-guard` markers for mobile and desktop logout links.
+  - Added source coverage to Phase 12 account/notification/language acceptance and PWA smoke checks.
+  - Updated the Phase 12 backlog notes as Phase 12.15.
+- Main files changed/added:
+  - `frontend/modules/mall/controllers/DefaultController.php`
+  - `web/resources/mall/default/views/layouts/nav.php`
+  - `console/controllers/AccountNotificationPhase12AcceptanceController.php`
+  - `console/controllers/PwaSmokeTestController.php`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l frontend/modules/mall/controllers/DefaultController.php` passed.
+  - `php -l web/resources/mall/default/views/layouts/nav.php` passed.
+  - `php -l console/controllers/AccountNotificationPhase12AcceptanceController.php` passed.
+  - `php -l console/controllers/PwaSmokeTestController.php` passed.
+  - Static marker checks confirmed `MONGOYIA_FRONTEND_LOGOUT_POST_GUARD_V1`, POST-only `logout`, `data-method` POST links, guard markers, and Phase 12.15 backlog coverage.
+  - Static stale-link check found no remaining plain `<a href=.../mall/default/logout>` links in the mall default navigation template.
+  - `git diff --check` reported no whitespace errors, only existing Windows line-ending conversion warnings.
+  - Full Yii console execution remains BaoTa-only because this local checkout lacks `vendor/autoload.php`.
+- Remaining issues:
+  - BaoTa/test server must rerun Phase 12 acceptance, PWA smoke, and total requirements closure acceptance after deployment.
+  - Browser role-flow evidence should recheck normal buyer login/logout, notification/language pages, and account-security flows after the server pulls this patch.
+  - Phase 10/11/12/13/14/15 external/provider/browser evidence gates remain pending; production remains `NO-GO`.
+- Next stage:
+  - Commit and push this Phase 12 frontend logout POST guard patch, then reread the plan/log and continue with the next plan-listed readiness item.
+
 ## 2026-06-24 Phase 13/14 Product Review Ajax GET Guard
 
 - Stage name: Phase 13.29 / Phase 14.14 product review Ajax GET guard

@@ -18,6 +18,7 @@ use frontend\models\SignupEmailForm;
 use frontend\models\VerifyEmailForm;
 use InvalidArgumentException;
 use Yii;
+use yii\filters\VerbFilter;
 use yii\web\BadRequestHttpException;
 
 /**
@@ -25,7 +26,21 @@ use yii\web\BadRequestHttpException;
  */
 class DefaultController extends BaseController
 {
+    public const FRONTEND_LOGOUT_POST_GUARD_VERSION = 'MONGOYIA_FRONTEND_LOGOUT_POST_GUARD_V1';
+
     public $likeAttributes = ['name'];
+
+    public function behaviors()
+    {
+        return [
+            'verbs' => [
+                'class' => VerbFilter::className(),
+                'actions' => [
+                    'logout' => ['POST'],
+                ],
+            ],
+        ];
+    }
 
     /**
      * Renders the index view for the module

@@ -103,7 +103,7 @@ $categoriesTree = ArrayHelper::tree($categories);
                         <li><a href="<?= Url::to(['/mall/user/favorite']) ?>"><?= Yii::t('app', 'Favorites') ?></a></li>
                         <li><a href="<?= Url::to(['/mall/user/address']) ?>"><?= Yii::t('app', 'Addresses') ?></a></li>
                         <li><a href="<?= Url::to(['/mall/user/setting']) ?>"><?= Yii::t('app', 'Profile') ?></a></li>
-                        <li><a href="<?= Url::to(['/mall/default/logout']) ?>"><?= Yii::t('app', 'Logout') ?></a></li>
+                        <li><?= Html::a(Yii::t('app', 'Logout'), ['/mall/default/logout'], ['data-method' => 'post', 'data-mongoyia-frontend-logout-post-guard' => 'mobile']) ?></li>
                     </ul>
                 </div>
             <?php } ?>
@@ -201,7 +201,7 @@ $categoriesTree = ArrayHelper::tree($categories);
                                         <li><a href="<?= Url::to(['/mall/user/favorite']) ?>"><?= Yii::t('app', 'Favorites') ?></a></li>
                                         <li><a href="<?= Url::to(['/mall/user/address']) ?>"><?= Yii::t('app', 'Addresses') ?></a></li>
                                         <li><a href="<?= Url::to(['/mall/user/setting']) ?>"><?= Yii::t('app', 'Profile') ?></a></li>
-                                        <li><a href="<?= Url::to(['/mall/default/logout']) ?>"><?= Yii::t('app', 'Logout') ?></a></li>
+                                        <li><?= Html::a(Yii::t('app', 'Logout'), ['/mall/default/logout'], ['data-method' => 'post', 'data-mongoyia-frontend-logout-post-guard' => 'desktop']) ?></li>
                                     </ul>
                                 </div>
                             <?php } ?>

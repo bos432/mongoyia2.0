@@ -108,6 +108,15 @@ class AccountNotificationPhase12AcceptanceController extends Controller
             'findByPasswordResetToken',
             'removePasswordResetToken',
         ]);
+        $this->requireFileContains('Frontend mall logout POST guard', 'frontend/modules/mall/controllers/DefaultController.php', [
+            'MONGOYIA_FRONTEND_LOGOUT_POST_GUARD_V1',
+            'VerbFilter',
+            "'logout' => ['POST']",
+        ]);
+        $this->requireFileContains('Frontend mall logout POST links', 'web/resources/mall/default/views/layouts/nav.php', [
+            'data-method' => 'post',
+            'data-mongoyia-frontend-logout-post-guard',
+        ]);
         $this->requireFileContains('Existing OAuth2 foundation', 'frontend/controllers/Oauth2Controller.php', [
             'actionAuthorizeCode',
             'AuthCodeGrant',

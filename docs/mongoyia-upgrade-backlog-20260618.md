@@ -396,6 +396,8 @@ Phase 12.13 APP security-code channel selector: the uni-app/H5 login page now le
 
 Phase 12.14 security-code API POST guard: `/api/site/security-code-request` and `/api/site/security-code-login` now use `MONGOYIA_SECURITY_CODE_API_POST_GUARD_V1`, reject non-POST requests with `SECURITY_CODE_REQUIRES_POST`, and read `channel`, `target`, and `code` only from POST. Account security-code readiness and Phase 12 aggregate acceptance check the guard so verification codes and login codes are not accepted through query strings.
 
+Phase 12.15 frontend logout POST guard: PC/H5 buyer logout now uses `MONGOYIA_FRONTEND_LOGOUT_POST_GUARD_V1`, restricts `/mall/default/logout` to POST, and changes the mall header/mobile logout links to Yii `data-method="post"` links with stable guard markers. Phase 12 aggregate acceptance and PWA smoke check the guard so account session logout cannot be triggered by a plain GET link.
+
 Phase 13 acceptance command:
 
 ```bash

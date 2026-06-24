@@ -141,6 +141,14 @@ class PwaSmokeTestController extends Controller
         ] as $path => $marker) {
             $this->requireFileContains($path, [$marker]);
         }
+        $this->requireFileContains('frontend/modules/mall/controllers/DefaultController.php', [
+            'MONGOYIA_FRONTEND_LOGOUT_POST_GUARD_V1',
+            "'logout' => ['POST']",
+        ]);
+        $this->requireFileContains('web/resources/mall/default/views/layouts/nav.php', [
+            'data-method' => 'post',
+            'data-mongoyia-frontend-logout-post-guard',
+        ]);
         $this->requireFileContains('frontend/modules/mall/controllers/AddressController.php', [
             'MONGOYIA_BUYER_ADDRESS_DELETE_POST_GUARD_V1',
             'MONGOYIA_BUYER_ADDRESS_EDIT_POST_ID_GUARD_V1',

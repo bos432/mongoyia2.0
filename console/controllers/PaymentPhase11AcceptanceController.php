@@ -13,6 +13,7 @@ class PaymentPhase11AcceptanceController extends Controller
     public const PROVIDER_AFTERFILL_POLICY_VERSION = 'MONGOYIA_PHASE11_PAYMENT_PROVIDER_AFTERFILL_POLICY_V1';
     public const CHILD_CHECKS_VERSION = 'MONGOYIA_PAYMENT_PHASE11_CHILD_CHECKS_V1';
     public const CHILD_BASE_URL_VERSION = 'MONGOYIA_PAYMENT_PHASE11_CHILD_BASE_URL_PROPAGATION_V1';
+    public const CHILD_DIAGNOSTIC_REPORT_VERSION = 'MONGOYIA_PAYMENT_PHASE11_CHILD_DIAGNOSTIC_REPORT_V1';
     public const ACCEPTED_EVIDENCE_PATH_GUARD_VERSION = 'MONGOYIA_ACCEPTED_EVIDENCE_PATH_GUARD_V1';
 
     public $baseUrl = 'https://demo2026.mongoyia.com';
@@ -268,15 +269,24 @@ class PaymentPhase11AcceptanceController extends Controller
         $this->requireFileContains('Phase 11 child readiness wiring', 'console/controllers/PaymentPhase11AcceptanceController.php', [
             'MONGOYIA_PAYMENT_PHASE11_CHILD_CHECKS_V1',
             'MONGOYIA_PAYMENT_PHASE11_CHILD_BASE_URL_PROPAGATION_V1',
+            'MONGOYIA_PAYMENT_PHASE11_CHILD_DIAGNOSTIC_REPORT_V1',
             'runChildChecks',
             'childCommands',
             "params['baseUrl']",
+            "params['outputPath']",
+            'childReportPath',
             'operational-config-payment-test/run',
             'operational-config-paypal-test/run',
             'mall-payment-test/run',
             'mongoyia-payment-callback-readiness/run',
             'payment-stat-readiness/run',
             'payment-callback-regression-readiness/run',
+        ]);
+        $this->requireFileContains('Base payment regression diagnostic report', 'console/controllers/MallPaymentTestController.php', [
+            'MONGOYIA_MALL_PAYMENT_REGRESSION_DIAGNOSTIC_REPORT_V1',
+            'outputPath',
+            'writeDiagnosticReport',
+            'response diagnostics are redacted',
         ]);
         $this->requireFileContains('Phase 11 accepted evidence path guard', 'console/controllers/PaymentPhase11AcceptanceController.php', [
             'MONGOYIA_ACCEPTED_EVIDENCE_PATH_GUARD_V1',
@@ -346,16 +356,22 @@ class PaymentPhase11AcceptanceController extends Controller
             if (!empty($config['baseUrl'])) {
                 $params['baseUrl'] = $this->baseUrl;
             }
+            $childReportPath = '';
+            if (!empty($config['reportPrefix'])) {
+                $childReportPath = $this->childReportPath($config['reportPrefix']);
+                $params['outputPath'] = $childReportPath;
+            }
+            $evidence = $childReportPath !== '' ? $route . ' -> ' . $childReportPath : $route;
 
             try {
                 $exitCode = Yii::$app->runAction($route, $params);
                 if ((int)$exitCode === ExitCode::OK) {
-                    $this->addCheck($label, 'PASS', $route, 'Child readiness command passed.');
+                    $this->addCheck($label, 'PASS', $evidence, 'Child readiness command passed.' . ($childReportPath !== '' ? ' Diagnostic report was written for traceability.' : ''));
                 } else {
-                    $this->addCheck($label, 'FAIL', $route, 'Child readiness command returned exit code ' . (int)$exitCode . '.');
+                    $this->addCheck($label, 'FAIL', $evidence, 'Child readiness command returned exit code ' . (int)$exitCode . ($childReportPath !== '' ? '; inspect the diagnostic report for redacted HTTP/body/audit details.' : '.') );
                 }
             } catch (\Throwable $e) {
-                $this->addCheck($label, 'FAIL', $route, 'Child readiness command failed: ' . $e->getMessage());
+                $this->addCheck($label, 'FAIL', $evidence, 'Child readiness command failed: ' . $e->getMessage() . ($childReportPath !== '' ? '; inspect the diagnostic report if it was created.' : ''));
             }
         }
     }
@@ -365,7 +381,7 @@ class PaymentPhase11AcceptanceController extends Controller
         return [
             'Operational payment config center' => ['route' => 'operational-config-payment-test/run', 'fixture' => true],
             'PayPal runtime paths' => ['route' => 'operational-config-paypal-test/run', 'fixture' => true],
-            'Base mall payment regression' => ['route' => 'mall-payment-test/run', 'fixture' => false, 'baseUrl' => true],
+            'Base mall payment regression' => ['route' => 'mall-payment-test/run', 'fixture' => false, 'baseUrl' => true, 'reportPrefix' => 'mongoyia-mall-payment-regression-child'],
             'Payment callback readiness' => ['route' => 'mongoyia-payment-callback-readiness/run', 'fixture' => false, 'baseUrl' => true],
             'Payment statistics readiness' => ['route' => 'payment-stat-readiness/run', 'fixture' => true],
             'Payment callback regression readiness' => ['route' => 'payment-callback-regression-readiness/run', 'fixture' => true],
@@ -582,6 +598,13 @@ class PaymentPhase11AcceptanceController extends Controller
     {
         return $this->resolvePath($this->handoverDir)
             . DIRECTORY_SEPARATOR . 'mongoyia-payment-phase11-acceptance-' . date('Ymd-His') . '.md';
+    }
+
+    private function childReportPath(string $prefix): string
+    {
+        return trim($this->handoverDir, "/\\")
+            . '/' . preg_replace('/[^A-Za-z0-9._-]+/', '-', $prefix)
+            . '-' . date('Ymd-His') . '.md';
     }
 
     private function resolvePath(string $path): string

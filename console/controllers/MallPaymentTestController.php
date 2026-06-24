@@ -13,6 +13,8 @@ use yii\console\ExitCode;
 
 class MallPaymentTestController extends BaseController
 {
+    public const DIAGNOSTIC_REPORT_VERSION = 'MONGOYIA_MALL_PAYMENT_REGRESSION_DIAGNOSTIC_REPORT_V1';
+
     public $storeId = 5;
     public $baseUrl = 'http://127.0.0.1:8089';
     public $userId = 71;
@@ -24,6 +26,8 @@ class MallPaymentTestController extends BaseController
     public $lianlianCallbackHmacSecret = '';
     public $qpayCallbackMaxAgeSeconds = 0;
     public $lianlianCallbackMaxAgeSeconds = 0;
+    public $handoverDir = 'runtime/handover';
+    public $outputPath = '';
 
     private $failures = [];
     private $paymentRuntimeConfigs = [];
@@ -41,34 +45,46 @@ class MallPaymentTestController extends BaseController
             'lianlianCallbackHmacSecret',
             'qpayCallbackMaxAgeSeconds',
             'lianlianCallbackMaxAgeSeconds',
+            'handoverDir',
+            'outputPath',
         ]);
     }
 
     public function actionRun()
     {
-        $products = $this->loadProducts();
-        if (count($products) < 2) {
-            $this->stderr("Need at least two active products for regression.\n");
+        $products = [];
+        try {
+            $products = $this->loadProducts();
+            if (count($products) < 2) {
+                $this->fail('Need at least two active products for regression.');
+                $path = $this->writeDiagnosticReport('FAIL', $products);
+                $this->stdout("\nReport written to {$path}\n");
+                return ExitCode::UNSPECIFIED_ERROR;
+            }
+
+            $this->stdout("Payment callback regression against {$this->baseUrl}\n");
+
+            $this->runSuccessfulCallback($products);
+            $this->runAmountMismatch($products);
+            $this->runRefundCannotRevive($products);
+            $this->runMissingMerchantTransaction($products);
+            $this->runWrongMerchantTransaction($products);
+            $this->runQpayHmacProtection($products);
+            $this->runQpayTimestampProtection($products);
+            $this->runLianlianSuccessfulCallback($products);
+            $this->runLianlianAmountMismatch($products);
+            $this->runLianlianHmacProtection($products);
+            $this->runLianlianTimestampProtection($products);
+            $this->runRefundStockRegression($products);
+            $this->runInvalidRefundRegression($products);
+            $this->runShipmentReceiveRegression($products);
+            $this->runInvalidShipmentRegression($products);
+        } catch (\Throwable $e) {
+            $this->fail('Unhandled exception: ' . get_class($e) . ': ' . $e->getMessage());
+            $path = $this->writeDiagnosticReport('FAIL', $products, $e);
+            $this->stdout("\nReport written to {$path}\n");
             return ExitCode::UNSPECIFIED_ERROR;
         }
-
-        $this->stdout("Payment callback regression against {$this->baseUrl}\n");
-
-        $this->runSuccessfulCallback($products);
-        $this->runAmountMismatch($products);
-        $this->runRefundCannotRevive($products);
-        $this->runMissingMerchantTransaction($products);
-        $this->runWrongMerchantTransaction($products);
-        $this->runQpayHmacProtection($products);
-        $this->runQpayTimestampProtection($products);
-        $this->runLianlianSuccessfulCallback($products);
-        $this->runLianlianAmountMismatch($products);
-        $this->runLianlianHmacProtection($products);
-        $this->runLianlianTimestampProtection($products);
-        $this->runRefundStockRegression($products);
-        $this->runInvalidRefundRegression($products);
-        $this->runShipmentReceiveRegression($products);
-        $this->runInvalidShipmentRegression($products);
 
         if ($this->failures) {
             $this->stdout("\nFailed checks:\n");
@@ -77,10 +93,14 @@ class MallPaymentTestController extends BaseController
                 $this->stdout("- {$failure}\n");
                 $this->stderr("- {$failure}\n");
             }
+            $path = $this->writeDiagnosticReport('FAIL', $products);
+            $this->stdout("\nReport written to {$path}\n");
             return ExitCode::UNSPECIFIED_ERROR;
         }
 
         $this->stdout("\nAll payment callback regression checks passed.\n");
+        $path = $this->writeDiagnosticReport('PASS', $products);
+        $this->stdout("\nReport written to {$path}\n");
         return ExitCode::OK;
     }
 
@@ -1118,5 +1138,120 @@ class MallPaymentTestController extends BaseController
     {
         $this->failures[] = $message;
         $this->stderr("FAIL {$message}\n");
+    }
+
+    private function writeDiagnosticReport($result, array $products, \Throwable $exception = null)
+    {
+        $path = $this->outputPath !== '' ? $this->resolvePath($this->outputPath) : $this->defaultDiagnosticReportPath();
+        $dir = dirname($path);
+        if (!is_dir($dir)) {
+            mkdir($dir, 0775, true);
+        }
+
+        $lines = [
+            '# Mongoyia Mall Payment Regression Diagnostic Report',
+            '',
+            '- Version: ' . self::DIAGNOSTIC_REPORT_VERSION,
+            '- Result: ' . strtoupper((string)$result),
+            '- Base URL: ' . $this->redactDiagnosticText((string)$this->baseUrl),
+            '- User ID: ' . (int)$this->userId,
+            '- Requested product IDs: ' . $this->redactDiagnosticText((string)$this->productIds),
+            '- Amount: ' . $this->redactDiagnosticText((string)$this->amount),
+            '- Generated at: ' . date('Y-m-d H:i:s'),
+            '- Safety: response diagnostics are redacted; callback secrets, HMAC secrets, provider credentials, tokens, and signatures must not be written to this report.',
+            '',
+            '## Selected Products',
+            '',
+            '| Product ID | Store ID | Stock | Name |',
+            '|---:|---:|---:|---|',
+        ];
+
+        if (!$products) {
+            $lines[] = '|  |  |  | No products selected. |';
+        } else {
+            foreach ($products as $product) {
+                $lines[] = '| ' . (int)$product->id
+                    . ' | ' . (int)$product->store_id
+                    . ' | ' . (int)$product->stock
+                    . ' | ' . $this->mdCell($this->redactDiagnosticText((string)($product->name ?? '')))
+                    . ' |';
+            }
+        }
+
+        $lines = array_merge($lines, [
+            '',
+            '## Failure Diagnostics',
+            '',
+        ]);
+
+        if (!$this->failures) {
+            $lines[] = '- No failed checks were recorded.';
+        } else {
+            foreach ($this->failures as $failure) {
+                $lines[] = '- ' . $this->redactDiagnosticText((string)$failure);
+            }
+        }
+
+        if ($exception !== null) {
+            $lines = array_merge($lines, [
+                '',
+                '## Exception',
+                '',
+                '- Class: ' . get_class($exception),
+                '- Message: ' . $this->redactDiagnosticText($exception->getMessage()),
+                '- Location: ' . $this->redactDiagnosticText($exception->getFile() . ':' . $exception->getLine()),
+            ]);
+        }
+
+        $lines = array_merge($lines, [
+            '',
+            '## BaoTa Direct Recheck',
+            '',
+            '```bash',
+            'cd /www/wwwroot/demo2026.mongoyia.com',
+            '/www/server/php/83/bin/php yii mall-payment-test/run \\',
+            '  --baseUrl=https://demo2026.mongoyia.com \\',
+            '  --interactive=0',
+            '```',
+            '',
+        ]);
+
+        file_put_contents($path, implode("\n", $lines) . "\n");
+        return $path;
+    }
+
+    private function defaultDiagnosticReportPath()
+    {
+        return $this->resolvePath($this->handoverDir)
+            . DIRECTORY_SEPARATOR . 'mongoyia-mall-payment-regression-' . date('Ymd-His') . '.md';
+    }
+
+    private function resolvePath($path)
+    {
+        if (preg_match('/^[A-Za-z]:[\\\\\\/]/', (string)$path) || strpos((string)$path, '/') === 0) {
+            return str_replace(['/', '\\'], DIRECTORY_SEPARATOR, (string)$path);
+        }
+
+        return dirname(__DIR__, 2) . DIRECTORY_SEPARATOR . str_replace(['/', '\\'], DIRECTORY_SEPARATOR, (string)$path);
+    }
+
+    private function mdCell($value)
+    {
+        return str_replace(["\r", "\n", '|'], [' ', ' ', '\\|'], (string)$value);
+    }
+
+    private function redactDiagnosticText($value)
+    {
+        $text = (string)$value;
+        $patterns = [
+            '/(X-Mongoyia-Payment-Secret\s*:\s*)[^\r\n]+/i' => '$1[redacted]',
+            '/(callback_secret|callback_hmac_secret|client_secret|auth_basic|private_key|password|token|secret|signature|hmac)(\s*[=:]\s*)[^&\s,}]+/i' => '$1$2[redacted]',
+            '/sha256=[A-Za-z0-9+\/=_-]{12,}/' => 'sha256=[redacted]',
+        ];
+        foreach ($patterns as $pattern => $replacement) {
+            $text = preg_replace($pattern, $replacement, $text);
+        }
+
+        return $text;
     }
 }

@@ -1,5 +1,35 @@
 # Development Log
 
+## 2026-06-24 Phase 11 Payment Regression Diagnostic Report
+
+- Stage name: Phase 11.14 payment regression diagnostic report
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md`, this log, and the latest BaoTa aggregate acceptance output before starting this stage.
+  - Confirmed the only remaining hard failure in the latest BaoTa total acceptance output is `Base mall payment regression`; Phase 10/12/13/14/15 are pending or afterfill rather than failing.
+  - Added `MONGOYIA_MALL_PAYMENT_REGRESSION_DIAGNOSTIC_REPORT_V1` to `mall-payment-test/run`.
+  - Added `--handoverDir` and `--outputPath` support so the base payment regression command writes a redacted Markdown diagnostic report when run directly or as a Phase 11 child command.
+  - The diagnostic report records base URL, requested/selected products, failure assertions, HTTP/body response summaries, and exception class/location while redacting callback secrets, HMAC secrets, provider credentials, tokens, and signatures.
+  - Added `MONGOYIA_PAYMENT_PHASE11_CHILD_DIAGNOSTIC_REPORT_V1` to `payment-phase11-acceptance/run`.
+  - Phase 11 child readiness now passes a child `outputPath` into `mall-payment-test/run` and records the generated report path in the Phase 11 report, so BaoTa/test-server failures can be debugged from `runtime/handover/mongoyia-mall-payment-regression-child-*.md`.
+  - Updated the Phase 10-15 backlog notes with the Phase 11.14 behavior.
+- Main files changed/added:
+  - `console/controllers/MallPaymentTestController.php`
+  - `console/controllers/PaymentPhase11AcceptanceController.php`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l console/controllers/MallPaymentTestController.php` passed.
+  - `php -l console/controllers/PaymentPhase11AcceptanceController.php` passed.
+  - Static marker checks confirmed `Phase 11.14`, `MONGOYIA_MALL_PAYMENT_REGRESSION_DIAGNOSTIC_REPORT_V1`, `MONGOYIA_PAYMENT_PHASE11_CHILD_DIAGNOSTIC_REPORT_V1`, `outputPath`, `childReportPath`, `writeDiagnosticReport`, and redaction markers.
+  - `git diff --check` reported no whitespace errors, only existing Windows line-ending conversion warnings.
+  - Full Yii console execution remains BaoTa-only because this local checkout lacks `vendor/autoload.php`.
+- Remaining issues:
+  - BaoTa/test server must pull this patch and rerun `mall-payment-test/run` or the aggregate Phase 10-15 acceptance to generate the child diagnostic report.
+  - The actual `Base mall payment regression` root cause still needs to be fixed after the new diagnostic report shows the concrete HTTP/body/audit failure.
+  - Browser role-flow evidence for Phase 10/11/12/13/14/15 remains incomplete; production remains `NO-GO` until accepted evidence and GO/NO-GO gates pass.
+- Next stage:
+  - Commit and push this Phase 11 diagnostic patch, then continue from the next BaoTa payment regression diagnostic output.
+
 ## 2026-06-24 Phase 11 Payment Regression Merchant Scope Parity
 
 - Stage name: Phase 11.13 payment regression merchant-scope parity

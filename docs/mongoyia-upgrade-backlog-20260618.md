@@ -387,6 +387,8 @@ Phase 11.12 payment callback regression parity: external payment callback action
 
 Phase 11.13 payment regression merchant-scope parity: `mall-payment-test/run` now mirrors the frontend payment controller when selecting callback signing configuration. Single-store regression orders use that merchant's encrypted payment config only when the platform has enabled merchant payment configuration and the provider config is complete; multi-store or incomplete merchant config falls back to platform payment config. Failed regression checks are now also printed to stdout so parent acceptance output exposes the concrete HTTP/body/audit failure instead of only the aggregate `Base mall payment regression` row.
 
+Phase 11.14 payment regression diagnostic report: `mall-payment-test/run` now carries `MONGOYIA_MALL_PAYMENT_REGRESSION_DIAGNOSTIC_REPORT_V1` and writes a redacted Markdown diagnostic report with base URL, selected products, failure assertions, HTTP/body response summaries, and exception location when the regression is run directly or through Phase 11 acceptance. `payment-phase11-acceptance/run` now carries `MONGOYIA_PAYMENT_PHASE11_CHILD_DIAGNOSTIC_REPORT_V1`, passes a child `outputPath` into the base payment regression command, and records the child report path in the Phase 11 report so BaoTa/test-server failures can be debugged without exposing callback secrets, HMAC secrets, provider credentials, tokens, or signatures.
+
 Phase 12 acceptance command:
 
 ```bash

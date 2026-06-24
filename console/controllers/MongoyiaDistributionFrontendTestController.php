@@ -61,6 +61,18 @@ class MongoyiaDistributionFrontendTestController extends Controller
             'data-mongoyia-distribution-frontend-post-guard="profile"',
             'data-mongoyia-distribution-frontend-post-guard="withdraw"',
         ]);
+        $this->requireFileContains('backend/modules/mall/controllers/FxController.php', [
+            'MONGOYIA_FX_SHIPMENT_POST_ID_GUARD_V1',
+            '$request->isPost ? $request->post(\'id\', 0) : $request->get(\'id\')',
+            '$model->shipment_status = 70',
+            'fx_id',
+        ]);
+        $this->requireFileContains('backend/modules/mall/views/fx/fh-ajax.php', [
+            'data-mongoyia-fx-shipment-post-id-guard',
+            "Html::hiddenInput('id'",
+            "'action' => Url::to(['fh-ajax'])",
+            "'validationUrl' => Url::to(['fh-ajax'])",
+        ]);
     }
 
     private function checkSchema()

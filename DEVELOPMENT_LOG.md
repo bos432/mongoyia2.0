@@ -1,5 +1,37 @@
 # Development Log
 
+## 2026-06-24 Phase 4 Legacy FX Shipment POST ID Guard
+
+- Stage name: Phase 4.1 legacy FX shipment POST id hardening
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting the stage.
+  - Added `MONGOYIA_FX_SHIPMENT_POST_ID_GUARD_V1` to the legacy backend FX controller.
+  - Kept GET `id` support for opening the legacy FX shipment modal.
+  - Hardened FX shipment writes so POST submit and Ajax validation read the order `id` from POST body data.
+  - Changed the FX shipment modal form action and validation URL to `/backend/mall/fx/fh-ajax` without query parameters and added a hidden POST `id`.
+  - Added readiness coverage to the Phase 4 distribution frontend test because the legacy FX controller remains part of the `fxid` attribution surface.
+  - Updated the Phase 4 backlog notes as Phase 4.1.
+- Main files changed/added:
+  - `backend/modules/mall/controllers/FxController.php`
+  - `backend/modules/mall/views/fx/fh-ajax.php`
+  - `console/controllers/MongoyiaDistributionFrontendTestController.php`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l backend/modules/mall/controllers/FxController.php` passed.
+  - `php -l backend/modules/mall/views/fx/fh-ajax.php` passed.
+  - `php -l console/controllers/MongoyiaDistributionFrontendTestController.php` passed.
+  - Static marker checks confirmed `MONGOYIA_FX_SHIPMENT_POST_ID_GUARD_V1`, POST body order `id`, hidden form `id`, queryless form URLs, and Phase 4.1 backlog coverage.
+  - Static stale-code check found no remaining FX shipment `validationUrl`/`action` query-id form targets in the changed controller/view/readiness files.
+  - `git diff --check` reported no whitespace errors, only existing Windows line-ending conversion warnings.
+  - Full Yii console execution remains BaoTa-only because this local checkout lacks `vendor/autoload.php`.
+- Remaining issues:
+  - BaoTa/test server must rerun distribution frontend, distribution aggregate, and total requirements closure acceptance after deployment.
+  - Browser role-flow evidence should recheck the legacy backend FX shipment modal if this route is still used operationally.
+  - Phase 10/11/12/13/14/15 external/provider/browser evidence gates remain pending; production remains `NO-GO`.
+- Next stage:
+  - Run local syntax/static checks, commit and push this Phase 4 legacy FX shipment POST id guard patch, then reread the plan/log and continue with the next plan-listed readiness item.
+
 ## 2026-06-24 Phase 14 Order-Product Shipment POST ID Guard
 
 - Stage name: Phase 14.16 order-product shipment POST id hardening

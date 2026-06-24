@@ -78,6 +78,8 @@ php yii mongoyia-commission-integrity/run --fixture=1 --interactive=0
 
 These commands are wired into acceptance by default and can be skipped with `--skipDistribution=1`, `--skipDistributionBackend=1`, `--skipDistributionFrontend=1`, `--skipDistributionWithdraw=1`, `--skipDistributionProfile=1`, `--skipDistributionInvite=1`, `--skipDistributionRisk=1`, `--skipDistributionAnalytics=1`, `--skipDistributionAnalyticsExport=1`, `--skipDistributionRewardWorkflow=1`, or `--skipCommissionIntegrity=1`. The current Phase 4 increment creates and validates a commission ledger, platform approve/reject workflow, distributor user-center page, offline withdrawal review flow, profile audit, promotion material visibility, risk records, invite relation tracking, invite reward ledger and review workflow, payout-risk readiness report, backend distributor analytics, and read-only analytics export evidence with signoff readiness, pending withdrawal/open-risk cues, and a reviewer decision matrix; it does not write fund logs or trigger real payouts.
 
+Phase 4.1 legacy FX shipment POST id hardening: the legacy `FxController` shipment modal GET remains available for opening the form, but shipment submit and Ajax validation now post to `/backend/mall/fx/fh-ajax` without a query-string id. The form carries a hidden POST `id` and `data-mongoyia-fx-shipment-post-id-guard`; `FxController::actionFhAjax()` reads the order id from POST for write requests through `MONGOYIA_FX_SHIPMENT_POST_ID_GUARD_V1`. Distribution frontend readiness covers the guard because the legacy FX controller remains part of the Phase 4 `fxid` attribution surface.
+
 ## Phase 5 Commands Added
 
 ```bash

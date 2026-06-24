@@ -1,5 +1,42 @@
 # Development Log
 
+## 2026-06-24 Phase 13 Checkout POST Coupon Guard
+
+- Stage name: Phase 13.31 checkout POST coupon guard
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting the stage.
+  - Kept PC/H5 checkout preview/navigation compatible with GET `cid`.
+  - Hardened order creation so checkout POST reads `cid` only from POST body data.
+  - Changed the checkout form to post to `/mall/cart/checkout` without query parameters and carry a hidden `cid`.
+  - Added readiness coverage to PWA smoke, Phase 13 buyer readiness, Phase 13 aggregate acceptance, and total requirements closure acceptance.
+  - Updated the Phase 13 backlog notes as Phase 13.31.
+- Main files changed/added:
+  - `frontend/modules/mall/controllers/CartController.php`
+  - `web/resources/mall/default/views/cart/checkout.php`
+  - `console/controllers/AppBuyerPhase13ReadinessController.php`
+  - `console/controllers/AppPhase13AcceptanceController.php`
+  - `console/controllers/PwaSmokeTestController.php`
+  - `console/controllers/MongoyiaRequirementsClosureAcceptanceController.php`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l frontend/modules/mall/controllers/CartController.php` passed.
+  - `php -l web/resources/mall/default/views/cart/checkout.php` passed.
+  - `php -l console/controllers/AppBuyerPhase13ReadinessController.php` passed.
+  - `php -l console/controllers/AppPhase13AcceptanceController.php` passed.
+  - `php -l console/controllers/PwaSmokeTestController.php` passed.
+  - `php -l console/controllers/MongoyiaRequirementsClosureAcceptanceController.php` passed.
+  - Static marker checks confirmed `MONGOYIA_CART_CHECKOUT_POST_COUPON_GUARD_V1`, POST body `cid`, GET preview `cid`, checkout hidden `cid`, and Phase 13.31 backlog coverage.
+  - Static stale-code check found no remaining `$cid = Yii::$app->request->get('cid');` direct read in `CartController`.
+  - `git diff --check` reported no whitespace errors, only existing Windows line-ending conversion warnings.
+  - Full Yii console execution remains BaoTa-only because this local checkout lacks `vendor/autoload.php`.
+- Remaining issues:
+  - BaoTa/test server must rerun PWA smoke, Phase 13 buyer/aggregate acceptance, and total requirements closure acceptance after deployment.
+  - Authenticated buyer browser evidence should recheck cart coupon selection, checkout submit, payment handoff, and order persistence after the server pulls this patch.
+  - Phase 10/11/12/13/14/15 external/provider/browser evidence gates remain pending; production remains `NO-GO`.
+- Next stage:
+  - Commit and push this Phase 13 checkout POST coupon guard patch, then reread the plan/log and continue with the next plan-listed readiness item.
+
 ## 2026-06-24 Phase 12 Social Auth Unbind Provider POST Body
 
 - Stage name: Phase 12.18 social-auth unbind POST provider body support

@@ -30,6 +30,7 @@ class CartController extends BaseController
     private const CART_STALE_ROW_GUARD = 'MONGOYIA_CART_STALE_ROW_GUARD_V1';
     private const CART_INDEX_FALLBACK_GUARD = 'MONGOYIA_CART_INDEX_FALLBACK_V1';
     private const CART_AJAX_POST_GUARD = 'MONGOYIA_CART_AJAX_POST_GUARD_V1';
+    private const CART_CHECKOUT_POST_COUPON_GUARD = 'MONGOYIA_CART_CHECKOUT_POST_COUPON_GUARD_V1';
 
     public function behaviors()
     {
@@ -372,7 +373,9 @@ class CartController extends BaseController
 
         // 计算总金额
         $total = $productAmount;
-        $cid = Yii::$app->request->get('cid');
+        $cid = Yii::$app->request->isPost
+            ? Yii::$app->request->post('cid', 0)
+            : Yii::$app->request->get('cid', 0);
         if ($cid) {
             $discount = $this->getDiscountNew($productAmount, $cid);
 //            var_dump($discount);exit();
@@ -579,6 +582,7 @@ class CartController extends BaseController
             'discount' => $discount,
             'total' => $total,
             'address' => $address,
+            'cid' => (int)$cid,
             'setting'=>$setting
         ]);
     }

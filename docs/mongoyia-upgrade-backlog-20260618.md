@@ -453,6 +453,8 @@ Phase 13.29 product review Ajax GET guard: PC/H5 product review list now uses `M
 
 Phase 13.30 seller APP write POST guard coverage: seller APP product save, order shipment alias, and coupon participation writes now share `MONGOYIA_APP_SELLER_WRITE_POST_GUARD_V1` through `AppSellerController::isWriteRequest()`, while GET continues to serve list/read views. Seller APP readiness and Phase 13 aggregate acceptance check the guard so seller product, order, and coupon mutations remain POST-only.
 
+Phase 13.31 checkout POST coupon guard: PC/H5 checkout still accepts `cid` through GET for preview/navigation, but order creation now reads `cid` only from POST body data and the checkout form posts a hidden `cid` to `/mall/cart/checkout` without query parameters. PWA smoke, Phase 13 buyer readiness, Phase 13 aggregate acceptance, and total requirements closure acceptance cover `MONGOYIA_CART_CHECKOUT_POST_COUPON_GUARD_V1`.
+
 Phase 14 acceptance command:
 
 ```bash

@@ -324,6 +324,7 @@ class MongoyiaRequirementsClosureAcceptanceController extends Controller
                     'MONGOYIA_CART_LINK_NORMALIZER_V1',
                     'MONGOYIA_CART_CHECKOUT_URL_PARAMS_V1',
                     'MONGOYIA_CART_AJAX_POST_GUARD_V1',
+                    'MONGOYIA_CART_CHECKOUT_POST_COUPON_GUARD_V1',
                     'MONGOYIA_PHASE13_DEPLOYED_PRODUCT_CART_LINKS_V1',
                     'checkDeployedProductCartLinks',
                     'MONGOYIA_PHASE13_DEPLOYED_CART_ROUTE_V1',

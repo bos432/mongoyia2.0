@@ -83,9 +83,13 @@ class AppBuyerPhase13ReadinessController extends Controller
             'MONGOYIA_CART_STALE_ROW_GUARD_V1',
             'MONGOYIA_CART_INDEX_FALLBACK_V1',
             'MONGOYIA_CART_AJAX_POST_GUARD_V1',
+            'MONGOYIA_CART_CHECKOUT_POST_COUPON_GUARD_V1',
             'VerbFilter',
             "'edit-ajax' => ['POST']",
             "'update-ajax' => ['POST']",
+            'isPost',
+            "post('cid', 0)",
+            "get('cid', 0)",
             'Unavailable product',
             'Shopping cart was refreshed',
             '/mall/cart/index',
@@ -97,9 +101,17 @@ class AppBuyerPhase13ReadinessController extends Controller
             '$checkoutParams[\'cid\']',
             'Url::to($checkoutParams)',
         ]);
+        $this->requireFileContains('Buyer web cart checkout POST coupon guard', 'web/resources/mall/default/views/cart/checkout.php', [
+            'data-mongoyia-cart-checkout-post-coupon-guard',
+            "'action' => ['/mall/cart/checkout']",
+            "Html::hiddenInput('cid'",
+        ]);
         $this->requireFileNotContains('Buyer web cart checkout has no cid query concatenation', 'web/resources/mall/default/views/cart/index.php', [
             '\'?cid=\'',
             '"?cid="',
+        ]);
+        $this->requireFileNotContains('Buyer web cart checkout order submit has no GET-only cid read', 'frontend/modules/mall/controllers/CartController.php', [
+            "\$cid = Yii::\$app->request->get('cid');",
         ]);
         $this->requireFileContains('Buyer cart guard smoke coverage', 'console/controllers/PwaSmokeTestController.php', [
             'MONGOYIA_CART_STALE_ROW_GUARD_V1',

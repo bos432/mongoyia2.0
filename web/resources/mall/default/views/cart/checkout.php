@@ -11,6 +11,7 @@ use common\models\mall\Product;
 /* @var $productAmount float */
 /* @var $discount float */
 /* @var $total float */
+/* @var $cid int */
 /* @var $setting int */
 $this->title = Yii::t('app', 'Checkout');
 $this->params['breadcrumbs'][] = $this->title;
@@ -18,7 +19,15 @@ $this->params['breadcrumbs'][] = $this->title;
 
 <section class="page-section checkout">
     <div class="container">
-        <?php $form = ActiveForm::begin(['id' => 'login-form', 'class' => 'checkout-form']); ?>
+        <?php $form = ActiveForm::begin([
+            'id' => 'login-form',
+            'action' => ['/mall/cart/checkout'],
+            'options' => [
+                'class' => 'checkout-form',
+                'data-mongoyia-cart-checkout-post-coupon-guard' => '1',
+            ],
+        ]); ?>
+            <?= Html::hiddenInput('cid', (int)$cid) ?>
             <div class="row">
                 <div class="col-lg-8">
                     <h5><?= Yii::t('mall', 'Billing detail') ?></h5>

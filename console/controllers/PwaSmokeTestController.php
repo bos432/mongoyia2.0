@@ -179,10 +179,17 @@ class PwaSmokeTestController extends Controller
         $this->requireFileContains('frontend/modules/mall/controllers/CartController.php', [
             'MONGOYIA_CART_STALE_ROW_GUARD_V1',
             'MONGOYIA_CART_AJAX_POST_GUARD_V1',
+            'MONGOYIA_CART_CHECKOUT_POST_COUPON_GUARD_V1',
             "'edit-ajax' => ['POST']",
             "'update-ajax' => ['POST']",
+            "post('cid', 0)",
             'Unavailable product',
             '/mall/cart/index',
+        ]);
+        $this->requireFileContains('web/resources/mall/default/views/cart/checkout.php', [
+            'data-mongoyia-cart-checkout-post-coupon-guard',
+            "'action' => ['/mall/cart/checkout']",
+            "Html::hiddenInput('cid'",
         ]);
         $this->requireFileContains('web/resources/mall/default/views/cart/index.php', [
             'Unavailable product',

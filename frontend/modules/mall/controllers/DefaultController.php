@@ -28,6 +28,7 @@ class DefaultController extends BaseController
 {
     public const FRONTEND_LOGOUT_POST_GUARD_VERSION = 'MONGOYIA_FRONTEND_LOGOUT_POST_GUARD_V1';
     public const FRONTEND_LOGIN_RETURN_URL_GUARD_VERSION = 'MONGOYIA_FRONTEND_LOGIN_RETURN_URL_GUARD_V1';
+    public const FRONTEND_ENTRY_INTERNAL_FORWARD_VERSION = 'MONGOYIA_FRONTEND_ENTRY_INTERNAL_FORWARD_V1';
 
     public $likeAttributes = ['name'];
 
@@ -134,7 +135,10 @@ class DefaultController extends BaseController
     public function actionSearch()
     {
         $keyword = trim((string)Yii::$app->request->get('keyword', ''));
-        return $this->redirect('/mall/category/view?keyword=' . rawurlencode($keyword));
+        Yii::$app->request->setQueryParams(array_merge(Yii::$app->request->queryParams, [
+            'keyword' => $keyword,
+        ]));
+        return Yii::$app->runAction('/mall/category/view');
     }
 
     /**
@@ -145,7 +149,7 @@ class DefaultController extends BaseController
     public function actionLogin()
     {
         if (!Yii::$app->user->isGuest) {
-            return $this->redirect('/mall/user/order');
+            return Yii::$app->runAction('/mall/user/order');
         }
         $oldSessionId = Yii::$app->session->id;
 

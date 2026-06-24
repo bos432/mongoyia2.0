@@ -10060,3 +10060,47 @@
   - Browser regression still needs to retest the fixed entry routes, backend logout, and seller login as `zhishichanquan`.
 - Next stage:
   - Commit and push this deployment triage log, then continue after BaoTa pulls the latest code and DB credentials/grants are corrected.
+
+## 2026-06-24 Browser Acceptance 444 Entry Bypass
+
+- Stage name: Browser acceptance internal-forward repair for 444 entry routes
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting the stage.
+  - Reviewed BaoTa output confirming the server is now at commit `0b161a0` and `.env` has `DB_USERNAME=demomongoyia`.
+  - Used the right-side in-app browser after BaoTa deployment to rerun the focused entry-route regression.
+  - Confirmed the previous first-patch fixes now open in the browser:
+    - `/backend/site/info`
+    - `/backend/base/setting/index`
+    - `/backend/mall/order-product/index`
+    - `/backend/mall/fx/index`
+    - `/backend/base/permission/index`
+    - `/mall/category/view?keyword=111`
+    - `/mall/default/contact`
+    - `/api/v1/app-buyer/product?id=2`
+    - `/mall/user/order`, `/mall/user/favorite`, `/mall/user/history`, `/mall/cart/index`, `/mall/chat/index?gid=2`
+  - Confirmed remaining failing entry routes return browser/server `HTTP ERROR 444`: `/backend/mall/default/index`, `/mall/default/search?keyword=111`, `/mall/user/index`, `/mall/user/coupon`, and logged-in `/mall/default/login`.
+  - Changed `/backend/mall/default/index` from a redirect to an internal forward to `/site/info` so the entry route no longer depends on a 302.
+  - Changed `/mall/default/search` to internally forward into `/mall/category/view` with the requested keyword instead of redirecting.
+  - Changed logged-in `/mall/default/login` and `/mall/user/index` to internally forward into `/mall/user/order`.
+  - Hardened `/mall/user/coupon` by first reading current-user coupon IDs from `mall_user_coupon`, then querying active `CouponType` rows by ID; missing/empty user coupon data now renders an empty list instead of joining directly.
+  - Did not trigger real payment, refund, payout, logistics provider calls, SMTP delivery, provider API calls, review approval, commission approval, withdrawal approval, or production GO.
+- Main files changed/added:
+  - `backend/modules/mall/controllers/DefaultController.php`
+  - `frontend/modules/mall/controllers/DefaultController.php`
+  - `frontend/modules/mall/controllers/UserController.php`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - Browser validation before this patch used independent fresh tabs against `https://demo2026.mongoyia.com` with the existing backend `admin` and frontend `codex_fron..` sessions.
+  - `php -l backend/modules/mall/controllers/DefaultController.php` passed.
+  - `php -l frontend/modules/mall/controllers/DefaultController.php` passed.
+  - `php -l frontend/modules/mall/controllers/UserController.php` passed.
+  - Static marker checks confirmed `MONGOYIA_BACKEND_MALL_DEFAULT_INTERNAL_FORWARD_V1`, `MONGOYIA_FRONTEND_ENTRY_INTERNAL_FORWARD_V1`, `MONGOYIA_USER_ENTRY_INTERNAL_FORWARD_V1`, `MONGOYIA_USER_COUPON_SAFE_FALLBACK_V1`, `/mall/category/view` internal forwarding, and user-coupon fallback logging.
+  - `git diff --check` reported no whitespace errors, only existing Windows line-ending conversion warnings.
+  - Full Yii console execution remains BaoTa-only because this local checkout lacks `vendor/autoload.php`.
+- Remaining issues:
+  - BaoTa/test server must pull this internal-forward patch and rerun the focused browser route probes.
+  - BaoTa/test server should rerun `migrate/up` and the aggregate closure acceptance now that `.env` shows `DB_USERNAME=demomongoyia`; if it still reports `reader`, clear shell/environment overrides and PHP/opcache/config cache.
+  - Seller backend role-flow validation remains pending until admin logout and seller login can be retested after deployment.
+  - External provider material remains backend-afterfill; production remains `NO-GO` until accepted evidence and signoff gates pass.
+- Next stage:
+  - Commit and push this internal-forward patch, then have BaoTa pull and rerun browser probes plus the aggregate acceptance command.

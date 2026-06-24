@@ -33,6 +33,8 @@ use yii\filters\VerbFilter;
 class UserController extends BaseController
 {
     public const DISTRIBUTION_FRONTEND_POST_GUARD_VERSION = 'MONGOYIA_DISTRIBUTION_FRONTEND_POST_VERB_GUARD_V1';
+    public const USER_ENTRY_INTERNAL_FORWARD_VERSION = 'MONGOYIA_USER_ENTRY_INTERNAL_FORWARD_V1';
+    public const USER_COUPON_SAFE_FALLBACK_VERSION = 'MONGOYIA_USER_COUPON_SAFE_FALLBACK_V1';
 
     public function behaviors()
     {
@@ -59,7 +61,7 @@ class UserController extends BaseController
 
     public function actionIndex()
     {
-        return $this->redirect('/mall/user/order');
+        return Yii::$app->runAction('/mall/user/order');
     }
 
     public function actionGetcode()
@@ -112,12 +114,25 @@ class UserController extends BaseController
 
     public function actionCoupon()
     {
-        $query = CouponType::find()
-            ->alias('ct')
-            ->innerJoin('{{%mall_user_coupon}} uc', 'uc.cid = ct.id AND uc.uid = :uid', [':uid' => Yii::$app->user->id])
-            ->where(['ct.status' => CouponType::STATUS_ACTIVE])
-            ->orderBy(['ct.id' => SORT_DESC])
-            ->groupBy(['ct.id']);
+        try {
+            $couponIds = (new Query())
+                ->select('cid')
+                ->from('{{%mall_user_coupon}}')
+                ->where(['uid' => Yii::$app->user->id])
+                ->column(Yii::$app->db);
+        } catch (\Throwable $e) {
+            Yii::warning('Skipped user coupon lookup: ' . $e->getMessage(), __METHOD__);
+            $couponIds = [];
+        }
+
+        $couponIds = array_values(array_unique(array_filter(array_map('intval', $couponIds))));
+        $query = CouponType::find()->alias('ct')->where(['ct.status' => CouponType::STATUS_ACTIVE]);
+        if ($couponIds) {
+            $query->andWhere(['ct.id' => $couponIds]);
+        } else {
+            $query->andWhere('0=1');
+        }
+        $query->orderBy(['ct.id' => SORT_DESC]);
 
         $dataProvider = new \yii\data\ActiveDataProvider([
             'query' => $query,

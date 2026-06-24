@@ -8,11 +8,13 @@ use yii\console\ExitCode;
 class LogisticsProductPhase14AcceptanceController extends Controller
 {
     public const VERSION = 'MONGOYIA_LOGISTICS_PRODUCT_PHASE14_ACCEPTANCE_V1';
+    public const PROVIDER_AFTERFILL_POLICY_VERSION = 'MONGOYIA_PHASE14_LOGISTICS_PROVIDER_AFTERFILL_POLICY_V1';
 
     public $handoverDir = 'runtime/handover';
     public $outputPath = '';
     public $fixture = false;
     public $strict = false;
+    public $allowExternalAfterfill = true;
     public $providerAdapterAccepted = false;
     public $trackingSyncAccepted = false;
     public $skuInventoryAccepted = false;
@@ -30,6 +32,7 @@ class LogisticsProductPhase14AcceptanceController extends Controller
     private $failures = 0;
     private $warnings = 0;
     private $pending = 0;
+    private $afterfillPending = 0;
 
     public function options($actionID)
     {
@@ -38,6 +41,7 @@ class LogisticsProductPhase14AcceptanceController extends Controller
             'outputPath',
             'fixture',
             'strict',
+            'allowExternalAfterfill',
             'providerAdapterAccepted',
             'trackingSyncAccepted',
             'skuInventoryAccepted',
@@ -67,7 +71,7 @@ class LogisticsProductPhase14AcceptanceController extends Controller
         $path = $this->writeReport($result);
 
         $this->stdout("\nReport written to {$path}\n");
-        $this->stdout("Summary: {$this->failures} failure(s), {$this->warnings} warning(s), {$this->pending} pending.\n");
+        $this->stdout("Summary: {$this->failures} failure(s), {$this->warnings} warning(s), {$this->pending} pending, {$this->afterfillPending} afterfill pending.\n");
 
         if ($this->failures > 0 || ($this->strict && ($this->warnings > 0 || $this->pending > 0))) {
             return ExitCode::UNSPECIFIED_ERROR;
@@ -82,6 +86,12 @@ class LogisticsProductPhase14AcceptanceController extends Controller
         $this->requireFileContains('Phase 14 backlog registration', 'docs/mongoyia-upgrade-backlog-20260618.md', [
             'Logistics provider adapters, tracking sync, SKU generation',
             'logistics-product-phase14-acceptance/run',
+        ]);
+        $this->requireFileContains('Phase 14 logistics provider afterfill policy', 'console/controllers/LogisticsProductPhase14AcceptanceController.php', [
+            'MONGOYIA_PHASE14_LOGISTICS_PROVIDER_AFTERFILL_POLICY_V1',
+            'allowExternalAfterfill',
+            'AFTERFILL',
+            'Afterfill pending',
         ]);
         $this->requireFileContains('Existing logistics method foundation', 'common/models/mall/LogisticsMethod.php', [
             'class LogisticsMethod',
@@ -317,14 +327,16 @@ class LogisticsProductPhase14AcceptanceController extends Controller
             $this->providerAdapterAccepted,
             $this->providerEvidencePath,
             'Provider adapter and evidence were accepted.',
-            'Implement logistics provider adapter layer, simulated provider tests, real provider evidence gate, and secret redaction.'
+            'Complete real logistics provider account/API evidence through backend afterfill before accepting this gate; simulated provider readiness remains covered by source checks.',
+            true
         );
         $this->manualFlag(
             'Tracking sync acceptance',
             $this->trackingSyncAccepted,
             $this->trackingEvidencePath,
             'Tracking sync and abnormal status handling were accepted.',
-            'Implement tracking query/sync, abnormal status mapping, retry/idempotency, and audit evidence.'
+            'Complete real logistics tracking-provider evidence through backend afterfill before accepting this gate; simulated tracking readiness remains covered by source checks.',
+            true
         );
         $this->manualFlag(
             'SKU inventory shipping acceptance',
@@ -373,8 +385,10 @@ class LogisticsProductPhase14AcceptanceController extends Controller
             '- Failures: ' . $this->failures,
             '- Warnings: ' . $this->warnings,
             '- Pending: ' . $this->pending,
+            '- Afterfill pending: ' . $this->afterfillPending,
             '- Scope: logistics provider adapters, tracking sync, SKU generation, shipping timeout/deposit deduction, inventory location, search filters, product video, store favorite, and review moderation.',
             '- Safety: this command is an evidence gate and does not call providers, mutate logistics rows, deduct funds, change stock, alter reviews, or enable live logistics credentials.',
+            '- External afterfill policy: ' . ($this->allowExternalAfterfill ? 'enabled' : 'disabled'),
             '',
             '## Checks',
             '',
@@ -404,7 +418,7 @@ class LogisticsProductPhase14AcceptanceController extends Controller
             '/www/server/php/83/bin/php yii product-inventory-phase14-readiness/run --fixture=1 --interactive=0',
             '/www/server/php/83/bin/php yii product-search-video-phase14-readiness/run --fixture=1 --interactive=0',
             '/www/server/php/83/bin/php yii favorite-review-phase14-readiness/run --fixture=1 --interactive=0',
-            '/www/server/php/83/bin/php yii logistics-product-phase14-acceptance/run --fixture=1 --interactive=0',
+            '/www/server/php/83/bin/php yii logistics-product-phase14-acceptance/run --fixture=1 --allowExternalAfterfill=1 --interactive=0',
             '```',
             '',
             'MONGOYIA_PHASE10_15_CHILD_DEPLOY_CACHE_REFRESH_V1: pull fast-forward changes, print the deployed commit, flush Yii cache, and restart PHP-FPM before collecting Phase 14 logistics/product/favorite/review browser evidence.',
@@ -428,6 +442,7 @@ class LogisticsProductPhase14AcceptanceController extends Controller
             '```bash',
             '/www/server/php/83/bin/php yii logistics-product-phase14-acceptance/run \\',
             '  --fixture=1 \\',
+            '  --allowExternalAfterfill=1 \\',
             '  --providerAdapterAccepted=1 --providerEvidencePath=runtime/handover/phase14-provider-evidence.md \\',
             '  --trackingSyncAccepted=1 --trackingEvidencePath=runtime/handover/phase14-tracking-evidence.md \\',
             '  --skuInventoryAccepted=1 --skuInventoryEvidencePath=runtime/handover/phase14-sku-inventory-evidence.md \\',
@@ -443,10 +458,15 @@ class LogisticsProductPhase14AcceptanceController extends Controller
         return $path;
     }
 
-    private function manualFlag(string $area, bool $accepted, string $evidence, string $passNotes, string $pendingNotes): void
+    private function manualFlag(string $area, bool $accepted, string $evidence, string $passNotes, string $pendingNotes, bool $externalAfterfill = false): void
     {
         if ($accepted) {
             $this->addCheck($area, 'PASS', $evidence !== '' ? $evidence : 'external evidence recorded', $passNotes);
+            return;
+        }
+
+        if ($externalAfterfill && $this->allowExternalAfterfill) {
+            $this->addCheck($area, 'AFTERFILL', $evidence !== '' ? $evidence : 'backend afterfill pending', $pendingNotes);
             return;
         }
 
@@ -484,6 +504,8 @@ class LogisticsProductPhase14AcceptanceController extends Controller
             $this->failures++;
         } elseif ($status === 'PENDING') {
             $this->pending++;
+        } elseif ($status === 'AFTERFILL') {
+            $this->afterfillPending++;
         } elseif ($status !== 'PASS') {
             $this->warnings++;
             $status = 'WARN';
@@ -503,7 +525,7 @@ class LogisticsProductPhase14AcceptanceController extends Controller
         if ($this->failures > 0) {
             return 'FAIL';
         }
-        if ($this->warnings > 0 || $this->pending > 0) {
+        if ($this->warnings > 0 || $this->pending > 0 || $this->afterfillPending > 0) {
             return 'WARN';
         }
 

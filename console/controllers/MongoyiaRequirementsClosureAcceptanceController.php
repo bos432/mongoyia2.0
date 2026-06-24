@@ -374,6 +374,11 @@ class MongoyiaRequirementsClosureAcceptanceController extends Controller
                 'baseUrl' => false,
                 'fixture' => true,
                 'runChildChecks' => false,
+                'allowExternalAfterfill' => true,
+                'requiredMarkers' => [
+                    'MONGOYIA_PHASE14_LOGISTICS_PROVIDER_AFTERFILL_POLICY_V1',
+                    'Afterfill pending',
+                ],
                 'passthrough' => [
                     'phase14ProviderAdapterAccepted' => 'providerAdapterAccepted',
                     'phase14TrackingSyncAccepted' => 'trackingSyncAccepted',

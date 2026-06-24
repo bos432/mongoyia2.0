@@ -9058,3 +9058,32 @@
   - Google/Facebook, email/SMS/security-code delivery, and APP/SMS/mail notification provider evidence may be completed later through backend afterfill; production remains `NO-GO` until accepted evidence and GO/NO-GO gates pass.
 - Next stage:
   - Commit and push this Phase 12 afterfill policy patch, then reread the plan/log and continue with the next plan-listed readiness item.
+
+## 2026-06-24 Phase 14 Logistics Provider Afterfill Policy
+
+- Stage name: Phase 14.18 logistics provider afterfill policy
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting the stage.
+  - Added `MONGOYIA_PHASE14_LOGISTICS_PROVIDER_AFTERFILL_POLICY_V1` to the Phase 14 logistics/product acceptance command.
+  - Added `--allowExternalAfterfill` support, `AFTERFILL` rows, and `Afterfill pending` reporting for Phase 14.
+  - Treated real logistics provider account/API evidence and real tracking-provider evidence as backend-afterfill during development acceptance.
+  - Kept simulated adapter readiness, SKU/inventory, search/video, favorite/review, and browser role-flow evidence as normal acceptance items.
+  - Passed the aggregate Phase 10-15 afterfill flag through to Phase 14 and required the Phase 14 afterfill marker in aggregate source coverage.
+  - Updated the Phase 10-15 backlog commands and Phase 14 notes to show `--allowExternalAfterfill=1`.
+- Main files changed/added:
+  - `console/controllers/LogisticsProductPhase14AcceptanceController.php`
+  - `console/controllers/MongoyiaRequirementsClosureAcceptanceController.php`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l console/controllers/LogisticsProductPhase14AcceptanceController.php` passed.
+  - `php -l console/controllers/MongoyiaRequirementsClosureAcceptanceController.php` passed.
+  - Static marker checks confirmed `MONGOYIA_PHASE14_LOGISTICS_PROVIDER_AFTERFILL_POLICY_V1`, `allowExternalAfterfill`, `AFTERFILL`, `Afterfill pending`, and `Phase 14.18` coverage.
+  - `git diff --check` reported no whitespace errors, only existing Windows line-ending conversion warnings.
+  - Full Yii console execution remains BaoTa-only because this local checkout lacks `vendor/autoload.php`.
+- Remaining issues:
+  - BaoTa/test server must rerun Phase 14 child readiness and total requirements closure acceptance after deployment.
+  - Phase 14 SKU/inventory, search/video, favorite/review, and browser role-flow evidence remain pending.
+  - Real logistics provider and real tracking evidence may be completed later through backend afterfill; production remains `NO-GO` until accepted evidence and GO/NO-GO gates pass.
+- Next stage:
+  - Commit and push this Phase 14 afterfill policy patch, then reread the plan/log and continue with the next plan-listed readiness item.

@@ -9255,3 +9255,38 @@
   - Google/Facebook, email/SMS/security-code delivery, and APP/SMS/mail notification provider material may stay backend-afterfill for development acceptance; production remains `NO-GO` until accepted evidence and signoff gates pass.
 - Next stage:
   - Commit and push this Phase 12 child-check marker patch, then reread the plan/log and continue with the next plan-listed readiness item.
+
+## 2026-06-24 Phase 10-15 Backend Browser Smoke
+
+- Stage name: Phase 10-15 backend browser entry smoke evidence
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting the stage.
+  - Connected to the right-side in-app browser and confirmed the backend session is logged in as `admin`.
+  - Performed read-only browser probes against Phase 10-15 backend entry pages without saving provider secrets or changing production configuration.
+  - Confirmed the following pages opened and rendered expected content/markers with no captured browser console errors:
+    - `/backend/mall/operational-config/index` with `data-mongoyia-operational-phase10-readiness`
+    - `/backend/mall/operational-config/merchant-payment` with `data-mongoyia-merchant-payment-config`
+    - `/backend/mall/payment-stat/index` with `data-mongoyia-payment-statistics`
+    - `/backend/mall/operational-config/identity-config` with `data-mongoyia-identity-config`
+    - `/backend/mall/operational-config/account-security` with `data-mongoyia-account-security`
+    - `/backend/mall/notification-log/index`
+    - `/backend/mall/product/index`
+    - `/backend/mall/logistics-method/index`
+    - `/backend/mall/review/index` with Phase 14 review moderation/sort markers
+    - `/backend/mall/distribution-distributor/index`
+  - Confirmed the guessed `/backend/mall/comment/index` URL fails, then verified the correct review moderation route is `/backend/mall/review/index`.
+- Main files changed/added:
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - Browser environment: in-app browser against `https://demo2026.mongoyia.com`, backend logged in as `admin`.
+  - Validation time: 2026-06-24 10:30:00 +08:00.
+  - Input test data: none; this was a read-only page reachability and console-error smoke.
+  - Passed: Phase 10 operations config, Phase 11 merchant payment/payment statistics, Phase 12 identity/account/notification, Phase 14 product/logistics/review, and Phase 15 distributor backend entry pages opened.
+  - Found issue: `/backend/mall/comment/index` is not a valid route; correct route is `/backend/mall/review/index`.
+  - Full role-flow browser validation is not complete in this smoke slice.
+- Remaining issues:
+  - BaoTa/test server still needs to pull the latest commits through `b03833d`, run migrations, clear cache/opcache, and rerun Phase 10-15 aggregate acceptance with child checks.
+  - Full final browser validation must still cover platform administrator, seller, buyer, customer-service, and distributor role flows with preserved test data.
+  - External provider material remains backend-afterfill; production remains `NO-GO` until accepted evidence and signoff gates pass.
+- Next stage:
+  - Commit and push this browser smoke evidence, then continue with BaoTa aggregate acceptance output or the next plan-listed local/browser readiness item.

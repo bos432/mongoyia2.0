@@ -1,5 +1,38 @@
 # Development Log
 
+## 2026-07-02 Full Role Validation Attempt and Handover Docs
+
+- Stage name: Full role browser validation attempt, deployment guide, and remediation update
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md` and this log before starting.
+  - Read the in-app browser control skill instructions; the current turn did not expose a callable browser-control tool, so direct right-side browser clicking could not be performed by Codex.
+  - Confirmed local and remote `mongoyia/master` are at `7fe4f57 Fix mini-program chat compatibility`.
+  - Probed the test server with real HTTPS/browser-like requests for public frontend pages, buyer APP APIs, seller API auth boundary, backend login GET, backend script access, and customer-service chat marker deployment.
+  - Attempted backend seller login POST for `zhishichanquan / 123456` using Cookie session, `_csrf-backend`, Referer, and Origin headers; the test server still returned `HTTP 444`.
+  - Ran APP H5 build through `npm run build:h5`; build completed successfully with existing Vite CJS and `.env NODE_ENV=production` warnings.
+  - Created a detailed 2026-07-02 test document, deployment guide, and updated optimization/remediation plan.
+  - Did not trigger real payment, refund, payout, logistics provider calls, SMTP/OAuth/SMS/translation provider calls, review approval, withdrawal approval, or production GO.
+- Main files changed/added:
+  - `docs/mongoyia-full-role-browser-test-20260702.md`
+  - `docs/mongoyia-deployment-guide-20260702.md`
+  - `docs/mongoyia-optimization-remediation-plan-20260702.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - Public frontend routes returned HTTP 200 for `/`, `/mall`, `/mall/category/view?keyword=111`, `/mall/default/search?keyword=111`, `/mall/product/view?id=2`, `/mall/cart/index`, `/mall/default/login`, `/mall/default/signup`, `/mall/default/request-password-reset`, `/mall/default/contact`, `/mall/chat/index?gid=2`, and `/mall/product/review?id=2`.
+  - Buyer APP APIs returned HTTP 200 / JSON `code=200` for home, categories, search, product detail, and reviews.
+  - Seller APP dashboard returned HTTP 401 when unauthenticated, preserving the auth boundary.
+  - Backend login GET returned HTTP 200 and exposed `_csrf-backend`; backend login POST and `/backend/` script access returned HTTP 444.
+  - Remote `/mall/chat/index?gid=2` did not yet include the R1 compatibility markers, so BaoTa likely still needs to pull `7fe4f57` or clear PHP/opcache/template cache.
+  - `php -l` passed for `console/controllers/MiniProgramCompatReadinessController.php`, `frontend/modules/mall/views/chat/index.php`, `web/resources/mall/default/views/chat/index.php`, and `console/controllers/MongoyiaRequirementsClosureAcceptanceController.php`.
+  - `npm run build:h5` passed in `apps/mongoyia-customer-chat-uniapp`.
+- Remaining issues:
+  - Right-side browser full role validation is not complete because the browser-control tool is unavailable in this turn.
+  - Test server still blocks backend/login automation with `HTTP 444`.
+  - Test server must deploy/refresh the R1 compatibility patch and run `mini-program-compat-readiness/run --strict=1`.
+  - Production remains `NO-GO` until all external provider evidence and launch signoffs are accepted.
+- Next stage:
+  - BaoTa should deploy `7fe4f57` or later, flush Yii/PHP caches, run R1 readiness, resolve 444/WAF test access, then rerun the five-role right-side browser validation and record accepted evidence.
+
 ## 2026-07-01 Full Role Browser Test Documentation
 
 - Stage name: Full role acceptance retest documentation and remediation plan

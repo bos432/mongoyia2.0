@@ -1,5 +1,72 @@
 # Development Log
 
+## 2026-07-01 Full Role Browser Test Documentation
+
+- Stage name: Full role acceptance retest documentation and remediation plan
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md`, `DEVELOPMENT_LOG.md`, and the in-app browser skill instructions before starting.
+  - Reviewed the existing `docs/mongoyia-phase10-15-browser-acceptance-20260624.md` report structure and current local commit `68cd50c`.
+  - Attempted real HTTPS validation against `https://demo2026.mongoyia.com`.
+  - Confirmed public frontend pages and buyer APP public JSON APIs open successfully.
+  - Confirmed APP seller dashboard returns `401` without credentials, preserving the auth boundary.
+  - Ran `npm run build:h5` for `apps/mongoyia-customer-chat-uniapp`; build exited successfully.
+  - Identified the mini-program/WebView compatibility issue from the user screenshot: `frontend/modules/mall/views/chat/index.php` uses `new URLSearchParams(...)`, which can fail in small-program JS environments.
+  - Documented the current test limitation: this turn did not expose a callable right-side browser automation tool, and local HTTP scripts receive `HTTP 444` for backend/login POST flows, so full logged-in role-flow browser acceptance remains incomplete.
+  - Added a detailed test document and optimization/remediation plan.
+- Main files changed/added:
+  - `docs/mongoyia-full-role-browser-test-20260701.md`
+  - `docs/mongoyia-optimization-remediation-plan-20260701.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - Public frontend route checks returned HTTP 200 for `/`, `/mall`, `/mall/category/view?keyword=111`, `/mall/default/search?keyword=111`, `/mall/product/view?id=2`, `/mall/cart/index`, `/mall/default/login`, `/mall/default/signup`, `/mall/default/request-password-reset`, `/mall/default/contact`, and `/mall/chat/index?gid=2`.
+  - `/mall/product/review?id=2` returned the expected JSON 400 direct-access message rather than a server error.
+  - Buyer APP APIs returned JSON `code=200` for product detail, home, categories, search, and reviews.
+  - Seller APP dashboard returned JSON `code=401` without credentials.
+  - Backend routes and login/register POST attempts from local HTTP scripts returned `HTTP 444`; this is recorded as an environment/WAF/automation blocker rather than a passed role-flow result.
+  - `npm run build:h5` completed successfully in `apps/mongoyia-customer-chat-uniapp`, with only existing Vite CJS deprecation / NODE_ENV warnings.
+- Remaining issues:
+  - Full right-side browser validation for platform admin, seller, logged-in buyer, customer service, and distributor still needs a controllable browser session or manual browser pass.
+  - Mini-program `URLSearchParams` compatibility issue must be fixed and retested.
+  - Test-server `HTTP 444` behavior must be triaged so safe automated acceptance can cover backend/login flows.
+  - Production remains `NO-GO` until external provider evidence and launch signoffs are accepted.
+- Next stage:
+  - Fix the `URLSearchParams` compatibility issue, deploy, then rerun right-side browser role-flow acceptance after browser control or manual test access is available.
+
+## 2026-07-01 Mini-Program Chat Compatibility Remediation
+
+- Stage name: R1 mini-program customer-service chat compatibility
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md`, `docs/mongoyia-optimization-remediation-plan-20260701.md`, and this log before starting.
+  - Replaced the buyer customer-service chat token query construction with `MONGOYIA_MINI_PROGRAM_CHAT_QUERY_COMPAT_V1`, using a small `encodeURIComponent` builder instead of the unsupported WebView query API.
+  - Added `MONGOYIA_MINI_PROGRAM_CHAT_FORMDATA_GUARD_V1` so image upload and rating submission show a controlled fallback when `FormData` is unavailable.
+  - Added WebSocket capability fallback text before opening the chat socket in low-capability WebViews.
+  - Hardened the full PC/H5 chat template with `MONGOYIA_CHAT_WEBVIEW_FORMDATA_GUARD_V1`, `MONGOYIA_CHAT_WEBVIEW_URL_NORMALIZER_COMPAT_V1`, and Blob/File/MediaRecorder guards so upload, URL normalization, rating, and voice recording degrade without uncaught script errors.
+  - Added the read-only `mini-program-compat-readiness/run` command and registered its source coverage in the Phase 10-15 aggregate acceptance source checks.
+  - Updated the backlog with the R1 remediation command and safety boundary.
+  - Did not trigger real payment, refund, payout, logistics provider calls, SMTP/OAuth/translation provider calls, review approval, withdrawal approval, or production GO.
+- Main files changed/added:
+  - `frontend/modules/mall/views/chat/index.php`
+  - `web/resources/mall/default/views/chat/index.php`
+  - `console/controllers/MiniProgramCompatReadinessController.php`
+  - `console/controllers/MongoyiaRequirementsClosureAcceptanceController.php`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l frontend/modules/mall/views/chat/index.php` passed.
+  - `php -l web/resources/mall/default/views/chat/index.php` passed.
+  - `php -l console/controllers/MiniProgramCompatReadinessController.php` passed.
+  - `php -l console/controllers/MongoyiaRequirementsClosureAcceptanceController.php` passed.
+  - Static forbidden-API scan returned no matches for `URLSearchParams`, bare `new URL(`, bare `new FormData(`, bare `new Blob(`, bare `new File(`, or bare `new MediaRecorder(` in the two chat entry files.
+  - Static marker scan confirmed the R1 compatibility markers and `mini-program-compat-readiness/run` registration.
+  - Full Yii console execution remains BaoTa-only because this local checkout lacks `vendor/autoload.php`.
+- Remaining issues:
+  - BaoTa/test server must pull this patch and run `/www/server/php/83/bin/php yii mini-program-compat-readiness/run --strict=1 --interactive=0`.
+  - We still need a real small-program/WebView retest for “我的/客服/商品/订单” to confirm no popup script error appears.
+  - R2/R3/R4 remain pending: backend logout/seller switch retest, test-station `HTTP 444` triage, and five-role right-side browser validation.
+  - Production remains `NO-GO` until provider evidence and launch signoffs are accepted.
+- Next stage:
+  - Commit and push R1, then continue with R2 backend logout and seller switch deployment retest after BaoTa pulls the patch.
+
 ## 2026-06-24 Backend Logout POST Switch Page
 
 - Stage name: Backend logout POST switch page V4

@@ -740,6 +740,51 @@ $this->params['breadcrumbs'][] = $this->title;
             return id;
         }
 
+        function createChatFormData(source) {
+            // MONGOYIA_CHAT_WEBVIEW_FORMDATA_GUARD_V1
+            if (!window.FormData) {
+                return null;
+            }
+            return source ? new window.FormData(source) : new window.FormData();
+        }
+
+        function parseSameOriginUrl(value) {
+            // MONGOYIA_CHAT_WEBVIEW_URL_NORMALIZER_COMPAT_V1
+            if (!value || typeof value !== 'string') {
+                return null;
+            }
+
+            if (window.URL) {
+                try {
+                    const origin = window.location.origin || (window.location.protocol + '//' + window.location.host);
+                    return new window.URL(value, origin);
+                } catch (error) {
+                    return null;
+                }
+            }
+
+            if (value.charAt(0) !== '/') {
+                return null;
+            }
+
+            const hashIndex = value.indexOf('#');
+            const queryIndex = value.indexOf('?');
+            let pathEnd = value.length;
+            if (queryIndex >= 0) {
+                pathEnd = queryIndex;
+            }
+            if (hashIndex >= 0 && hashIndex < pathEnd) {
+                pathEnd = hashIndex;
+            }
+
+            return {
+                protocol: window.location.protocol,
+                host: window.location.host,
+                pathname: value.substring(0, pathEnd),
+                href: value
+            };
+        }
+
         // 初始化emoji面板
         function initEmojiPanel() {
             emojis.forEach(emoji => {
@@ -770,7 +815,10 @@ $this->params['breadcrumbs'][] = $this->title;
         }
 
         async function fetchImAuthToken() {
-            const formData = new FormData();
+            const formData = createChatFormData();
+            if (!formData) {
+                throw new Error(TEXT.authRequestFailed);
+            }
             formData.append('gid', CONFIG.productId);
             formData.append('user_id', uniqueId);
             formData.append('lang', CONFIG.lang);
@@ -1055,7 +1103,12 @@ $this->params['breadcrumbs'][] = $this->title;
             }
 
             try {
-                const formData = new FormData();
+                const formData = createChatFormData();
+                if (!formData) {
+                    fallback.translation_status = 'failed';
+                    fallback.translation_error = 'FormData unsupported';
+                    return fallback;
+                }
                 formData.append(CONFIG.csrfParam, CONFIG.csrfToken);
                 formData.append('content', content);
                 formData.append('direction', direction);
@@ -1099,7 +1152,11 @@ $this->params['breadcrumbs'][] = $this->title;
             // 转换为base64
             try {
                 // 创建FormData上传文件
-                const formData = new FormData();
+                const formData = createChatFormData();
+                if (!formData) {
+                    addSystemMessage(TEXT.mediaUploadFailedRetry);
+                    return;
+                }
                 formData.append('file', file);
 
                 // 上传到服务器
@@ -1148,7 +1205,11 @@ $this->params['breadcrumbs'][] = $this->title;
             }
 
             try {
-                const formData = new FormData();
+                const formData = createChatFormData();
+                if (!formData) {
+                    addSystemMessage(TEXT.mediaUploadFailedRetry);
+                    return;
+                }
                 formData.append('file', file);
                 formData.append('media', media);
                 formData.append('duration', String(duration || 0));
@@ -1219,13 +1280,9 @@ $this->params['breadcrumbs'][] = $this->title;
                 return value;
             }
 
-            try {
-                const parsed = new URL(value, window.location.origin);
-                if ((parsed.protocol === 'http:' || parsed.protocol === 'https:') && parsed.host === window.location.host) {
-                    return parsed.href;
-                }
-            } catch (error) {
-                return '';
+            const parsed = parseSameOriginUrl(value);
+            if (parsed && (parsed.protocol === 'http:' || parsed.protocol === 'https:') && parsed.host === window.location.host) {
+                return parsed.href;
             }
 
             return '';
@@ -1241,13 +1298,9 @@ $this->params['breadcrumbs'][] = $this->title;
                 return value;
             }
 
-            try {
-                const parsed = new URL(value, window.location.origin);
-                if ((parsed.protocol === 'http:' || parsed.protocol === 'https:') && parsed.host === window.location.host && parsed.pathname === '/mall/chat/media-view') {
-                    return parsed.href;
-                }
-            } catch (error) {
-                return '';
+            const parsed = parseSameOriginUrl(value);
+            if (parsed && (parsed.protocol === 'http:' || parsed.protocol === 'https:') && parsed.host === window.location.host && parsed.pathname === '/mall/chat/media-view') {
+                return parsed.href;
             }
 
             return '';
@@ -1261,9 +1314,14 @@ $this->params['breadcrumbs'][] = $this->title;
             elements.ratingStatus.textContent = TEXT.ratingSubmitting;
 
             try {
+                const formData = createChatFormData(elements.ratingForm);
+                if (!formData) {
+                    elements.ratingStatus.textContent = TEXT.ratingSubmitFailed;
+                    return;
+                }
                 const response = await fetch(CONFIG.ratingUrl, {
                     method: 'POST',
-                    body: new FormData(elements.ratingForm),
+                    body: formData,
                     headers: {'Accept': 'application/json'}
                 });
                 const result = await response.json();
@@ -1357,7 +1415,7 @@ $this->params['breadcrumbs'][] = $this->title;
                 return;
             }
 
-            if (!navigator.mediaDevices || !window.MediaRecorder) {
+            if (!navigator.mediaDevices || !window.MediaRecorder || !window.Blob || !window.File) {
                 addSystemMessage(TEXT.voiceUnsupported);
                 return;
             }
@@ -1366,8 +1424,8 @@ $this->params['breadcrumbs'][] = $this->title;
                 const stream = await navigator.mediaDevices.getUserMedia({audio: true});
                 voiceChunks = [];
                 voiceStartAt = Date.now();
-                const mimeType = MediaRecorder.isTypeSupported('audio/webm') ? 'audio/webm' : '';
-                mediaRecorder = new MediaRecorder(stream, mimeType ? {mimeType} : undefined);
+                const mimeType = window.MediaRecorder.isTypeSupported && window.MediaRecorder.isTypeSupported('audio/webm') ? 'audio/webm' : '';
+                mediaRecorder = new window.MediaRecorder(stream, mimeType ? {mimeType} : undefined);
                 mediaRecorder.ondataavailable = (event) => {
                     if (event.data && event.data.size > 0) {
                         voiceChunks.push(event.data);
@@ -1377,8 +1435,8 @@ $this->params['breadcrumbs'][] = $this->title;
                     stream.getTracks().forEach(track => track.stop());
                     const duration = Math.ceil((Date.now() - voiceStartAt) / 1000);
                     if (voiceChunks.length > 0) {
-                        const blob = new Blob(voiceChunks, {type: mediaRecorder.mimeType || 'audio/webm'});
-                        const file = new File([blob], `voice-${Date.now()}.webm`, {type: blob.type || 'audio/webm'});
+                        const blob = new window.Blob(voiceChunks, {type: mediaRecorder.mimeType || 'audio/webm'});
+                        const file = new window.File([blob], `voice-${Date.now()}.webm`, {type: blob.type || 'audio/webm'});
                         sendMedia(file, 'voice', duration);
                     }
                     mediaRecorder = null;

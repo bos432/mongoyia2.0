@@ -238,6 +238,12 @@ class MongoyiaRequirementsClosureAcceptanceController extends Controller
             'secret query parameter',
             'standalone credential token',
         ]);
+        $this->requireFileContains('Mini-program compatibility readiness', 'console/controllers/MiniProgramCompatReadinessController.php', [
+            'MONGOYIA_MINI_PROGRAM_COMPAT_READINESS_V1',
+            'mini-program-compat-readiness/run',
+            'MONGOYIA_MINI_PROGRAM_CHAT_QUERY_COMPAT_V1',
+            'MONGOYIA_CHAT_WEBVIEW_FORMDATA_GUARD_V1',
+        ]);
     }
 
     private function checkDatabasePreflight(): bool

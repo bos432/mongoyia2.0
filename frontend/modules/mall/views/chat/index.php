@@ -91,6 +91,26 @@ $this->title = '在线客服';
     let chatWs = null;
     let chatToken = '';
 
+    // MONGOYIA_MINI_PROGRAM_CHAT_QUERY_COMPAT_V1: mini-program safe query builder.
+    function buildChatQuery(params) {
+        const pairs = [];
+        Object.keys(params).forEach(function (key) {
+            if (params[key] === undefined || params[key] === null) {
+                return;
+            }
+            pairs.push(encodeURIComponent(key) + '=' + encodeURIComponent(String(params[key])));
+        });
+        return pairs.join('&');
+    }
+
+    function createChatFormData(source) {
+        // MONGOYIA_MINI_PROGRAM_CHAT_FORMDATA_GUARD_V1
+        if (!window.FormData) {
+            return null;
+        }
+        return source ? new window.FormData(source) : new window.FormData();
+    }
+
     function addChatMessage(text, sent) {
         const row = document.createElement('div');
         row.className = 'customer-chat-message' + (sent ? ' sent' : '');
@@ -104,10 +124,14 @@ $this->title = '在线客服';
 
     async function connectChat() {
         try {
-            const params = new URLSearchParams({gid: String(chatConfig.productId), user_id: chatConfig.userId});
-            const response = await fetch(chatConfig.tokenUrl + '?' + params.toString());
+            const params = buildChatQuery({gid: String(chatConfig.productId), user_id: chatConfig.userId});
+            const response = await fetch(chatConfig.tokenUrl + '?' + params);
             const result = await response.json();
             chatToken = result && result.data ? result.data.token : '';
+            if (!window.WebSocket) {
+                chatStatus.textContent = '当前环境不支持在线连接';
+                return;
+            }
             chatWs = new WebSocket(chatConfig.wsAddress);
             chatWs.onopen = function () {
                 chatWs.send(JSON.stringify({type: 'user', user_id: chatConfig.userId, uid: chatConfig.uid, product_id: chatConfig.productId, store_id: chatConfig.storeId, auth_token: chatToken}));
@@ -144,7 +168,12 @@ $this->title = '在线客服';
             chatImageInput.value = '';
             return;
         }
-        const formData = new FormData();
+        const formData = createChatFormData();
+        if (!formData) {
+            addChatMessage('当前环境不支持文件上传，请在浏览器中重试。', false);
+            chatImageInput.value = '';
+            return;
+        }
         formData.append('file', file);
         const response = await fetch(chatConfig.uploadUrl, {method: 'POST', body: formData});
         const result = await response.json();
@@ -160,7 +189,12 @@ $this->title = '在线客服';
         event.preventDefault();
         const status = document.getElementById('ratingStatus');
         status.textContent = '提交中...';
-        const response = await fetch(chatConfig.ratingUrl, {method: 'POST', body: new FormData(event.target), headers: {'Accept': 'application/json'}});
+        const formData = createChatFormData(event.target);
+        if (!formData) {
+            status.textContent = '当前环境不支持提交评价，请在浏览器中重试';
+            return;
+        }
+        const response = await fetch(chatConfig.ratingUrl, {method: 'POST', body: formData, headers: {'Accept': 'application/json'}});
         const result = await response.json();
         status.textContent = response.ok ? '评价已提交' : (result.msg || '提交失败');
     };

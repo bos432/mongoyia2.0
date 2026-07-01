@@ -558,6 +558,10 @@ Phase 15.8 frontend distributor profile/withdraw POST guard: `/mall/user/distrib
 
 Phase 15.9 distributor support child readiness wiring: `distribution-support-phase15-acceptance/run` now supports `MONGOYIA_DISTRIBUTION_SUPPORT_PHASE15_CHILD_CHECKS_V1` and `--runChildChecks=1`, executing `distribution-support-content-phase15-readiness/run`, `distribution-material-phase15-readiness/run`, and `distribution-signoff-phase15-readiness/run` with fixture mode when requested. The Phase 10-15 aggregate command now passes child readiness checks through to Phase 15.
 
+## 2026-07-01 Remediation Backlog
+
+R1 mini-program customer-service chat compatibility: `frontend/modules/mall/views/chat/index.php` now uses `MONGOYIA_MINI_PROGRAM_CHAT_QUERY_COMPAT_V1` with an `encodeURIComponent` query builder instead of unsupported modern query APIs, guards upload/rating FormData access with `MONGOYIA_MINI_PROGRAM_CHAT_FORMDATA_GUARD_V1`, and falls back when WebSocket/FormData support is unavailable. The full PC/H5 chat template keeps media upload available while adding `MONGOYIA_CHAT_WEBVIEW_FORMDATA_GUARD_V1`, `MONGOYIA_CHAT_WEBVIEW_URL_NORMALIZER_COMPAT_V1`, and voice-recording Blob/File/MediaRecorder guards so low-capability WebViews degrade without script errors. Static compatibility coverage is provided by `MONGOYIA_MINI_PROGRAM_COMPAT_READINESS_V1` through `mini-program-compat-readiness/run --strict=1`, which is read-only and does not call external providers, create orders, mutate funds/stock, approve reviews, trigger payouts, or switch production GO.
+
 ## Phase 1 Backlog
 
 | Priority | Work | Status | Verification |

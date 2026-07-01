@@ -256,6 +256,12 @@ class MongoyiaRequirementsClosureAcceptanceController extends Controller
             'HTTP 444',
             'return 444',
         ]);
+        $this->requireFileContains('Full-role browser evidence readiness', 'console/controllers/FullRoleBrowserEvidenceReadinessController.php', [
+            'MONGOYIA_FULL_ROLE_BROWSER_EVIDENCE_READINESS_V1',
+            'MONGOYIA_FULL_ROLE_BROWSER_EVIDENCE_V1',
+            'full-role-browser-evidence-readiness/run',
+            '五类角色',
+        ]);
     }
 
     private function checkDatabasePreflight(): bool

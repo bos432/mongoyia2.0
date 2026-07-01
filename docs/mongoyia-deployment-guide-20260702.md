@@ -84,6 +84,28 @@ cd /www/wwwroot/demo2026.mongoyia.com
 
 ## 右侧浏览器手工/自动验收步骤
 
+`MONGOYIA_FULL_ROLE_BROWSER_EVIDENCE_READINESS_V1` 用于生成和校验五类角色右侧浏览器验收文档。它只处理 Markdown 证据，不登录、不创建订单、不触发支付/退款/提现/物流/上线 GO。
+
+先生成模板：
+
+```bash
+cd /www/wwwroot/demo2026.mongoyia.com
+/www/server/php/83/bin/php yii full-role-browser-evidence-readiness/run \
+  --generateTemplate=1 \
+  --templatePath=runtime/handover/full-role-browser-evidence.md \
+  --interactive=0
+```
+
+完成右侧浏览器验证并填完模板后执行 strict 校验：
+
+```bash
+/www/server/php/83/bin/php yii full-role-browser-evidence-readiness/run \
+  --evidencePath=runtime/handover/full-role-browser-evidence.md \
+  --accepted=1 \
+  --strict=1 \
+  --interactive=0
+```
+
 ### 平台管理员
 
 1. 打开 `/backend/`。

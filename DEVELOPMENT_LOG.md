@@ -1,5 +1,36 @@
 # Development Log
 
+## 2026-07-02 Full-Role Browser Evidence Readiness
+
+- Stage name: R4 full-role browser evidence template and strict validator
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md`, `DEVELOPMENT_LOG.md`, `docs/mongoyia-optimization-remediation-plan-20260702.md`, and the in-app browser control instructions before starting.
+  - Added `full-role-browser-evidence-readiness/run` with `MONGOYIA_FULL_ROLE_BROWSER_EVIDENCE_READINESS_V1`.
+  - The command can generate a `MONGOYIA_FULL_ROLE_BROWSER_EVIDENCE_V1` Markdown template for right-side browser/manual validation and later strict-check the filled evidence file.
+  - The evidence validator checks required sections for platform admin, seller, buyer, customer-service, distributor, mobile viewports, page opening, login, form submission, data saving, list/detail display, refresh persistence, frontend/API errors, GO/NO-GO, and safety boundaries.
+  - Added a secret-leakage guard for provider secrets/private keys/raw authorization markers in the evidence document.
+  - Registered the new command in the Phase 10-15 aggregate source coverage and documented the BaoTa template/strict commands in the deployment guide, remediation plan, and backlog.
+  - Did not log in, create orders, submit payment, approve refunds/reviews/withdrawals, call providers, mutate funds/stock, or switch production GO.
+- Main files changed/added:
+  - `console/controllers/FullRoleBrowserEvidenceReadinessController.php`
+  - `console/controllers/MongoyiaRequirementsClosureAcceptanceController.php`
+  - `docs/mongoyia-deployment-guide-20260702.md`
+  - `docs/mongoyia-optimization-remediation-plan-20260702.md`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l console/controllers/FullRoleBrowserEvidenceReadinessController.php` passed.
+  - `php -l console/controllers/MongoyiaRequirementsClosureAcceptanceController.php` passed.
+  - Static marker scan confirmed `MONGOYIA_FULL_ROLE_BROWSER_EVIDENCE_READINESS_V1`, `MONGOYIA_FULL_ROLE_BROWSER_EVIDENCE_V1`, `full-role-browser-evidence-readiness/run`, aggregate registration, and docs references.
+  - `git diff --check` reported no whitespace errors, only existing Windows line-ending conversion warnings.
+  - Local Yii execution remains blocked by the missing `vendor/autoload.php`; BaoTa/test server must run the new command after pull.
+- Remaining issues:
+  - BaoTa/test server must pull this patch and generate/fill/strict-check `runtime/handover/full-role-browser-evidence.md` after real right-side browser/manual five-role testing.
+  - The test station still needs the latest code deployed, cache/opcache refreshed, 444/WAF blocking resolved or manually evidenced, and right-side browser role-flow evidence completed.
+  - Production remains `NO-GO` until external provider evidence and launch signoffs are accepted.
+- Next stage:
+  - Commit/push this evidence-readiness patch, then continue from BaoTa deployment/access output or right-side browser/manual test evidence.
+
 ## 2026-07-02 Post-Push Test-Station Read-Only Probe
 
 - Stage name: Post-push deployment freshness and 444 probe

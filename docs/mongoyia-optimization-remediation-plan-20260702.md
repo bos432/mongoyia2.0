@@ -37,6 +37,7 @@
 整改：
 
 - 恢复 in-app browser 控制通道，或安排人工在右侧浏览器按测试矩阵逐项操作。
+- 使用 `MONGOYIA_FULL_ROLE_BROWSER_EVIDENCE_READINESS_V1` / `full-role-browser-evidence-readiness/run` 生成并校验五类角色右侧浏览器证据模板，填完后作为 Phase 10-15 总验收的 browser evidence path。
 - 人工操作时保留截图、测试账号、输入摘要、订单/聊天/工单编号。
 
 验收：

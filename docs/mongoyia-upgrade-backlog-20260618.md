@@ -566,6 +566,8 @@ R2 test-station access and 444 diagnostics: `MONGOYIA_TEST_STATION_ACCESS_READIN
 
 R3 APP/H5 build warning governance: `MONGOYIA_APP_H5_BUILD_WARNING_GOVERNANCE_V1` makes `npm run build:h5` execute `scripts/build-h5.mjs`, which rejects project `.env*` files containing `NODE_ENV=`, suppresses the known Vite CJS notice through `VITE_CJS_IGNORE_WARNING`, filters the uni-app build-mode `NODE_ENV=production` notice, and preserves the raw upstream build as `npm run build:h5:raw`. Phase 13 acceptance source coverage checks the wrapper and package scripts.
 
+R4 full-role browser evidence governance: `MONGOYIA_FULL_ROLE_BROWSER_EVIDENCE_READINESS_V1` adds `full-role-browser-evidence-readiness/run` to generate and validate a `MONGOYIA_FULL_ROLE_BROWSER_EVIDENCE_V1` Markdown evidence document for the five required roles: platform admin, seller, buyer, customer-service, and distributor. The command validates required browser-flow, form/list/detail/refresh, mobile viewport, error, GO/NO-GO, and safety-boundary sections without logging in, creating orders, calling providers, mutating funds/stock, approving payouts/reviews, or switching production GO.
+
 ## Phase 1 Backlog
 
 | Priority | Work | Status | Verification |

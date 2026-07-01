@@ -1,5 +1,25 @@
 # Development Log
 
+## 2026-07-02 Full-Role Browser Direct-Control Blocker
+
+- Stage name: Full-role browser direct-control blocker
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md`, `DEVELOPMENT_LOG.md`, `docs/mongoyia-optimization-remediation-plan-20260702.md`, and `docs/mongoyia-server-readiness-evidence-20260702.md` before handling the user's request to directly operate the right-side browser and fill `runtime/handover/full-role-browser-evidence.md`.
+  - Re-read the in-app browser control skill instructions and checked the current Codex tool surface.
+  - Confirmed this session does not expose the required browser-control execution tool for clicking, typing, logging in, reading page state, or editing the right-side browser file directly.
+  - Confirmed there is no attached app terminal session available for direct server-terminal interaction from this Codex thread.
+  - Did not fabricate five-role browser evidence, mark checklist items complete, create orders, submit payment, approve refunds/reviews/withdrawals, call providers, mutate funds/stock, or switch production GO.
+- Main files changed/added:
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - Browser skill documentation was available, but the required direct browser-control tool was not exposed in this session.
+  - `codex_app.read_thread_terminal` reported no attached app terminal session.
+- Remaining issues:
+  - Real platform admin, seller, buyer, customer-service, distributor, and mobile viewport browser validation still must be performed in the right-side browser or by an operator with browser access.
+  - `runtime/handover/full-role-browser-evidence.md` remains pending until real test results are filled and `full-role-browser-evidence-readiness/run --accepted=1 --strict=1` passes.
+- Next stage:
+  - Use the generated evidence template for guided manual validation, or reopen/enable a Codex browser-control session that exposes the in-app browser control tool, then rerun strict evidence validation.
+
 ## 2026-07-02 BaoTa Full-Role Evidence Template Generation
 
 - Stage name: BaoTa full-role browser evidence template generation

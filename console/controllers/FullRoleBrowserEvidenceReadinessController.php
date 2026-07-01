@@ -20,6 +20,7 @@ class FullRoleBrowserEvidenceReadinessController extends Controller
 
     private $checks = [];
     private $unfinishedChecklistItems = [];
+    private $placeholderItems = [];
     private $failures = 0;
     private $warnings = 0;
     private $pending = 0;
@@ -129,6 +130,7 @@ class FullRoleBrowserEvidenceReadinessController extends Controller
         ], $this->evidencePath);
 
         $this->checkUnfinishedChecklist($content);
+        $this->checkEvidencePlaceholders($content);
         $this->checkSecretLeakage($content);
 
         if ($this->accepted) {
@@ -182,6 +184,43 @@ class FullRoleBrowserEvidenceReadinessController extends Controller
             $items[] = [
                 'line' => $index + 1,
                 'text' => trim($matches[1]),
+            ];
+        }
+        return $items;
+    }
+
+    private function checkEvidencePlaceholders(string $content): void
+    {
+        $this->placeholderItems = $this->findEvidencePlaceholders($content);
+        if ($this->placeholderItems) {
+            $firstItems = array_slice($this->placeholderItems, 0, 5);
+            $preview = [];
+            foreach ($firstItems as $item) {
+                $preview[] = 'L' . $item['line'] . ' ' . $item['text'];
+            }
+            $this->addCheck(
+                'Evidence placeholder guard',
+                'PENDING',
+                count($this->placeholderItems) . ' placeholder line(s)',
+                'Placeholder text remains: ' . implode('; ', $preview)
+            );
+            return;
+        }
+        $this->addCheck('Evidence placeholder guard', 'PASS', 'no placeholders', 'No placeholder text was found.');
+    }
+
+    private function findEvidencePlaceholders(string $content): array
+    {
+        $items = [];
+        $lines = preg_split('/\r\n|\r|\n/', $content);
+        foreach ($lines as $index => $line) {
+            $line = (string)$line;
+            if (!preg_match('/待填写|待补充|TODO|TBD|FIXME/i', $line)) {
+                continue;
+            }
+            $items[] = [
+                'line' => $index + 1,
+                'text' => trim($line),
             ];
         }
         return $items;
@@ -351,6 +390,22 @@ class FullRoleBrowserEvidenceReadinessController extends Controller
             }
             if (count($this->unfinishedChecklistItems) > 80) {
                 $lines[] = '| ... | ' . (count($this->unfinishedChecklistItems) - 80) . ' more unchecked item(s) omitted from this report. |';
+            }
+        }
+
+        if ($this->placeholderItems) {
+            $lines = array_merge($lines, [
+                '',
+                '## Placeholder Lines',
+                '',
+                '| Line | Content |',
+                '|---:|---|',
+            ]);
+            foreach (array_slice($this->placeholderItems, 0, 80) as $item) {
+                $lines[] = '| ' . (int)$item['line'] . ' | ' . $this->mdCell($item['text']) . ' |';
+            }
+            if (count($this->placeholderItems) > 80) {
+                $lines[] = '| ... | ' . (count($this->placeholderItems) - 80) . ' more placeholder line(s) omitted from this report. |';
             }
         }
 

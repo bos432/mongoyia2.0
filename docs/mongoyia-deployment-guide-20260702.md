@@ -106,7 +106,7 @@ cd /www/wwwroot/demo2026.mongoyia.com
   --interactive=0
 ```
 
-如果 strict 校验仍出现 `Evidence unfinished checklist`，打开生成的 readiness 报告；`Unchecked Checklist Items` 表会列出仍未勾选的行号和事项，逐项完成右侧浏览器验证后再 rerun。
+如果 strict 校验仍出现 `Evidence unfinished checklist`，打开生成的 readiness 报告；`Unchecked Checklist Items` 表会列出仍未勾选的行号和事项，逐项完成右侧浏览器验证后再 rerun。若出现 `Evidence placeholder guard`，按 `Placeholder Lines` 表替换 `待填写`、`TODO`、`TBD` 等占位文字。
 
 ### 平台管理员
 

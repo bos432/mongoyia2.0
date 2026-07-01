@@ -1,5 +1,30 @@
 # Development Log
 
+## 2026-07-02 Browser Evidence Placeholder Guard
+
+- Stage name: Full-role browser evidence placeholder guard
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md`, `DEVELOPMENT_LOG.md`, and `docs/mongoyia-optimization-remediation-plan-20260702.md` before starting this follow-up evidence-quality stage.
+  - Added placeholder detection to `full-role-browser-evidence-readiness/run` so evidence documents with `待填写`, `待补充`, `TODO`, `TBD`, or `FIXME` are reported as pending.
+  - The generated readiness report now includes a `Placeholder Lines` table with line numbers and redacted-safe line content, similar to the unfinished checklist table.
+  - Updated the deployment guide so operators know to resolve both unchecked checklist rows and placeholder rows before rerunning strict evidence validation.
+  - Did not mark any browser evidence item complete, log in, create orders, submit payment, approve refunds/reviews/withdrawals, call providers, mutate funds/stock, or switch production GO.
+- Main files changed/added:
+  - `console/controllers/FullRoleBrowserEvidenceReadinessController.php`
+  - `docs/mongoyia-deployment-guide-20260702.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l console/controllers/FullRoleBrowserEvidenceReadinessController.php` passed.
+  - Static marker scan confirmed `placeholderItems`, `findEvidencePlaceholders`, `Evidence placeholder guard`, `Placeholder Lines`, and deployment-guide guidance.
+  - `git diff --check` reported no whitespace errors, only existing Windows line-ending conversion warnings.
+  - Full Yii execution remains BaoTa-only because this local checkout lacks `vendor/autoload.php`.
+- Remaining issues:
+  - The BaoTa evidence file still needs real right-side browser/manual five-role validation, completed checkboxes, and replacement of placeholder text.
+  - After filling evidence, rerun `full-role-browser-evidence-readiness/run --evidencePath=runtime/handover/full-role-browser-evidence.md --accepted=1 --strict=1`.
+  - Production remains `NO-GO` until browser evidence, external provider evidence, and production signoffs are accepted.
+- Next stage:
+  - Run syntax/static checks, commit/push this placeholder guard, then use the improved BaoTa report to finish browser evidence.
+
 ## 2026-07-02 Browser Evidence Unchecked Item Diagnostics
 
 - Stage name: Full-role browser evidence unfinished checklist diagnostics

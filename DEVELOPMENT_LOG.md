@@ -1,5 +1,27 @@
 # Development Log
 
+## 2026-07-02 Post-Push Test-Station Read-Only Probe
+
+- Stage name: Post-push deployment freshness and 444 probe
+- Completed:
+  - Reread the 2026-07-02 remediation plan and latest development log after pushing `340b589`.
+  - Confirmed local `HEAD` and remote `mongoyia/master` both point to `340b589`.
+  - Ran a read-only HTTPS probe against the test station for the chat page, backend login page, backend root, and buyer product API.
+  - Did not submit login forms, create orders, mutate cart/order/funds/stock, call external providers, approve reviews/withdrawals, or switch production GO.
+- Main files changed/added:
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `https://demo2026.mongoyia.com/mall/chat/index?gid=2` returned HTTP 200 but did not render `MONGOYIA_CHAT_WEBVIEW_FORMDATA_GUARD_V1`, `MONGOYIA_CHAT_WEBVIEW_URL_NORMALIZER_COMPAT_V1`, or `MONGOYIA_MINI_PROGRAM_CHAT_QUERY_COMPAT_V1`, so the test station is still serving stale code/cache for the chat entry.
+  - `https://demo2026.mongoyia.com/backend/site/login` returned HTTP 200.
+  - `https://demo2026.mongoyia.com/backend/` returned HTTP 444 for the external read-only probe.
+  - `https://demo2026.mongoyia.com/api/v1/app-buyer/product?id=2` returned HTTP 200.
+- Remaining issues:
+  - BaoTa/test server must pull `340b589` or later, clear Yii/PHP/opcache/template cache, and run `mini-program-compat-readiness/run`, `test-station-access-readiness/run`, and `test-station-waf-diagnostics/run`.
+  - Right-side browser five-role validation cannot be marked passed until the deployed code is fresh, backend 444 is cleared or manually validated in the right-side browser, and the browser-control/manual evidence path is available.
+  - Production remains `NO-GO`.
+- Next stage:
+  - Wait for BaoTa deployment refresh and WAF/access-readiness output, then rerun the full five-role browser matrix and update the final test/deployment/remediation documents.
+
 ## 2026-07-02 Test-Station WAF Diagnostics Readiness
 
 - Stage name: R2/R3 follow-up test-station HTTP 444 WAF diagnostics

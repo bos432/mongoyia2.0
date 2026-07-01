@@ -19,6 +19,7 @@ class FullRoleBrowserEvidenceReadinessController extends Controller
     public $strict = false;
 
     private $checks = [];
+    private $unfinishedChecklistItems = [];
     private $failures = 0;
     private $warnings = 0;
     private $pending = 0;
@@ -152,11 +153,38 @@ class FullRoleBrowserEvidenceReadinessController extends Controller
 
     private function checkUnfinishedChecklist(string $content): void
     {
-        if (preg_match('/^\s*-\s*\[\s\]/m', $content)) {
-            $this->addCheck('Evidence unfinished checklist', 'PENDING', '- [ ]', 'Unchecked checklist items remain in the evidence document.');
+        $this->unfinishedChecklistItems = $this->findUnfinishedChecklistItems($content);
+        if ($this->unfinishedChecklistItems) {
+            $firstItems = array_slice($this->unfinishedChecklistItems, 0, 5);
+            $preview = [];
+            foreach ($firstItems as $item) {
+                $preview[] = 'L' . $item['line'] . ' ' . $item['text'];
+            }
+            $this->addCheck(
+                'Evidence unfinished checklist',
+                'PENDING',
+                count($this->unfinishedChecklistItems) . ' unchecked item(s)',
+                'Unchecked checklist items remain: ' . implode('; ', $preview)
+            );
             return;
         }
         $this->addCheck('Evidence unfinished checklist', 'PASS', 'no unchecked items', 'No unchecked checklist items were found.');
+    }
+
+    private function findUnfinishedChecklistItems(string $content): array
+    {
+        $items = [];
+        $lines = preg_split('/\r\n|\r|\n/', $content);
+        foreach ($lines as $index => $line) {
+            if (!preg_match('/^\s*-\s*\[\s\]\s*(.+)$/', (string)$line, $matches)) {
+                continue;
+            }
+            $items[] = [
+                'line' => $index + 1,
+                'text' => trim($matches[1]),
+            ];
+        }
+        return $items;
     }
 
     private function checkSecretLeakage(string $content): void
@@ -308,6 +336,22 @@ class FullRoleBrowserEvidenceReadinessController extends Controller
                 . $this->mdCell($check['area']) . ' | `'
                 . $this->mdCell($check['evidence']) . '` | '
                 . $this->mdCell($check['notes']) . ' |';
+        }
+
+        if ($this->unfinishedChecklistItems) {
+            $lines = array_merge($lines, [
+                '',
+                '## Unchecked Checklist Items',
+                '',
+                '| Line | Item |',
+                '|---:|---|',
+            ]);
+            foreach (array_slice($this->unfinishedChecklistItems, 0, 80) as $item) {
+                $lines[] = '| ' . (int)$item['line'] . ' | ' . $this->mdCell($item['text']) . ' |';
+            }
+            if (count($this->unfinishedChecklistItems) > 80) {
+                $lines[] = '| ... | ' . (count($this->unfinishedChecklistItems) - 80) . ' more unchecked item(s) omitted from this report. |';
+            }
         }
 
         $lines = array_merge($lines, [

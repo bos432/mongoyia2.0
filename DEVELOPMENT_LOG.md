@@ -1,5 +1,31 @@
 # Development Log
 
+## 2026-07-02 Browser Evidence Unchecked Item Diagnostics
+
+- Stage name: Full-role browser evidence unfinished checklist diagnostics
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md`, `DEVELOPMENT_LOG.md`, `docs/mongoyia-optimization-remediation-plan-20260702.md`, and `FullRoleBrowserEvidenceReadinessController.php` before starting.
+  - Reviewed the latest BaoTa output: `full-role-browser-evidence-readiness/run --accepted=1 --strict=1` passed required markers and secret guard, but reported `PENDING Evidence unfinished checklist`.
+  - Enhanced `full-role-browser-evidence-readiness/run` so it records unchecked Markdown checklist line numbers and item text.
+  - The generated readiness report now includes an `Unchecked Checklist Items` table with up to 80 unfinished rows, and the console check evidence reports the unchecked item count plus a short preview.
+  - Updated the deployment guide to tell operators to use the generated line-number table when strict validation still reports unfinished checklist items.
+  - Did not mark any browser evidence item complete, log in, create orders, submit payment, approve refunds/reviews/withdrawals, call providers, mutate funds/stock, or switch production GO.
+- Main files changed/added:
+  - `console/controllers/FullRoleBrowserEvidenceReadinessController.php`
+  - `docs/mongoyia-deployment-guide-20260702.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l console/controllers/FullRoleBrowserEvidenceReadinessController.php` passed.
+  - Static marker scan confirmed `unfinishedChecklistItems`, `findUnfinishedChecklistItems`, `Unchecked Checklist Items`, and deployment-guide guidance.
+  - `git diff --check` reported no whitespace errors, only existing Windows line-ending conversion warnings.
+  - Full Yii execution remains BaoTa-only because this local checkout lacks `vendor/autoload.php`.
+- Remaining issues:
+  - `runtime/handover/full-role-browser-evidence.md` on BaoTa still needs actual right-side browser/manual five-role validation and completed checklist items.
+  - After filling evidence, rerun `full-role-browser-evidence-readiness/run --evidencePath=runtime/handover/full-role-browser-evidence.md --accepted=1 --strict=1`.
+  - Production remains `NO-GO` until browser evidence, external provider evidence, and production signoffs are accepted.
+- Next stage:
+  - Run syntax/static checks, commit/push this diagnostics patch, then use the improved BaoTa report to finish the browser evidence checklist.
+
 ## 2026-07-02 BaoTa Readiness Output Review
 
 - Stage name: BaoTa deployment/access readiness accepted evidence review

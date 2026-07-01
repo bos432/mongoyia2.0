@@ -106,6 +106,8 @@ cd /www/wwwroot/demo2026.mongoyia.com
   --interactive=0
 ```
 
+如果 strict 校验仍出现 `Evidence unfinished checklist`，打开生成的 readiness 报告；`Unchecked Checklist Items` 表会列出仍未勾选的行号和事项，逐项完成右侧浏览器验证后再 rerun。
+
 ### 平台管理员
 
 1. 打开 `/backend/`。

@@ -1,5 +1,36 @@
 # Development Log
 
+## 2026-07-02 Test-Station Access Readiness Matrix
+
+- Stage name: R2 test-station access and HTTP 444 diagnostics
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md`, `docs/mongoyia-optimization-remediation-plan-20260702.md`, and this log before starting.
+  - Added the read-only `test-station-access-readiness/run` console command with `MONGOYIA_TEST_STATION_ACCESS_READINESS_V1`.
+  - The command probes public frontend pages, buyer APP APIs, seller APP unauthenticated boundary, deployed R1 chat compatibility markers, backend login CSRF, `/backend/` access, and a CSRF-valid seller login POST for `zhishichanquan`.
+  - It classifies `HTTP 444` as a WAF/Nginx/security-policy blocker and writes a handover Markdown report with BaoTa commands.
+  - Registered the command in Phase 10-15 aggregate source coverage and documented it in the backlog, deployment guide, and 2026-07-02 remediation plan.
+  - Did not trigger real payment, refund, payout, logistics provider calls, SMTP/OAuth/SMS/translation provider calls, review approval, withdrawal approval, order creation, stock mutation, or production GO.
+- Main files changed/added:
+  - `console/controllers/TestStationAccessReadinessController.php`
+  - `console/controllers/MongoyiaRequirementsClosureAcceptanceController.php`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `docs/mongoyia-deployment-guide-20260702.md`
+  - `docs/mongoyia-optimization-remediation-plan-20260702.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l console/controllers/TestStationAccessReadinessController.php` passed.
+  - `php -l console/controllers/MongoyiaRequirementsClosureAcceptanceController.php` passed.
+  - Static marker scan confirmed `MONGOYIA_TEST_STATION_ACCESS_READINESS_V1`, `test-station-access-readiness/run`, Phase 10-15 aggregate source coverage, backlog registration, deployment-guide command, and remediation-plan references.
+  - `git diff --check` reported no whitespace errors, only existing Windows line-ending conversion warnings.
+  - Full Yii console execution remains BaoTa-only because this local checkout lacks `vendor/autoload.php`.
+- Remaining issues:
+  - BaoTa/test server must pull this patch and run `test-station-access-readiness/run --strict=1`.
+  - If the command still reports `HTTP 444`, the fix is in BaoTa/Nginx/WAF policy or validation IP/path whitelist, not in business code.
+  - Right-side browser five-role validation remains pending until browser control/manual browser access and backend login are available.
+  - Production remains `NO-GO` until external provider evidence and launch signoffs are accepted.
+- Next stage:
+  - Run local syntax/static checks, commit/push this R2 readiness patch, then continue with deployment verification output or the next P0/P1 remediation item.
+
 ## 2026-07-02 Full Role Validation Attempt and Handover Docs
 
 - Stage name: Full role browser validation attempt, deployment guide, and remediation update

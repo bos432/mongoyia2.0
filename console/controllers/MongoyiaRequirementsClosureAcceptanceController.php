@@ -244,6 +244,12 @@ class MongoyiaRequirementsClosureAcceptanceController extends Controller
             'MONGOYIA_MINI_PROGRAM_CHAT_QUERY_COMPAT_V1',
             'MONGOYIA_CHAT_WEBVIEW_FORMDATA_GUARD_V1',
         ]);
+        $this->requireFileContains('Test-station access readiness', 'console/controllers/TestStationAccessReadinessController.php', [
+            'MONGOYIA_TEST_STATION_ACCESS_READINESS_V1',
+            'test-station-access-readiness/run',
+            'HTTP 444',
+            'R1 chat compatibility deployed markers',
+        ]);
     }
 
     private function checkDatabasePreflight(): bool

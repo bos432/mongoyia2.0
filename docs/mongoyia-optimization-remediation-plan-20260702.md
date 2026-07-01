@@ -20,6 +20,7 @@
 - 确认 `git rev-parse --short HEAD` 为 `7fe4f57` 或后续提交。
 - 执行 Yii cache flush 和 PHP-FPM restart。
 - 运行 `mini-program-compat-readiness/run --strict=1`。
+- 运行 `MONGOYIA_TEST_STATION_ACCESS_READINESS_V1` 对应的 `test-station-access-readiness/run --strict=1`，确认测试站实际渲染了 R1 标记。
 
 验收：
 
@@ -56,6 +57,7 @@
 - 在宝塔/Nginx/WAF/安全插件中定位 444 命中规则。
 - 对验收机 IP 或测试验收路径做最小白名单。
 - 不关闭 CSRF、登录权限、验证码、支付/资金/提现保护。
+- 使用 `test-station-access-readiness/run` 复核 `/backend/site/login` GET、后台登录 POST、`/backend/` 和 `/backend/site/info` 是否仍被 444 阻断。
 
 验收：
 
@@ -97,7 +99,7 @@
 
 - 移动端 390x844、414x896、768x1024 视觉回归。
 - 治理 `npm run build:h5` 中的 Vite CJS deprecation 和 `.env NODE_ENV=production` 警告。
-- 增加测试站只读健康矩阵，避免每次依赖人工点页面。
+- 增加测试站只读健康矩阵，避免每次依赖人工点页面：已规划为 `MONGOYIA_TEST_STATION_ACCESS_READINESS_V1` / `test-station-access-readiness/run`。
 - 把生产外部资料后补页和证据页作为上线前固定检查项。
 
 ## 是否影响生产上线

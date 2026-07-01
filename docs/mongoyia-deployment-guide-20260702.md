@@ -41,6 +41,28 @@ cd /www/wwwroot/demo2026.mongoyia.com
   - `MONGOYIA_CHAT_WEBVIEW_URL_NORMALIZER_COMPAT_V1`
   - 或简版入口的 `MONGOYIA_MINI_PROGRAM_CHAT_QUERY_COMPAT_V1`
 
+## 测试站只读健康矩阵
+
+`MONGOYIA_TEST_STATION_ACCESS_READINESS_V1` 用于一次性检查测试站公开页面、APP API、客服兼容标记、后台登录 CSRF、后台入口 `HTTP 444` 和商家登录自动化访问状态。该命令只读，不会创建订单、触发支付、审批退款/提现/评论、调用外部服务商或切换生产 GO。
+
+```bash
+cd /www/wwwroot/demo2026.mongoyia.com
+/www/server/php/83/bin/php yii test-station-access-readiness/run \
+  --baseUrl=https://demo2026.mongoyia.com \
+  --sellerUsername=zhishichanquan \
+  --sellerPassword=123456 \
+  --strict=1 \
+  --interactive=0
+```
+
+验收重点：
+
+- 公开页面和 APP 买家 API 应返回 200。
+- APP 商家未登录接口应返回 401。
+- `/backend/site/login` 应返回 200 且能解析 `_csrf-backend`。
+- `/backend/`、后台登录 POST、`/backend/site/info` 不应返回 `HTTP 444`。
+- `/mall/chat/index?gid=2` 应渲染 R1 兼容标记。
+
 ## 总体验收命令
 
 ```bash

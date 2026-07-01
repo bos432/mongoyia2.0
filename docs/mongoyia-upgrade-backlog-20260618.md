@@ -562,6 +562,8 @@ Phase 15.9 distributor support child readiness wiring: `distribution-support-pha
 
 R1 mini-program customer-service chat compatibility: `frontend/modules/mall/views/chat/index.php` now uses `MONGOYIA_MINI_PROGRAM_CHAT_QUERY_COMPAT_V1` with an `encodeURIComponent` query builder instead of unsupported modern query APIs, guards upload/rating FormData access with `MONGOYIA_MINI_PROGRAM_CHAT_FORMDATA_GUARD_V1`, and falls back when WebSocket/FormData support is unavailable. The full PC/H5 chat template keeps media upload available while adding `MONGOYIA_CHAT_WEBVIEW_FORMDATA_GUARD_V1`, `MONGOYIA_CHAT_WEBVIEW_URL_NORMALIZER_COMPAT_V1`, and voice-recording Blob/File/MediaRecorder guards so low-capability WebViews degrade without script errors. Static compatibility coverage is provided by `MONGOYIA_MINI_PROGRAM_COMPAT_READINESS_V1` through `mini-program-compat-readiness/run --strict=1`, which is read-only and does not call external providers, create orders, mutate funds/stock, approve reviews, trigger payouts, or switch production GO.
 
+R2 test-station access and 444 diagnostics: `MONGOYIA_TEST_STATION_ACCESS_READINESS_V1` adds `test-station-access-readiness/run` for a read-only public/backend/access matrix. It probes public frontend routes, buyer APP APIs, seller APP unauthenticated boundary, deployed R1 chat markers, backend login CSRF, `/backend/` script access, and a CSRF-valid seller login POST for `zhishichanquan` without creating orders or calling providers. The command reports `HTTP 444` as a WAF/Nginx/security-policy blocker and writes a handover report with BaoTa commands for minimal validation whitelist follow-up.
+
 ## Phase 1 Backlog
 
 | Priority | Work | Status | Verification |

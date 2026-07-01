@@ -1,5 +1,37 @@
 # Development Log
 
+## 2026-07-02 BaoTa 305b608 Readiness Recheck
+
+- Stage name: BaoTa post-305b608 server readiness recheck
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md`, `DEVELOPMENT_LOG.md`, `docs/mongoyia-optimization-remediation-plan-20260702.md`, and `docs/mongoyia-server-readiness-evidence-20260702.md` before recording this server-readiness stage.
+  - Reviewed BaoTa output confirming `git pull --ff-only` fast-forwarded the test server from `8e6c1bb` to `305b608`.
+  - Confirmed `git rev-parse --short HEAD` returned `305b608`.
+  - Confirmed `migrate/up` reported no new migrations and `cache/flush-all` processed the Yii file cache.
+  - Confirmed PHP-FPM 8.3 restarted successfully.
+  - Confirmed `mini-program-compat-readiness/run --strict=1` passed with `0 failure(s), 0 warning(s)` and wrote `runtime/handover/mini-program-compat-readiness-20260701-190931.md`.
+  - Confirmed `test-station-access-readiness/run --strict=1` passed with `0 failure(s), 0 warning(s)` and wrote `runtime/handover/test-station-access-readiness-20260701-190933.md`.
+  - Updated the server readiness evidence and remediation plan to show that deployment/access readiness is now green at `305b608`.
+  - Did not mark browser evidence complete, create orders, submit payment, approve refunds/reviews/withdrawals, call providers, mutate funds/stock, or switch production GO.
+- Main files changed/added:
+  - `docs/mongoyia-server-readiness-evidence-20260702.md`
+  - `docs/mongoyia-optimization-remediation-plan-20260702.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - BaoTa `migrate/up`: no new migrations.
+  - BaoTa `cache/flush-all`: `cache` component processed.
+  - BaoTa PHP-FPM restart: successful.
+  - BaoTa `mini-program-compat-readiness/run --strict=1`: PASS, `0 failure(s), 0 warning(s)`.
+  - BaoTa `test-station-access-readiness/run --strict=1`: PASS, `0 failure(s), 0 warning(s)`.
+  - Static marker scan confirmed `305b608`, `mini-program-compat-readiness-20260701-190931`, and `test-station-access-readiness-20260701-190933` in the updated evidence/log files.
+  - `git diff --check` reported no whitespace errors, only existing Windows line-ending conversion warnings.
+  - CLI warning `Module "mbstring" is already loaded` remains non-blocking.
+- Remaining issues:
+  - Full-role browser evidence is still pending because the right-side browser/manual five-role flow has not been filled and strict-accepted.
+  - Production remains `NO-GO` until browser evidence, external provider evidence, operations evidence, and launch signoffs are accepted.
+- Next stage:
+  - Generate or merge the latest `runtime/handover/full-role-browser-evidence.md`, complete real platform admin/seller/buyer/customer-service/distributor browser validation, then rerun `full-role-browser-evidence-readiness/run --accepted=1 --strict=1`.
+
 ## 2026-07-02 Browser Evidence Completion Template
 
 - Stage name: Full-role browser evidence completion template

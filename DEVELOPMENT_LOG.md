@@ -1,5 +1,28 @@
 # Development Log
 
+## 2026-07-02 Post-61ab0a1 Deployment Marker Recheck
+
+- Stage name: Deployment freshness recheck after full-role evidence readiness push
+- Completed:
+  - Reread the 2026-07-02 remediation plan and latest development status after pushing `61ab0a1`.
+  - Confirmed local `HEAD` and remote `mongoyia/master` both point to `61ab0a1`.
+  - Ran a read-only HTTPS probe against the test station for chat, backend login, backend root, and buyer product API.
+  - Did not submit login forms, create orders, mutate cart/order/funds/stock, call external providers, approve reviews/withdrawals, or switch production GO.
+- Main files changed/added:
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `https://demo2026.mongoyia.com/mall/chat/index?gid=2` returned HTTP 200 and now renders `MONGOYIA_CHAT_WEBVIEW_FORMDATA_GUARD_V1` plus `MONGOYIA_CHAT_WEBVIEW_URL_NORMALIZER_COMPAT_V1`, confirming the deployed chat template includes the R1 WebView compatibility fix.
+  - `https://demo2026.mongoyia.com/backend/site/login` returned HTTP 200.
+  - `https://demo2026.mongoyia.com/backend/` still returned HTTP 444 for the external read-only probe.
+  - `https://demo2026.mongoyia.com/api/v1/app-buyer/product?id=2` returned HTTP 200.
+- Remaining issues:
+  - R1 chat marker deployment is now visible, but backend automation/browser matrix remains blocked from this probe path by HTTP 444.
+  - BaoTa/test server still needs to run `test-station-access-readiness/run`, `test-station-waf-diagnostics/run`, and the new `full-role-browser-evidence-readiness/run` template/strict flow after right-side browser/manual testing.
+  - Right-side browser five-role validation cannot be marked passed until backend access/session switching and the evidence document are completed.
+  - Production remains `NO-GO`.
+- Next stage:
+  - Commit/push this deployment recheck evidence, then continue from BaoTa WAF/access output or right-side browser/manual five-role evidence.
+
 ## 2026-07-02 Full-Role Browser Evidence Readiness
 
 - Stage name: R4 full-role browser evidence template and strict validator

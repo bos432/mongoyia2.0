@@ -7,7 +7,7 @@
   - Reread `docs/mongoyia-upgrade-backlog-20260618.md`, `DEVELOPMENT_LOG.md`, and `docs/mongoyia-optimization-remediation-plan-20260702.md` before starting this small evidence-closure stage.
   - Reviewed the current status after BaoTa generated `runtime/handover/full-role-browser-evidence.md`: server readiness is green, but strict full-role browser evidence remains pending until real right-side browser/manual five-role validation is filled.
   - Expanded the `full-role-browser-evidence-readiness/run --generateTemplate=1` Markdown template with evidence fill rules, per-role account/session fields, entry URLs, concrete page/API matrices, test-data summary slots, mobile viewport scope, and the final aggregate Phase 10-15 browser-evidence command.
-  - Updated the deployment guide and remediation plan so operators pull `88d7b0f` or newer, use the unchecked-checklist and placeholder-line diagnostics, and avoid bulk-checking rows without actual browser validation.
+  - Updated the deployment guide and remediation plan so operators pull `4871c5a` or newer, use the unchecked-checklist and placeholder-line diagnostics, and avoid bulk-checking rows without actual browser validation.
   - Updated the upgrade backlog R4 note to include the enhanced template, diagnostics, aggregate command, and secret guard behavior.
   - Did not mark browser evidence complete, log in, create orders, submit payment, approve refunds/reviews/withdrawals, call providers, mutate funds/stock, or switch production GO.
 - Main files changed/added:
@@ -18,7 +18,7 @@
   - `DEVELOPMENT_LOG.md`
 - Run/test result:
   - `php -l console/controllers/FullRoleBrowserEvidenceReadinessController.php` passed.
-  - Static marker scan confirmed `Evidence Fill Rules`, `Final Aggregate Acceptance Command`, `88d7b0f`, `Placeholder Lines`, `Unchecked Checklist Items`, and the new log entry.
+  - Static marker scan confirmed `Evidence Fill Rules`, `Final Aggregate Acceptance Command`, `4871c5a`, `Placeholder Lines`, `Unchecked Checklist Items`, and the new log entry.
   - `git diff --check` reported no whitespace errors, only existing Windows line-ending conversion warnings.
   - Full Yii execution remains BaoTa-only because this local checkout lacks `vendor/autoload.php`.
 - Remaining issues:

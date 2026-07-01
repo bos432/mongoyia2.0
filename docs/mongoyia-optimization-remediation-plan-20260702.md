@@ -2,7 +2,7 @@
 
 ## 当前结论
 
-系统代码侧 Phase 10-15 主体功能和 R1 小程序兼容修复已经推进。BaoTa/test-server 已拉取到 `8e6c1bb`，迁移、缓存刷新、PHP-FPM 重启完成，`test-station-access-readiness/run --strict=1` 以 `0 failure(s), 0 warning(s)` 通过，后台登录、商家登录、后台入口、公开页面、APP API 和 R1 chat 标记已经在服务器验收路径可用。本地/远程后续又补了全角色证据 strict 诊断能力，最新期望提交为 `88d7b0f` 或后续提交。当前仍未通过“全角色右侧浏览器主流程完成”的最终标准，剩余重点是完成右侧浏览器/人工五类角色证据文档并通过 strict 校验。
+系统代码侧 Phase 10-15 主体功能和 R1 小程序兼容修复已经推进。BaoTa/test-server 已拉取到 `8e6c1bb`，迁移、缓存刷新、PHP-FPM 重启完成，`test-station-access-readiness/run --strict=1` 以 `0 failure(s), 0 warning(s)` 通过，后台登录、商家登录、后台入口、公开页面、APP API 和 R1 chat 标记已经在服务器验收路径可用。本地/远程后续又补了全角色证据 strict 诊断能力和更完整的证据模板，最新期望提交为 `4871c5a` 或后续提交。当前仍未通过“全角色右侧浏览器主流程完成”的最终标准，剩余重点是完成右侧浏览器/人工五类角色证据文档并通过 strict 校验。
 
 ## P0：必须先处理
 
@@ -10,14 +10,14 @@
 
 现象：
 
-- 已修复：BaoTa/test-server 当前为 `18e6348`。
+- 已修复：BaoTa/test-server 已验证到 `8e6c1bb`；本轮仍需继续拉取到 `4871c5a` 或后续提交。
 - 已修复：`test-station-access-readiness/run --strict=1` 确认 `/mall/chat/index?gid=2` 渲染 R1 兼容标记，且没有部署 `URLSearchParams` 标记。
 - 留存事项：小程序/低版本 WebView 仍需真实客户端或人工右侧浏览器补证据。
 
 整改：
 
 - 宝塔执行 `git pull --ff-only`。
-- 确认 `git rev-parse --short HEAD` 为 `88d7b0f` 或后续提交。
+- 确认 `git rev-parse --short HEAD` 为 `4871c5a` 或后续提交。
 - 执行 Yii cache flush 和 PHP-FPM restart。
 - 运行 `mini-program-compat-readiness/run --strict=1`。
 - 运行 `MONGOYIA_TEST_STATION_ACCESS_READINESS_V1` 对应的 `test-station-access-readiness/run --strict=1`，确认测试站实际渲染了 R1 标记。

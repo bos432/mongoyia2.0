@@ -7,7 +7,7 @@
 ## 当前目标提交
 
 - 远程：`mongoyia/master`
-- 期望提交：`88d7b0f Guard browser evidence placeholders` 或后续提交
+- 期望提交：`4871c5a Enhance full role browser evidence template` 或后续提交
 
 ## 宝塔服务器部署命令
 
@@ -22,7 +22,7 @@ git rev-parse --short HEAD
 
 期望：
 
-- `git rev-parse --short HEAD` 输出 `88d7b0f` 或后续提交。
+- `git rev-parse --short HEAD` 输出 `4871c5a` 或后续提交。
 - `migrate/up` 无 DB 账号错误。
 - PHP-FPM 重启后页面不再渲染旧模板。
 

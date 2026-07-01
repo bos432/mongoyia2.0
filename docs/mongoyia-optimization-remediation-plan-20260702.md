@@ -2,7 +2,7 @@
 
 ## 当前结论
 
-系统代码侧 Phase 10-15 主体功能和 R1 小程序兼容修复已经推进，但本轮验收没有通过“全角色右侧浏览器主流程完成”的标准。当前重点不应继续扩大业务范围，而应优先恢复测试站部署一致性、浏览器验收通道和后台自动化登录。
+系统代码侧 Phase 10-15 主体功能和 R1 小程序兼容修复已经推进。BaoTa/test-server 已拉取到 `18e6348`，迁移、缓存刷新、PHP-FPM 重启完成，`test-station-access-readiness/run --strict=1` 以 `0 failure(s), 0 warning(s)` 通过，后台登录、商家登录、后台入口、公开页面、APP API 和 R1 chat 标记已经在服务器验收路径可用。当前仍未通过“全角色右侧浏览器主流程完成”的最终标准，剩余重点是完成右侧浏览器/人工五类角色证据文档并通过 strict 校验。
 
 ## P0：必须先处理
 
@@ -10,9 +10,9 @@
 
 现象：
 
-- 本地和远程 `mongoyia/master` 均为 `7fe4f57`。
-- 测试站 `/mall/chat/index?gid=2` 未渲染 `MONGOYIA_CHAT_WEBVIEW_FORMDATA_GUARD_V1` / `MONGOYIA_CHAT_WEBVIEW_URL_NORMALIZER_COMPAT_V1`。
-- 页面仍可检测到旧模板中的 `new URL(`。
+- 已修复：BaoTa/test-server 当前为 `18e6348`。
+- 已修复：`test-station-access-readiness/run --strict=1` 确认 `/mall/chat/index?gid=2` 渲染 R1 兼容标记，且没有部署 `URLSearchParams` 标记。
+- 留存事项：小程序/低版本 WebView 仍需真实客户端或人工右侧浏览器补证据。
 
 整改：
 
@@ -49,9 +49,8 @@
 
 现象：
 
-- GET `/backend/site/login` 可打开并取得 CSRF。
-- POST `/backend/site/login` 使用 `zhishichanquan / 123456`、CSRF、Referer、Origin 后仍返回 444。
-- GET `/backend/` 和 `/backend/site/info` 脚本访问返回 444。
+- 已修复/解除阻断：服务器侧 `test-station-access-readiness/run --strict=1` 已确认后台登录 CSRF、后台根入口、商家登录 POST、商家 dashboard 均通过。
+- 当前状态：`test-station-waf-diagnostics/run` 仍输出 9 个 warning 和 60 条证据线，应作为 WAF/日志审查资料，不再作为当前访问矩阵阻断。
 
 整改：
 
@@ -110,7 +109,7 @@
 
 当前系统不能声明达到可上线运营标准。生产仍必须保持 `NO-GO`，直到：
 
-- 测试站部署到最新提交；
-- 444/WAF 验收阻断解除；
+- 测试站保持最新提交并持续通过 `test-station-access-readiness/run --strict=1`；
+- WAF 诊断 warning 完成审查并确认不影响右侧浏览器/验收路径；
 - 右侧浏览器五类角色主流程通过；
 - 外部服务商资料、压测、安全、备份、监控、业务签核全部完成并被后台证据中心接受。

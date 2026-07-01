@@ -1,5 +1,34 @@
 # Development Log
 
+## 2026-07-02 BaoTa Readiness Output Review
+
+- Stage name: BaoTa deployment/access readiness accepted evidence review
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md`, `DEVELOPMENT_LOG.md`, and `docs/mongoyia-optimization-remediation-plan-20260702.md` before processing the attached BaoTa output.
+  - Reviewed BaoTa deployment output showing `git pull --ff-only` updated the test server to `18e6348`.
+  - Confirmed BaoTa `migrate/up` reported no new migrations, `cache/flush-all` processed the Yii file cache, and PHP-FPM restarted successfully.
+  - Confirmed `test-station-access-readiness/run --strict=1` passed with `0 failure(s), 0 warning(s)`, including public frontend/API matrix, R1 chat compatibility markers, backend login CSRF, backend root script access, seller login POST, and seller dashboard access.
+  - Confirmed `test-station-waf-diagnostics/run` completed with `0 failure(s), 9 warning(s), 60 evidence line(s)`; because access readiness is green, these warnings are now review material rather than a current automation blocker.
+  - Confirmed `full-role-browser-evidence-readiness/run --generateTemplate=1` generated `runtime/handover/full-role-browser-evidence.md` and correctly reported one pending item because the five-role browser evidence is not filled yet.
+  - Added `docs/mongoyia-server-readiness-evidence-20260702.md` summarizing the BaoTa results and updated the 2026-07-02 remediation plan to reflect current status.
+  - Did not create orders, mutate cart/order/funds/stock, call external providers, approve reviews/withdrawals, submit real payment, or switch production GO.
+- Main files changed/added:
+  - `docs/mongoyia-server-readiness-evidence-20260702.md`
+  - `docs/mongoyia-optimization-remediation-plan-20260702.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - BaoTa `test-station-access-readiness/run --strict=1`: PASS, `0 failure(s), 0 warning(s)`.
+  - BaoTa `test-station-waf-diagnostics/run`: WARN, `0 failure(s), 9 warning(s), 60 evidence line(s)`.
+  - BaoTa `full-role-browser-evidence-readiness/run --generateTemplate=1`: WARN/PENDING, `0 failure(s), 0 warning(s), 1 pending`.
+  - CLI warning `Module "mbstring" is already loaded` appears on BaoTa PHP startup but did not block Yii commands.
+- Remaining issues:
+  - The filled right-side browser/manual five-role evidence document is still pending.
+  - Need run `full-role-browser-evidence-readiness/run --evidencePath=runtime/handover/full-role-browser-evidence.md --accepted=1 --strict=1` after the browser evidence is filled.
+  - Need rerun aggregate Phase 10-15 closure acceptance with accepted browser evidence paths after strict evidence passes.
+  - Production remains `NO-GO` until external provider evidence, operations evidence, and business/security/backup/load signoffs are accepted.
+- Next stage:
+  - Complete right-side browser/manual validation for platform admin, seller, buyer, customer-service, and distributor, fill the generated evidence file, strict-check it, then rerun aggregate acceptance.
+
 ## 2026-07-02 Post-61ab0a1 Deployment Marker Recheck
 
 - Stage name: Deployment freshness recheck after full-role evidence readiness push

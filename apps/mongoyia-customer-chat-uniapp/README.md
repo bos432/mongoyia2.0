@@ -14,6 +14,8 @@ npm run dev:h5
 
 Source files follow the standard uni-app/Vite layout under `src/`.
 
+`npm run build:h5` uses `MONGOYIA_APP_H5_BUILD_WARNING_GOVERNANCE_V1` in `scripts/build-h5.mjs` to keep the H5 build reproducible: it rejects project `.env*` files that set `NODE_ENV=`, suppresses the known Vite CJS notice through `VITE_CJS_IGNORE_WARNING`, and filters the uni-app build-mode `NODE_ENV=production` notice while preserving real build failures. Use `npm run build:h5:raw` only when you need the unfiltered upstream output.
+
 For local H5 validation when the remote server does not expose CORS headers, use the built-in Vite proxy:
 
 ```text

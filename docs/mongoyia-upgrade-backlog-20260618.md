@@ -564,6 +564,8 @@ R1 mini-program customer-service chat compatibility: `frontend/modules/mall/view
 
 R2 test-station access and 444 diagnostics: `MONGOYIA_TEST_STATION_ACCESS_READINESS_V1` adds `test-station-access-readiness/run` for a read-only public/backend/access matrix. It probes public frontend routes, buyer APP APIs, seller APP unauthenticated boundary, deployed R1 chat markers, backend login CSRF, `/backend/` script access, and a CSRF-valid seller login POST for `zhishichanquan` without creating orders or calling providers. The command reports `HTTP 444` as a WAF/Nginx/security-policy blocker and writes a handover report with BaoTa commands for minimal validation whitelist follow-up.
 
+R3 APP/H5 build warning governance: `MONGOYIA_APP_H5_BUILD_WARNING_GOVERNANCE_V1` makes `npm run build:h5` execute `scripts/build-h5.mjs`, which rejects project `.env*` files containing `NODE_ENV=`, suppresses the known Vite CJS notice through `VITE_CJS_IGNORE_WARNING`, filters the uni-app build-mode `NODE_ENV=production` notice, and preserves the raw upstream build as `npm run build:h5:raw`. Phase 13 acceptance source coverage checks the wrapper and package scripts.
+
 ## Phase 1 Backlog
 
 | Priority | Work | Status | Verification |

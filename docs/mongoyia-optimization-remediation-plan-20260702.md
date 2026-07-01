@@ -98,7 +98,7 @@
 ## P2：体验与质量
 
 - 移动端 390x844、414x896、768x1024 视觉回归。
-- 治理 `npm run build:h5` 中的 Vite CJS deprecation 和 `.env NODE_ENV=production` 警告。
+- 治理 `npm run build:h5` 中的 Vite CJS deprecation 和 `.env NODE_ENV=production` 警告：已通过 `MONGOYIA_APP_H5_BUILD_WARNING_GOVERNANCE_V1` 包装脚本处理，保留 `npm run build:h5:raw` 查看上游原始输出。
 - 增加测试站只读健康矩阵，避免每次依赖人工点页面：已规划为 `MONGOYIA_TEST_STATION_ACCESS_READINESS_V1` / `test-station-access-readiness/run`。
 - 把生产外部资料后补页和证据页作为上线前固定检查项。
 

@@ -1,5 +1,34 @@
 # Development Log
 
+## 2026-07-02 APP H5 Build Warning Governance
+
+- Stage name: R3 APP/H5 build warning governance
+- Completed:
+  - Continued from the 2026-07-02 remediation plan P2 quality item after R2 was committed and pushed.
+  - Added `MONGOYIA_APP_H5_BUILD_WARNING_GOVERNANCE_V1` through `apps/mongoyia-customer-chat-uniapp/scripts/build-h5.mjs`.
+  - Changed `npm run build:h5` to use the wrapper and kept `npm run build:h5:raw` for upstream unfiltered output.
+  - The wrapper rejects project `.env*` files containing `NODE_ENV=`, sets `VITE_CJS_IGNORE_WARNING=true`, filters the known uni-app build-mode `NODE_ENV=production` notice, and preserves real build failures by returning the Vite exit code.
+  - Updated the APP README, Phase 13 acceptance source coverage, backlog, and 2026-07-02 remediation plan.
+  - Did not touch payment, refund, payout, logistics provider, review approval, withdrawal, order write, stock, or production GO flows.
+- Main files changed/added:
+  - `apps/mongoyia-customer-chat-uniapp/package.json`
+  - `apps/mongoyia-customer-chat-uniapp/scripts/build-h5.mjs`
+  - `apps/mongoyia-customer-chat-uniapp/README.md`
+  - `console/controllers/AppPhase13AcceptanceController.php`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `docs/mongoyia-optimization-remediation-plan-20260702.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `node --check apps/mongoyia-customer-chat-uniapp/scripts/build-h5.mjs` passed.
+  - `npm run build:h5` passed and printed `MONGOYIA_APP_H5_BUILD_WARNING_GOVERNANCE_V1`; the previous Vite CJS and `NODE_ENV=production` warning lines were no longer emitted.
+  - Full Yii console execution remains BaoTa-only because this local checkout lacks `vendor/autoload.php`.
+- Remaining issues:
+  - Right-side browser validation still requires browser-control/manual access and backend login availability.
+  - Test-station deployment and `HTTP 444` remain environment/WAF follow-up items.
+  - Production remains `NO-GO` until external evidence and launch signoffs are accepted.
+- Next stage:
+  - Run final syntax/static checks, commit/push this APP H5 build-governance patch, then continue with deployment verification or browser validation once the test station is updated.
+
 ## 2026-07-02 Test-Station Access Readiness Matrix
 
 - Stage name: R2 test-station access and HTTP 444 diagnostics

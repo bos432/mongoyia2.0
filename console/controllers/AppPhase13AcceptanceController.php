@@ -119,6 +119,13 @@ class AppPhase13AcceptanceController extends Controller
             'mongoyia-customer-chat-uniapp',
             'dev:h5',
             'build:h5',
+            'build:h5:raw',
+        ]);
+        $this->requireFileContains('uni-app H5 build warning governance', 'apps/mongoyia-customer-chat-uniapp/scripts/build-h5.mjs', [
+            'MONGOYIA_APP_H5_BUILD_WARNING_GOVERNANCE_V1',
+            'VITE_CJS_IGNORE_WARNING',
+            'NODE_ENV',
+            'vite/bin/vite.js',
         ]);
         $this->requireFileContains('uni-app route registry', 'apps/mongoyia-customer-chat-uniapp/src/pages.json', [
             'pages/buyer/home',

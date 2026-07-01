@@ -5,7 +5,8 @@
   "description": "Mongoyia customer-service chat uni-app client",
   "scripts": {
     "dev:h5": "vite --host 0.0.0.0",
-    "build:h5": "vite build"
+    "build:h5": "node scripts/build-h5.mjs",
+    "build:h5:raw": "vite build"
   },
   "dependencies": {
     "@dcloudio/uni-app": "3.0.0-5000720260410001",

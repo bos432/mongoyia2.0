@@ -1,5 +1,33 @@
 # Development Log
 
+## 2026-07-02 Browser Evidence Completion Template
+
+- Stage name: Full-role browser evidence completion template
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md`, `DEVELOPMENT_LOG.md`, and `docs/mongoyia-optimization-remediation-plan-20260702.md` before starting this small evidence-closure stage.
+  - Reviewed the current status after BaoTa generated `runtime/handover/full-role-browser-evidence.md`: server readiness is green, but strict full-role browser evidence remains pending until real right-side browser/manual five-role validation is filled.
+  - Expanded the `full-role-browser-evidence-readiness/run --generateTemplate=1` Markdown template with evidence fill rules, per-role account/session fields, entry URLs, concrete page/API matrices, test-data summary slots, mobile viewport scope, and the final aggregate Phase 10-15 browser-evidence command.
+  - Updated the deployment guide and remediation plan so operators pull `88d7b0f` or newer, use the unchecked-checklist and placeholder-line diagnostics, and avoid bulk-checking rows without actual browser validation.
+  - Updated the upgrade backlog R4 note to include the enhanced template, diagnostics, aggregate command, and secret guard behavior.
+  - Did not mark browser evidence complete, log in, create orders, submit payment, approve refunds/reviews/withdrawals, call providers, mutate funds/stock, or switch production GO.
+- Main files changed/added:
+  - `console/controllers/FullRoleBrowserEvidenceReadinessController.php`
+  - `docs/mongoyia-deployment-guide-20260702.md`
+  - `docs/mongoyia-optimization-remediation-plan-20260702.md`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l console/controllers/FullRoleBrowserEvidenceReadinessController.php` passed.
+  - Static marker scan confirmed `Evidence Fill Rules`, `Final Aggregate Acceptance Command`, `88d7b0f`, `Placeholder Lines`, `Unchecked Checklist Items`, and the new log entry.
+  - `git diff --check` reported no whitespace errors, only existing Windows line-ending conversion warnings.
+  - Full Yii execution remains BaoTa-only because this local checkout lacks `vendor/autoload.php`.
+- Remaining issues:
+  - BaoTa/test server must pull this patch, regenerate or manually merge the richer template if desired, complete real right-side browser/manual five-role validation, replace placeholder text, and rerun strict evidence validation.
+  - Aggregate Phase 10-15 closure acceptance should only receive browser accepted flags after `full-role-browser-evidence-readiness/run --accepted=1 --strict=1` passes.
+  - Production remains `NO-GO` until browser evidence, external provider evidence, operations evidence, and launch signoffs are accepted.
+- Next stage:
+  - Run syntax/static checks, commit and push this evidence-template patch, then continue from BaoTa strict evidence output or completed browser evidence.
+
 ## 2026-07-02 Browser Evidence Placeholder Guard
 
 - Stage name: Full-role browser evidence placeholder guard

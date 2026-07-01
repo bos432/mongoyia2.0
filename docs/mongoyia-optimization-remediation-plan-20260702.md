@@ -2,7 +2,7 @@
 
 ## 当前结论
 
-系统代码侧 Phase 10-15 主体功能和 R1 小程序兼容修复已经推进。BaoTa/test-server 已拉取到 `18e6348`，迁移、缓存刷新、PHP-FPM 重启完成，`test-station-access-readiness/run --strict=1` 以 `0 failure(s), 0 warning(s)` 通过，后台登录、商家登录、后台入口、公开页面、APP API 和 R1 chat 标记已经在服务器验收路径可用。当前仍未通过“全角色右侧浏览器主流程完成”的最终标准，剩余重点是完成右侧浏览器/人工五类角色证据文档并通过 strict 校验。
+系统代码侧 Phase 10-15 主体功能和 R1 小程序兼容修复已经推进。BaoTa/test-server 已拉取到 `8e6c1bb`，迁移、缓存刷新、PHP-FPM 重启完成，`test-station-access-readiness/run --strict=1` 以 `0 failure(s), 0 warning(s)` 通过，后台登录、商家登录、后台入口、公开页面、APP API 和 R1 chat 标记已经在服务器验收路径可用。本地/远程后续又补了全角色证据 strict 诊断能力，最新期望提交为 `88d7b0f` 或后续提交。当前仍未通过“全角色右侧浏览器主流程完成”的最终标准，剩余重点是完成右侧浏览器/人工五类角色证据文档并通过 strict 校验。
 
 ## P0：必须先处理
 
@@ -17,7 +17,7 @@
 整改：
 
 - 宝塔执行 `git pull --ff-only`。
-- 确认 `git rev-parse --short HEAD` 为 `7fe4f57` 或后续提交。
+- 确认 `git rev-parse --short HEAD` 为 `88d7b0f` 或后续提交。
 - 执行 Yii cache flush 和 PHP-FPM restart。
 - 运行 `mini-program-compat-readiness/run --strict=1`。
 - 运行 `MONGOYIA_TEST_STATION_ACCESS_READINESS_V1` 对应的 `test-station-access-readiness/run --strict=1`，确认测试站实际渲染了 R1 标记。
@@ -38,6 +38,7 @@
 
 - 恢复 in-app browser 控制通道，或安排人工在右侧浏览器按测试矩阵逐项操作。
 - 使用 `MONGOYIA_FULL_ROLE_BROWSER_EVIDENCE_READINESS_V1` / `full-role-browser-evidence-readiness/run` 生成并校验五类角色右侧浏览器证据模板，填完后作为 Phase 10-15 总验收的 browser evidence path。
+- 使用 readiness 报告里的 `Unchecked Checklist Items` 和 `Placeholder Lines` 表定位未勾选或未填写的证据行；只有真实完成右侧浏览器操作后才勾选。
 - 人工操作时保留截图、测试账号、输入摘要、订单/聊天/工单编号。
 
 验收：

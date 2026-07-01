@@ -2,12 +2,12 @@
 
 ## 目标
 
-把测试站更新到包含 R1 小程序客服兼容修复的最新代码，并完成自动化 readiness、缓存刷新、后台/前台/APP 验收准备。
+把测试站更新到包含 R1 小程序客服兼容修复、测试站访问 readiness、五类角色浏览器证据 strict 校验的最新代码，并完成自动化 readiness、缓存刷新、后台/前台/APP 验收准备。
 
 ## 当前目标提交
 
 - 远程：`mongoyia/master`
-- 期望提交：`7fe4f57 Fix mini-program chat compatibility` 或后续提交
+- 期望提交：`88d7b0f Guard browser evidence placeholders` 或后续提交
 
 ## 宝塔服务器部署命令
 
@@ -22,7 +22,7 @@ git rev-parse --short HEAD
 
 期望：
 
-- `git rev-parse --short HEAD` 输出 `7fe4f57` 或后续提交。
+- `git rev-parse --short HEAD` 输出 `88d7b0f` 或后续提交。
 - `migrate/up` 无 DB 账号错误。
 - PHP-FPM 重启后页面不再渲染旧模板。
 
@@ -106,7 +106,7 @@ cd /www/wwwroot/demo2026.mongoyia.com
   --interactive=0
 ```
 
-如果 strict 校验仍出现 `Evidence unfinished checklist`，打开生成的 readiness 报告；`Unchecked Checklist Items` 表会列出仍未勾选的行号和事项，逐项完成右侧浏览器验证后再 rerun。若出现 `Evidence placeholder guard`，按 `Placeholder Lines` 表替换 `待填写`、`TODO`、`TBD` 等占位文字。
+如果 strict 校验仍出现 `Evidence unfinished checklist`，打开生成的 readiness 报告；`Unchecked Checklist Items` 表会列出仍未勾选的行号和事项，逐项完成右侧浏览器验证后再 rerun。若出现 `Evidence placeholder guard`，按 `Placeholder Lines` 表替换 `待填写`、`TODO`、`TBD` 等占位文字。新模板还包含每个角色的入口 URL、测试数据摘要、移动端视口记录和总验收命令；这些记录需要基于实际浏览器操作填写，不能为了通过校验直接批量勾选。
 
 ### 平台管理员
 

@@ -1,5 +1,29 @@
 # Development Log
 
+## 2026-07-02 BaoTa Full-Role Evidence Template Generation
+
+- Stage name: BaoTa full-role browser evidence template generation
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md`, `DEVELOPMENT_LOG.md`, `docs/mongoyia-optimization-remediation-plan-20260702.md`, and `docs/mongoyia-server-readiness-evidence-20260702.md` before recording this evidence-template stage.
+  - Reviewed BaoTa output confirming `git pull --ff-only` fast-forwarded the test server from `305b608` to `ac7aec3`.
+  - Confirmed `full-role-browser-evidence-readiness/run --generateTemplate=1 --templatePath=runtime/handover/full-role-browser-evidence.md` passed source coverage and generated the full-role browser evidence template.
+  - Confirmed the command wrote `runtime/handover/full-role-browser-evidence-readiness-20260701-191257.md`.
+  - Confirmed the remaining `PENDING Browser evidence path` is expected because this generation command did not pass an already-filled `--evidencePath`.
+  - Updated `docs/mongoyia-server-readiness-evidence-20260702.md` with the deployed `ac7aec3` state and template-generation evidence.
+  - Did not mark browser evidence complete, create orders, submit payment, approve refunds/reviews/withdrawals, call providers, mutate funds/stock, or switch production GO.
+- Main files changed/added:
+  - `docs/mongoyia-server-readiness-evidence-20260702.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - BaoTa `full-role-browser-evidence-readiness/run --generateTemplate=1`: source coverage PASS, browser evidence template PASS, `0 failure(s), 0 warning(s), 1 pending`.
+  - Pending item is expected until real five-role browser evidence is filled and strict-checked with `--evidencePath`.
+  - CLI warning `Module "mbstring" is already loaded` remains non-blocking.
+- Remaining issues:
+  - `runtime/handover/full-role-browser-evidence.md` must be filled from real right-side browser/manual platform admin, seller, buyer, customer-service, distributor, and mobile viewport validation.
+  - Strict evidence validation and aggregate Phase 10-15 closure acceptance are still pending.
+- Next stage:
+  - Complete the right-side browser evidence document, run `full-role-browser-evidence-readiness/run --evidencePath=runtime/handover/full-role-browser-evidence.md --accepted=1 --strict=1`, then use the same path for aggregate browser evidence flags.
+
 ## 2026-07-02 BaoTa 305b608 Readiness Recheck
 
 - Stage name: BaoTa post-305b608 server readiness recheck

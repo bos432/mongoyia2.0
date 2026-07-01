@@ -4,8 +4,8 @@
 
 - Evidence type: BaoTa/test-server deployment and readiness output.
 - Server path: `/www/wwwroot/demo2026.mongoyia.com`
-- Deployed commit: `305b608`
-- Result: server-side deployment, migration, cache flush, PHP-FPM restart, mini-program compatibility readiness, and test-station access readiness completed.
+- Deployed commit: `ac7aec3`
+- Result: server-side deployment, migration, cache flush, PHP-FPM restart, mini-program compatibility readiness, test-station access readiness, and full-role browser evidence template generation completed.
 - Production GO/NO-GO: remains `NO-GO`.
 
 ## Commands Run On BaoTa
@@ -42,7 +42,7 @@ git rev-parse --short HEAD
 
 | Area | Result | Evidence |
 |---|---|---|
-| Git deployment | PASS | `git rev-parse --short HEAD` returned `305b608`. |
+| Git deployment | PASS | `git rev-parse --short HEAD` returned `305b608`; subsequent pull deployed `ac7aec3` with server-readiness evidence updates. |
 | Migrations | PASS | Yii reported no new migrations and system is up-to-date. |
 | Yii cache flush | PASS | `cache` component processed. |
 | PHP-FPM restart | PASS | php-fpm restarted successfully. |
@@ -52,7 +52,7 @@ git rev-parse --short HEAD
 | Backend login/root access | PASS | Backend login CSRF and backend root script access passed. |
 | Seller login/dashboard access | PASS | Seller login POST and seller dashboard access passed for `zhishichanquan`. |
 | WAF diagnostics | WARN | `test-station-waf-diagnostics/run` completed with `0 failure(s), 9 warning(s), 60 evidence line(s)`. Access readiness already passed, so warnings are evidence for review, not a current acceptance blocker. |
-| Browser evidence template | PENDING | Latest code includes the richer full-role evidence template; filled five-role browser evidence is still pending. |
+| Browser evidence template | PENDING | `full-role-browser-evidence-readiness/run --generateTemplate=1` passed source coverage and generated `runtime/handover/full-role-browser-evidence.md`; report `runtime/handover/full-role-browser-evidence-readiness-20260701-191257.md`. Filled five-role browser evidence is still pending. |
 
 ## Remaining Acceptance Work
 

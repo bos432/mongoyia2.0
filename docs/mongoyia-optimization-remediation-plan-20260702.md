@@ -55,6 +55,7 @@
 整改：
 
 - 在宝塔/Nginx/WAF/安全插件中定位 444 命中规则。
+- 先运行只读诊断命令 `MONGOYIA_TEST_STATION_WAF_DIAGNOSTICS_V1` / `test-station-waf-diagnostics/run`，输出 BaoTa/Nginx/WAF 配置和最近日志中的 `HTTP 444`、`return 444`、`deny`、`WAF` 命中线索。
 - 对验收机 IP 或测试验收路径做最小白名单。
 - 不关闭 CSRF、登录权限、验证码、支付/资金/提现保护。
 - 使用 `test-station-access-readiness/run` 复核 `/backend/site/login` GET、后台登录 POST、`/backend/` 和 `/backend/site/info` 是否仍被 444 阻断。

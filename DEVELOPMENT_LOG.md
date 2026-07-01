@@ -1,5 +1,38 @@
 # Development Log
 
+## 2026-07-02 Test-Station WAF Diagnostics Readiness
+
+- Stage name: R2/R3 follow-up test-station HTTP 444 WAF diagnostics
+- Completed:
+  - Reread `docs/mongoyia-upgrade-backlog-20260618.md`, `DEVELOPMENT_LOG.md`, `docs/mongoyia-optimization-remediation-plan-20260702.md`, and the in-app browser skill instructions before starting.
+  - Added the read-only `test-station-waf-diagnostics/run` console command with `MONGOYIA_TEST_STATION_WAF_DIAGNOSTICS_V1`.
+  - The command inspects common BaoTa/Nginx/WAF configuration and recent log tails for `HTTP 444`, `return 444`, `deny`, WAF/security markers, and backend-login path hits, then writes a redacted handover report.
+  - Wired the diagnostics command into Phase 10-15 aggregate source coverage and the existing `test-station-access-readiness/run` handover report.
+  - Updated the deployment guide, remediation plan, and backlog so 444 triage follows the order: pull/flush cache, run access readiness, run WAF diagnostics, then apply only a minimal validation whitelist if evidence confirms WAF/Nginx blocking.
+  - Did not edit Nginx/WAF rules, disable security controls, submit payments, approve refunds/reviews/withdrawals, call external providers, create orders, mutate funds/stock, or switch production GO.
+- Main files changed/added:
+  - `console/controllers/TestStationWafDiagnosticsController.php`
+  - `console/controllers/TestStationAccessReadinessController.php`
+  - `console/controllers/MongoyiaRequirementsClosureAcceptanceController.php`
+  - `docs/mongoyia-deployment-guide-20260702.md`
+  - `docs/mongoyia-optimization-remediation-plan-20260702.md`
+  - `docs/mongoyia-upgrade-backlog-20260618.md`
+  - `DEVELOPMENT_LOG.md`
+- Run/test result:
+  - `php -l console/controllers/TestStationWafDiagnosticsController.php` passed.
+  - `php -l console/controllers/TestStationAccessReadinessController.php` passed.
+  - `php -l console/controllers/MongoyiaRequirementsClosureAcceptanceController.php` passed.
+  - Static marker scan confirmed `MONGOYIA_TEST_STATION_WAF_DIAGNOSTICS_V1`, `test-station-waf-diagnostics/run`, `return 444`, and aggregate source coverage references.
+  - `git diff --check` reported no whitespace errors, only existing Windows line-ending conversion warnings.
+  - Local Yii execution is still blocked by the missing `vendor/autoload.php`; BaoTa/test server must run the new command after pull.
+- Remaining issues:
+  - BaoTa/test server must pull this patch, flush Yii/PHP/opcache, and run `test-station-waf-diagnostics/run`.
+  - If the report finds WAF/Nginx evidence, the server operator must add only a minimal validation whitelist; the application code must keep CSRF/login/permission and high-risk business protections enabled.
+  - Right-side browser five-role validation remains pending until browser control/manual operation and backend access are available.
+  - Production remains `NO-GO` until external provider evidence and launch signoffs are accepted.
+- Next stage:
+  - Commit/push this diagnostics patch, then have BaoTa pull and run the deployment/access/WAF/readiness commands. After 444 is cleared and the right-side browser is controllable, rerun five-role browser validation and update the final test/deploy/remediation documents.
+
 ## 2026-07-02 APP H5 Build Warning Governance
 
 - Stage name: R3 APP/H5 build warning governance

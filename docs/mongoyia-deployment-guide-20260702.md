@@ -126,6 +126,16 @@ cd /www/wwwroot/demo2026.mongoyia.com
 
 当前自动化脚本在后台和登录 POST 会遇到 `HTTP 444`。建议：
 
+- 先运行 `MONGOYIA_TEST_STATION_WAF_DIAGNOSTICS_V1` 对应的只读诊断命令，收集 BaoTa/Nginx/WAF 配置和最近日志线索：
+
+```bash
+cd /www/wwwroot/demo2026.mongoyia.com
+/www/server/php/83/bin/php yii test-station-waf-diagnostics/run \
+  --domain=demo2026.mongoyia.com \
+  --baseUrl=https://demo2026.mongoyia.com \
+  --interactive=0
+```
+
 - 在宝塔/Nginx/WAF 日志中定位规则命中。
 - 只对白名单验收 IP、测试域名或验收路径放行，不放宽生产核心安全策略。
 - 至少允许：

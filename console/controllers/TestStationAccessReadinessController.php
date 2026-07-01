@@ -384,7 +384,16 @@ class TestStationAccessReadinessController extends Controller
             '  --interactive=0',
             '```',
             '',
-            'If backend routes return HTTP 444, inspect BaoTa/Nginx/WAF logs and add a minimal validation whitelist for the test station or validation source IP only.',
+            'If backend routes return HTTP 444, run the read-only WAF diagnostics command before changing security rules:',
+            '',
+            '```bash',
+            '/www/server/php/83/bin/php yii test-station-waf-diagnostics/run \\',
+            '  --domain=demo2026.mongoyia.com \\',
+            '  --baseUrl=https://demo2026.mongoyia.com \\',
+            '  --interactive=0',
+            '```',
+            '',
+            'Inspect BaoTa/Nginx/WAF evidence and add only a minimal validation whitelist for the test station, accepted validation source IP, or specific read-only acceptance paths.',
             '',
         ]);
 

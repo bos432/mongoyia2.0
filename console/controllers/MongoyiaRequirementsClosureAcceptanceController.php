@@ -250,6 +250,12 @@ class MongoyiaRequirementsClosureAcceptanceController extends Controller
             'HTTP 444',
             'R1 chat compatibility deployed markers',
         ]);
+        $this->requireFileContains('Test-station WAF diagnostics', 'console/controllers/TestStationWafDiagnosticsController.php', [
+            'MONGOYIA_TEST_STATION_WAF_DIAGNOSTICS_V1',
+            'test-station-waf-diagnostics/run',
+            'HTTP 444',
+            'return 444',
+        ]);
     }
 
     private function checkDatabasePreflight(): bool
